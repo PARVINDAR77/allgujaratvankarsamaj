@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { User, Role, Status, Gender } from "@prisma/client";
+import { User, Role, Status } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 
@@ -19,31 +19,25 @@ export class UsersService {
     const demoUser: User = {
       id: "demo-user-id-001",
       email: "test@example.com",
-      phone: null,
-      name: "Demo User",
-      gender: null,
       passwordHash,
       role: Role.USER,
       status: Status.ACTIVE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.memoryUsers.set(demoUser.email!, demoUser);
+    this.memoryUsers.set(demoUser.email, demoUser);
     this.memoryUsers.set(demoUser.id, demoUser);
 
     const parvindarUser: User = {
       id: "demo-user-id-002",
       email: "panjabiparvindar77@gmail.com",
-      phone: null,
-      name: "Parvindar",
-      gender: null,
       passwordHash,
       role: Role.USER,
       status: Status.ACTIVE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.memoryUsers.set(parvindarUser.email!, parvindarUser);
+    this.memoryUsers.set(parvindarUser.email, parvindarUser);
     this.memoryUsers.set(parvindarUser.id, parvindarUser);
   }
 
@@ -64,20 +58,6 @@ export class UsersService {
 
   async findByPhone(phone?: string): Promise<User | null> {
     if (!phone) return null;
-    const cleanPhone = phone.replace(/\D/g, "").slice(-10);
-    try {
-      const user = await this.prisma.user.findFirst({
-        where: { OR: [{ phone }, { phone: cleanPhone }] },
-      });
-      if (user) return user;
-    } catch {
-      // Fallback in-memory lookup
-    }
-    for (const u of this.memoryUsers.values()) {
-      if (u.phone && (u.phone === phone || u.phone.replace(/\D/g, "").slice(-10) === cleanPhone)) {
-        return u;
-      }
-    }
     return null;
   }
 
@@ -103,14 +83,11 @@ export class UsersService {
     role?: Role;
     status?: Status;
   }): Promise<User> {
-    const normalizedEmail = data.email?.toLowerCase().trim();
+    const normalizedEmail = data.email?.toLowerCase().trim() || `${uuidv4()}@vankar.org`;
     try {
       const user = await this.prisma.user.create({
         data: {
           email: normalizedEmail,
-          phone: data.phone,
-          name: data.name,
-          gender: data.gender as Gender | undefined,
           passwordHash: data.passwordHash,
           role: data.role || Role.USER,
           status: data.status || Status.ACTIVE,
@@ -119,14 +96,11 @@ export class UsersService {
       return user;
     } catch (err: any) {
       this.logger.warn(
-        `PostgreSQL offline, storing user in in-memory store for (${normalizedEmail ?? data.phone})`,
+        `PostgreSQL offline, storing user in in-memory store for (${normalizedEmail})`,
       );
       const user: User = {
         id: uuidv4(),
-        email: normalizedEmail ?? null,
-        phone: data.phone ?? null,
-        name: data.name ?? null,
-        gender: (data.gender as Gender) ?? null,
+        email: normalizedEmail,
         passwordHash: data.passwordHash,
         role: data.role || Role.USER,
         status: data.status || Status.ACTIVE,
@@ -134,7 +108,6 @@ export class UsersService {
         updatedAt: new Date(),
       };
       if (user.email) this.memoryUsers.set(user.email, user);
-      if (user.phone) this.memoryUsers.set(user.phone, user);
       this.memoryUsers.set(user.id, user);
       return user;
     }

@@ -1,7 +1,7 @@
-FROM node:20-alpine3.20
+FROM node:20-slim
 
-# Install openssl and libc6-compat for Prisma engine compatibility on Alpine
-RUN apk add --no-cache openssl libc6-compat netcat-openbsd
+# Install openssl and netcat-openbsd for Prisma engine compatibility
+RUN apt-get update && apt-get install -y openssl netcat-openbsd && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /usr/src/app
 
