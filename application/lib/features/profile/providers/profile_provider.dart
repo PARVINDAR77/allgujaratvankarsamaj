@@ -1,0 +1,246 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../shared/providers/api_config_provider.dart';
+import '../data/profile_api.dart';
+import '../data/profile_models.dart';
+import '../data/profile_repository.dart';
+
+// ─── Status enum ────────────────────────────────────────────────────────────
+
+enum ProfileStatus {
+  initial,
+  loading,
+  loaded,
+  empty,
+  saving,
+  deleting,
+  error,
+}
+
+// ─── State class ────────────────────────────────────────────────────────────
+
+class ProfileState {
+  final ProfileStatus status;
+  final MatrimonialProfileModel? profile;
+  final CompletenessModel? completeness;
+  final ReferenceDataModel? referenceData;
+  final String? errorMessage;
+
+  const ProfileState({
+    required this.status,
+    this.profile,
+    this.completeness,
+    this.referenceData,
+    this.errorMessage,
+  });
+
+  factory ProfileState.initial() =>
+      const ProfileState(status: ProfileStatus.initial);
+
+  factory ProfileState.loading() =>
+      const ProfileState(status: ProfileStatus.loading);
+
+  factory ProfileState.empty({ReferenceDataModel? referenceData}) =>
+      ProfileState(
+          status: ProfileStatus.empty,
+          referenceData: referenceData,
+          completeness: CompletenessModel.zero());
+
+  factory ProfileState.loaded({
+    required MatrimonialProfileModel profile,
+    CompletenessModel? completeness,
+    ReferenceDataModel? referenceData,
+  }) =>
+      ProfileState(
+        status: ProfileStatus.loaded,
+        profile: profile,
+        completeness: completeness,
+        referenceData: referenceData,
+      );
+
+  factory ProfileState.saving({
+    MatrimonialProfileModel? profile,
+    ReferenceDataModel? referenceData,
+    CompletenessModel? completeness,
+  }) =>
+      ProfileState(
+        status: ProfileStatus.saving,
+        profile: profile,
+        referenceData: referenceData,
+        completeness: completeness,
+      );
+
+  factory ProfileState.deleting({ReferenceDataModel? referenceData}) =>
+      ProfileState(
+          status: ProfileStatus.deleting, referenceData: referenceData);
+
+  factory ProfileState.error(String message,
+          {MatrimonialProfileModel? profile,
+          ReferenceDataModel? referenceData,
+          CompletenessModel? completeness}) =>
+      ProfileState(
+        status: ProfileStatus.error,
+        errorMessage: message,
+        profile: profile,
+        referenceData: referenceData,
+        completeness: completeness,
+      );
+
+  bool get isLoading => status == ProfileStatus.loading;
+  bool get isLoaded => status == ProfileStatus.loaded;
+  bool get isEmpty => status == ProfileStatus.empty;
+  bool get isSaving => status == ProfileStatus.saving;
+  bool get isDeleting => status == ProfileStatus.deleting;
+  bool get hasError => status == ProfileStatus.error;
+
+  ProfileState copyWith({
+    ProfileStatus? status,
+    MatrimonialProfileModel? profile,
+    CompletenessModel? completeness,
+    ReferenceDataModel? referenceData,
+    String? errorMessage,
+  }) {
+    return ProfileState(
+      status: status ?? this.status,
+      profile: profile ?? this.profile,
+      completeness: completeness ?? this.completeness,
+      referenceData: referenceData ?? this.referenceData,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+}
+
+// ─── Providers ──────────────────────────────────────────────────────────────
+
+final profileApiProvider = Provider<ProfileApi>((ref) {
+  final dioClient = ref.watch(dioClientProvider);
+  return ProfileApi(dioClient);
+});
+
+final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
+  final api = ref.watch(profileApiProvider);
+  return ProfileRepository(api: api);
+});
+
+// ─── Notifier ───────────────────────────────────────────────────────────────
+
+class ProfileNotifier extends StateNotifier<ProfileState> {
+  final ProfileRepository repository;
+
+  ProfileNotifier(this.repository) : super(ProfileState.initial());
+
+  /// Loads the authenticated user's profile.
+  /// Sets [ProfileStatus.empty] on 404 (no profile yet).
+  Future<void> loadProfile() async {
+    state = ProfileState.loading();
+    try {
+      // Load reference data alongside profile
+      final refData = await repository.getReferenceData();
+      try {
+        final profile = await repository.getMyProfile();
+        final completeness = await repository.getCompleteness();
+        state = ProfileState.loaded(
+          profile: profile,
+          completeness: completeness,
+          referenceData: refData,
+        );
+      } on ProfileNotFoundException {
+        state = ProfileState.empty(referenceData: refData);
+      }
+    } catch (e) {
+      state = ProfileState.error(_mapError(e));
+    }
+  }
+
+  /// Creates a new matrimonial profile.
+  /// If profile already exists (HTTP 409), falls back to updating the profile cleanly.
+  Future<bool> createProfile(CreateProfileRequest request) async {
+    final currentRefData = state.referenceData;
+    state = ProfileState.saving(referenceData: currentRefData);
+    try {
+      final profile = await repository.createProfile(request);
+      final completeness = await repository.getCompleteness();
+      state = ProfileState.loaded(
+        profile: profile,
+        completeness: completeness,
+        referenceData: currentRefData,
+      );
+      return true;
+    } catch (e) {
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('already exists') || errStr.contains('409')) {
+        return await updateProfile(UpdateProfileRequest(
+          firstName: request.firstName,
+          lastName: request.lastName,
+          dateOfBirth: request.dateOfBirth,
+          gender: request.gender,
+          maritalStatus: request.maritalStatus,
+          religion: request.religion,
+          caste: request.caste,
+          city: request.city,
+          state: request.state,
+          country: request.country,
+          education: request.education,
+          occupation: request.occupation,
+          about: request.about,
+        ));
+      }
+      state = ProfileState.error(_mapError(e),
+          referenceData: currentRefData,
+          completeness: CompletenessModel.zero());
+      return false;
+    }
+  }
+
+  /// Updates the authenticated user's matrimonial profile.
+  Future<bool> updateProfile(UpdateProfileRequest request) async {
+    final currentProfile = state.profile;
+    final currentRefData = state.referenceData;
+    final currentCompleteness = state.completeness;
+    state = ProfileState.saving(
+      profile: currentProfile,
+      referenceData: currentRefData,
+      completeness: currentCompleteness,
+    );
+    try {
+      final updated = await repository.updateProfile(request);
+      final completeness = await repository.getCompleteness();
+      state = ProfileState.loaded(
+        profile: updated,
+        completeness: completeness,
+        referenceData: currentRefData,
+      );
+      return true;
+    } catch (e) {
+      state = ProfileState.error(_mapError(e),
+          profile: currentProfile,
+          referenceData: currentRefData,
+          completeness: currentCompleteness);
+      return false;
+    }
+  }
+
+  /// Deletes the matrimonial profile.
+  /// Does NOT log the user out. Sets state to [ProfileStatus.empty].
+  Future<bool> deleteProfile() async {
+    final currentRefData = state.referenceData;
+    state = ProfileState.deleting(referenceData: currentRefData);
+    try {
+      await repository.deleteProfile();
+      state = ProfileState.empty(referenceData: currentRefData);
+      return true;
+    } catch (e) {
+      state = ProfileState.error(_mapError(e), referenceData: currentRefData);
+      return false;
+    }
+  }
+
+  String _mapError(Object e) {
+    return e.toString().replaceAll('AppException: ', '').replaceAll('Exception: ', '');
+  }
+}
+
+final profileNotifierProvider =
+    StateNotifierProvider<ProfileNotifier, ProfileState>((ref) {
+  final repository = ref.watch(profileRepositoryProvider);
+  return ProfileNotifier(repository);
+});

@@ -1,0 +1,87 @@
+// Prisma Schema for All Gujarat Vankar Samaj Matrimony
+// Step 2: Foundation schema with PostgreSQL provider and minimal technical health entity
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Minimal technical foundation model required by Prisma to validate schema,
+// generate Prisma Client artifacts, and verify database migration connectivity.
+// No domain or matrimonial entities are declared at this step.
+model SystemHealth {
+  id        String   @id @default(uuid())
+  status    String   @default("ok")
+  checkedAt DateTime @default(now())
+
+  @@map("system_health")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id           String              @id @default(uuid())
+  email        String?             @unique
+  phone        String?             @unique
+  name         String?
+  gender       Gender?
+  passwordHash String              @map("password_hash")
+  role         Role                @default(USER)
+  status       Status              @default(ACTIVE)
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+  profile      MatrimonialProfile?
+
+  @@map("users")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum MaritalStatus {
+  NEVER_MARRIED
+  DIVORCED
+  WIDOWED
+  SEPARATED
+}
+
+model MatrimonialProfile {
+  id            String        @id @default(uuid())
+  userId        String        @unique @map("user_id")
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName     String        @map("first_name")
+  lastName      String        @map("last_name")
+  dateOfBirth   DateTime      @map("date_of_birth")
+  gender        Gender
+  maritalStatus MaritalStatus @map("marital_status")
+  religion      String?
+  caste         String?
+  city          String?
+  state         String?
+  country       String?
+  education     String?
+  occupation    String?
+  about         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("matrimonial_profiles")
+}
+
+

@@ -1,0 +1,28 @@
+# Node / Next.js / NestJS dependencies & build outputs
+node_modules/
+.next/
+dist/
+build/
+*.log
+.env
+!.env.example
+
+# Flutter / Dart / Android build artifacts
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+application/build/
+application/android/.gradle/
+application/android/app/build/
+application/ios/Pods/
+application/ios/Runner.xcworkspace/
+application/ios/Runner.xcodeproj/project.xcworkspace/
+
+# IDE & System files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.apk

@@ -1,0 +1,32 @@
+name: vankar_samaj_matrimony
+description: "A production-oriented Flutter foundation for All Gujarat Vankar Samaj Matrimony platform."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.10.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.5.1
+  dio: ^5.4.3+1
+  go_router: ^14.0.0
+  flutter_secure_storage: ^11.0.0
+  image_picker: ^1.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  mockito: ^5.4.4
+  build_runner: ^2.4.9
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+
