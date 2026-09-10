@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 # ==============================================================================
-# Vankar Samaj Matrimony — Local Build & Deployment Automation Script
+# Vankar Samaj Matrimony - Local Build and Deployment Script
 # ==============================================================================
 
 set -e
 
 echo ""
 echo "======================================================================"
-echo "   VANKAR SAMAJ MATRIMONY — LOCAL BUILD & DOCKER DEPLOYMENT SCRIPT    "
+echo "   VANKAR SAMAJ MATRIMONY -- LOCAL BUILD AND DOCKER DEPLOYMENT        "
 echo "======================================================================"
 echo ""
 
@@ -29,7 +29,7 @@ echo "✓ Next.js Frontend build completed successfully."
 echo ""
 
 # Step 3: Run Docker Compose
-echo "--> [3/4] Starting Docker Containers (PostgreSQL, Backend & Frontend)..."
+echo "--> [3/4] Starting Docker Containers (PostgreSQL, Backend, Frontend)..."
 docker compose down --remove-orphans
 docker compose up -d --build
 echo "✓ Docker containers launched in detached mode."
@@ -41,31 +41,31 @@ sleep 3
 
 echo ""
 echo "======================================================================"
-echo "             🎉 LOCAL DEPLOYMENT SUCCESSFUL & READY! 🎉               "
+echo "             LOCAL DEPLOYMENT SUCCESSFUL AND READY!                   "
 echo "======================================================================"
 echo ""
-echo " 👑 ADMIN PANEL DASHBOARD:"
+echo " ADMIN PANEL DASHBOARD:"
 echo "    http://localhost:3001/admin/dashboard"
 echo ""
-echo " 🔐 ADMIN LOGIN:"
+echo " ADMIN LOGIN:"
 echo "    http://localhost:3001/admin/login"
 echo ""
-echo " 🌐 FRONTEND HOME PAGE:"
+echo " FRONTEND HOME PAGE:"
 echo "    http://localhost:3001"
 echo ""
-echo " ⚙️ NESTJS API BASE URL:"
+echo " NESTJS API BASE URL:"
 echo "    http://localhost:3000/api/v1"
 echo ""
-echo " 🩺 BACKEND HEALTH CHECK:"
+echo " BACKEND HEALTH CHECK:"
 echo "    http://localhost:3000/api/v1/health"
 echo ""
-echo " 📚 SWAGGER API DOCS:"
+echo " SWAGGER API DOCS:"
 echo "    http://localhost:3000/api/docs"
 echo ""
-echo " 🗄️ POSTGRESQL DATABASE:"
+echo " POSTGRESQL DATABASE:"
 echo "    localhost:5432 (User: postgres, Database: vankar_matrimony)"
 echo ""
 echo "======================================================================"
-echo " Tip: Re-run './local-deploy.sh' whenever you make changes to refresh."
+echo " Tip: Re-run './local-deploy.sh' or '.\local-deploy.ps1' to refresh."
 echo "======================================================================"
 echo ""
