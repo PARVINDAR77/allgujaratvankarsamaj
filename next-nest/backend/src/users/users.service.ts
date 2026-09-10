@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { User, Role, Status } from "@prisma/client";
+import { User, Role, Status, Gender } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 
@@ -19,25 +19,31 @@ export class UsersService {
     const demoUser: User = {
       id: "demo-user-id-001",
       email: "test@example.com",
+      phone: null,
+      name: "Demo User",
+      gender: null,
       passwordHash,
       role: Role.USER,
       status: Status.ACTIVE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.memoryUsers.set(demoUser.email, demoUser);
+    this.memoryUsers.set(demoUser.email!, demoUser);
     this.memoryUsers.set(demoUser.id, demoUser);
 
     const parvindarUser: User = {
       id: "demo-user-id-002",
       email: "panjabiparvindar77@gmail.com",
+      phone: null,
+      name: "Parvindar",
+      gender: null,
       passwordHash,
       role: Role.USER,
       status: Status.ACTIVE,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.memoryUsers.set(parvindarUser.email, parvindarUser);
+    this.memoryUsers.set(parvindarUser.email!, parvindarUser);
     this.memoryUsers.set(parvindarUser.id, parvindarUser);
   }
 
@@ -101,6 +107,9 @@ export class UsersService {
       const user: User = {
         id: uuidv4(),
         email: normalizedEmail,
+        phone: data.phone ?? null,
+        name: data.name ?? null,
+        gender: (data.gender as Gender) ?? null,
         passwordHash: data.passwordHash,
         role: data.role || Role.USER,
         status: data.status || Status.ACTIVE,
