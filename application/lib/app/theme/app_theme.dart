@@ -22,6 +22,12 @@ abstract class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Roboto',
+      scrollbarTheme: const ScrollbarThemeData(
+        thumbVisibility: WidgetStatePropertyAll(false),
+        trackVisibility: WidgetStatePropertyAll(false),
+        thickness: WidgetStatePropertyAll(0.0),
+        interactive: false,
+      ),
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.primary,
         foregroundColor: AppColors.onPrimary,
@@ -66,7 +72,7 @@ abstract class AppTheme {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.error),
         ),
-        labelStyle: TextStyle(color: AppColors.onPrimaryContainer),
+        labelStyle: const TextStyle(color: AppColors.onPrimaryContainer),
         hintStyle: TextStyle(color: AppColors.onPrimaryContainer.withValues(alpha: 0.5)),
       ),
       textTheme: const TextTheme(

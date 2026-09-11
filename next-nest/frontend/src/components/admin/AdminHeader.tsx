@@ -20,9 +20,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <header className="bg-[#0A1628]/95 backdrop-blur-md border-b border-[#997D20]/30 sticky top-0 z-30 px-4 md:px-6 py-3.5 flex items-center justify-between gap-4">
+    <header className="bg-[#0A1628]/95 backdrop-blur-md border-b border-[#997D20]/40 sticky top-0 z-30 px-4 md:px-8 py-4 flex items-center justify-between gap-4">
       {/* Left: Mobile Toggle & Page Info */}
-      <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="flex items-center gap-4 min-w-0 flex-1">
         <button
           onClick={onToggleSidebar}
           className="md:hidden p-2.5 rounded-xl bg-[#0F2040] text-[#D4AF37] border border-[#997D20]/30 shrink-0 hover:bg-[#D4AF37] hover:text-black transition-all"
@@ -32,10 +32,10 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         </button>
 
         <div className="min-w-0">
-          <h1 className="text-base sm:text-lg font-extrabold text-white tracking-wide truncate">
+          <h1 className="text-lg sm:text-xl font-black text-white tracking-wide truncate">
             {title}
           </h1>
-          <p className="text-xs text-[#AAB7C8] hidden sm:block truncate">{subtitle}</p>
+          <p className="text-xs text-[#AAB7C8] font-medium hidden sm:block truncate mt-0.5">{subtitle}</p>
         </div>
       </div>
 
@@ -117,7 +117,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               setShowProfileMenu(!showProfileMenu);
               setShowNotifications(false);
             }}
-            className="flex items-center gap-2 bg.5-[#0F2040] bg-[#0F2040] border border-[#997D20]/40 rounded-full px-3 py-1.5 hover:border-[#D4AF37] transition-all shadow-md"
+            className="flex items-center gap-2 bg-[#0F2040] border border-[#997D20]/40 rounded-full px-3 py-1.5 hover:border-[#D4AF37] transition-all shadow-md"
           >
             <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#D4AF37] via-[#F3E5AB] to-[#E8C95A] text-black font-extrabold text-xs flex items-center justify-center shadow-inner">
               A

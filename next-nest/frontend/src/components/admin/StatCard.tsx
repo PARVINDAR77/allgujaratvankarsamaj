@@ -18,34 +18,40 @@ export const StatCard: React.FC<StatCardProps> = ({
   icon,
 }) => {
   return (
-    <div className="bg-[#0F2040] border border-[#997D20]/30 hover:border-[#D4AF37] rounded-2xl p-5 transition-all duration-300 shadow-xl group hover:transform hover:-translate-y-1">
-      <div className="flex justify-between items-start">
-        <div>
-          <p className="text-xs font-semibold text-[#AAB7C8] uppercase tracking-wider">
+    <div className="bg-[#0B172A]/95 backdrop-blur-xl border border-[#997D20]/40 hover:border-[#D4AF37] rounded-2xl pt-7 pb-6 px-6 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)] hover:shadow-[0_10px_35px_rgba(212,175,55,0.25)] group hover:-translate-y-1 relative">
+      {/* Top gold line accent */}
+      <div className="absolute top-0 left-6 right-6 h-[2px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent opacity-70 group-hover:opacity-100 transition-opacity" />
+
+      <div className="flex justify-between items-start pt-1">
+        <div className="min-w-0 pr-2">
+          <span className="block text-xs font-bold text-[#AAB7C8] uppercase tracking-widest leading-relaxed">
             {title}
-          </p>
-          <h3 className="text-2xl lg:text-3xl font-extrabold text-white mt-2 group-hover:text-[#D4AF37] transition-colors">
+          </span>
+          <h3 className="text-2xl lg:text-3xl font-black text-white mt-2 group-hover:text-[#F3E5AB] transition-colors tracking-tight truncate">
             {typeof value === "number" ? value.toLocaleString() : value}
           </h3>
         </div>
 
-        <div className="w-12 h-12 rounded-xl bg-[#041026] border border-[#997D20]/40 flex items-center justify-center text-2xl shadow-inner">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#041026] to-[#0D1E3A] border border-[#D4AF37]/50 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 group-hover:border-[#D4AF37] transition-all shrink-0">
           {icon}
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-2 text-xs">
+      <div className="mt-5 flex items-center gap-2 text-xs">
         <span
-          className={`font-bold flex items-center gap-0.5 px-2 py-0.5 rounded ${
+          className={`font-black flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] ${
             isPositive
-              ? "bg-green-500/10 text-green-400 border border-green-500/20"
-              : "bg-red-500/10 text-red-400 border border-red-500/20"
+              ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/40"
+              : "bg-rose-500/15 text-rose-300 border border-rose-500/40"
           }`}
         >
           {isPositive ? "↑" : "↓"} {change}
         </span>
-        <span className="text-[#AAB7C8]/70 text-[11px]">{comparisonText}</span>
+        <span className="text-[#AAB7C8]/80 text-[11px] font-medium">{comparisonText}</span>
       </div>
     </div>
   );
 };
+
+
+

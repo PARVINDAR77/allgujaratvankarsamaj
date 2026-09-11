@@ -24,7 +24,9 @@ class MainNavigationScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: navigationShell,
-      bottomNavigationBar: Container(
+      bottomNavigationBar: (currentIndex == 0 || currentIndex == 2)
+          ? null
+          : Container(
         height: 72,
         decoration: BoxDecoration(
           color: const Color(0xFF020917),

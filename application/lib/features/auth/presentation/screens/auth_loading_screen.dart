@@ -1,8 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// Splash screen shown during initial session validation on startup
-class AuthLoadingScreen extends StatelessWidget {
+class AuthLoadingScreen extends StatefulWidget {
   const AuthLoadingScreen({super.key});
+
+  @override
+  State<AuthLoadingScreen> createState() => _AuthLoadingScreenState();
+}
+
+class _AuthLoadingScreenState extends State<AuthLoadingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.go('/login');
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,3 +61,4 @@ class AuthLoadingScreen extends StatelessWidget {
     );
   }
 }
+

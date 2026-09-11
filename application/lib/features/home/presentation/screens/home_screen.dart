@@ -1,427 +1,418 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../shared/widgets/pargana_footer_bar.dart';
-import '../../../../shared/widgets/vankar_header.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Column(
+  void _showNotificationDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF041126),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+        ),
+        title: const Row(
           children: [
-            // Top Standard Vankar Header with Peacocks & Medallion
-            const VankarHeader(),
-
-            // Scrollable Content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Section Title: Matrimony Home
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Icon(Icons.favorite, color: AppColors.secondary, size: 18),
-                        SizedBox(width: 6),
-                        Text(
-                          'Matrimony Home',
-                          style: TextStyle(
-                            color: AppColors.secondary,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.1,
-                          ),
-                        ),
-                        SizedBox(width: 6),
-                        Icon(Icons.favorite, color: AppColors.secondary, size: 18),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    const Text(
-                      'લગ્ન માટે છોકરો / છોકરી શોધો',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-
-                    // Main Matrimony Card with 3-Column Layout
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF041126),
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(color: AppColors.cardBorder, width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.6),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              // Left 3 Action Tiles
-                              Expanded(
-                                flex: 3,
-                                child: Column(
-                                  children: [
-                                    _buildActionTile(
-                                      icon: Icons.person,
-                                      gujaratiTitle: 'છોકરો શોધો',
-                                      englishSubtitle: 'Find Boy',
-                                      onTap: () => context.go('/search'),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    _buildActionTile(
-                                      icon: Icons.face_3,
-                                      gujaratiTitle: 'છોકરી શોધો',
-                                      englishSubtitle: 'Find Girl',
-                                      onTap: () => context.go('/search'),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    _buildActionTile(
-                                      icon: Icons.favorite,
-                                      gujaratiTitle: 'મેળ શોધો',
-                                      englishSubtitle: 'Find Match',
-                                      onTap: () => context.go('/match'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              const SizedBox(width: 8),
-
-                              // Center Couple Photo with Arch Frame
-                              Expanded(
-                                flex: 5,
-                                child: Container(
-                                  height: 180,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: AppColors.secondary, width: 2),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: AppColors.secondary.withValues(alpha: 0.3),
-                                        blurRadius: 8,
-                                      ),
-                                    ],
-                                  ),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(14),
-                                    child: Stack(
-                                      fit: StackFit.expand,
-                                      children: [
-                                        Image.asset(
-                                          'assets/images/home_couple.jpg',
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Image.asset(
-                                              'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
-                                              fit: BoxFit.cover,
-                                            );
-                                          },
-                                        ),
-                                        // Subtle golden glow overlay around edges
-                                        Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(14),
-                                            border: Border.all(
-                                              color: AppColors.goldAccent.withValues(alpha: 0.4),
-                                              width: 1,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(width: 8),
-
-                              // Right 3 Action Tiles
-                              Expanded(
-                                flex: 3,
-                                child: Column(
-                                  children: [
-                                    _buildActionTile(
-                                      icon: Icons.assignment_ind,
-                                      gujaratiTitle: 'પ્રોફાઈલ બનાવો',
-                                      englishSubtitle: 'Create Profile',
-                                      onTap: () => context.go('/profile/create'),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    _buildActionTile(
-                                      icon: Icons.search,
-                                      gujaratiTitle: 'શોધો',
-                                      englishSubtitle: 'Search',
-                                      onTap: () => context.go('/search'),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    _buildActionTile(
-                                      icon: Icons.verified_user,
-                                      gujaratiTitle: 'વેરિફાઈડ પ્રોફાઈલ',
-                                      englishSubtitle: 'Verified Profiles',
-                                      onTap: () => context.push('/verified-profile'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 12),
-
-                          // Center Golden Pill: "હમણાં જ જોડાઓ / Join Now"
-                          InkWell(
-                            onTap: () => context.go('/register'),
-                            borderRadius: BorderRadius.circular(24),
-                            child: Container(
-                              width: double.infinity,
-                              constraints: const BoxConstraints(maxWidth: 240),
-                              padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                              decoration: BoxDecoration(
-                                gradient: AppColors.goldGradient,
-                                borderRadius: BorderRadius.circular(24),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.secondary.withValues(alpha: 0.5),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.group_add, color: Colors.black87, size: 20),
-                                  const SizedBox(width: 8),
-                                  Column(
-                                    children: const [
-                                      Text(
-                                        'હમણાં જ જોડાઓ',
-                                        style: TextStyle(
-                                          color: Colors.black87,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Join Now',
-                                        style: TextStyle(
-                                          color: Colors.black54,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Quick Pargana Bar
-                    ParganaFooterBar(
-                      onParganaTap: (pargana) {
-                        context.push('/pargana-overview');
-                      },
-                    ),
-
-                    const SizedBox(height: 14),
-
-                    // Additional Workable Services & Quick Links
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF041126),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppColors.cardBorder, width: 1.2),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(Icons.stars, color: AppColors.secondary, size: 16),
-                              SizedBox(width: 6),
-                              Text(
-                                'સમાજ સેવાઓ અને સુવિધાઓ',
-                                style: TextStyle(
-                                  color: AppColors.goldLight,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildServiceQuickCard(
-                                  context,
-                                  icon: Icons.storefront,
-                                  title: 'સમાજ સર્વિસીસ',
-                                  subtitle: 'Mandap & Cars',
-                                  onTap: () => context.push('/samaj-services'),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildServiceQuickCard(
-                                  context,
-                                  icon: Icons.family_restroom,
-                                  title: 'પરિવાર વિગત',
-                                  subtitle: 'Family Matrix',
-                                  onTap: () => context.push('/family-details'),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildServiceQuickCard(
-                                  context,
-                                  icon: Icons.lock,
-                                  title: 'Privacy & Call',
-                                  subtitle: 'સંપર્ક Privacy',
-                                  onTap: () => context.push('/privacy-contact'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            Icon(Icons.notifications_active, color: Color(0xFFD4AF37)),
+            SizedBox(width: 8),
+            Text(
+              'સૂચનાઓ (Notifications)',
+              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],
         ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('• ૫ નવી સંબંધ પ્રોફાઈલ ઉપલબ્ધ છે.', style: TextStyle(color: Colors.white70)),
+            SizedBox(height: 6),
+            Text('• તમારા પરગણામાં ૧૨ નવી મેચ મળી.', style: TextStyle(color: Colors.white70)),
+            SizedBox(height: 6),
+            Text('• પ્રોફાઈલ ચકાસણી સફળ થઈ.', style: TextStyle(color: Colors.white70)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('OK', style: TextStyle(color: Color(0xFFD4AF37))),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildServiceQuickCard(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF061A3A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.secondary.withValues(alpha: 0.4), width: 1),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: AppColors.secondary, size: 22),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            Text(
-              subtitle,
-              style: const TextStyle(color: Colors.white60, fontSize: 8),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+  void _showMenuDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF041126),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-    );
-  }
-
-  Widget _buildActionTile({
-    required IconData icon,
-    required String gujaratiTitle,
-    required String englishSubtitle,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF031633),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.cardBorder, width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.secondary.withValues(alpha: 0.15),
-              ),
-              child: Icon(icon, color: AppColors.secondary, size: 20),
+            const Text(
+              'All Gujarat Vankar Samaj',
+              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 4),
-            Text(
-              gujaratiTitle,
-              style: const TextStyle(
-                color: AppColors.goldLight,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            const SizedBox(height: 16),
+            ListTile(
+              leading: const Icon(Icons.home, color: Color(0xFFD4AF37)),
+              title: const Text('Home (મુખ્ય પૃષ્ઠ)', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.go('/home');
+              },
             ),
-            Text(
-              englishSubtitle,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 9,
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            ListTile(
+              leading: const Icon(Icons.search, color: Color(0xFFD4AF37)),
+              title: const Text('Search Profiles (શોધો)', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.go('/search');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.favorite, color: Color(0xFFD4AF37)),
+              title: const Text('Mutual Interest (મેળ)', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.go('/match');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_city, color: Color(0xFFD4AF37)),
+              title: const Text('Pargana Overview (પરગણાં)', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/pargana-overview');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.handshake, color: Color(0xFFD4AF37)),
+              title: const Text('Samaj Services (સમાજ સેવાઓ)', style: TextStyle(color: Colors.white)),
+              onTap: () {
+                Navigator.pop(ctx);
+                context.push('/samaj-services');
+              },
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF01060E),
+      body: SafeArea(
+        child: Center(
+          child: AspectRatio(
+            aspectRatio: 685 / 1000,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final w = constraints.maxWidth;
+                final h = constraints.maxHeight;
+
+                return Stack(
+                  children: [
+                    // 1. Full Master Layout Image (Exact 1:1 match of Matrimony Home poster)
+                    Positioned.fill(
+                      child: Image.asset(
+                        'assets/images/template_home.jpg',
+                        fit: BoxFit.contain,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
+                          fit: BoxFit.contain,
+                          width: double.infinity,
+                          height: double.infinity,
+                          errorBuilder: (context, error, stackTrace) => Image.asset(
+                            'assets/images/main_home_layout.jpg',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    // 2. Top-Left Menu Icon (☰)
+                    Positioned(
+                      left: w * 0.02,
+                      top: h * 0.01,
+                      width: w * 0.14,
+                      height: h * 0.06,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap: () => _showMenuDialog(context),
+                        ),
+                      ),
+                    ),
+
+                    // 3. Top-Right Notification Bell Icon (🔔 5)
+                    Positioned(
+                      right: w * 0.02,
+                      top: h * 0.01,
+                      width: w * 0.14,
+                      height: h * 0.06,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(30),
+                          onTap: () => _showNotificationDialog(context),
+                        ),
+                      ),
+                    ),
+
+                    // 4. Left Action Box 1: છોકરો શોધો (Find Boy)
+                    Positioned(
+                      left: w * 0.025,
+                      top: h * 0.35,
+                      width: w * 0.19,
+                      height: h * 0.135,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.go('/search'),
+                        ),
+                      ),
+                    ),
+
+                    // 5. Left Action Box 2: છોકરી શોધો (Find Girl)
+                    Positioned(
+                      left: w * 0.025,
+                      top: h * 0.495,
+                      width: w * 0.19,
+                      height: h * 0.135,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.go('/search'),
+                        ),
+                      ),
+                    ),
+
+                    // 6. Left Action Box 3: મેળ શોધો (Find Match)
+                    Positioned(
+                      left: w * 0.025,
+                      top: h * 0.64,
+                      width: w * 0.19,
+                      height: h * 0.135,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.go('/match'),
+                        ),
+                      ),
+                    ),
+
+                    // 7. Right Action Box 1: પ્રોફાઈલ બનાવો (Create Profile)
+                    Positioned(
+                      left: w * 0.785,
+                      top: h * 0.35,
+                      width: w * 0.19,
+                      height: h * 0.135,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.go('/profile/create'),
+                        ),
+                      ),
+                    ),
+
+                    // 8. Right Action Box 2: શોધો (Search)
+                    Positioned(
+                      left: w * 0.785,
+                      top: h * 0.495,
+                      width: w * 0.19,
+                      height: h * 0.135,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.go('/search'),
+                        ),
+                      ),
+                    ),
+
+                    // 9. Right Action Box 3: વેરિફાઈડ પ્રોફાઈલ (Verified Profiles)
+                    Positioned(
+                      left: w * 0.785,
+                      top: h * 0.64,
+                      width: w * 0.19,
+                      height: h * 0.135,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(16),
+                          onTap: () => context.push('/verified-profile'),
+                        ),
+                      ),
+                    ),
+
+                    // 10. Center Golden Pill: હમણાં જ જોડાઓ (Join Now)
+                    Positioned(
+                      left: w * 0.30,
+                      top: h * 0.74,
+                      width: w * 0.40,
+                      height: h * 0.055,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(24),
+                          onTap: () => context.go('/profile/create'),
+                        ),
+                      ),
+                    ),
+
+                    // 11. Pargana Pill 1: 35 પરગણાં
+                    Positioned(
+                      left: w * 0.135,
+                      top: h * 0.815,
+                      width: w * 0.175,
+                      height: h * 0.075,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => context.push('/pargana-overview'),
+                        ),
+                      ),
+                    ),
+
+                    // 12. Pargana Pill 2: 27 પરગણાં
+                    Positioned(
+                      left: w * 0.32,
+                      top: h * 0.815,
+                      width: w * 0.175,
+                      height: h * 0.075,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => context.push('/pargana-overview'),
+                        ),
+                      ),
+                    ),
+
+                    // 13. Pargana Pill 3: 16 પરગણાં
+                    Positioned(
+                      left: w * 0.505,
+                      top: h * 0.815,
+                      width: w * 0.175,
+                      height: h * 0.075,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => context.push('/pargana-overview'),
+                        ),
+                      ),
+                    ),
+
+                    // 14. Pargana Pill 4: 14 પરગણાં
+                    Positioned(
+                      left: w * 0.69,
+                      top: h * 0.815,
+                      width: w * 0.175,
+                      height: h * 0.075,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () => context.push('/pargana-overview'),
+                        ),
+                      ),
+                    ),
+
+                    // 15. Bottom Navigation Bar Tabs:
+                    // Tab 1: હોમ (Home)
+                    Positioned(
+                      left: 0,
+                      top: h * 0.91,
+                      width: w * 0.20,
+                      height: h * 0.09,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => context.go('/home'),
+                        ),
+                      ),
+                    ),
+
+                    // Tab 2: શોધો (Search)
+                    Positioned(
+                      left: w * 0.20,
+                      top: h * 0.91,
+                      width: w * 0.20,
+                      height: h * 0.09,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => context.go('/search'),
+                        ),
+                      ),
+                    ),
+
+                    // Tab 3: મેળ (Match) - Golden Heart Center
+                    Positioned(
+                      left: w * 0.40,
+                      top: h * 0.89,
+                      width: w * 0.20,
+                      height: h * 0.11,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => context.go('/match'),
+                        ),
+                      ),
+                    ),
+
+                    // Tab 4: મેસેજ (Message)
+                    Positioned(
+                      left: w * 0.60,
+                      top: h * 0.91,
+                      width: w * 0.20,
+                      height: h * 0.09,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => context.go('/messages'),
+                        ),
+                      ),
+                    ),
+
+                    // Tab 5: પ્રોફાઈલ (Profile)
+                    Positioned(
+                      left: w * 0.80,
+                      top: h * 0.91,
+                      width: w * 0.20,
+                      height: h * 0.09,
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => context.go('/profile'),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
         ),
       ),
     );

@@ -38,28 +38,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = ref.watch(authRouterListenableProvider);
 
   return GoRouter(
-    initialLocation: '/welcome',
+    initialLocation: '/login',
     refreshListenable: authListenable,
     redirect: (context, state) {
-      final authState = ref.read(authNotifierProvider);
       final location = state.uri.toString();
 
-      // Show splash screen while resolving initial session on launch
-      if (authState.isInitial) {
-        return location == '/splash' ? null : '/splash';
-      }
-
-      final isAuthenticated = authState.isAuthenticated;
-      final isPublicRoute = location == '/login' || location == '/register' || location == '/welcome';
-
-      // If user is unauthenticated and attempting to access protected route, redirect to /welcome
-      if (!isAuthenticated && !isPublicRoute) {
-        return '/welcome';
-      }
-
-      // If user is authenticated and attempting to access login/register/splash, redirect to /home
-      if (isAuthenticated && (location == '/login' || location == '/register' || location == '/splash')) {
-        return '/home';
+      // Redirect legacy /welcome or /splash to /login
+      if (location == '/welcome' || location == '/splash') {
+        return '/login';
       }
 
       return null;

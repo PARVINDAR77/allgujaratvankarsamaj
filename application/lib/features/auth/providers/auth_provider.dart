@@ -62,15 +62,17 @@ final authRepositoryProvider = Provider<AuthRepository>((ref) {
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthRepository repository;
 
-  AuthNotifier(this.repository) : super(AuthState.initial()) {
+  AuthNotifier(this.repository) : super(AuthState.unauthenticated()) {
     initializeAuth();
   }
 
   /// Initial session resolution on app launch
   Future<void> initializeAuth() async {
-    state = AuthState.initial();
     try {
-      final user = await repository.getCurrentUser();
+      final user = await repository.getCurrentUser().timeout(
+            const Duration(seconds: 1),
+            onTimeout: () => null,
+          );
       if (user != null) {
         state = AuthState.authenticated(user);
       } else {

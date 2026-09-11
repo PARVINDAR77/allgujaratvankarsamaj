@@ -147,13 +147,17 @@ class CommunityLandingScreen extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: Image.asset(
-          'assets/images/template_community.jpg',
+          'assets/images/buddha_welcome_poster.jpg',
           fit: BoxFit.cover,
           width: double.infinity,
-          errorBuilder: (context, error, stackTrace) => Container(
-            color: AppColors.primary,
-            child: const Center(
-              child: Icon(Icons.self_improvement, size: 70, color: AppColors.goldAccent),
+          errorBuilder: (context, error, stackTrace) => Image.asset(
+            'assets/images/buddha_pargana_poster.jpg',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) => Container(
+              color: AppColors.primary,
+              child: const Center(
+                child: Icon(Icons.self_improvement, size: 70, color: AppColors.goldAccent),
+              ),
             ),
           ),
         ),
