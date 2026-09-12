@@ -38,15 +38,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _nextPage() {
-    if (_currentPage < 1) {
-      _pageController.animateToPage(
-        1,
-        duration: const Duration(milliseconds: 350),
-        curve: Curves.easeInOut,
-      );
+    final authState = ref.read(authNotifierProvider);
+    if (authState.isAuthenticated) {
+      if (_currentPage < 1) {
+        _pageController.animateToPage(
+          1,
+          duration: const Duration(milliseconds: 350),
+          curve: Curves.easeInOut,
+        );
+      } else {
+        context.go('/home');
+      }
     } else {
-      context.go('/home');
+      _showLoginDialog();
     }
+  }
+
+  void _navigateToRegister() {
+    context.push('/register');
   }
 
   Future<void> _performLogin() async {
@@ -60,7 +69,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     if (mounted) {
       setState(() => _isLoading = false);
-      _nextPage();
+      final updatedAuth = ref.read(authNotifierProvider);
+      if (updatedAuth.isAuthenticated) {
+        if (_currentPage < 1) {
+          _pageController.animateToPage(
+            1,
+            duration: const Duration(milliseconds: 350),
+            curve: Curves.easeInOut,
+          );
+        } else {
+          context.go('/home');
+        }
+      }
     }
   }
 
@@ -303,9 +323,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            // PageView with Page 1 and Page 2
+            // PageView with NeverScrollableScrollPhysics to prevent swiping between pages
             PageView(
               controller: _pageController,
+              physics: const NeverScrollableScrollPhysics(),
               onPageChanged: (pageIndex) {
                 setState(() => _currentPage = pageIndex);
               },
@@ -335,14 +356,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 errorBuilder: (context, error, stackTrace) => Container(
                                   color: const Color(0xFF041026),
                                 ),
-                              ),
-                            ),
-
-                            // 2. Base Tap-anywhere to advance to Page 2
-                            Positioned.fill(
-                              child: GestureDetector(
-                                behavior: HitTestBehavior.translucent,
-                                onTap: _nextPage,
                               ),
                             ),
 
@@ -434,7 +447,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
 
-                            // Hotspot 8: Green "Registration" Button -> Advances to Page 2
+                            // Hotspot 8: Green "Registration" Button -> Registration screen
                             Positioned(
                               left: screenW * 0.52,
                               top: posterH * 0.78,
@@ -445,7 +458,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 child: InkWell(
                                   splashColor: Colors.green.withValues(alpha: 0.4),
                                   borderRadius: BorderRadius.circular(30),
-                                  onTap: _nextPage,
+                                  onTap: _navigateToRegister,
                                 ),
                               ),
                             ),
