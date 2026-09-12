@@ -29,30 +29,60 @@ export default function AdminVerificationsPage() {
 
   return (
     <AdminLayout title="Verification Management" subtitle="Approve or reject submitted community profile proofs">
-      <div className="space-y-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Search & Status Filter Bar */}
-        <div className="bg-[#0F2040] border border-[#997D20]/40 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
-          <div className="relative w-full sm:w-80">
+        <div
+          style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "16px",
+            padding: "18px 24px",
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "16px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+          }}
+        >
+          <div style={{ position: "relative", minWidth: "300px" }}>
             <input
               type="text"
               placeholder="Search member or document type..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-2.5 pl-10 text-xs text-white placeholder-[#AAB7C8]/60 focus:outline-none focus:border-[#D4AF37]"
+              style={{
+                width: "100%",
+                backgroundColor: "#041026",
+                border: "1px solid rgba(212, 175, 55, 0.35)",
+                borderRadius: "12px",
+                padding: "10px 14px 10px 38px",
+                fontSize: "12px",
+                color: "#FFFFFF",
+                outline: "none",
+              }}
             />
-            <span className="absolute left-3 top-3 text-xs text-[#AAB7C8]">🔍</span>
+            <span style={{ position: "absolute", left: "12px", top: "11px", fontSize: "13px", color: "#8E9BAE" }}>🔍</span>
           </div>
 
-          <div className="flex gap-2">
+          <div style={{ display: "flex", gap: "8px" }}>
             {["ALL", "PENDING", "VERIFIED", "REJECTED"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setFilter(tab)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all ${
-                  filter === tab
-                    ? "bg-[#D4AF37] text-black shadow-md"
-                    : "bg-[#041026] text-[#AAB7C8] border border-[#997D20]/30 hover:text-white"
-                }`}
+                style={{
+                  padding: "8px 16px",
+                  borderRadius: "12px",
+                  fontSize: "12px",
+                  fontWeight: 800,
+                  border: "none",
+                  cursor: "pointer",
+                  backgroundColor: filter === tab ? "#D4AF37" : "#041026",
+                  color: filter === tab ? "#041026" : "#8E9BAE",
+                  boxShadow: filter === tab ? "0 4px 12px rgba(212, 175, 55, 0.3)" : "none",
+                }}
+                className="transition-all"
               >
                 {tab}
               </button>
@@ -61,51 +91,92 @@ export default function AdminVerificationsPage() {
         </div>
 
         {/* Verification Submissions Table */}
-        <div className="bg-[#0F2040] border border-[#997D20]/40 rounded-2xl p-6 shadow-xl">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
+        <div
+          style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "16px",
+            padding: "24px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
               <span>🛡️</span> Verification Review Requests
             </h3>
-            <span className="text-xs text-[#D4AF37] font-bold bg-[#041026] px-3 py-1 rounded-full border border-[#997D20]/40">
+            <span
+              style={{
+                fontSize: "11px",
+                color: "#D4AF37",
+                fontWeight: 800,
+                backgroundColor: "#041026",
+                padding: "6px 14px",
+                borderRadius: "20px",
+                border: "1px solid rgba(212, 175, 55, 0.3)",
+              }}
+            >
               Pending Queue: {items.filter(i => i.status === "PENDING").length}
             </span>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-[#997D20]/30">
-            <table className="w-full text-left text-xs text-white border-collapse">
-              <thead className="bg-[#041026] text-[#D4AF37] uppercase text-[10px] tracking-wider border-b border-[#997D20]/40">
-                <tr>
-                  <th className="py-3.5 px-4 font-extrabold min-w-[160px]">Member Name</th>
-                  <th className="py-3.5 px-4 font-extrabold min-w-[200px]">Verification Type</th>
-                  <th className="py-3.5 px-4 font-extrabold min-w-[110px]">Pargana</th>
-                  <th className="py-3.5 px-4 font-extrabold min-w-[120px]">Submitted Date</th>
-                  <th className="py-3.5 px-4 font-extrabold min-w-[100px]">Status</th>
-                  <th className="py-3.5 px-4 font-extrabold text-right min-w-[160px]">Actions</th>
+          <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(212, 175, 55, 0.2)" }}>
+            <table style={{ width: "100%", textAlign: "left", fontSize: "12px", color: "#FFFFFF", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ backgroundColor: "#041026", borderBottom: "1px solid rgba(212, 175, 55, 0.3)" }}>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Member Name</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Verification Type</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Pargana</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Submitted Date</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Status</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#997D20]/15 bg-[#0F2040]">
+              <tbody style={{ backgroundColor: "#0D1B32" }}>
                 {filteredItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-[#041026]/70 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-white">{item.name}</td>
-                    <td className="py-3.5 px-4 text-[#AAB7C8] font-medium">{item.type}</td>
-                    <td className="py-3.5 px-4 text-white font-semibold">{item.pargana}</td>
-                    <td className="py-3.5 px-4 text-gray-300 font-mono text-[11px]">{item.date}</td>
-                    <td className="py-3.5 px-4">
+                  <tr key={item.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }} className="hover:bg-[#041026]/70 transition-colors">
+                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>{item.name}</td>
+                    <td style={{ padding: "14px 18px", color: "#8E9BAE", fontWeight: 500 }}>{item.type}</td>
+                    <td style={{ padding: "14px 18px", color: "#FFFFFF", fontWeight: 600 }}>{item.pargana}</td>
+                    <td style={{ padding: "14px 18px", color: "#CBD5E1", fontFamily: "monospace", fontSize: "11px" }}>{item.date}</td>
+                    <td style={{ padding: "14px 18px" }}>
                       <StatusBadge status={item.status} />
                     </td>
-                    <td className="py-3.5 px-4 text-right space-x-2">
-                      <button
-                        onClick={() => updateStatus(item.id, "VERIFIED")}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/50 text-[10px] font-extrabold hover:bg-emerald-800 transition-colors"
-                      >
-                        Approve
-                      </button>
-                      <button
-                        onClick={() => updateStatus(item.id, "REJECTED")}
-                        className="px-3 py-1.5 rounded-lg bg-rose-950 text-rose-300 border border-rose-500/50 text-[10px] font-extrabold hover:bg-rose-800 transition-colors"
-                      >
-                        Reject
-                      </button>
+                    <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                        <button
+                          onClick={() => updateStatus(item.id, "VERIFIED")}
+                          style={{
+                            padding: "6px 14px",
+                            borderRadius: "8px",
+                            backgroundColor: "rgba(6, 78, 59, 0.6)",
+                            color: "#6EE7B7",
+                            border: "1px solid rgba(16, 185, 129, 0.4)",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                          }}
+                          className="hover:bg-emerald-800 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => updateStatus(item.id, "REJECTED")}
+                          style={{
+                            padding: "6px 14px",
+                            borderRadius: "8px",
+                            backgroundColor: "rgba(136, 19, 55, 0.6)",
+                            color: "#FDA4AF",
+                            border: "1px solid rgba(244, 63, 94, 0.4)",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                          }}
+                          className="hover:bg-rose-800 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -117,4 +188,5 @@ export default function AdminVerificationsPage() {
     </AdminLayout>
   );
 }
+
 

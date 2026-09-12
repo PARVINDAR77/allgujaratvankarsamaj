@@ -33,7 +33,7 @@ class VankarMatrimonyApp extends ConsumerWidget {
         return ScrollConfiguration(
           behavior: const NoScrollbarBehavior(),
           child: Container(
-            color: const Color(0xFF01060E),
+            color: const Color(0xFF0D2952),
             alignment: Alignment.center,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 450),

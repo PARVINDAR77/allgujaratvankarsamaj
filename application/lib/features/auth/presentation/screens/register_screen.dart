@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../app/theme/app_colors.dart';
+
 import '../../../../shared/widgets/primary_button.dart';
 import '../../providers/auth_provider.dart';
 import '../widgets/auth_form_field.dart';
@@ -42,13 +44,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           backgroundColor: Colors.green,
         ),
       );
-      context.go('/login');
+      context.go('/login?page=1');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final authState = ref.watch(authNotifierProvider);
 
     return Scaffold(
@@ -62,26 +63,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.person_add_rounded,
                     size: 64.0,
-                    color: theme.colorScheme.primary,
+                    color: AppColors.secondary,
                   ),
                   const SizedBox(height: 16.0),
-                  Text(
+                  const Text(
                     'Create Account',
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.headlineMedium?.copyWith(
+                    style: TextStyle(
+                      fontSize: 26,
                       fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.primary,
+                      color: AppColors.secondary,
                     ),
                   ),
                   const SizedBox(height: 8.0),
-                  Text(
+                  const Text(
                     'Join the Vankar Samaj Matrimony community',
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white70,
                     ),
                   ),
                   const SizedBox(height: 32.0),
@@ -90,13 +93,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     Container(
                       padding: const EdgeInsets.all(12.0),
                       decoration: BoxDecoration(
-                        color: theme.colorScheme.errorContainer,
+                        color: AppColors.error.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8.0),
+                        border: Border.all(color: AppColors.error),
                       ),
                       child: Text(
                         authState.errorMessage!,
-                        style: TextStyle(
-                          color: theme.colorScheme.onErrorContainer,
+                        style: const TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -161,17 +165,31 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(
+                      const Text(
                         'Already have an account? ',
-                        style: theme.textTheme.bodyMedium,
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
-                      GestureDetector(
-                        onTap: () => context.go('/login'),
-                        child: Text(
-                          'Sign In',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: theme.colorScheme.primary,
-                            fontWeight: FontWeight.bold,
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: InkWell(
+                          onTap: () {
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/login');
+                            }
+                          },
+                          borderRadius: BorderRadius.circular(4),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 6.0, vertical: 4.0),
+                            child: Text(
+                              'Sign In',
+                              style: TextStyle(
+                                color: AppColors.secondary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
                           ),
                         ),
                       ),

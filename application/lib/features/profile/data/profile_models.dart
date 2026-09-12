@@ -16,6 +16,7 @@ class MatrimonialProfileModel {
   final String? education;
   final String? occupation;
   final String? about;
+  final String? photoUrl;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -35,6 +36,7 @@ class MatrimonialProfileModel {
     this.education,
     this.occupation,
     this.about,
+    this.photoUrl,
     this.createdAt,
     this.updatedAt,
   });
@@ -56,6 +58,7 @@ class MatrimonialProfileModel {
       education: json['education'] as String?,
       occupation: json['occupation'] as String?,
       about: json['about'] as String?,
+      photoUrl: json['photoUrl'] as String?,
       createdAt: json['createdAt'] != null
           ? DateTime.tryParse(json['createdAt'] as String)
           : null,
@@ -149,6 +152,7 @@ class CreateProfileRequest {
   final String? education;
   final String? occupation;
   final String? about;
+  final String? photoUrl;
 
   const CreateProfileRequest({
     required this.firstName,
@@ -164,6 +168,7 @@ class CreateProfileRequest {
     this.education,
     this.occupation,
     this.about,
+    this.photoUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -182,6 +187,7 @@ class CreateProfileRequest {
     if (education != null) map['education'] = education;
     if (occupation != null) map['occupation'] = occupation;
     if (about != null) map['about'] = about;
+    if (photoUrl != null) map['photoUrl'] = photoUrl;
     return map;
   }
 }
@@ -202,6 +208,7 @@ class UpdateProfileRequest {
   final String? education;
   final String? occupation;
   final String? about;
+  final String? photoUrl;
 
   const UpdateProfileRequest({
     this.firstName,
@@ -217,6 +224,7 @@ class UpdateProfileRequest {
     this.education,
     this.occupation,
     this.about,
+    this.photoUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -234,6 +242,7 @@ class UpdateProfileRequest {
     if (education != null) map['education'] = education;
     if (occupation != null) map['occupation'] = occupation;
     if (about != null) map['about'] = about;
+    if (photoUrl != null) map['photoUrl'] = photoUrl;
     return map;
   }
 }

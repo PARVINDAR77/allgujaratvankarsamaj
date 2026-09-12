@@ -15,7 +15,7 @@ class _AuthLoadingScreenState extends State<AuthLoadingScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.go('/login');
+        context.go('/home');
       }
     });
   }

@@ -55,7 +55,6 @@ class VerifiedProfileScreen extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -73,6 +72,42 @@ class VerifiedProfileScreen extends ConsumerWidget {
                         ),
                         Container(width: 24, height: 1, color: AppColors.secondary),
                       ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Target Gender Notice Badge
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final targetGender = ref.watch(targetGenderProvider);
+                        final isTargetBoy = targetGender == 'MALE';
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isTargetBoy ? Colors.blue.withValues(alpha: 0.15) : Colors.pink.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: isTargetBoy ? Colors.blueAccent : Colors.pinkAccent),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isTargetBoy ? Icons.male : Icons.female,
+                                color: isTargetBoy ? Colors.blueAccent : Colors.pinkAccent,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isTargetBoy ? 'દર્શાવી રહ્યા છીએ: સન્માનિત છોકરાઓ ની પ્રોફાઈલ' : 'દર્શાવી રહ્યા છીએ: સન્માનિત છોકરીઓ ની પ્રોફાઈલ',
+                                style: TextStyle(
+                                  color: isTargetBoy ? Colors.blueAccent : Colors.pinkAccent,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
 
@@ -300,6 +335,146 @@ class VerifiedProfileScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Seeded Candidate Profiles Section
+                    Consumer(
+                      builder: (context, ref, _) {
+                        final targetGender = ref.watch(targetGenderProvider);
+                        final searchFilter = ref.watch(searchFilterProvider);
+                        final isTargetBoy = targetGender == 'MALE' || searchFilter.lookingFor == 'Groom';
+
+                        final allCandidates = isTargetBoy
+                            ? [
+                                {'name': 'અલ્પેશ પરમાર', 'id': 'VNK1001', 'age': '26', 'city': 'અમદાવાદ', 'pargana': 'ચોરાસી', 'status': 'Never Married', 'edu': 'B.Tech IT', 'occ': 'Software Engineer'},
+                                {'name': 'જીગ્નેશ ચૌહાણ', 'id': 'VNK1002', 'age': '28', 'city': 'સુરત', 'pargana': 'બેતાલીસી', 'status': 'Never Married', 'edu': 'M.Com', 'occ': 'Bank Officer'},
+                                {'name': 'રોહિત સોલંકી', 'id': 'VNK1003', 'age': '27', 'city': 'વડોદરા', 'pargana': 'છગાંવ', 'status': 'Divorced', 'edu': 'MBBS', 'occ': 'Doctor'},
+                                {'name': 'હર્ષદ રાઠોડ', 'id': 'VNK1004', 'age': '29', 'city': 'રાજકોટ', 'pargana': 'સત્તાવીસી', 'status': 'Never Married', 'edu': 'B.E. Civil', 'occ': 'Govt Engineer'},
+                                {'name': 'પ્રકાશ વાઘેલા', 'id': 'VNK1005', 'age': '25', 'city': 'ગાંધીનગર', 'pargana': 'ચોરાસી', 'status': 'Never Married', 'edu': 'MCA', 'occ': 'Web Developer'},
+                              ]
+                            : [
+                                {'name': 'પૂજા પરમાર', 'id': 'VNK2001', 'age': '24', 'city': 'અમદાવાદ', 'pargana': 'ચોરાસી', 'status': 'Never Married', 'edu': 'B.Sc Nursing', 'occ': 'Staff Nurse'},
+                                {'name': 'નેહા ચૌહાણ', 'id': 'VNK2002', 'age': '23', 'city': 'સુરત', 'pargana': 'બેતાલીસી', 'status': 'Never Married', 'edu': 'B.Ed', 'occ': 'Teacher'},
+                                {'name': 'પ્રિયા સોલંકી', 'id': 'VNK2003', 'age': '25', 'city': 'વડોદરા', 'pargana': 'છગાંવ', 'status': 'Divorced', 'edu': 'B.Pharm', 'occ': 'Pharmacist'},
+                                {'name': 'અંજલી રાઠોડ', 'id': 'VNK2004', 'age': '24', 'city': 'રાજકોટ', 'pargana': 'સત્તાવીસી', 'status': 'Never Married', 'edu': 'M.Sc Data Science', 'occ': 'Analyst'},
+                                {'name': 'રીયા વાઘેલા', 'id': 'VNK2005', 'age': '22', 'city': 'ગાંધીનગર', 'pargana': 'ચોરાસી', 'status': 'Never Married', 'edu': 'BBA', 'occ': 'HR Executive'},
+                              ];
+
+                        // Apply dynamic filters
+                        final candidates = allCandidates.where((c) {
+                          if (searchFilter.maritalStatus != 'Any' && searchFilter.maritalStatus.isNotEmpty && c['status'] != searchFilter.maritalStatus) {
+                            return false;
+                          }
+                          if (searchFilter.pargana != 'Any' && searchFilter.pargana.isNotEmpty && !c['pargana']!.contains(searchFilter.pargana)) {
+                            return false;
+                          }
+                          if (searchFilter.livingIn != 'Any' && searchFilter.livingIn.isNotEmpty && !c['city']!.contains(searchFilter.livingIn)) {
+                            return false;
+                          }
+                          if (searchFilter.keyword.isNotEmpty) {
+                            final k = searchFilter.keyword.toLowerCase();
+                            final fullText = '${c['name']} ${c['city']} ${c['edu']} ${c['occ']} ${c['pargana']}'.toLowerCase();
+                            if (!fullText.contains(k)) return false;
+                          }
+                          return true;
+                        }).toList();
+
+                        final activeCandidateList = candidates.isNotEmpty ? candidates : allCandidates;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      isTargetBoy ? 'મળતા આવતા છોકરાઓ (Matching Boys Seed Profiles)' : 'મળતા આવતા છોકરીઓ (Matching Girls Seed Profiles)',
+                                      style: const TextStyle(color: AppColors.secondary, fontSize: 14, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.cardNavy,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: AppColors.goldLight.withValues(alpha: 0.4)),
+                                    ),
+                                    child: Text(
+                                      'પરિણામ: ${activeCandidateList.length}',
+                                      style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.w600),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ...activeCandidateList.map((c) => Container(
+                              margin: const EdgeInsets.only(bottom: 10),
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF041026),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(color: isTargetBoy ? Colors.blue.withValues(alpha: 0.5) : Colors.pink.withValues(alpha: 0.5)),
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor: isTargetBoy ? Colors.blueAccent : Colors.pinkAccent,
+                                    child: Icon(isTargetBoy ? Icons.person : Icons.person_3, color: Colors.white, size: 28),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              c['name']!,
+                                              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                            ),
+                                            const SizedBox(width: 6),
+                                            const Icon(Icons.verified, color: Colors.blueAccent, size: 16),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          'ID: ${c['id']} • ${c['age']} વર્ષ • ${c['city']} (${c['pargana']})',
+                                          style: const TextStyle(color: AppColors.goldLight, fontSize: 11),
+                                        ),
+                                        Text(
+                                          '${c['status']} • ${c['edu']} • ${c['occ']}',
+                                          style: const TextStyle(color: Colors.white70, fontSize: 10),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.secondary,
+                                      foregroundColor: Colors.black,
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      textStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                                    ),
+                                    onPressed: () {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          backgroundColor: AppColors.primary,
+                                          content: Text('${c['name']} ની પ્રોફાઈલ વિગતવાર ખુલી રહી છે...'),
+                                        ),
+                                      );
+                                    },
+                                    child: const Text('પ્રોફાઈલ જુઓ'),
+                                  ),
+                                ],
+                              ),
+                            )),
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 12),
 

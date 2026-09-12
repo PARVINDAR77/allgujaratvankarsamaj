@@ -24,9 +24,7 @@ class MainNavigationScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: navigationShell,
-      bottomNavigationBar: (currentIndex == 0 || currentIndex == 2)
-          ? null
-          : Container(
+      bottomNavigationBar: Container(
         height: 72,
         decoration: BoxDecoration(
           color: const Color(0xFF020917),
@@ -99,7 +97,7 @@ class MainNavigationScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      'પરસ્પર પસંદગી',
+                      'મેળ',
                       style: TextStyle(
                         color: currentIndex == 2 ? AppColors.secondary : Colors.white70,
                         fontSize: 10,
@@ -118,7 +116,6 @@ class MainNavigationScreen extends StatelessWidget {
               activeIcon: Icons.chat_bubble,
               label: 'મેસેજ',
               isSelected: currentIndex == 3,
-              badgeText: '5',
               onTap: () => _goBranch(3),
             ),
 

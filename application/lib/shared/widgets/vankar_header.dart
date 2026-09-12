@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../app/theme/app_colors.dart';
 
 class VankarHeader extends StatelessWidget {
@@ -42,28 +43,34 @@ class VankarHeader extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: showBackButton
-                      ? (onBackPressed ?? () => Navigator.of(context).maybePop())
-                      : () => Scaffold.maybeOf(context)?.openDrawer(),
+                  onTap: () {
+                    if (showBackButton) {
+                      if (onBackPressed != null) {
+                        onBackPressed!();
+                      } else if (context.canPop()) {
+                        context.pop();
+                      } else {
+                        context.go('/home');
+                      }
+                    } else {
+                      Scaffold.maybeOf(context)?.openDrawer();
+                    }
+                  },
                   borderRadius: BorderRadius.circular(24),
-                  child: showBackButton
-                      ? Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.secondary, width: 1.5),
-                            color: const Color(0xFF030D1E),
-                          ),
-                          child: const Icon(Icons.arrow_back, color: AppColors.secondary, size: 22),
-                        )
-                      : const SizedBox(
-                          width: 44,
-                          height: 44,
-                        ),
+                  child: SizedBox(
+                    width: 44,
+                    height: 44,
+                    child: Icon(
+                      showBackButton ? Icons.arrow_back : Icons.menu,
+                      color: AppColors.secondary,
+                      size: 22,
+                    ),
+                  ),
                 ),
               ),
             ),
+
+
 
             // Top-Right Button (Notification Bell with Badge 5)
             Positioned(

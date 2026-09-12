@@ -1,24 +1,59 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { adminApi } from "@/lib/admin-api";
 
 export default function AdminSettingsPage() {
   const [activeTab, setActiveTab] = useState<"general" | "verification" | "privacy">("general");
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Settings State
   const [platformName, setPlatformName] = useState("All Gujarat Vankar Samaj Matrimony");
+  const [bannerText, setBannerText] = useState("Welcome to All Gujarat Vankar Samaj Matrimony — Find Your Ideal Life Partner Within Our Community");
   const [supportEmail, setSupportEmail] = useState("support@vankarsamaj.org");
+  const [supportPhone, setSupportPhone] = useState("+91 98765 43210");
   const [requireVerification, setRequireVerification] = useState(true);
   const [autoApprovePhotos, setAutoApprovePhotos] = useState(false);
   const [privacyContactMasking, setPrivacyContactMasking] = useState(true);
   const [allowPublicSearch, setAllowPublicSearch] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const settings = await adminApi.getSettings();
+        if (settings) {
+          if (settings.siteTitle) setPlatformName(settings.siteTitle);
+          if (settings.bannerText) setBannerText(settings.bannerText);
+          if (settings.contactEmail) setSupportEmail(settings.contactEmail);
+          if (settings.contactPhone) setSupportPhone(settings.contactPhone);
+        }
+      } catch (e) {
+        console.error("Failed to load settings from API", e);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3500);
+    try {
+      await adminApi.updateSettings({
+        siteTitle: platformName,
+        bannerText: bannerText,
+        contactEmail: supportEmail,
+        contactPhone: supportPhone,
+        registrationEnabled: true,
+        maintenanceMode: false,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3500);
+    } catch (err) {
+      alert("Failed to save settings to NestJS API server.");
+    }
   };
 
   return (
@@ -66,7 +101,7 @@ export default function AdminSettingsPage() {
           {saved && (
             <div className="p-4 rounded-2xl bg-emerald-950/90 border border-emerald-500/50 text-emerald-400 text-xs font-extrabold flex items-center gap-3 shadow-lg animate-fade-in">
               <span className="text-lg">✓</span>
-              <span>Portal settings updated and synchronized with backend NestJS services!</span>
+              <span>Portal settings updated and synchronized with backend NestJS services & PostgreSQL!</span>
             </div>
           )}
 
@@ -91,17 +126,43 @@ export default function AdminSettingsPage() {
 
                 <div>
                   <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
-                    Support Email Address
+                    Homepage Announcement Banner Text
                   </label>
-                  <input
-                    type="email"
-                    value={supportEmail}
-                    onChange={(e) => setSupportEmail(e.target.value)}
+                  <textarea
+                    rows={2}
+                    value={bannerText}
+                    onChange={(e) => setBannerText(e.target.value)}
                     className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
                   />
                   <p className="text-[11px] text-[#AAB7C8]/70 mt-1.5">
-                    Official email address for user feedback and verification helpdesk inquiries.
+                    Dynamic text displayed inside the Flutter APK home screen header.
                   </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                      Support Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={supportEmail}
+                      onChange={(e) => setSupportEmail(e.target.value)}
+                      className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                      Support Helpline Phone
+                    </label>
+                    <input
+                      type="text"
+                      value={supportPhone}
+                      onChange={(e) => setSupportPhone(e.target.value)}
+                      className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                    />
+                  </div>
                 </div>
               </div>
             )}

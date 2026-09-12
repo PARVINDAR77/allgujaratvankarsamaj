@@ -244,3 +244,133 @@ final profileNotifierProvider =
   final repository = ref.watch(profileRepositoryProvider);
   return ProfileNotifier(repository);
 });
+
+// ─── Target Opposite Gender Filter System ─────────────────────────────────
+
+/// Tracks the logged-in/registering user's gender ('MALE' or 'FEMALE').
+class UserGenderNotifier extends StateNotifier<String> {
+  UserGenderNotifier() : super('MALE'); // Default: Male user looking for Female
+
+  void setUserGender(String gender) {
+    final g = gender.toUpperCase().trim();
+    if (g.contains('FEMALE') || g.contains('GIRL') || g.contains('BRIDE')) {
+      state = 'FEMALE';
+    } else {
+      state = 'MALE';
+    }
+  }
+}
+
+final userGenderNotifierProvider =
+    StateNotifierProvider<UserGenderNotifier, String>((ref) {
+  return UserGenderNotifier();
+});
+
+/// Returns the target opposite gender to display across all application feeds:
+/// - If current user is FEMALE (Girl) -> returns 'MALE' (Displays ONLY Boys Data)
+/// - If current user is MALE (Boy) -> returns 'FEMALE' (Displays ONLY Girls Data)
+final targetGenderProvider = Provider<String>((ref) {
+  final selectedGender = ref.watch(userGenderNotifierProvider);
+  final profileState = ref.watch(profileNotifierProvider);
+  final profileGender = profileState.profile?.gender.toUpperCase() ?? '';
+
+  final activeGender = profileGender.isNotEmpty ? profileGender : selectedGender;
+
+  if (activeGender.contains('FEMALE') || activeGender.contains('GIRL') || activeGender.contains('BRIDE')) {
+    return 'MALE'; // Girl logged in -> Show ONLY Boys data
+  } else {
+    return 'FEMALE'; // Boy logged in -> Show ONLY Girls data
+  }
+});
+
+/// Returns the target looking for label ('Groom' for Boys, 'Bride' for Girls)
+final targetLookingForLabelProvider = Provider<String>((ref) {
+  final targetGender = ref.watch(targetGenderProvider);
+  return targetGender == 'MALE' ? 'Groom' : 'Bride';
+});
+
+class SearchFilterState {
+  final String lookingFor;
+  final String maritalStatus;
+  final String age;
+  final String height;
+  final String pargana;
+  final String livingIn;
+  final String education;
+  final String diet;
+  final String occupation;
+  final String religion;
+  final String yearlyIncome;
+  final String motherTongue;
+  final String familyType;
+  final String keyword;
+
+  const SearchFilterState({
+    this.lookingFor = 'Bride',
+    this.maritalStatus = 'Any',
+    this.age = 'Any',
+    this.height = 'Any',
+    this.pargana = 'Any',
+    this.livingIn = 'Any',
+    this.education = 'Any',
+    this.diet = 'Any',
+    this.occupation = 'Any',
+    this.religion = 'Any',
+    this.yearlyIncome = 'Any',
+    this.motherTongue = 'Any',
+    this.familyType = 'Any',
+    this.keyword = '',
+  });
+
+  SearchFilterState copyWith({
+    String? lookingFor,
+    String? maritalStatus,
+    String? age,
+    String? height,
+    String? pargana,
+    String? livingIn,
+    String? education,
+    String? diet,
+    String? occupation,
+    String? religion,
+    String? yearlyIncome,
+    String? motherTongue,
+    String? familyType,
+    String? keyword,
+  }) {
+    return SearchFilterState(
+      lookingFor: lookingFor ?? this.lookingFor,
+      maritalStatus: maritalStatus ?? this.maritalStatus,
+      age: age ?? this.age,
+      height: height ?? this.height,
+      pargana: pargana ?? this.pargana,
+      livingIn: livingIn ?? this.livingIn,
+      education: education ?? this.education,
+      diet: diet ?? this.diet,
+      occupation: occupation ?? this.occupation,
+      religion: religion ?? this.religion,
+      yearlyIncome: yearlyIncome ?? this.yearlyIncome,
+      motherTongue: motherTongue ?? this.motherTongue,
+      familyType: familyType ?? this.familyType,
+      keyword: keyword ?? this.keyword,
+    );
+  }
+}
+
+class SearchFilterNotifier extends StateNotifier<SearchFilterState> {
+  SearchFilterNotifier() : super(const SearchFilterState());
+
+  void setFilter(SearchFilterState filter) {
+    state = filter;
+  }
+
+  void reset(String defaultLookingFor) {
+    state = SearchFilterState(lookingFor: defaultLookingFor);
+  }
+}
+
+final searchFilterProvider =
+    StateNotifierProvider<SearchFilterNotifier, SearchFilterState>((ref) {
+  return SearchFilterNotifier();
+});
+

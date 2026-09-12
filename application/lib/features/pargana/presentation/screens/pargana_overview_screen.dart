@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../app/theme/app_colors.dart';
+import '../../providers/pargana_provider.dart';
 
-class ParganaOverviewScreen extends StatelessWidget {
+class ParganaOverviewScreen extends ConsumerStatefulWidget {
   const ParganaOverviewScreen({super.key});
 
-  void _showParganaModal(BuildContext context, String title, String details) {
+  @override
+  ConsumerState<ParganaOverviewScreen> createState() => _ParganaOverviewScreenState();
+}
+
+class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
+  String _searchFilter = '';
+
+  void _showParganaModal(BuildContext context, ParganaModel p) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -16,11 +24,13 @@ class ParganaOverviewScreen extends StatelessWidget {
         ),
         title: Row(
           children: [
-            const Icon(Icons.temple_buddhist, color: Color(0xFFD4AF37)),
+            const Icon(Icons.account_balance, color: Color(0xFFD4AF37)),
             const SizedBox(width: 8),
-            Text(
-              '$title પરગણાં',
-              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
+            Expanded(
+              child: Text(
+                p.gujaratiName ?? p.name,
+                style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -28,14 +38,35 @@ class ParganaOverviewScreen extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            if (p.name != p.gujaratiName)
+              Text(p.name, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
             Text(
-              details,
-              style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.4),
+              p.description ?? 'વણકર સમાજ પરગણું વિસ્તાર માહિતી',
+              style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 12),
-            const Text(
-              '• કુલ ગામો: ૪૫+\n• વસતી: ૧૫,૦૦૦+\n• નોંધાયેલ સંબંધ પ્રોફાઈલ્સ: ૨૫૦+',
-              style: TextStyle(color: Color(0xFFFFD700), fontSize: 12, height: 1.5),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F2040),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF997D20).withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (p.villageCount != null)
+                    Text('• ગામ સંખ્યા: ${p.villageCount}', style: const TextStyle(color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
+                  if (p.districtRegion != null)
+                    Text('• વિસ્તાર/જીલ્લો: ${p.districtRegion}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                  if (p.leaderName != null && p.leaderName!.isNotEmpty)
+                    Text('• વડા / પ્રતિનિધિ: ${p.leaderName}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                  if (p.contactPhone != null && p.contactPhone!.isNotEmpty)
+                    Text('• સંપર્ક નંબર: ${p.contactPhone}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                  Text('• નોંધાયેલ સંબંધ પ્રોફાઈલ્સ: ${p.totalCount}+', style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
           ],
         ),
@@ -62,170 +93,287 @@ class ParganaOverviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final parganasAsync = ref.watch(parganasProvider);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF01060E),
+      backgroundColor: const Color(0xFF0D2952),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF041026),
+        elevation: 4,
+        title: const Text('ગુજરાત વણકર સમાજ પરગણાં (All Parganas)', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFFD4AF37)),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
+      ),
       body: SafeArea(
-        child: Center(
-          child: AspectRatio(
-            aspectRatio: 1024 / 1535,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final w = constraints.maxWidth;
-                final h = constraints.maxHeight;
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. Poster Image Banner (Compact height to ensure list visibility below)
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final posterW = constraints.maxWidth;
+                  final posterH = posterW * (1200 / 1024);
 
-                return Stack(
+                  return SizedBox(
+                    width: posterW,
+                    height: posterH > 340 ? 340 : posterH,
+                    child: Stack(
+                      children: [
+                        Positioned.fill(
+                          child: Image.asset(
+                            'assets/images/template_pargana.jpg',
+                            fit: BoxFit.fill,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM.jpeg',
+                              fit: BoxFit.fill,
+                            ),
+                          ),
+                        ),
+
+                        // Interactive Hotspots on Medallions
+                        // Medallion 1: 35 Pargana (Top Left)
+                        Positioned(
+                          left: posterW * 0.05,
+                          top: 210,
+                          width: posterW * 0.28,
+                          height: 70,
+                          child: InkWell(
+                            onTap: () => setState(() => _searchFilter = '35'),
+                          ),
+                        ),
+
+                        // Medallion 2: 27 Pargana (Top Center)
+                        Positioned(
+                          left: posterW * 0.36,
+                          top: 210,
+                          width: posterW * 0.28,
+                          height: 70,
+                          child: InkWell(
+                            onTap: () => setState(() => _searchFilter = '27'),
+                          ),
+                        ),
+
+                        // Medallion 3: 16 Pargana (Top Right)
+                        Positioned(
+                          left: posterW * 0.67,
+                          top: 210,
+                          width: posterW * 0.28,
+                          height: 70,
+                          child: InkWell(
+                            onTap: () => setState(() => _searchFilter = '16'),
+                          ),
+                        ),
+
+                        // Medallion 4: 14 Pargana (Bottom Left)
+                        Positioned(
+                          left: posterW * 0.20,
+                          top: 275,
+                          width: posterW * 0.28,
+                          height: 60,
+                          child: InkWell(
+                            onTap: () => setState(() => _searchFilter = '14'),
+                          ),
+                        ),
+
+                        // Medallion 5: Other Pargana (Bottom Right)
+                        Positioned(
+                          left: posterW * 0.52,
+                          top: 275,
+                          width: posterW * 0.28,
+                          height: 60,
+                          child: InkWell(
+                            onTap: () => setState(() => _searchFilter = ''),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+
+              // 2. Search & Filter Bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 1. Full Master Layout Image (Exact 1:1 match of WhatsApp Image 2026-09-08 at 10.08.42 PM.jpeg)
-                    Positioned.fill(
-                      child: Image.asset(
-                        'assets/images/template_pargana.jpg',
-                        fit: BoxFit.contain,
-                        width: double.infinity,
-                        height: double.infinity,
-                        errorBuilder: (context, error, stackTrace) => Image.asset(
-                          'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM.jpeg',
-                          fit: BoxFit.contain,
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF041026),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search, color: Color(0xFFD4AF37), size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: TextField(
+                              onChanged: (val) => setState(() => _searchFilter = val),
+                              style: const TextStyle(color: Colors.white, fontSize: 13),
+                              decoration: const InputDecoration(
+                                hintText: 'શોધો: પરગણું, ગામ અથવા જીલ્લો (Search pargana...)...',
+                                hintStyle: TextStyle(color: Colors.white54, fontSize: 12),
+                                border: InputBorder.none,
+                              ),
+                            ),
+                          ),
+                          if (_searchFilter.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.clear, color: Colors.white54, size: 18),
+                              onPressed: () => setState(() => _searchFilter = ''),
+                            ),
+                        ],
                       ),
                     ),
 
-                    // 2. Top Back Button (←)
-                    Positioned(
-                      left: w * 0.02,
-                      top: h * 0.015,
-                      width: w * 0.12,
-                      height: h * 0.05,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(30),
-                          onTap: () {
-                            if (Navigator.canPop(context)) {
-                              Navigator.pop(context);
-                            } else {
-                              context.go('/home');
-                            }
-                          },
-                          child: Container(
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.account_balance, color: Color(0xFFD4AF37), size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'તમામ પરગણાં યાદી (All Admin Parganas)',
+                              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        parganasAsync.maybeWhen(
+                          data: (list) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withValues(alpha: 0.4),
-                              border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                              color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5)),
                             ),
-                            child: const Icon(
-                              Icons.arrow_back,
-                              color: Color(0xFFD4AF37),
-                              size: 20,
+                            child: Text(
+                              'કુલ: ${list.length}',
+                              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 11, fontWeight: FontWeight.bold),
                             ),
                           ),
+                          orElse: () => const SizedBox.shrink(),
                         ),
-                      ),
-                    ),
-
-                    // 3. Medallion 1: 35 પરગણાં (Blue - Top Left)
-                    Positioned(
-                      left: w * 0.05,
-                      top: h * 0.67,
-                      width: w * 0.28,
-                      height: h * 0.16,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(60),
-                          onTap: () => _showParganaModal(
-                            context,
-                            '35',
-                            'ઉત્તર ગુજરાત 35 પરગણાં વણકર સમાજ સમિતિ અને સભ્ય માહિતી.',
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // 4. Medallion 2: 27 પરગણાં (Green - Top Center)
-                    Positioned(
-                      left: w * 0.36,
-                      top: h * 0.67,
-                      width: w * 0.28,
-                      height: h * 0.16,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(60),
-                          onTap: () => _showParganaModal(
-                            context,
-                            '27',
-                            'મધ્ય ગુજરાત 27 પરગણાં વણકર સમાજ મંડળ.',
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // 5. Medallion 3: 16 પરગણાં (Brown - Top Right)
-                    Positioned(
-                      left: w * 0.67,
-                      top: h * 0.67,
-                      width: w * 0.28,
-                      height: h * 0.16,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(60),
-                          onTap: () => _showParganaModal(
-                            context,
-                            '16',
-                            'ચરોતર 16 પરગણાં વણકર સમાજ વિકાસ ટ્રસ્ટ.',
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // 6. Medallion 4: 14 પરગણાં (Purple - Bottom Left)
-                    Positioned(
-                      left: w * 0.20,
-                      top: h * 0.83,
-                      width: w * 0.28,
-                      height: h * 0.15,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(60),
-                          onTap: () => _showParganaModal(
-                            context,
-                            '14',
-                            'દક્ષિણ ગુજરાત 14 પરગણાં વણકર સમાજ પરિષદ.',
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // 7. Medallion 5: Other પરગણાં (Teal - Bottom Right)
-                    Positioned(
-                      left: w * 0.52,
-                      top: h * 0.83,
-                      width: w * 0.28,
-                      height: h * 0.15,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(60),
-                          onTap: () => _showParganaModal(
-                            context,
-                            'Other',
-                            'અન્ય પરગણાં અને વિદેશમાં વસતા વણકર સમાજ બંધુઓ.',
-                          ),
-                        ),
-                      ),
+                      ],
                     ),
                   ],
-                );
-              },
-            ),
+                ),
+              ),
+
+              // 3. Dynamic Pargana Cards List (Fetched directly from PostgreSQL API)
+              parganasAsync.when(
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                  ),
+                ),
+                error: (err, stack) => Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text('Error loading parganas: $err', style: const TextStyle(color: Colors.redAccent)),
+                ),
+                data: (allParganas) {
+                  final filteredList = allParganas.where((p) {
+                    final search = _searchFilter.toLowerCase().trim();
+                    if (search.isEmpty) return true;
+                    final name = (p.name + (p.gujaratiName ?? '') + (p.districtRegion ?? '') + (p.description ?? '')).toLowerCase();
+                    return name.contains(search);
+                  }).toList();
+
+                  if (filteredList.isEmpty) {
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F2040),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF997D20).withValues(alpha: 0.3)),
+                      ),
+                      child: const Center(
+                        child: Text('કોઈ પરગણું મળ્યું નથી. (No Pargana matching search)', style: TextStyle(color: Colors.white70, fontSize: 13)),
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    itemCount: filteredList.length,
+                    itemBuilder: (context, index) {
+                      final p = filteredList[index];
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F2040),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF997D20).withValues(alpha: 0.4)),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(14),
+                          leading: CircleAvatar(
+                            radius: 20,
+                            backgroundColor: const Color(0xFF041026),
+                            child: Text(
+                              '${index + 1}',
+                              style: const TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
+                          ),
+                          title: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                p.gujaratiName ?? p.name,
+                                style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                              if (p.gujaratiName != null && p.name != p.gujaratiName)
+                                Text(
+                                  p.name,
+                                  style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
+                                ),
+                            ],
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 6.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (p.villageCount != null)
+                                  Text('ગામ સંખ્યા: ${p.villageCount}', style: const TextStyle(color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.w600)),
+                                if (p.districtRegion != null)
+                                  Text('વિસ્તાર: ${p.districtRegion}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                if (p.description != null)
+                                  Text(p.description!, style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                              ],
+                            ),
+                          ),
+                          trailing: const Icon(Icons.arrow_forward_ios, color: Color(0xFFD4AF37), size: 16),
+                          onTap: () => _showParganaModal(context, p),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+
+              const SizedBox(height: 32),
+            ],
           ),
         ),
       ),
     );
   }
 }
-

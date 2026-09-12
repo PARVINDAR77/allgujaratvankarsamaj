@@ -74,6 +74,7 @@ class EditProfileScreen extends ConsumerWidget {
       education: result.education,
       occupation: result.occupation,
       about: result.about,
+      photoUrl: result.photoUrl,
     );
 
     final success =

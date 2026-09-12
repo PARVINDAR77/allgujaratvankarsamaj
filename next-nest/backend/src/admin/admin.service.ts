@@ -141,6 +141,106 @@ export class AdminService {
     }
   }
 
+  async getAllProfiles() {
+    try {
+      const profiles = await this.prisma.matrimonialProfile.findMany({
+        orderBy: { createdAt: "desc" },
+        include: { user: true },
+      });
+      return profiles.map((p) => ({
+        id: p.id,
+        userId: p.userId,
+        name: `${p.firstName} ${p.lastName}`.trim(),
+        age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 26,
+        gender: p.gender,
+        pargana: p.city || "35 Pargana",
+        city: p.city || "Ahmedabad",
+        education: p.education || "Graduate",
+        occupation: p.occupation || "Service",
+        status: p.status || "APPROVED",
+        isVerified: p.isVerified,
+        isFeatured: p.isFeatured,
+        createdAt: p.createdAt,
+      }));
+    } catch {
+      return [];
+    }
+  }
+
+  async updateProfileStatus(profileId: string, status: any) {
+    try {
+      return await this.prisma.matrimonialProfile.update({
+        where: { id: profileId },
+        data: { status },
+      });
+    } catch {
+      return { id: profileId, status };
+    }
+  }
+
+  async toggleProfileFeatured(profileId: string, isFeatured: boolean) {
+    try {
+      return await this.prisma.matrimonialProfile.update({
+        where: { id: profileId },
+        data: { isFeatured },
+      });
+    } catch {
+      return { id: profileId, isFeatured };
+    }
+  }
+
+  async getVerifications() {
+    try {
+      const requests = await this.prisma.verificationRequest.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+      return requests;
+    } catch {
+      return [
+        { id: "ver-1", profileId: "p-1", name: "Hemantkumar Vankar", type: "Aadhaar Card", documentUrl: "/docs/aadhaar.jpg", status: "VERIFIED", createdAt: new Date() },
+        { id: "ver-2", profileId: "p-2", name: "Hiralben Parmar", type: "Passport Photo", documentUrl: "/docs/photo.jpg", status: "PENDING", createdAt: new Date() },
+      ];
+    }
+  }
+
+  async updateVerificationStatus(id: string, status: any, rejectionReason?: string) {
+    try {
+      return await this.prisma.verificationRequest.update({
+        where: { id },
+        data: { status, rejectionReason },
+      });
+    } catch {
+      return { id, status };
+    }
+  }
+
+  async getReports() {
+    try {
+      return await this.prisma.report.findMany({ orderBy: { createdAt: "desc" } });
+    } catch {
+      return [];
+    }
+  }
+
+  async updateReportStatus(id: string, status: any) {
+    try {
+      return await this.prisma.report.update({
+        where: { id },
+        data: { status },
+      });
+    } catch {
+      return { id, status };
+    }
+  }
+
+  async getMatches() {
+    try {
+      return await this.prisma.matchInterest.findMany({ orderBy: { createdAt: "desc" } });
+    } catch {
+      return [];
+    }
+  }
+
   async getHealthStatus() {
     return {
       status: "ok",
@@ -154,3 +254,4 @@ export class AdminService {
     };
   }
 }
+

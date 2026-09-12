@@ -4,54 +4,67 @@ import 'package:go_router/go_router.dart';
 
 import '../../providers/auth_provider.dart';
 
+/// 2-Page Interactive Poster Screen with fully functional hotspots on both images,
+/// including the Blue Login Button and Green Registration Button.
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  final int initialPage;
+  const LoginScreen({super.key, this.initialPage = 0});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
+  late final PageController _pageController;
+  late int _currentPage;
+
   final _emailController = TextEditingController(text: 'panjabiparvindar77@gmail.com');
   final _passwordController = TextEditingController(text: 'Parvindar@123');
   bool _isLoading = false;
 
   @override
+  void initState() {
+    super.initState();
+    _currentPage = widget.initialPage;
+    _pageController = PageController(initialPage: widget.initialPage);
+  }
+
+  @override
   void dispose() {
+    _pageController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
-  Future<void> _performLogin([String? email, String? password]) async {
+  void _nextPage() {
+    if (_currentPage < 1) {
+      _pageController.animateToPage(
+        1,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeInOut,
+      );
+    } else {
+      context.go('/home');
+    }
+  }
+
+  Future<void> _performLogin() async {
     if (_isLoading) return;
     setState(() => _isLoading = true);
 
-    final useEmail = email ?? _emailController.text.trim();
-    final usePassword = password ?? _passwordController.text;
-
-    final success = await ref.read(authNotifierProvider.notifier).login(
-          useEmail,
-          usePassword,
+    await ref.read(authNotifierProvider.notifier).login(
+          _emailController.text.trim(),
+          _passwordController.text,
         );
 
     if (mounted) {
       setState(() => _isLoading = false);
-      if (success) {
-        context.go('/home');
-      } else {
-        final authState = ref.read(authNotifierProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authState.errorMessage ?? 'Login failed'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
+      _nextPage();
     }
   }
 
-  void _showCustomLoginDialog() {
+  void _showLoginDialog() {
     showDialog(
       context: context,
       builder: (dialogCtx) => AlertDialog(
@@ -61,7 +74,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
         ),
         title: const Text(
-          'Account Login (લોગિન)',
+          'વંકર સમાજ લોગિન (Sign In)',
           style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
         ),
         content: Column(
@@ -96,74 +109,188 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+            child: const Text('રદ કરો (Cancel)', style: TextStyle(color: Colors.white60)),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.pop(dialogCtx);
               _performLogin();
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1565C0),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Login'),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37)),
+            child: const Text('લોગિન કરો', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
-  void _showCategoryInfo(String title, String details, IconData icon, Color color) {
-    showModalBottomSheet(
+  void _showPosterImageDialog() {
+    showDialog(
       context: context,
-      backgroundColor: const Color(0xFF041126),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      useSafeArea: false,
+      builder: (dialogCtx) => Scaffold(
+        backgroundColor: const Color(0xFF020B18),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // Full poster image (1.jpeg / pavan_prernadata_full.jpg)
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  child: Image.asset(
+                    'assets/images/pavan_prernadata.jpg',
+                    fit: BoxFit.fitWidth,
+                    width: double.infinity,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/images/pavan_prernadata_full.jpg',
+                      fit: BoxFit.fitWidth,
+                      width: double.infinity,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/images/WhatsApp Image 2026-09-08 at 10.08.45 PM.jpeg',
+                        fit: BoxFit.fitWidth,
+                        width: double.infinity,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Top-Left Back Button to return to Page 2
+              Positioned(
+                top: 16,
+                left: 16,
+                child: SafeArea(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.pop(dialogCtx),
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF041126), Color(0xFF0A2246)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD4AF37).withValues(alpha: 0.25),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.arrow_back_rounded, color: Color(0xFFD4AF37), size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'પાછા જાઓ (Back)',
+                              style: TextStyle(
+                                color: Color(0xFFD4AF37),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-              child: Icon(icon, color: Colors.white, size: 32),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              details,
-              style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                if (title.contains('Matrimony')) {
-                  _performLogin();
-                } else if (title.contains('Services')) {
-                  context.push('/samaj-services');
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                minimumSize: const Size(double.infinity, 45),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+    );
+  }
+
+  void _showSuperStarsDialog() {
+    showDialog(
+      context: context,
+      useSafeArea: false,
+      builder: (dialogCtx) => Scaffold(
+        backgroundColor: const Color(0xFF020B18),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // Full poster image (super stars.jpeg)
+              Positioned.fill(
+                child: SingleChildScrollView(
+                  child: Image.asset(
+                    'assets/images/super_stars.jpeg',
+                    fit: BoxFit.fitWidth,
+                    width: double.infinity,
+                  ),
+                ),
               ),
-              child: Text(
-                title.contains('Matrimony') ? 'Explore Matrimony  >' : 'View Section  >',
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+
+              // Top-Left Back Button to return to Page 2
+              Positioned(
+                top: 16,
+                left: 16,
+                child: SafeArea(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => Navigator.pop(dialogCtx),
+                      borderRadius: BorderRadius.circular(30),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF041126), Color(0xFF0A2246)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD4AF37).withValues(alpha: 0.25),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.6),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.arrow_back_rounded, color: Color(0xFFD4AF37), size: 20),
+                            SizedBox(width: 8),
+                            Text(
+                              'પાછા જાઓ (Back)',
+                              style: TextStyle(
+                                color: Color(0xFFD4AF37),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -174,183 +301,276 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
-              margin: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFD4AF37), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                    blurRadius: 14,
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: AspectRatio(
-                  aspectRatio: 685 / 1000,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final w = constraints.maxWidth;
-                      final h = constraints.maxHeight;
+        child: Stack(
+          children: [
+            // PageView with Page 1 and Page 2
+            PageView(
+              controller: _pageController,
+              onPageChanged: (pageIndex) {
+                setState(() => _currentPage = pageIndex);
+              },
+              children: [
+                // =============================================================
+                // PAGE 1: Image 1 (1 (2).jpeg / login_poster_1.jpg)
+                // =============================================================
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final screenW = constraints.maxWidth;
+                    final screenH = constraints.maxHeight;
+                    final posterH = screenH > 0
+                        ? (screenH > screenW * (1000 / 685) ? screenH : screenW * (1000 / 685))
+                        : 600.0;
 
-                      return Stack(
-                        children: [
-                          // 1. Poster Image
-                          Positioned.fill(
-                            child: Image.asset(
-                              'assets/images/buddha_welcome_poster.jpg',
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Image.asset(
-                                'assets/images/buddha_pargana_poster.jpg',
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-
-                          // Loading indicator overlay if processing login
-                          if (_isLoading)
+                    return SingleChildScrollView(
+                      child: SizedBox(
+                        width: screenW,
+                        height: posterH,
+                        child: Stack(
+                          children: [
+                            // 1. Background Image 1
                             Positioned.fill(
-                              child: Container(
-                                color: Colors.black.withValues(alpha: 0.6),
-                                child: const Center(
-                                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                              child: Image.asset(
+                                'assets/images/login_poster_1.jpg',
+                                fit: BoxFit.fill,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: const Color(0xFF041026),
                                 ),
                               ),
                             ),
 
-                          // 2. Circle 1: Government Employees (Red)
-                          Positioned(
-                            left: w * 0.02,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => _showCategoryInfo(
-                                  'Government Employees',
-                                  'IAS | IPS | IFS | Officer | Teacher | Police | Army | Defence | Health | Other Govt Jobs',
-                                  Icons.account_balance,
-                                  const Color(0xFF7B1F2E),
-                                ),
+                            // 2. Base Tap-anywhere to advance to Page 2
+                            Positioned.fill(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onTap: _nextPage,
                               ),
                             ),
-                          ),
 
-                          // 3. Circle 2: Matrimony (Maroon) -> Performs Direct Login & Entry
-                          Positioned(
-                            left: w * 0.21,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
+                            // Hotspot 1: Government Employees (Red Circle)
+                            Positioned(
+                              left: screenW * 0.02,
+                              top: posterH * 0.40,
+                              width: screenW * 0.22,
+                              height: posterH * 0.18,
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => _performLogin(),
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => context.go('/search'),
                               ),
                             ),
-                          ),
 
-                          // 4. Circle 3: Private Job (Blue)
-                          Positioned(
-                            left: w * 0.40,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
+                            // Hotspot 2: Matrimony (Pink Circle) -> Advances to Page 2
+                            Positioned(
+                              left: screenW * 0.26,
+                              top: posterH * 0.40,
+                              width: screenW * 0.22,
+                              height: posterH * 0.18,
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => _showCategoryInfo(
-                                  'Private Job',
-                                  'Business | Professional | Self Employed | Career Opportunities',
-                                  Icons.business_center,
-                                  const Color(0xFF0D3B6E),
-                                ),
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: _nextPage,
                               ),
                             ),
-                          ),
 
-                          // 5. Circle 4: VANKAR SAMAJ Services (Green) -> Goes to /samaj-services
-                          Positioned(
-                            left: w * 0.60,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
+                            // Hotspot 3: Private Job (Blue Circle)
+                            Positioned(
+                              left: screenW * 0.50,
+                              top: posterH * 0.40,
+                              width: screenW * 0.22,
+                              height: posterH * 0.18,
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => context.go('/search'),
+                              ),
+                            ),
+
+                            // Hotspot 4: VANKAR SAMAJ Services (Green Circle)
+                            Positioned(
+                              left: screenW * 0.74,
+                              top: posterH * 0.40,
+                              width: screenW * 0.22,
+                              height: posterH * 0.18,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
                                 onTap: () => context.push('/samaj-services'),
                               ),
                             ),
-                          ),
 
-                          // 6. Circle 5: Students 12+ (Purple)
-                          Positioned(
-                            left: w * 0.79,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
+                            // Hotspot 5: Lion (Developed Gujarat)
+                            Positioned(
+                              left: screenW * 0.02,
+                              top: posterH * 0.64,
+                              width: screenW * 0.25,
+                              height: posterH * 0.13,
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => _showCategoryInfo(
-                                  'Students (12+)',
-                                  'Study Guidance | Career Support | Scholarship Info | Skill Development | Bright Future',
-                                  Icons.school,
-                                  const Color(0xFF3D1A6B),
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () => context.push('/pargana-overview'),
+                              ),
+                            ),
+
+                            // Hotspot 6: Train (Empowered Vankar Samaj)
+                            Positioned(
+                              left: screenW * 0.72,
+                              top: posterH * 0.64,
+                              width: screenW * 0.26,
+                              height: posterH * 0.13,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () => context.push('/verified-profile'),
+                              ),
+                            ),
+
+                            // Hotspot 7: Blue "Login" Button
+                            Positioned(
+                              left: screenW * 0.08,
+                              top: posterH * 0.78,
+                              width: screenW * 0.40,
+                              height: posterH * 0.08,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  splashColor: Colors.blue.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(30),
+                                  onTap: _showLoginDialog,
                                 ),
                               ),
                             ),
-                          ),
 
-                          // 7. Blue Button on Image: [👤 Login >]
-                          Positioned(
-                            left: w * 0.15,
-                            top: h * 0.82,
-                            width: w * 0.33,
-                            height: h * 0.08,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(25),
-                                onTap: () => _performLogin(),
-                                onLongPress: _showCustomLoginDialog,
+                            // Hotspot 8: Green "Registration" Button -> Advances to Page 2
+                            Positioned(
+                              left: screenW * 0.52,
+                              top: posterH * 0.78,
+                              width: screenW * 0.40,
+                              height: posterH * 0.08,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  splashColor: Colors.green.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(30),
+                                  onTap: _nextPage,
+                                ),
                               ),
                             ),
-                          ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
 
-                          // 8. Green Button on Image: [👤+ Registration >]
-                          Positioned(
-                            left: w * 0.52,
-                            top: h * 0.82,
-                            width: w * 0.33,
-                            height: h * 0.08,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(25),
-                                onTap: () => context.go('/register'),
+                // =============================================================
+                // PAGE 2: Image 2 (1 (1).jpeg / login_poster_2.jpg)
+                // =============================================================
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final screenW = constraints.maxWidth;
+                    final screenH = constraints.maxHeight;
+                    final posterH = screenH > 0
+                        ? (screenH > screenW * (1000 / 685) ? screenH : screenW * (1000 / 685))
+                        : 600.0;
+
+                    return SingleChildScrollView(
+                      child: SizedBox(
+                        width: screenW,
+                        height: posterH,
+                        child: Stack(
+                          children: [
+                            // 1. Background Image 2
+                            Positioned.fill(
+                              child: Image.asset(
+                                'assets/images/login_poster_2.jpg',
+                                fit: BoxFit.fill,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: const Color(0xFF041026),
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+
+                            // 2. Base Tap-anywhere to enter Home (/home)
+                            Positioned.fill(
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.translucent,
+                                onTap: () => context.go('/home'),
+                              ),
+                            ),
+
+                            // Hotspot 1: 1. પાવન પ્રેરણાદાતા
+                            Positioned(
+                              left: screenW * 0.10,
+                              top: posterH * 0.86,
+                              width: screenW * 0.38,
+                              height: posterH * 0.09,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: _showPosterImageDialog,
+                                ),
+                              ),
+                            ),
+
+                            // Hotspot 2: 2. Samaj Super Stars
+                            Positioned(
+                              left: screenW * 0.52,
+                              top: posterH * 0.86,
+                              width: screenW * 0.38,
+                              height: posterH * 0.09,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(20),
+                                  onTap: _showSuperStarsDialog,
+                                ),
+                              ),
+                            ),
+
+                            // Hotspot 3: Blue "Login" Button on Page 2
+                            Positioned(
+                              left: screenW * 0.08,
+                              top: posterH * 0.77,
+                              width: screenW * 0.40,
+                              height: posterH * 0.08,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  splashColor: Colors.blue.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(30),
+                                  onTap: _showLoginDialog,
+                                ),
+                              ),
+                            ),
+
+                            // Hotspot 4: Green "Registration" Button on Page 2
+                            Positioned(
+                              left: screenW * 0.52,
+                              top: posterH * 0.77,
+                              width: screenW * 0.40,
+                              height: posterH * 0.08,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  splashColor: Colors.green.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(30),
+                                  onTap: () => context.push('/register'),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+            // Loading Indicator Overlay
+            if (_isLoading)
+              Container(
+                color: Colors.black.withValues(alpha: 0.7),
+                child: const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
                 ),
               ),
-            ),
-          ),
+          ],
         ),
       ),
     );

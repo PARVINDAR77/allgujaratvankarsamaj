@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../../../shared/widgets/vankar_header.dart';
+import '../../../profile/providers/profile_provider.dart';
+import '../../../pargana/providers/pargana_provider.dart';
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
   const AdvancedSearchScreen({super.key});
@@ -12,7 +15,7 @@ class AdvancedSearchScreen extends ConsumerStatefulWidget {
 
 class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   // Form selections
-  String _lookingFor = 'Bride';
+  late String _lookingFor;
   String _maritalStatus = 'Never Married';
   String _age = '22 to 30 Years';
   String _height = 'Any';
@@ -28,14 +31,21 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   final TextEditingController _keywordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _lookingFor = ref.read(targetLookingForLabelProvider);
+  }
+
+  @override
   void dispose() {
     _keywordController.dispose();
     super.dispose();
   }
 
   void _resetFilters() {
+    final targetLabel = ref.read(targetLookingForLabelProvider);
     setState(() {
-      _lookingFor = 'Bride';
+      _lookingFor = targetLabel;
       _maritalStatus = 'Never Married';
       _age = '22 to 30 Years';
       _height = 'Any';
@@ -130,6 +140,42 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                               ],
                             ),
                           ),
+                          const SizedBox(height: 10),
+
+                          // Target Gender Notice Badge
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final targetGender = ref.watch(targetGenderProvider);
+                              final isTargetBoy = targetGender == 'MALE';
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: isTargetBoy ? Colors.blue.withValues(alpha: 0.15) : Colors.pink.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: isTargetBoy ? Colors.blueAccent : Colors.pinkAccent),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      isTargetBoy ? Icons.male : Icons.female,
+                                      color: isTargetBoy ? Colors.blueAccent : Colors.pinkAccent,
+                                      size: 18,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      isTargetBoy ? 'દર્શાવી રહ્યા છીએ: છોકરાઓ ની પ્રોફાઈલ (Showing Boys Only)' : 'દર્શાવી રહ્યા છીએ: છોકરીઓ ની પ્રોફાઈલ (Showing Girls Only)',
+                                      style: TextStyle(
+                                        color: isTargetBoy ? Colors.blueAccent : Colors.pinkAccent,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
                           const SizedBox(height: 14),
 
                           // Row 1: Looking For | Marital Status
@@ -172,12 +218,23 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
 
                           // Row 3: Pargana | Living In
                           _buildDualRow(
-                            left: _buildSearchDropdown(
-                              label: 'પરગણા (Pargana)',
-                              value: _pargana,
-                              icon: Icons.groups,
-                              items: const ['35 Pargana', '27 Pargana', '16 Pargana', '14 Pargana', 'Other', 'Any'],
-                              onChanged: (val) => setState(() => _pargana = val!),
+                            left: Consumer(
+                              builder: (context, ref, child) {
+                                final parganasAsync = ref.watch(parganasProvider);
+                                final items = parganasAsync.when(
+                                  data: (list) => ['Any', ...list.map((p) => p.name)],
+                                  loading: () => ['Any', '35 Gam Pargana (Idar)', '27 Gam Pargana (Mehsana & Patan)', '16 Gam Pargana (Charotar)', '14 Gam Pargana (South Gujarat)'],
+                                  error: (_, __) => ['Any', '35 Gam Pargana (Idar)', '27 Gam Pargana (Mehsana & Patan)', '16 Gam Pargana (Charotar)', '14 Gam Pargana (South Gujarat)'],
+                                );
+                                final selectedVal = items.contains(_pargana) ? _pargana : 'Any';
+                                return _buildSearchDropdown(
+                                  label: 'પરગણા (Pargana)',
+                                  value: selectedVal,
+                                  icon: Icons.groups,
+                                  items: items,
+                                  onChanged: (val) => setState(() => _pargana = val!),
+                                );
+                              },
                             ),
                             right: _buildSearchDropdown(
                               label: 'રહેઠાણ (Living In)',
@@ -327,15 +384,34 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                 flex: 6,
                                 child: InkWell(
                                   onTap: () {
+                                    final filterState = SearchFilterState(
+                                      lookingFor: _lookingFor,
+                                      maritalStatus: _maritalStatus,
+                                      age: _age,
+                                      height: _height,
+                                      pargana: _pargana,
+                                      livingIn: _livingIn,
+                                      education: _education,
+                                      diet: _diet,
+                                      occupation: _occupation,
+                                      religion: _religion,
+                                      yearlyIncome: _yearlyIncome,
+                                      motherTongue: _motherTongue,
+                                      familyType: _familyType,
+                                      keyword: _keywordController.text.trim(),
+                                    );
+                                    ref.read(searchFilterProvider.notifier).setFilter(filterState);
+
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         backgroundColor: AppColors.cardNavy,
                                         content: Text(
-                                          'Searching: Looking for $_lookingFor in $_pargana...',
+                                          'શોધી રહ્યા છીએ: $_lookingFor, $_maritalStatus, $_pargana...',
                                           style: const TextStyle(color: AppColors.goldLight),
                                         ),
                                       ),
                                     );
+                                    context.push('/verified-profile');
                                   },
                                   borderRadius: BorderRadius.circular(20),
                                   child: Container(

@@ -20,10 +20,12 @@ export default function AdminDashboardPage() {
 
   if (loading || !stats) {
     return (
-      <AdminLayout title="Dashboard" subtitle="Loading Vankar Samaj Matrimony metrics...">
-        <div className="flex justify-center items-center h-64 text-[#D4AF37]">
-          <div className="animate-spin text-3xl">⚙️</div>
-          <span className="ml-3 text-sm font-bold">Loading Admin Dashboard...</span>
+      <AdminLayout title="Admin Dashboard" subtitle="Loading All Gujarat Vankar Samaj metrics...">
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px", color: "#D4AF37" }}>
+          <div className="animate-spin" style={{ fontSize: "28px" }}>⚙️</div>
+          <span style={{ marginLeft: "12px", fontSize: "14px", fontWeight: 700 }}>
+            Loading Admin Dashboard...
+          </span>
         </div>
       </AdminLayout>
     );
@@ -32,7 +34,7 @@ export default function AdminDashboardPage() {
   // Calculate dynamic max value for growth chart
   const maxUserVal = Math.max(...stats.monthlyGrowth.map((g) => g.users), 100);
 
-  // Calculate dynamic max value for pargana bars for proper relative scaling
+  // Calculate dynamic max value for pargana bars
   const maxParganaCount = Math.max(...stats.parganaBreakdown.map((p) => p.count), 1);
 
   // Helper to format user display name
@@ -49,9 +51,9 @@ export default function AdminDashboardPage() {
   return (
     <AdminLayout
       title="Admin Dashboard"
-      subtitle="Welcome to Vankar Samaj Matrimony Admin Panel"
+      subtitle="Welcome to All Gujarat Vankar Samaj Admin Panel"
     >
-      <div className="space-y-8">
+      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
         {/* ─── 1. TOP STAT CARDS ────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <StatCard
@@ -91,36 +93,104 @@ export default function AdminDashboardPage() {
         {/* ─── 2. CHARTS SECTION (GROWTH & PARGANA DISTRIBUTION) ───────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* User Growth Chart (2 Cols) */}
-          <div className="lg:col-span-2 bg-[#0D1B32]/95 backdrop-blur-xl border border-[#997D20]/40 rounded-2xl p-7 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-            <div className="flex justify-between items-center mb-6">
+          <div
+            style={{
+              backgroundColor: "rgba(13, 27, 50, 0.85)",
+              backdropFilter: "blur(16px)",
+              border: "1px solid rgba(212, 175, 55, 0.25)",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+            }}
+            className="lg:col-span-2"
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <div>
-                <h3 className="text-base font-black text-white flex items-center gap-2 tracking-wide">
+                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
                   <span>📈</span> User Growth Overview
                 </h3>
-                <p className="text-xs text-[#AAB7C8] font-medium mt-0.5">Monthly candidate registration & profile trend</p>
+                <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 0 0" }}>
+                  Monthly candidate registration & profile trend
+                </p>
               </div>
-              <span className="text-xs text-[#D4AF37] font-extrabold bg-[#041026] px-3.5 py-1.5 rounded-full border border-[#997D20]/50 shadow-inner">
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "#D4AF37",
+                  fontWeight: 800,
+                  backgroundColor: "#041026",
+                  padding: "4px 12px",
+                  borderRadius: "20px",
+                  border: "1px solid rgba(212, 175, 55, 0.35)",
+                }}
+              >
                 Year 2026
               </span>
             </div>
 
-            {/* Scaled Dynamic Growth Chart with breathing room */}
-            <div className="h-64 w-full flex items-end justify-between gap-3 pt-9 pb-3 px-5 bg-[#041026]/90 rounded-xl border border-[#997D20]/30 shadow-inner">
+            {/* Scaled Dynamic Growth Chart */}
+            <div
+              style={{
+                height: "240px",
+                width: "100%",
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                gap: "10px",
+                padding: "20px 16px 12px 16px",
+                backgroundColor: "rgba(4, 16, 38, 0.7)",
+                borderRadius: "14px",
+                border: "1px solid rgba(212, 175, 55, 0.18)",
+              }}
+            >
               {stats.monthlyGrowth.map((g, i) => {
-                // Scale height between 15% and 85% so top numbers never touch container top or bar edges
-                const heightPercent = Math.min(85, Math.max(15, (g.users / maxUserVal) * 85));
+                // Scale height between 15% and 80% so bar numbers render cleanly above bars
+                const heightPercent = Math.min(80, Math.max(15, (g.users / maxUserVal) * 80));
                 return (
-                  <div key={i} className="flex-1 flex flex-col items-center gap-2 h-full justify-end group">
-                    <div className="text-[11px] font-black text-[#F3E5AB] group-hover:scale-110 transition-transform">
+                  <div
+                    key={i}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "6px",
+                      height: "100%",
+                      justifyContent: "flex-end",
+                    }}
+                    className="group"
+                  >
+                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#F3E5AB" }}>
                       {g.users}
                     </div>
-                    <div className="w-full bg-[#08152B] rounded-t-lg h-44 flex items-end p-1 relative border-t border-x border-[#997D20]/30">
+                    <div
+                      style={{
+                        width: "100%",
+                        backgroundColor: "#08152B",
+                        borderRadius: "8px 8px 0 0",
+                        height: "160px",
+                        display: "flex",
+                        alignItems: "flex-end",
+                        padding: "2px",
+                        position: "relative",
+                        borderTop: "1px solid rgba(212, 175, 55, 0.25)",
+                        borderLeft: "1px solid rgba(212, 175, 55, 0.15)",
+                        borderRight: "1px solid rgba(212, 175, 55, 0.15)",
+                      }}
+                    >
                       <div
-                        style={{ height: `${heightPercent}%` }}
-                        className="w-full bg-gradient-to-t from-[#997D20] via-[#D4AF37] to-[#F3E5AB] rounded-t-md transition-all duration-500 group-hover:brightness-125 shadow-[0_0_12px_rgba(212,175,55,0.4)]"
+                        style={{
+                          height: `${heightPercent}%`,
+                          width: "100%",
+                          background: "linear-gradient(180deg, #F3E5AB 0%, #D4AF37 50%, #8A6D1C 100%)",
+                          borderRadius: "6px 6px 0 0",
+                          transition: "all 0.5s ease",
+                          boxShadow: "0 0 12px rgba(212, 175, 55, 0.35)",
+                        }}
+                        className="group-hover:brightness-125"
                       />
                     </div>
-                    <span className="text-[11px] font-extrabold text-[#AAB7C8] group-hover:text-[#D4AF37] transition-colors">
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#8E9BAE" }} className="group-hover:text-[#D4AF37] transition-colors">
                       {g.month}
                     </span>
                   </div>
@@ -130,36 +200,64 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Profiles by Pargana (1 Col) */}
-          <div className="bg-[#0D1B32]/95 backdrop-blur-xl border border-[#997D20]/40 rounded-2xl p-7 shadow-[0_10px_30px_rgba(0,0,0,0.5)] flex flex-col justify-between">
+          <div
+            style={{
+              backgroundColor: "rgba(13, 27, 50, 0.85)",
+              backdropFilter: "blur(16px)",
+              border: "1px solid rgba(212, 175, 55, 0.25)",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+            }}
+          >
             <div>
-              <h3 className="text-base font-black text-white mb-1 flex items-center gap-2 tracking-wide">
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
                 <span>🏛️</span> Profiles by Pargana
               </h3>
-              <p className="text-xs text-[#AAB7C8] font-medium mb-6">Distribution across Samaj regions</p>
+              <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 18px 0" }}>
+                Distribution across Samaj regions
+              </p>
 
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {stats.parganaBreakdown.map((p, idx) => {
                   const colors = [
-                    "from-[#3B82F6] to-[#60A5FA]",
-                    "from-[#10B981] to-[#34D399]",
-                    "from-[#F59E0B] to-[#FBBF24]",
-                    "from-[#8B5CF6] to-[#A78BFA]",
-                    "from-[#EC4899] to-[#F472B6]",
+                    "linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)",
+                    "linear-gradient(90deg, #10B981 0%, #34D399 100%)",
+                    "linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)",
+                    "linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%)",
+                    "linear-gradient(90deg, #EC4899 0%, #F472B6 100%)",
                   ];
-                  const barColor = colors[idx % colors.length];
-                  // Relative bar fill width so highest pargana fills ~95% of container width
+                  const barGradient = colors[idx % colors.length];
                   const relativeFillPercent = Math.max(12, Math.round((p.count / maxParganaCount) * 95));
 
                   return (
-                    <div key={idx} className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span className="text-white font-bold">{p.name}</span>
-                        <span className="text-[#D4AF37] font-black">{p.count} candidates ({p.percentage}%)</span>
+                    <div key={idx} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+                        <span style={{ color: "#FFFFFF", fontWeight: 700 }}>{p.name}</span>
+                        <span style={{ color: "#D4AF37", fontWeight: 800 }}>{p.count} ({p.percentage}%)</span>
                       </div>
-                      <div className="w-full h-3 bg-[#041026] rounded-full overflow-hidden border border-[#997D20]/30 p-0.5">
+                      <div
+                        style={{
+                          width: "100%",
+                          height: "8px",
+                          backgroundColor: "#041026",
+                          borderRadius: "4px",
+                          overflow: "hidden",
+                          border: "1px solid rgba(212, 175, 55, 0.2)",
+                          padding: "1px",
+                        }}
+                      >
                         <div
-                          style={{ width: `${relativeFillPercent}%` }}
-                          className={`h-full bg-gradient-to-r ${barColor} rounded-full transition-all duration-500 shadow-sm`}
+                          style={{
+                            width: `${relativeFillPercent}%`,
+                            height: "100%",
+                            background: barGradient,
+                            borderRadius: "4px",
+                            transition: "all 0.5s ease",
+                          }}
                         />
                       </div>
                     </div>
@@ -168,10 +266,11 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[#997D20]/20 text-center">
+            <div style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid rgba(212, 175, 55, 0.15)", textAlign: "center" }}>
               <a
                 href="/admin/parganas"
-                className="text-xs text-[#D4AF37] font-black hover:underline inline-flex items-center gap-1"
+                style={{ fontSize: "12px", color: "#D4AF37", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                className="hover:underline"
               >
                 <span>View Detailed Pargana Directory</span>
                 <span>→</span>
@@ -182,7 +281,7 @@ export default function AdminDashboardPage() {
 
         {/* ─── 3. QUICK ACTIONS GRID ───────────────────────────────────── */}
         <div>
-          <h3 className="text-xs font-black text-[#D4AF37] uppercase tracking-widest mb-4 flex items-center gap-2">
+          <h3 style={{ fontSize: "11px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
             <span>⚡</span> Quick Management Actions
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -228,57 +327,97 @@ export default function AdminDashboardPage() {
         {/* ─── 4. RECENT USERS & ACTIVITIES SECTION ─────────────────────── */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Users Table (2 Cols) */}
-          <div className="lg:col-span-2 bg-[#0D1B32]/95 backdrop-blur-xl border border-[#997D20]/40 rounded-2xl p-7 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-            <div className="flex justify-between items-center mb-5">
+          <div
+            style={{
+              backgroundColor: "rgba(13, 27, 50, 0.85)",
+              backdropFilter: "blur(16px)",
+              border: "1px solid rgba(212, 175, 55, 0.25)",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+            }}
+            className="lg:col-span-2"
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
               <div>
-                <h3 className="text-base font-black text-white flex items-center gap-2 tracking-wide">
+                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
                   <span>👥</span> Recent Candidate Registrations
                 </h3>
-                <p className="text-xs text-[#AAB7C8] font-medium mt-0.5">Newly registered matrimonial candidates</p>
+                <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 0 0" }}>
+                  Newly registered matrimonial candidates
+                </p>
               </div>
               <a
                 href="/admin/users"
-                className="text-xs font-black text-[#D4AF37] hover:underline"
+                style={{ fontSize: "12px", fontWeight: 800, color: "#D4AF37", textDecoration: "none" }}
+                className="hover:underline"
               >
                 View All Candidates →
               </a>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-[#997D20]/30 shadow-inner">
-              <table className="w-full text-left text-xs text-white border-collapse">
-                <thead className="bg-[#041026] text-[#D4AF37] uppercase text-[10px] tracking-widest border-b border-[#997D20]/40">
-                  <tr>
-                    <th className="py-4 px-5 font-black min-w-[170px]">User Candidate</th>
-                    <th className="py-4 px-5 font-black min-w-[200px]">Contact Info</th>
-                    <th className="py-4 px-5 font-black min-w-[120px]">Pargana</th>
-                    <th className="py-4 px-5 font-black min-w-[110px]">Status</th>
-                    <th className="py-4 px-5 font-black text-right min-w-[110px]">Actions</th>
+            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(212, 175, 55, 0.2)" }}>
+              <table style={{ width: "100%", textAlign: "left", fontSize: "12px", color: "#FFFFFF", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "#041026", borderBottom: "1px solid rgba(212, 175, 55, 0.3)" }}>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>User Candidate</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Contact Info</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Pargana</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Status</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#997D20]/15 bg-[#0D1B32]">
+                <tbody style={{ backgroundColor: "#0D1B32" }}>
                   {stats.recentUsers.map((u) => {
                     const displayName = formatName(u.name, u.email);
                     return (
-                      <tr key={u.id} className="hover:bg-[#041026]/80 transition-colors">
-                        <td className="py-4 px-5 font-bold text-white">
-                          <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#E8C95A]/10 text-[#D4AF37] flex items-center justify-center font-black text-xs border border-[#D4AF37]/50 shadow-inner shrink-0">
+                      <tr key={u.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }} className="hover:bg-[#041026]/80 transition-colors">
+                        <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "50%",
+                                background: "linear-gradient(135deg, rgba(212,175,55,0.3) 0%, rgba(243,229,171,0.1) 100%)",
+                                color: "#D4AF37",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontWeight: 800,
+                                fontSize: "12px",
+                                border: "1px solid rgba(212, 175, 55, 0.4)",
+                                flexShrink: 0,
+                              }}
+                            >
                               {displayName.charAt(0).toUpperCase()}
                             </div>
-                            <span className="truncate max-w-[150px]">{displayName}</span>
+                            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "140px" }}>
+                              {displayName}
+                            </span>
                           </div>
                         </td>
-                        <td className="py-4 px-5 text-[#AAB7C8] font-mono text-[11px] truncate max-w-[180px]">
+                        <td style={{ padding: "14px 18px", color: "#8E9BAE", fontFamily: "monospace", fontSize: "11px" }}>
                           {u.email || u.phone || "N/A"}
                         </td>
-                        <td className="py-4 px-5 text-white font-semibold">{u.pargana}</td>
-                        <td className="py-4 px-5">
+                        <td style={{ padding: "14px 18px", color: "#FFFFFF", fontWeight: 600 }}>{u.pargana}</td>
+                        <td style={{ padding: "14px 18px" }}>
                           <StatusBadge status={u.status} />
                         </td>
-                        <td className="py-4 px-5 text-right">
+                        <td style={{ padding: "14px 18px", textAlign: "right" }}>
                           <a
                             href="/admin/users"
-                            className="text-[#D4AF37] hover:text-white font-extrabold text-[11px] px-3 py-1.5 rounded-lg bg-[#041026] border border-[#997D20]/40 hover:bg-[#D4AF37] hover:text-black transition-all"
+                            style={{
+                              color: "#D4AF37",
+                              fontWeight: 700,
+                              fontSize: "11px",
+                              padding: "6px 12px",
+                              borderRadius: "8px",
+                              backgroundColor: "#041026",
+                              border: "1px solid rgba(212, 175, 55, 0.35)",
+                              textDecoration: "none",
+                            }}
+                            className="hover:bg-[#D4AF37] hover:text-black transition-all"
                           >
                             Manage
                           </a>
@@ -292,26 +431,61 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Recent Activities (1 Col) */}
-          <div className="bg-[#0D1B32]/95 backdrop-blur-xl border border-[#997D20]/40 rounded-2xl p-7 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-            <div className="flex justify-between items-center mb-5">
-              <h3 className="text-base font-black text-white flex items-center gap-2 tracking-wide">
+          <div
+            style={{
+              backgroundColor: "rgba(13, 27, 50, 0.85)",
+              backdropFilter: "blur(16px)",
+              border: "1px solid rgba(212, 175, 55, 0.25)",
+              borderRadius: "16px",
+              padding: "24px",
+              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
                 <span>⚡</span> System Activity Log
               </h3>
-              <span className="text-xs text-[#D4AF37] font-black cursor-pointer hover:underline">
+              <span style={{ fontSize: "12px", color: "#D4AF37", fontWeight: 700, cursor: "pointer" }} className="hover:underline">
                 View Log
               </span>
             </div>
 
-            <div className="space-y-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               {stats.recentActivities.map((act) => (
-                <div key={act.id} className="flex gap-3 items-start pb-3.5 border-b border-[#997D20]/15 last:border-none">
-                  <div className="w-8 h-8 rounded-lg bg-[#041026] border border-[#997D20]/30 text-base flex items-center justify-center shrink-0 shadow-inner">
+                <div
+                  key={act.id}
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "flex-start",
+                    paddingBottom: "12px",
+                    borderBottom: "1px solid rgba(212, 175, 55, 0.12)",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "32px",
+                      height: "32px",
+                      borderRadius: "8px",
+                      backgroundColor: "#041026",
+                      border: "1px solid rgba(212, 175, 55, 0.3)",
+                      fontSize: "14px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
                     ✨
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xs font-bold text-white truncate">{act.title}</h4>
-                    <p className="text-[11px] text-[#AAB7C8] truncate">{act.user}</p>
-                    <span className="text-[10px] text-[#D4AF37] font-semibold">{act.time}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{ fontSize: "12px", fontWeight: 700, color: "#FFFFFF", margin: 0 }} className="truncate">
+                      {act.title}
+                    </h4>
+                    <p style={{ fontSize: "11px", color: "#8E9BAE", margin: "2px 0 2px 0" }} className="truncate">
+                      {act.user}
+                    </p>
+                    <span style={{ fontSize: "10px", color: "#D4AF37", fontWeight: 600 }}>{act.time}</span>
                   </div>
                 </div>
               ))}
@@ -320,49 +494,87 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* ─── 5. RECENT VERIFICATIONS QUEUE ──────────────────────────── */}
-        <div className="bg-[#0D1B32]/95 backdrop-blur-xl border border-[#997D20]/40 rounded-2xl p-7 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-          <div className="flex justify-between items-center mb-5">
+        <div
+          style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "16px",
+            padding: "24px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
             <div>
-              <h3 className="text-base font-black text-white flex items-center gap-2 tracking-wide">
+              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
                 <span>🛡️</span> Verification Review Queue
               </h3>
-              <p className="text-xs text-[#AAB7C8] font-medium mt-0.5">Pending member document & profile verification requests</p>
+              <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 0 0" }}>
+                Pending member document & profile verification requests
+              </p>
             </div>
             <a
               href="/admin/verifications"
-              className="text-xs font-black text-[#D4AF37] hover:underline"
+              style={{ fontSize: "12px", fontWeight: 800, color: "#D4AF37", textDecoration: "none" }}
+              className="hover:underline"
             >
               All Verifications →
             </a>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-[#997D20]/30 shadow-inner">
-            <table className="w-full text-left text-xs text-white border-collapse">
-              <thead className="bg-[#041026] text-[#D4AF37] uppercase text-[10px] tracking-widest border-b border-[#997D20]/40">
-                <tr>
-                  <th className="py-4 px-5 font-black min-w-[170px]">Member Name</th>
-                  <th className="py-4 px-5 font-black min-w-[200px]">Verification Type</th>
-                  <th className="py-4 px-5 font-black min-w-[130px]">Submission Date</th>
-                  <th className="py-4 px-5 font-black min-w-[110px]">Status</th>
-                  <th className="py-4 px-5 font-black text-right min-w-[160px]">Actions</th>
+          <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(212, 175, 55, 0.2)" }}>
+            <table style={{ width: "100%", textAlign: "left", fontSize: "12px", color: "#FFFFFF", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ backgroundColor: "#041026", borderBottom: "1px solid rgba(212, 175, 55, 0.3)" }}>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Member Name</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Verification Type</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Submission Date</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Status</th>
+                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#997D20]/15 bg-[#0D1B32]">
+              <tbody style={{ backgroundColor: "#0D1B32" }}>
                 {stats.recentVerifications.map((v) => (
-                  <tr key={v.id} className="hover:bg-[#041026]/80 transition-colors">
-                    <td className="py-4 px-5 font-bold text-white">{v.name}</td>
-                    <td className="py-4 px-5 text-[#AAB7C8] font-medium">{v.type}</td>
-                    <td className="py-4 px-5 text-gray-300 font-mono text-[11px]">{v.date}</td>
-                    <td className="py-4 px-5">
+                  <tr key={v.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }} className="hover:bg-[#041026]/80 transition-colors">
+                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>{v.name}</td>
+                    <td style={{ padding: "14px 18px", color: "#8E9BAE", fontWeight: 500 }}>{v.type}</td>
+                    <td style={{ padding: "14px 18px", color: "#CBD5E1", fontFamily: "monospace", fontSize: "11px" }}>{v.date}</td>
+                    <td style={{ padding: "14px 18px" }}>
                       <StatusBadge status={v.status} />
                     </td>
-                    <td className="py-4 px-5 text-right space-x-2">
-                      <button className="px-3.5 py-1.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-500/50 text-[10px] font-black hover:bg-emerald-800 transition-colors">
-                        Approve
-                      </button>
-                      <button className="px-3.5 py-1.5 rounded-lg bg-rose-950 text-rose-300 border border-rose-500/50 text-[10px] font-black hover:bg-rose-800 transition-colors">
-                        Reject
-                      </button>
+                    <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                        <button
+                          style={{
+                            padding: "6px 14px",
+                            borderRadius: "8px",
+                            backgroundColor: "rgba(6, 78, 59, 0.6)",
+                            color: "#6EE7B7",
+                            border: "1px solid rgba(16, 185, 129, 0.4)",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                          }}
+                          className="hover:bg-emerald-800 transition-colors"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          style={{
+                            padding: "6px 14px",
+                            borderRadius: "8px",
+                            backgroundColor: "rgba(136, 19, 55, 0.6)",
+                            color: "#FDA4AF",
+                            border: "1px solid rgba(244, 63, 94, 0.4)",
+                            fontSize: "11px",
+                            fontWeight: 800,
+                            cursor: "pointer",
+                          }}
+                          className="hover:bg-rose-800 transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

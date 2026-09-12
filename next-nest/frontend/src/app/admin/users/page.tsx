@@ -77,25 +77,60 @@ export default function AdminUsersPage() {
 
   return (
     <AdminLayout title="User Management" subtitle="Manage registered community members & access statuses">
-      <div className="space-y-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
         {/* Search & Filter Header */}
-        <div className="bg-[#0F2040] border border-[#997D20]/40 rounded-2xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-xl">
-          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-            <div className="relative w-full sm:w-72">
+        <div
+          style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "16px",
+            padding: "18px 24px",
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "16px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+            <div style={{ position: "relative", minWidth: "260px" }}>
               <input
                 type="text"
                 placeholder="Search candidate name, email, pargana..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-2.5 pl-10 text-xs text-white placeholder-[#AAB7C8]/60 focus:outline-none focus:border-[#D4AF37]"
+                style={{
+                  width: "100%",
+                  backgroundColor: "#041026",
+                  border: "1px solid rgba(212, 175, 55, 0.35)",
+                  borderRadius: "12px",
+                  padding: "10px 14px 10px 38px",
+                  fontSize: "12px",
+                  color: "#FFFFFF",
+                  outline: "none",
+                }}
               />
-              <span className="absolute left-3 top-3 text-xs text-[#AAB7C8]">🔍</span>
+              <span style={{ position: "absolute", left: "12px", top: "11px", fontSize: "13px", color: "#8E9BAE" }}>
+                🔍
+              </span>
             </div>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-[#041026] border border-[#997D20]/40 rounded-xl px-3 py-2.5 text-xs text-[#D4AF37] font-bold focus:outline-none"
+              style={{
+                backgroundColor: "#041026",
+                border: "1px solid rgba(212, 175, 55, 0.35)",
+                borderRadius: "12px",
+                padding: "10px 16px",
+                fontSize: "12px",
+                color: "#D4AF37",
+                fontWeight: 700,
+                outline: "none",
+                cursor: "pointer",
+              }}
             >
               <option value="ALL">All Statuses</option>
               <option value="ACTIVE">ACTIVE Only</option>
@@ -106,7 +141,23 @@ export default function AdminUsersPage() {
 
           <button
             onClick={() => setShowAddModal(true)}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#E8C95A] text-black font-extrabold text-xs tracking-wider uppercase shadow-md hover:brightness-110 transition-all flex items-center justify-center gap-2"
+            style={{
+              padding: "10px 22px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+              color: "#041026",
+              fontWeight: 800,
+              fontSize: "12px",
+              textTransform: "uppercase",
+              letterSpacing: "0.8px",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              boxShadow: "0 4px 14px rgba(212, 175, 55, 0.3)",
+            }}
+            className="hover:brightness-110 transition-all"
           >
             <span>➕</span>
             <span>Add New Member</span>
@@ -114,54 +165,90 @@ export default function AdminUsersPage() {
         </div>
 
         {/* Users Data Table */}
-        <div className="bg-[#0F2040] border border-[#997D20]/40 rounded-2xl p-6 shadow-xl">
+        <div
+          style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "16px",
+            padding: "24px",
+            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+          }}
+        >
           {loading ? (
-            <div className="py-12 text-center text-[#D4AF37] font-bold text-sm flex justify-center items-center gap-2">
+            <div style={{ padding: "48px 0", textAlign: "center", color: "#D4AF37", fontWeight: 700, fontSize: "14px", display: "flex", justifyContent: "center", alignItems: "center", gap: "10px" }}>
               <span className="animate-spin">⚙️</span>
               <span>Loading user records...</span>
             </div>
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-[#997D20]/30">
-              <table className="w-full text-left text-xs text-white border-collapse">
-                <thead className="bg-[#041026] text-[#D4AF37] uppercase text-[10px] tracking-wider border-b border-[#997D20]/40">
-                  <tr>
-                    <th className="py-3.5 px-4 font-extrabold min-w-[160px]">Member Name</th>
-                    <th className="py-3.5 px-4 font-extrabold min-w-[180px]">Email Address</th>
-                    <th className="py-3.5 px-4 font-extrabold min-w-[120px]">Phone Number</th>
-                    <th className="py-3.5 px-4 font-extrabold min-w-[110px]">Pargana</th>
-                    <th className="py-3.5 px-4 font-extrabold min-w-[90px]">Role</th>
-                    <th className="py-3.5 px-4 font-extrabold min-w-[100px]">Status</th>
-                    <th className="py-3.5 px-4 font-extrabold text-right min-w-[120px]">Actions</th>
+            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(212, 175, 55, 0.2)" }}>
+              <table style={{ width: "100%", textAlign: "left", fontSize: "12px", color: "#FFFFFF", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "#041026", borderBottom: "1px solid rgba(212, 175, 55, 0.3)" }}>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Member Name</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Email Address</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Phone Number</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Pargana</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Role</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Status</th>
+                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#997D20]/15 bg-[#0F2040]">
+                <tbody style={{ backgroundColor: "#0D1B32" }}>
                   {filteredUsers.map((u) => {
                     const displayName = formatName(u.name, u.email);
                     return (
-                      <tr key={u.id} className="hover:bg-[#041026]/70 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-white">
-                          <div className="flex items-center gap-2.5">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#D4AF37]/30 to-[#E8C95A]/10 text-[#D4AF37] flex items-center justify-center font-black text-xs border border-[#D4AF37]/50 shadow-inner">
+                      <tr key={u.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }} className="hover:bg-[#041026]/70 transition-colors">
+                        <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <div
+                              style={{
+                                width: "32px",
+                                height: "32px",
+                                borderRadius: "50%",
+                                background: "linear-gradient(135deg, rgba(212,175,55,0.3) 0%, rgba(243,229,171,0.1) 100%)",
+                                color: "#D4AF37",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                fontWeight: 800,
+                                fontSize: "12px",
+                                border: "1px solid rgba(212, 175, 55, 0.4)",
+                                flexShrink: 0,
+                              }}
+                            >
                               {displayName.charAt(0).toUpperCase()}
                             </div>
-                            <span className="truncate max-w-[150px]">{displayName}</span>
+                            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "160px" }}>
+                              {displayName}
+                            </span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-[#AAB7C8] font-mono text-[11px] truncate max-w-[180px]">{u.email}</td>
-                        <td className="py-3.5 px-4 text-gray-300 font-mono text-[11px]">{u.phone || "—"}</td>
-                        <td className="py-3.5 px-4 text-white font-semibold">{u.pargana}</td>
-                        <td className="py-3.5 px-4 font-extrabold text-[#D4AF37] text-[11px]">{u.role}</td>
-                        <td className="py-3.5 px-4">
+                        <td style={{ padding: "14px 18px", color: "#8E9BAE", fontFamily: "monospace", fontSize: "11px" }}>
+                          {u.email}
+                        </td>
+                        <td style={{ padding: "14px 18px", color: "#CBD5E1", fontFamily: "monospace", fontSize: "11px" }}>
+                          {u.phone || "—"}
+                        </td>
+                        <td style={{ padding: "14px 18px", color: "#FFFFFF", fontWeight: 600 }}>{u.pargana}</td>
+                        <td style={{ padding: "14px 18px", fontWeight: 800, color: "#D4AF37", fontSize: "11px" }}>{u.role}</td>
+                        <td style={{ padding: "14px 18px" }}>
                           <StatusBadge status={u.status} />
                         </td>
-                        <td className="py-3.5 px-4 text-right space-x-2">
+                        <td style={{ padding: "14px 18px", textAlign: "right" }}>
                           <button
                             onClick={() => toggleUserStatus(u.id)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold border transition-all ${
-                              u.status === "ACTIVE"
-                                ? "bg-rose-950/80 text-rose-300 border-rose-500/50 hover:bg-rose-800"
-                                : "bg-emerald-950/80 text-emerald-300 border-emerald-500/50 hover:bg-emerald-800"
-                            }`}
+                            style={{
+                              padding: "6px 14px",
+                              borderRadius: "8px",
+                              fontSize: "11px",
+                              fontWeight: 800,
+                              cursor: "pointer",
+                              backgroundColor: u.status === "ACTIVE" ? "rgba(136, 19, 55, 0.6)" : "rgba(6, 78, 59, 0.6)",
+                              color: u.status === "ACTIVE" ? "#FDA4AF" : "#6EE7B7",
+                              border: u.status === "ACTIVE" ? "1px solid rgba(244, 63, 94, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
+                            }}
+                            className="transition-all"
                           >
                             {u.status === "ACTIVE" ? "Suspend" : "Activate"}
                           </button>
@@ -178,63 +265,160 @@ export default function AdminUsersPage() {
 
       {/* Add New Member Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0F2040] border-2 border-[#D4AF37] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-[#997D20]/30 pb-3">
-              <h3 className="text-base font-extrabold text-[#D4AF37] flex items-center gap-2">
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.8)",
+            backdropFilter: "blur(8px)",
+            zIndex: 1000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "#0D1B32",
+              border: "2px solid #D4AF37",
+              borderRadius: "20px",
+              padding: "28px",
+              width: "100%",
+              maxWidth: "480px",
+              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.8)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderBottom: "1px solid rgba(212, 175, 55, 0.25)",
+                paddingBottom: "16px",
+                marginBottom: "20px",
+              }}
+            >
+              <h3
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 800,
+                  color: "#D4AF37",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  margin: 0,
+                }}
+              >
                 <span>➕</span> Add New Candidate Member
               </h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-white hover:text-[#D4AF37] font-bold text-lg"
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#FFFFFF",
+                  fontSize: "20px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+                className="hover:text-[#D4AF37]"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleAddUser} className="space-y-3.5 text-xs text-white">
+            <form onSubmit={handleAddUser} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
               <div>
-                <label className="block text-[#AAB7C8] mb-1 font-semibold">Candidate Full Name</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8E9BAE", marginBottom: "6px" }}>
+                  Candidate Full Name
+                </label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. Ramesh Vankar"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37]"
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.35)",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "13px",
+                    color: "#FFFFFF",
+                    outline: "none",
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-[#AAB7C8] mb-1 font-semibold">Email Address</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8E9BAE", marginBottom: "6px" }}>
+                  Email Address
+                </label>
                 <input
                   type="email"
                   required
                   placeholder="e.g. candidate@vankarsamaj.org"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37]"
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.35)",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "13px",
+                    color: "#FFFFFF",
+                    outline: "none",
+                  }}
                 />
               </div>
 
               <div>
-                <label className="block text-[#AAB7C8] mb-1 font-semibold">Phone Number</label>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8E9BAE", marginBottom: "6px" }}>
+                  Phone Number
+                </label>
                 <input
                   type="text"
                   placeholder="e.g. 9876543210"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl p-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-[#D4AF37]"
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.35)",
+                    borderRadius: "12px",
+                    padding: "12px 16px",
+                    fontSize: "13px",
+                    color: "#FFFFFF",
+                    outline: "none",
+                  }}
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
                 <div>
-                  <label className="block text-[#AAB7C8] mb-1 font-semibold">Pargana Region</label>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8E9BAE", marginBottom: "6px" }}>
+                    Pargana Region
+                  </label>
                   <select
                     value={pargana}
                     onChange={(e) => setPargana(e.target.value)}
-                    className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl p-2.5 text-[#D4AF37] font-bold focus:outline-none"
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#041026",
+                      border: "1px solid rgba(212, 175, 55, 0.35)",
+                      borderRadius: "12px",
+                      padding: "12px 14px",
+                      fontSize: "12px",
+                      color: "#D4AF37",
+                      fontWeight: 700,
+                      outline: "none",
+                    }}
                   >
                     <option value="35 Pargana">35 Pargana</option>
                     <option value="27 Pargana">27 Pargana</option>
@@ -245,11 +429,23 @@ export default function AdminUsersPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[#AAB7C8] mb-1 font-semibold">Role</label>
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#8E9BAE", marginBottom: "6px" }}>
+                    Role
+                  </label>
                   <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl p-2.5 text-[#D4AF37] font-bold focus:outline-none"
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#041026",
+                      border: "1px solid rgba(212, 175, 55, 0.35)",
+                      borderRadius: "12px",
+                      padding: "12px 14px",
+                      fontSize: "12px",
+                      color: "#D4AF37",
+                      fontWeight: 700,
+                      outline: "none",
+                    }}
                   >
                     <option value="USER">USER</option>
                     <option value="ADMIN">ADMIN</option>
@@ -257,17 +453,40 @@ export default function AdminUsersPage() {
                 </div>
               </div>
 
-              <div className="pt-3 flex gap-3">
+              <div style={{ display: "flex", gap: "12px", marginTop: "10px" }}>
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-[#041026] text-gray-300 font-bold border border-[#997D20]/30 hover:bg-[#08152B]"
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: "12px",
+                    backgroundColor: "#041026",
+                    color: "#CBD5E1",
+                    fontWeight: 700,
+                    fontSize: "13px",
+                    border: "1px solid rgba(212, 175, 55, 0.3)",
+                    cursor: "pointer",
+                  }}
+                  className="hover:bg-[#08152B]"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E8C95A] text-black font-extrabold shadow-md hover:brightness-110"
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: "12px",
+                    background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+                    color: "#041026",
+                    fontWeight: 800,
+                    fontSize: "13px",
+                    border: "none",
+                    cursor: "pointer",
+                    boxShadow: "0 4px 14px rgba(212, 175, 55, 0.3)",
+                  }}
+                  className="hover:brightness-110"
                 >
                   Save Candidate
                 </button>
@@ -279,4 +498,5 @@ export default function AdminUsersPage() {
     </AdminLayout>
   );
 }
+
 

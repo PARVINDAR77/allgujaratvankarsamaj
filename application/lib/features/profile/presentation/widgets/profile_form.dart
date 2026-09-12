@@ -1,5 +1,6 @@
-import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../data/profile_models.dart';
@@ -19,6 +20,8 @@ class ProfileFormResult {
   final String? education;
   final String? occupation;
   final String? about;
+  final Uint8List? imageBytes;
+  final String? photoUrl;
 
   const ProfileFormResult({
     required this.firstName,
@@ -34,6 +37,8 @@ class ProfileFormResult {
     this.education,
     this.occupation,
     this.about,
+    this.imageBytes,
+    this.photoUrl,
   });
 }
 
@@ -86,11 +91,20 @@ class _ProfileFormState extends State<ProfileForm> {
   final TextEditingController _guardianPhoneCtrl = TextEditingController();
   final TextEditingController _siblingsCtrl = TextEditingController();
   final TextEditingController _nativeMosalCtrl = TextEditingController();
+  final TextEditingController _incomeCtrl = TextEditingController();
+  final TextEditingController _mamasVillageCtrl = TextEditingController();
+  final TextEditingController _customCasteCtrl = TextEditingController();
   final TextEditingController _aboutCtrl = TextEditingController();
 
   DateTime? _dateOfBirth;
   String? _selectedGender;
   String? _selectedMaritalStatus;
+  String? _selectedCaste;
+  String? _selectedBloodGroup;
+  String _isVankar = 'Yes (હા)';
+  String _selectedEmploymentSector = 'Government (સરકારી નોકરી)';
+  String? _selectedGovtSubService;
+  String? _selectedPrivateCategory;
   bool _hasPhoto = false;
   Uint8List? _imageBytes;
   String? _imageName;
@@ -144,14 +158,31 @@ class _ProfileFormState extends State<ProfileForm> {
         : '';
     _religionCtrl.text = p?.religion ?? '';
     _casteCtrl.text = p?.caste ?? '';
+    if (p?.caste != null) {
+      const presetOptions = [
+        'Hindu-Vankar (હિન્દુ-વણકર)',
+        'Muslim-Vankar (મુસ્લિમ-વણકર)',
+        'Buddhist-Vankar (બૌદ્ધ-વણકર)',
+        'Christianity-Vankar (ખ્રિસ્તી-વણકર)',
+      ];
+      if (presetOptions.contains(p!.caste)) {
+        _selectedCaste = p.caste;
+      } else {
+        _selectedCaste = 'Other (અન્ય જ્ઞાતિ - Manually Add)';
+        _customCasteCtrl.text = p.caste!;
+      }
+    } else {
+      _selectedCaste = 'Hindu-Vankar (હિન્દુ-વણકર)';
+      _casteCtrl.text = 'Hindu-Vankar (હિન્દુ-વણકર)';
+    }
     _cityCtrl.text = p?.city ?? '';
     _stateCtrl.text = p?.state ?? '';
     _countryCtrl.text = p?.country ?? '';
     _educationCtrl.text = p?.education ?? '';
     _occupationCtrl.text = p?.occupation ?? '';
     _aboutCtrl.text = p?.about ?? '';
-    _selectedGender = p?.gender;
-    _selectedMaritalStatus = p?.maritalStatus;
+    _selectedGender = p?.gender ?? 'MALE';
+    _selectedMaritalStatus = p?.maritalStatus ?? 'NEVER_MARRIED';
   }
 
   @override
@@ -180,6 +211,9 @@ class _ProfileFormState extends State<ProfileForm> {
     _guardianPhoneCtrl.dispose();
     _siblingsCtrl.dispose();
     _nativeMosalCtrl.dispose();
+    _incomeCtrl.dispose();
+    _mamasVillageCtrl.dispose();
+    _customCasteCtrl.dispose();
     _aboutCtrl.dispose();
     super.dispose();
   }
@@ -248,23 +282,79 @@ class _ProfileFormState extends State<ProfileForm> {
             validator: (v) => v == null ? 'Marital status is required' : null,
           ),
           const SizedBox(height: 12),
-          _buildTextField(
-            id: 'profile_religion',
-            controller: _religionCtrl,
-            label: 'Religion (ધર્મ)',
-            icon: Icons.brightness_high_outlined,
-            maxLength: 100,
-            required: false,
+          _buildDropdown(
+            id: 'profile_blood_group',
+            label: 'Blood Group (બ્લડ ગ્રુપ)',
+            value: _selectedBloodGroup,
+            icon: Icons.bloodtype_outlined,
+            items: const ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)'],
+            onChanged: (v) => setState(() => _selectedBloodGroup = v),
+            validator: (v) => null,
+          ),
+          const SizedBox(height: 12),
+          _buildDropdown(
+            id: 'profile_is_vankar',
+            label: 'Are you Vankar? (તમે વણકર છો?) *',
+            value: _isVankar,
+            icon: Icons.verified_user_outlined,
+            items: const ['Yes (હા)', 'No (ના)'],
+            onChanged: (v) => setState(() => _isVankar = v ?? 'Yes (હા)'),
+            validator: (v) => v == null ? 'Selection required' : null,
           ),
           const SizedBox(height: 12),
           _buildTextField(
-            id: 'profile_caste',
-            controller: _casteCtrl,
-            label: 'Caste (જ્ઞાતિ)',
-            icon: Icons.groups_outlined,
+            id: 'profile_religion',
+            controller: _religionCtrl,
+            label: 'Religion (ધર્મ) *',
+            icon: Icons.brightness_high_outlined,
             maxLength: 100,
-            required: false,
+            required: true,
           ),
+          const SizedBox(height: 12),
+          _buildDropdown(
+            id: 'profile_caste_select',
+            label: 'Caste Category (જ્ઞાતિ પસંદ કરો) *',
+            value: _selectedCaste ?? 'Hindu-Vankar (હિન્દુ-વણકર)',
+            icon: Icons.groups_outlined,
+            items: const [
+              'Hindu-Vankar (હિન્દુ-વણકર)',
+              'Muslim-Vankar (મુસ્લિમ-વણકર)',
+              'Buddhist-Vankar (બૌદ્ધ-વણકર)',
+              'Christianity-Vankar (ખ્રિસ્તી-વણકર)',
+              'Other (અન્ય જ્ઞાતિ - Manually Add)',
+            ],
+            onChanged: (v) {
+              setState(() {
+                _selectedCaste = v;
+                if (v != 'Other (અન્ય જ્ઞાતિ - Manually Add)') {
+                  _casteCtrl.text = v ?? '';
+                } else {
+                  _casteCtrl.text = _customCasteCtrl.text.trim();
+                }
+              });
+            },
+            validator: (v) => v == null ? 'Caste selection is required' : null,
+          ),
+          if (_selectedCaste == 'Other (અન્ય જ્ઞાતિ - Manually Add)') ...[
+            const SizedBox(height: 12),
+            _buildTextField(
+              id: 'profile_custom_caste',
+              controller: _customCasteCtrl,
+              label: 'Manually Specify Caste (અન્ય જ્ઞાતિ અહિં લખો) *',
+              icon: Icons.edit_note_outlined,
+              maxLength: 100,
+              required: true,
+              onChanged: (val) {
+                _casteCtrl.text = val.trim();
+              },
+              validator: (v) {
+                if (_selectedCaste == 'Other (અન્ય જ્ઞાતિ - Manually Add)') {
+                  if (v == null || v.trim().isEmpty) return 'Please enter your caste';
+                }
+                return null;
+              },
+            ),
+          ],
           const SizedBox(height: 20),
 
           // ─── Contact Details Section ────────────────────────────────
@@ -273,28 +363,60 @@ class _ProfileFormState extends State<ProfileForm> {
           _buildTextField(
             id: 'profile_mobile',
             controller: _mobileCtrl,
-            label: 'Mobile Number (મોબાઈલ નંબર)',
+            label: 'Mobile Number (મોબાઈલ નંબર - 10 અંક) *',
             icon: Icons.phone_iphone_outlined,
-            maxLength: 15,
-            required: false,
+            maxLength: 10,
+            required: true,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Mobile number is required';
+              if (!RegExp(r'^\d{10}$').hasMatch(v.trim())) {
+                return 'Mobile number must be exactly 10 digits';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 12),
           _buildTextField(
             id: 'profile_email',
             controller: _emailCtrl,
-            label: 'Email Address (ઈમેઈલ સરનામું)',
+            label: 'Email Address (ઈમેઈલ સરનામું) *',
             icon: Icons.email_outlined,
             maxLength: 100,
-            required: false,
+            required: true,
+            keyboardType: TextInputType.emailAddress,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) return 'Email address is required';
+              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+              if (!emailRegex.hasMatch(v.trim())) {
+                return 'Enter a valid email address';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 12),
           _buildTextField(
             id: 'profile_whatsapp',
             controller: _whatsappCtrl,
-            label: 'WhatsApp / Alt Phone (વોટ્સએપ નંબર)',
+            label: 'WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)',
             icon: Icons.chat_bubble_outline_rounded,
-            maxLength: 15,
+            maxLength: 10,
             required: false,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            validator: (v) {
+              if (v != null && v.trim().isNotEmpty && !RegExp(r'^\d{10}$').hasMatch(v.trim())) {
+                return 'WhatsApp number must be 10 digits';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 20),
 
@@ -322,28 +444,28 @@ class _ProfileFormState extends State<ProfileForm> {
           _buildTextField(
             id: 'profile_city',
             controller: _cityCtrl,
-            label: 'City / Taluka (શહેર / તાલુકો)',
+            label: 'City / Taluka (શહેર / તાલુકો) *',
             icon: Icons.location_city_outlined,
             maxLength: 100,
-            required: false,
+            required: true,
           ),
           const SizedBox(height: 12),
           _buildTextField(
             id: 'profile_state',
             controller: _stateCtrl,
-            label: 'District & State (જિલ્લો અને રાજ્ય)',
+            label: 'District & State (જિલ્લો અને રાજ્ય) *',
             icon: Icons.map_outlined,
             maxLength: 100,
-            required: false,
+            required: true,
           ),
           const SizedBox(height: 12),
           _buildTextField(
             id: 'profile_country',
             controller: _countryCtrl,
-            label: 'Country (દેશ)',
+            label: 'Country (દેશ) *',
             icon: Icons.public_outlined,
             maxLength: 100,
-            required: false,
+            required: true,
           ),
           const SizedBox(height: 12),
           _buildTextField(
@@ -353,27 +475,135 @@ class _ProfileFormState extends State<ProfileForm> {
             icon: Icons.markunread_mailbox_outlined,
             maxLength: 10,
             required: false,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           ),
           const SizedBox(height: 20),
 
           // ─── Career & Education Section ─────────────────────────────
-          _sectionHeader(theme, 'Career & Education (શિક્ષણ અને વ્યવસાય)', Icons.school_outlined),
+          _sectionHeader(theme, 'Career & Employment Details (શિક્ષણ, વ્યવસાય અને નોકરીની વિગત)', Icons.work_history_outlined),
           const SizedBox(height: 12),
           _buildTextField(
             id: 'profile_education',
             controller: _educationCtrl,
-            label: 'Education (અભ્યાસ / ડિગ્રી)',
-            icon: Icons.menu_book_outlined,
+            label: 'Education / Degree (અભ્યાસ / ડિગ્રી) *',
+            icon: Icons.school_outlined,
             maxLength: 200,
-            required: false,
+            required: true,
           ),
           const SizedBox(height: 12),
+
+          // 1. Employment Sector Selector
+          DropdownButtonFormField<String>(
+            initialValue: _selectedEmploymentSector,
+            decoration: InputDecoration(
+              labelText: 'Employment Type / Work Sector (નોકરી / વ્યવસાયનો પ્રકાર) *',
+              prefixIcon: const Icon(Icons.work_outline_rounded, color: AppColors.secondary),
+              filled: true,
+              fillColor: const Color(0xFF020917),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+            ),
+            dropdownColor: const Color(0xFF061633),
+            style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+            items: const [
+              DropdownMenuItem(value: 'Government (સરકારી નોકરી)', child: Text('Government Sector (સરકારી નોકરી / સેકટર)')),
+              DropdownMenuItem(value: 'Private (ખાનગી નોકરી)', child: Text('Private Sector (ખાનગી કંપની / નોકરી)')),
+              DropdownMenuItem(value: 'Business (વેપાર / બિઝનેસ)', child: Text('Business / Self-Employed (ધંધો / વેપાર)')),
+              DropdownMenuItem(value: 'Professional (પ્રોફેસનલ સેવા)', child: Text('Professional (ડૉક્ટર, વકીલ, CA, વગેરે)')),
+              DropdownMenuItem(value: 'Other (અન્ય)', child: Text('Other Work (અન્ય)')),
+            ],
+            onChanged: (val) {
+              setState(() {
+                _selectedEmploymentSector = val ?? 'Government (સરકારી નોકરી)';
+                _selectedGovtSubService = null;
+              });
+            },
+          ),
+          const SizedBox(height: 12),
+
+          // 2. Conditional Sub-Service Selection for Govt Employees
+          if (_selectedEmploymentSector.contains('Government')) ...[
+            DropdownButtonFormField<String>(
+              initialValue: _selectedGovtSubService,
+              decoration: InputDecoration(
+                labelText: 'Government Department / Service (સરકારી વિભાગ / સેવા) *',
+                prefixIcon: const Icon(Icons.account_balance, color: AppColors.secondary),
+                filled: true,
+                fillColor: const Color(0xFF071936),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.secondary, width: 1.5)),
+              ),
+              dropdownColor: const Color(0xFF061633),
+              style: const TextStyle(color: AppColors.goldLight, fontSize: 13, fontWeight: FontWeight.bold),
+              items: const [
+                DropdownMenuItem(value: 'Police & Defense (પોલીસ અને સંરક્ષણ દળ)', child: Text('Police & Defense (પોલીસ, બોર્ડર ગાર્ડ, PSI, કોન્સ્ટેબલ)')),
+                DropdownMenuItem(value: 'Paramedical & Health (પેરામેડિકલ અને આરોગ્ય)', child: Text('Paramedical & Health (નર્સ, લેબ ટેકનિશિયન, ફાર્માસિસ્ટ)')),
+                DropdownMenuItem(value: 'Government Teacher & Education (શિક્ષક / પ્રોફેસર)', child: Text('Government Teacher / Professor (સરકારી શિક્ષક / અબ્યાસ)')),
+                DropdownMenuItem(value: 'Revenue & Panchayat (મહેસૂલ અને પંચાયત)', child: Text('Revenue & Panchayat (તલાટી, મામલતદાર, મહેસૂલી સેવા)')),
+                DropdownMenuItem(value: 'Railways & Transport (રેલ્વે અને વાહનવ્યવહાર)', child: Text('Railways & Transport (ભારતીય રેલ્વે, GSRTC, વાહનવ્યવહાર)')),
+                DropdownMenuItem(value: 'Electricity Board (GETCO / GUVNL / MGVCL)', child: Text('Electricity Board (GETCO, PGVCL, DGVCL, UGVCL)')),
+                DropdownMenuItem(value: 'Public Sector Bank (સરકારી બેંક સેક્ટર)', child: Text('Public Sector Bank (SBI, BOB, સરકારી બેંક)')),
+                DropdownMenuItem(value: 'Other Govt Service (અન્ય સરકારી સેવાઓ)', child: Text('Other Govt Service (અન્ય સરકારી ખાતું)')),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  _selectedGovtSubService = val;
+                  if (val != null) {
+                    _occupationCtrl.text = 'Government Job ($val)';
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // 3. Conditional Sub-Service Selection for Private / Business / Professional
+          if (_selectedEmploymentSector.contains('Private')) ...[
+            DropdownButtonFormField<String>(
+              initialValue: _selectedPrivateCategory,
+              decoration: InputDecoration(
+                labelText: 'Private Sector Profession (ખાનગી નોકરીનો પ્રકાર)',
+                prefixIcon: const Icon(Icons.corporate_fare, color: AppColors.secondary),
+                filled: true,
+                fillColor: const Color(0xFF020917),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: AppColors.cardBorder)),
+              ),
+              dropdownColor: const Color(0xFF061633),
+              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+              items: const [
+                DropdownMenuItem(value: 'IT & Software Development (આઈટી સોફ્ટવેર)', child: Text('IT & Software (ડેવલપર, એન્જિનિયર, ડેટા સાયન્ટિસ્ટ)')),
+                DropdownMenuItem(value: 'Private Banking & Finance (બેંક અને ફાયનાન્સ)', child: Text('Private Banking & Finance (એચડીએફસી, આઈસીઆઈસીઆઈ, લોન)')),
+                DropdownMenuItem(value: 'Textile & Manufacturing (કાપડ ઉદ્યોગ અને ઉત્પાદન)', child: Text('Textile & Manufacturing (ટેક્સટાઈલ, ફેક્ટરી મૂલ્ય)')),
+                DropdownMenuItem(value: 'Pharma & Biotech (દવા ઉદ્યોગ અને બાયોટેક)', child: Text('Pharma & Biotech (ફાર્મા કંપની, ક્યુસી, પ્રોડક્શન)')),
+                DropdownMenuItem(value: 'Civil & Real Estate (બાંધકામ અને રિયલ એસ્ટેટ)', child: Text('Civil & Real Estate (આર્કિટેક્ટ, બિલ્ડર, એન્જિનિયર)')),
+                DropdownMenuItem(value: 'Private Hospital & Health (ખાનગી હોસ્પિટલ સેવા)', child: Text('Private Hospital & Medical (ખાનગી નર્સ, ટેકનિશિયન)')),
+              ],
+              onChanged: (val) {
+                setState(() {
+                  _selectedPrivateCategory = val;
+                  if (val != null) {
+                    _occupationCtrl.text = 'Private Job ($val)';
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 12),
+          ],
+
           _buildTextField(
             id: 'profile_occupation',
             controller: _occupationCtrl,
-            label: 'Occupation / Job / Business (વ્યવસાય / નોકરી)',
+            label: 'Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *',
             icon: Icons.work_outline_rounded,
             maxLength: 200,
+            required: true,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            id: 'profile_income',
+            controller: _incomeCtrl,
+            label: 'Yearly Income (વાર્ષિક આવક - રૂ.)',
+            icon: Icons.payments_outlined,
+            maxLength: 100,
             required: false,
           ),
           const SizedBox(height: 20),
@@ -384,10 +614,10 @@ class _ProfileFormState extends State<ProfileForm> {
           _buildTextField(
             id: 'profile_father_name',
             controller: _fatherNameCtrl,
-            label: "Father's Name (પિતાનું નામ)",
+            label: "Father's Name (પિતાનું નામ) *",
             icon: Icons.person_pin_outlined,
             maxLength: 100,
-            required: false,
+            required: true,
           ),
           const SizedBox(height: 12),
           _buildTextField(
@@ -402,19 +632,30 @@ class _ProfileFormState extends State<ProfileForm> {
           _buildTextField(
             id: 'profile_father_phone',
             controller: _fatherPhoneCtrl,
-            label: "Father's Contact Number (પિતાનો ફોન નંબર)",
+            label: "Father's Contact Number (પિતાનો ફોન નંબર - 10 અંક)",
             icon: Icons.phone_outlined,
-            maxLength: 15,
+            maxLength: 10,
             required: false,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            validator: (v) {
+              if (v != null && v.trim().isNotEmpty && !RegExp(r'^\d{10}$').hasMatch(v.trim())) {
+                return 'Father contact number must be 10 digits';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 12),
           _buildTextField(
             id: 'profile_mother_name',
             controller: _motherNameCtrl,
-            label: "Mother's Name (માતાનું નામ)",
+            label: "Mother's Name (માતાનું નામ) *",
             icon: Icons.face_3_outlined,
             maxLength: 100,
-            required: false,
+            required: true,
           ),
           const SizedBox(height: 12),
           _buildTextField(
@@ -429,10 +670,21 @@ class _ProfileFormState extends State<ProfileForm> {
           _buildTextField(
             id: 'profile_guardian_phone',
             controller: _guardianPhoneCtrl,
-            label: "Guardian Contact Number (વાલીનો સંપર્ક નંબર)",
+            label: "Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)",
             icon: Icons.contact_phone_outlined,
-            maxLength: 15,
+            maxLength: 10,
             required: false,
+            keyboardType: TextInputType.phone,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            validator: (v) {
+              if (v != null && v.trim().isNotEmpty && !RegExp(r'^\d{10}$').hasMatch(v.trim())) {
+                return 'Guardian contact number must be 10 digits';
+              }
+              return null;
+            },
           ),
           const SizedBox(height: 12),
           _buildTextField(
@@ -445,9 +697,18 @@ class _ProfileFormState extends State<ProfileForm> {
           ),
           const SizedBox(height: 12),
           _buildTextField(
+            id: 'profile_mamas_village',
+            controller: _mamasVillageCtrl,
+            label: "Mama's Village / Mosal (મોસાળ / મોસાળનું ગામ)",
+            icon: Icons.holiday_village_outlined,
+            maxLength: 150,
+            required: false,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
             id: 'profile_native_mosal',
             controller: _nativeMosalCtrl,
-            label: 'Native Place & Mosal (મૂળ વતન / મોસાળ / પરગણું)',
+            label: 'Native Place (મૂળ વતન / પરગણું)',
             icon: Icons.home_work_outlined,
             maxLength: 150,
             required: false,
@@ -622,6 +883,10 @@ class _ProfileFormState extends State<ProfileForm> {
 
     final notes = <String>[];
 
+    if (_selectedBloodGroup != null && _selectedBloodGroup!.isNotEmpty) {
+      notes.add('--- Medical & Fitness ---\nBlood Group: $_selectedBloodGroup');
+    }
+
     if (_imageBytes != null || _hasPhoto) {
       notes.add('--- Profile Photo ---\nPhoto uploaded (${_imageName ?? "Selected image"})');
     }
@@ -650,6 +915,13 @@ class _ProfileFormState extends State<ProfileForm> {
       notes.add('--- Address Details ---\n${addressList.join('\n')}');
     }
 
+    // Vankar Samaj verification tag
+    notes.add('--- Vankar Community Status ---\nVankar Member: $_isVankar');
+
+    if (_incomeCtrl.text.trim().isNotEmpty) {
+      notes.add('--- Income ---\nYearly Income: ${_incomeCtrl.text.trim()}');
+    }
+
     // Format Family Details into structured notes
     final familyList = <String>[];
     if (_fatherNameCtrl.text.trim().isNotEmpty) {
@@ -667,8 +939,11 @@ class _ProfileFormState extends State<ProfileForm> {
     if (_siblingsCtrl.text.trim().isNotEmpty) {
       familyList.add('Siblings: ${_siblingsCtrl.text.trim()}');
     }
+    if (_mamasVillageCtrl.text.trim().isNotEmpty) {
+      familyList.add("Mama's Village / Mosal: ${_mamasVillageCtrl.text.trim()}");
+    }
     if (_nativeMosalCtrl.text.trim().isNotEmpty) {
-      familyList.add('Native/Mosal: ${_nativeMosalCtrl.text.trim()}');
+      familyList.add('Native Place: ${_nativeMosalCtrl.text.trim()}');
     }
     if (familyList.isNotEmpty) {
       notes.add('--- Family Details ---\n${familyList.join('\n')}');
@@ -698,6 +973,11 @@ class _ProfileFormState extends State<ProfileForm> {
       countryVal = countryVal.substring(0, 100);
     }
 
+    String resolvedCaste = _selectedCaste ?? 'Hindu-Vankar (હિન્દુ-વણકર)';
+    if (resolvedCaste == 'Other (અન્ય જ્ઞાતિ - Manually Add)') {
+      resolvedCaste = _customCasteCtrl.text.trim();
+    }
+
     final result = ProfileFormResult(
       firstName: _firstNameCtrl.text.trim(),
       lastName: _lastNameCtrl.text.trim(),
@@ -706,8 +986,7 @@ class _ProfileFormState extends State<ProfileForm> {
       maritalStatus: _selectedMaritalStatus!,
       religion:
           _religionCtrl.text.trim().isEmpty ? null : _religionCtrl.text.trim(),
-      caste:
-          _casteCtrl.text.trim().isEmpty ? null : _casteCtrl.text.trim(),
+      caste: resolvedCaste.isEmpty ? null : resolvedCaste,
       city: cityVal,
       state: stateVal,
       country: countryVal,
@@ -718,6 +997,10 @@ class _ProfileFormState extends State<ProfileForm> {
           ? null
           : _occupationCtrl.text.trim(),
       about: finalAbout,
+      imageBytes: _imageBytes,
+      photoUrl: _imageBytes != null
+          ? 'data:image/jpeg;base64,${base64Encode(_imageBytes!)}'
+          : null,
     );
 
     await widget.onSubmit(result);
@@ -803,6 +1086,9 @@ class _ProfileFormState extends State<ProfileForm> {
     int? maxLength,
     int maxLines = 1,
     bool required = true,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    void Function(String)? onChanged,
     String? Function(String?)? validator,
   }) {
     final cleanLabel = label.replaceAll('*', '').trim();
@@ -822,6 +1108,9 @@ class _ProfileFormState extends State<ProfileForm> {
           controller: controller,
           maxLength: maxLength,
           maxLines: maxLines,
+          keyboardType: keyboardType,
+          inputFormatters: inputFormatters,
+          onChanged: onChanged,
           style: const TextStyle(color: Colors.black87, fontSize: 14),
           decoration: _inputDecoration(
             id: id,

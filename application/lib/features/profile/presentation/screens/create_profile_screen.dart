@@ -53,10 +53,15 @@ class CreateProfileScreen extends ConsumerWidget {
       education: result.education,
       occupation: result.occupation,
       about: result.about,
+      photoUrl: result.photoUrl,
     );
 
     final success =
         await ref.read(profileNotifierProvider.notifier).createProfile(request);
+
+    if (success) {
+      ref.read(userGenderNotifierProvider.notifier).setUserGender(result.gender);
+    }
 
     if (success && context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -12,7 +12,7 @@ interface AdminHeaderProps {
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
   onToggleSidebar,
   title,
-  subtitle = "Welcome to Vankar Samaj Matrimony Admin Panel",
+  subtitle = "Welcome to All Gujarat Vankar Samaj Admin Panel",
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
@@ -20,43 +20,129 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <header className="bg-[#0A1628]/95 backdrop-blur-md border-b border-[#997D20]/40 sticky top-0 z-30 px-4 md:px-8 py-4 flex items-center justify-between gap-4">
+    <header
+      style={{
+        backgroundColor: "rgba(6, 16, 30, 0.95)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(212, 175, 55, 0.25)",
+        position: "sticky",
+        top: 0,
+        zIndex: 30,
+        padding: "16px 28px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: "16px",
+      }}
+    >
       {/* Left: Mobile Toggle & Page Info */}
-      <div className="flex items-center gap-4 min-w-0 flex-1">
+      <div style={{ display: "flex", alignItems: "center", gap: "16px", minWidth: 0, flex: 1 }}>
         <button
           onClick={onToggleSidebar}
-          className="md:hidden p-2.5 rounded-xl bg-[#0F2040] text-[#D4AF37] border border-[#997D20]/30 shrink-0 hover:bg-[#D4AF37] hover:text-black transition-all"
+          style={{
+            padding: "8px 12px",
+            borderRadius: "10px",
+            backgroundColor: "#0F2040",
+            color: "#D4AF37",
+            border: "1px solid rgba(212, 175, 55, 0.3)",
+            cursor: "pointer",
+            fontSize: "14px",
+            flexShrink: 0,
+          }}
+          className="md:hidden hover:bg-[#D4AF37] hover:text-black transition-all"
           aria-label="Toggle Navigation"
         >
           ☰
         </button>
 
-        <div className="min-w-0">
-          <h1 className="text-lg sm:text-xl font-black text-white tracking-wide truncate">
+        <div style={{ minWidth: 0, display: "flex", alignItems: "center", gap: "12px" }}>
+          {/* Header Logo Badge */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/logo.png"
+            alt="Vankar Samaj Medallion"
+            style={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "50%",
+              border: "1.5px solid #D4AF37",
+              boxShadow: "0 0 10px rgba(212, 175, 55, 0.4)",
+              objectFit: "cover",
+            }}
+          />
+          <div>
+            <h1
+            style={{
+              fontSize: "20px",
+              fontWeight: 800,
+              color: "#FFFFFF",
+              letterSpacing: "-0.3px",
+              margin: 0,
+              lineHeight: 1.2,
+            }}
+            className="truncate"
+          >
             {title}
           </h1>
-          <p className="text-xs text-[#AAB7C8] font-medium hidden sm:block truncate mt-0.5">{subtitle}</p>
+          <p
+            style={{
+              fontSize: "12px",
+              color: "#8E9BAE",
+              fontWeight: 500,
+              margin: "3px 0 0 0",
+              lineHeight: 1.2,
+            }}
+            className="hidden sm:block truncate"
+          >
+            {subtitle}
+          </p>
         </div>
       </div>
+    </div>
 
       {/* Right: Search Toggle, Notifications, Admin Profile */}
-      <div className="flex items-center gap-3 shrink-0">
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", flexShrink: 0 }}>
         {/* Search Drawer Toggle */}
-        <div className="relative">
+        <div style={{ position: "relative" }}>
           {showSearch ? (
-            <div className="flex items-center gap-2 bg-[#0F2040] border border-[#D4AF37] rounded-full px-3 py-1 shadow-lg">
-              <span className="text-xs text-[#D4AF37]">🔍</span>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                backgroundColor: "#0F2040",
+                border: "1px solid #D4AF37",
+                borderRadius: "20px",
+                padding: "6px 14px",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+              }}
+            >
+              <span style={{ fontSize: "13px", color: "#D4AF37" }}>🔍</span>
               <input
                 type="text"
                 autoFocus
                 placeholder="Search portal..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="bg-transparent text-xs text-white placeholder-[#AAB7C8]/60 focus:outline-none w-36 sm:w-48"
+                style={{
+                  backgroundColor: "transparent",
+                  border: "none",
+                  outline: "none",
+                  fontSize: "12px",
+                  color: "#FFFFFF",
+                  width: "160px",
+                }}
               />
               <button
                 onClick={() => setShowSearch(false)}
-                className="text-xs text-[#AAB7C8] hover:text-white font-bold ml-1"
+                style={{
+                  border: "none",
+                  background: "transparent",
+                  color: "#8E9BAE",
+                  cursor: "pointer",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                }}
               >
                 ✕
               </button>
@@ -64,46 +150,132 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           ) : (
             <button
               onClick={() => setShowSearch(true)}
-              className="p-2.5 rounded-full bg-[#0F2040] border border-[#997D20]/30 text-[#D4AF37] hover:bg-[#D4AF37] hover:text-black transition-all text-xs font-bold flex items-center gap-1.5"
+              style={{
+                padding: "8px 14px",
+                borderRadius: "20px",
+                backgroundColor: "#0F2040",
+                border: "1px solid rgba(212, 175, 55, 0.3)",
+                color: "#D4AF37",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: 600,
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              className="hover:border-[#D4AF37] transition-all"
               title="Search"
             >
               <span>🔍</span>
-              <span className="hidden xl:inline text-[11px] font-semibold text-[#AAB7C8]">Search</span>
+              <span style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500 }} className="hidden xl:inline">
+                Search
+              </span>
             </button>
           )}
         </div>
 
         {/* Notifications Bell */}
-        <div className="relative">
+        <div style={{ position: "relative" }}>
           <button
             onClick={() => {
               setShowNotifications(!showNotifications);
               setShowProfileMenu(false);
             }}
-            className="p-2.5 rounded-full bg-[#0F2040] border border-[#997D20]/30 text-white hover:text-[#D4AF37] transition-all relative"
+            style={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "50%",
+              backgroundColor: "#0F2040",
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+              color: "#FFFFFF",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "14px",
+              position: "relative",
+            }}
+            className="hover:border-[#D4AF37] transition-all"
             aria-label="Notifications"
           >
             🔔
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#E8C95A] text-black text-[9px] font-extrabold flex items-center justify-center shadow-md">
+            <span
+              style={{
+                position: "absolute",
+                top: "-2px",
+                right: "-2px",
+                width: "16px",
+                height: "16px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 100%)",
+                color: "#041026",
+                fontSize: "10px",
+                fontWeight: 800,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.5)",
+              }}
+            >
               3
             </span>
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-2 w-72 bg-[#0F2040] border border-[#997D20] rounded-2xl shadow-2xl p-4 z-50">
-              <div className="flex justify-between items-center pb-2 border-b border-[#997D20]/20 mb-2">
-                <span className="text-xs font-extrabold text-white">Notifications</span>
-                <span className="text-[10px] text-[#D4AF37] font-bold cursor-pointer hover:underline">Mark all read</span>
+            <div
+              style={{
+                position: "absolute",
+                right: 0,
+                marginTop: "8px",
+                width: "280px",
+                backgroundColor: "#0F2040",
+                border: "1px solid rgba(212, 175, 55, 0.4)",
+                borderRadius: "16px",
+                boxShadow: "0 12px 35px rgba(0, 0, 0, 0.6)",
+                padding: "16px",
+                zIndex: 50,
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  paddingBottom: "8px",
+                  borderBottom: "1px solid rgba(212, 175, 55, 0.2)",
+                  marginBottom: "10px",
+                }}
+              >
+                <span style={{ fontSize: "13px", fontWeight: 700, color: "#FFFFFF" }}>Notifications</span>
+                <span style={{ fontSize: "11px", color: "#D4AF37", fontWeight: 600, cursor: "pointer" }}>
+                  Mark all read
+                </span>
               </div>
-              <div className="space-y-2 text-xs text-[#AAB7C8]">
-                <div className="p-2.5 rounded-xl bg-[#041026] border border-[#997D20]/20">
-                  <p className="text-white font-bold">New Verification Request</p>
-                  <p className="text-[11px] text-[#AAB7C8]">Hemantkumar Vankar submitted ID proof</p>
-                  <span className="text-[10px] text-[#D4AF37]">10 mins ago</span>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "12px", color: "#8E9BAE" }}>
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "10px",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.2)",
+                  }}
+                >
+                  <p style={{ color: "#FFFFFF", fontWeight: 700, margin: 0 }}>New Verification Request</p>
+                  <p style={{ fontSize: "11px", color: "#8E9BAE", margin: "2px 0 4px 0" }}>
+                    Hemantkumar Vankar submitted ID proof
+                  </p>
+                  <span style={{ fontSize: "10px", color: "#D4AF37", fontWeight: 600 }}>10 mins ago</span>
                 </div>
-                <div className="p-2.5 rounded-xl bg-[#041026] border border-[#997D20]/20">
-                  <p className="text-white font-bold">5 New User Registrations</p>
-                  <span className="text-[10px] text-[#D4AF37]">1 hour ago</span>
+                <div
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: "10px",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.2)",
+                  }}
+                >
+                  <p style={{ color: "#FFFFFF", fontWeight: 700, margin: 0 }}>5 New User Registrations</p>
+                  <span style={{ fontSize: "10px", color: "#D4AF37", fontWeight: 600 }}>1 hour ago</span>
                 </div>
               </div>
             </div>
@@ -111,29 +283,85 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         </div>
 
         {/* Admin Profile Dropdown */}
-        <div className="relative">
+        <div style={{ position: "relative" }}>
           <button
             onClick={() => {
               setShowProfileMenu(!showProfileMenu);
               setShowNotifications(false);
             }}
-            className="flex items-center gap-2 bg-[#0F2040] border border-[#997D20]/40 rounded-full px-3 py-1.5 hover:border-[#D4AF37] transition-all shadow-md"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              backgroundColor: "#0F2040",
+              border: "1px solid rgba(212, 175, 55, 0.35)",
+              borderRadius: "24px",
+              padding: "5px 14px 5px 6px",
+              cursor: "pointer",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+            }}
+            className="hover:border-[#D4AF37] transition-all"
           >
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-[#D4AF37] via-[#F3E5AB] to-[#E8C95A] text-black font-extrabold text-xs flex items-center justify-center shadow-inner">
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "50%",
+                background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+                color: "#041026",
+                fontWeight: 800,
+                fontSize: "13px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "inset 0 1px 3px rgba(255,255,255,0.4)",
+              }}
+            >
               A
             </div>
-            <div className="hidden sm:block text-left pr-1">
-              <span className="block text-xs font-bold text-white leading-none">Admin Officer</span>
-              <span className="block text-[9px] text-[#D4AF37] font-bold mt-0.5">Super Admin</span>
+            <div style={{ textAlign: "left" }} className="hidden sm:block">
+              <span style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.1 }}>
+                Admin Officer
+              </span>
+              <span style={{ display: "block", fontSize: "10px", color: "#D4AF37", fontWeight: 700, marginTop: "2px" }}>
+                Super Admin
+              </span>
             </div>
           </button>
 
           {showProfileMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-[#0F2040] border border-[#997D20] rounded-2xl shadow-2xl p-2 z-50 space-y-1">
+            <div
+              style={{
+                position: "absolute",
+                right: 0,
+                marginTop: "8px",
+                width: "180px",
+                backgroundColor: "#0F2040",
+                border: "1px solid rgba(212, 175, 55, 0.4)",
+                borderRadius: "14px",
+                boxShadow: "0 12px 35px rgba(0, 0, 0, 0.6)",
+                padding: "6px",
+                zIndex: 50,
+                display: "flex",
+                flexDirection: "column",
+                gap: "4px",
+              }}
+            >
               <Link
                 href="/admin/settings"
                 onClick={() => setShowProfileMenu(false)}
-                className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-white hover:bg-[#041026] rounded-xl transition-all"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#FFFFFF",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                }}
+                className="hover:bg-[#041026] transition-all"
               >
                 <span>⚙️</span>
                 <span>Settings</span>
@@ -141,16 +369,38 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               <Link
                 href="/admin/health"
                 onClick={() => setShowProfileMenu(false)}
-                className="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-white hover:bg-[#041026] rounded-xl transition-all"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  color: "#FFFFFF",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                }}
+                className="hover:bg-[#041026] transition-all"
               >
                 <span>🩺</span>
                 <span>System Health</span>
               </Link>
-              <div className="border-t border-[#997D20]/20 my-1" />
+              <div style={{ borderTop: "1px solid rgba(212, 175, 55, 0.2)", margin: "4px 0" }} />
               <Link
                 href="/admin/login"
                 onClick={() => setShowProfileMenu(false)}
-                className="flex items-center gap-2 px-3 py-2 text-xs text-red-400 hover:bg-red-950/40 rounded-xl font-bold transition-all"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "8px 12px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#FB7185",
+                  borderRadius: "8px",
+                  textDecoration: "none",
+                }}
+                className="hover:bg-rose-950/40 transition-all"
               >
                 <span>🚪</span>
                 <span>Logout</span>
@@ -162,3 +412,4 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     </header>
   );
 };
+

@@ -4,7 +4,7 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { Gender, MaritalStatus, MatrimonialProfile } from "@prisma/client";
+import { Gender, MaritalStatus, MatrimonialProfile, ProfileStatus } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProfileDto } from "./dto/create-profile.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
@@ -98,6 +98,11 @@ export class ProfilesService {
   }
 
   async createProfile(userId: string, dto: CreateProfileDto) {
+    const gender = dto.gender || Gender.MALE;
+    const maritalStatus = dto.maritalStatus || MaritalStatus.NEVER_MARRIED;
+    const dob = dto.dateOfBirth ? new Date(dto.dateOfBirth) : new Date(1995, 0, 1);
+    const validDob = isNaN(dob.getTime()) ? new Date(1995, 0, 1) : dob;
+
     try {
       const existingProfile = await this.prisma.matrimonialProfile.findUnique({
         where: { userId },
@@ -110,11 +115,11 @@ export class ProfilesService {
       return await this.prisma.matrimonialProfile.create({
         data: {
           userId,
-          firstName: dto.firstName.trim(),
-          lastName: dto.lastName.trim(),
-          dateOfBirth: new Date(dto.dateOfBirth),
-          gender: dto.gender,
-          maritalStatus: dto.maritalStatus,
+          firstName: (dto.firstName || "User").trim(),
+          lastName: (dto.lastName || "User").trim(),
+          dateOfBirth: validDob,
+          gender: gender,
+          maritalStatus: maritalStatus,
           religion: dto.religion ? dto.religion.trim() : null,
           caste: dto.caste ? dto.caste.trim() : null,
           city: dto.city ? dto.city.trim() : null,
@@ -123,30 +128,42 @@ export class ProfilesService {
           education: dto.education ? dto.education.trim() : null,
           occupation: dto.occupation ? dto.occupation.trim() : null,
           about: dto.about ? dto.about.trim() : null,
+          photoUrl: dto.photoUrl ?? null,
         },
       });
     } catch (err: any) {
       if (err instanceof ConflictException) throw err;
-      this.logger.warn(`PostgreSQL offline, creating profile in-memory for user ${userId}`);
+      this.logger.warn(`PostgreSQL offline or error during DB profile create for user ${userId}: ${err?.message || err}`);
       if (this.memoryProfiles.has(userId)) {
         throw new ConflictException("Profile already exists");
       }
       const profile: MatrimonialProfile = {
         id: uuidv4(),
         userId,
-        firstName: dto.firstName.trim(),
-        lastName: dto.lastName.trim(),
-        dateOfBirth: new Date(dto.dateOfBirth),
-        gender: dto.gender,
-        maritalStatus: dto.maritalStatus,
+        firstName: (dto.firstName || "User").trim(),
+        lastName: (dto.lastName || "User").trim(),
+        dateOfBirth: validDob,
+        gender: gender,
+        maritalStatus: maritalStatus,
         religion: dto.religion ? dto.religion.trim() : null,
         caste: dto.caste ? dto.caste.trim() : null,
+        subcaste: null,
+        nativePlace: null,
         city: dto.city ? dto.city.trim() : null,
         state: dto.state ? dto.state.trim() : null,
         country: dto.country ? dto.country.trim() : null,
         education: dto.education ? dto.education.trim() : null,
         occupation: dto.occupation ? dto.occupation.trim() : null,
         about: dto.about ? dto.about.trim() : null,
+        photoUrl: dto.photoUrl ?? null,
+        stateId: null,
+        districtId: null,
+        talukaId: null,
+        parganaId: null,
+        villageId: null,
+        status: ProfileStatus.APPROVED,
+        isVerified: false,
+        isFeatured: false,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -200,6 +217,7 @@ export class ProfilesService {
       if (dto.education !== undefined) updateData.education = dto.education ? dto.education.trim() : null;
       if (dto.occupation !== undefined) updateData.occupation = dto.occupation ? dto.occupation.trim() : null;
       if (dto.about !== undefined) updateData.about = dto.about ? dto.about.trim() : null;
+      if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
 
       return await this.prisma.matrimonialProfile.update({
         where: { userId },
@@ -226,6 +244,7 @@ export class ProfilesService {
         education: dto.education !== undefined ? (dto.education ? dto.education.trim() : null) : existing.education,
         occupation: dto.occupation !== undefined ? (dto.occupation ? dto.occupation.trim() : null) : existing.occupation,
         about: dto.about !== undefined ? (dto.about ? dto.about.trim() : null) : existing.about,
+        photoUrl: dto.photoUrl !== undefined ? dto.photoUrl : existing.photoUrl,
         updatedAt: new Date(),
       };
       this.memoryProfiles.set(userId, updated);
@@ -259,73 +278,45 @@ export class ProfilesService {
     occupation?: string;
     keyword?: string;
   }) {
-    const demoCandidates = [
-      {
-        id: "VNK-101",
-        firstName: "Pooja",
-        lastName: "Vankar",
-        gender: "FEMALE",
+    const maleFirstNames = ['Ramesh', 'Suresh', 'Jignesh', 'Mahesh', 'Bhavesh', 'Pankaj', 'Jayesh', 'Kiran', 'Nitin', 'Vijay', 'Pravin', 'Dinesh', 'Ketan', 'Alpesh', 'Rajesh', 'Hitesh', 'Kamlesh', 'Chetan', 'Dipak', 'Vishal', 'Amit', 'Hardik', 'Sanjay', 'Girish', 'Ashok'];
+    const femaleFirstNames = ['Pooja', 'Hiral', 'Neeta', 'Kavita', 'Riddhi', 'Bhavana', 'Daxaben', 'Kinjal', 'Nisha', 'Sejal', 'Jalpa', 'Meghaben', 'Komal', 'Purvi', 'Swati', 'Priti', 'Payal', 'Sheetal', 'Sonam', 'Dipali', 'Arti', 'Geetaben', 'Rekhaben', 'Sonal', 'Varsha'];
+    const lastNames = ['Vankar', 'Parmar', 'Solanki', 'Chauhan', 'Rathod', 'Makwana', 'Jadav', 'Vaghela', 'Gohel', 'Kapadiya', 'Chavda', 'Dabhi', 'Rohit', 'Mahyavanshi', 'Chitroda'];
+    const cities = ['Ahmedabad', 'Vadodara', 'Surat', 'Rajkot', 'Gandhinagar', 'Himatnagar', 'Idar', 'Anand', 'Nadiad', 'Mehsana'];
+    const educations = ['B.Tech Computer Engineering', 'BE Mechanical', 'M.Sc IT', 'MBA Finance', 'MBBS Doctor', 'B.Ed Teacher', 'B.Com Accounting', 'M.Com', 'BCA / MCA', 'Diploma Electrical'];
+    const occupations = ['Software Engineer', 'GPSC Class-2 Officer', 'High School Teacher', 'Bank Manager', 'Government Servant', 'Assistant Engineer', 'Private Sector Employee', 'Business Owner', 'Pharmacist', 'Police Sub-Inspector'];
+    const parganas = ['35 Pargana', '27 Pargana', '16 Pargana', '14 Pargana', 'Kantha Pargana', 'Charotar Pargana', 'Sabarkantha Pargana', 'North Gujarat Pargana'];
+
+    const demoCandidates = Array.from({ length: 100 }, (_, i) => {
+      const isMale = i % 2 !== 0;
+      const gender = isMale ? "MALE" : "FEMALE";
+      const firstName = isMale
+        ? maleFirstNames[i % maleFirstNames.length]
+        : femaleFirstNames[i % femaleFirstNames.length];
+      const lastName = lastNames[i % lastNames.length];
+      const city = cities[i % cities.length];
+      const education = educations[i % educations.length];
+      const occupation = occupations[i % occupations.length];
+      const pargana = parganas[i % parganas.length];
+      const age = 22 + (i % 16);
+      const feet = 5 + Math.floor((i % 10) / 4);
+      const inches = (i % 10);
+      const height = `${feet}'${inches}"`;
+
+      return {
+        id: `VNK-${100 + i + 1}`,
+        firstName,
+        lastName,
+        gender,
         maritalStatus: "NEVER_MARRIED",
-        city: "Ahmedabad",
-        education: "B.Tech Computer Engineering",
-        occupation: "Software Engineer",
-        pargana: "Kantha Pargana",
-        age: 25,
-        height: "5'4\"",
-      },
-      {
-        id: "VNK-102",
-        firstName: "Rahul",
-        lastName: "Vankar",
-        gender: "MALE",
-        maritalStatus: "NEVER_MARRIED",
-        city: "Vadodara",
-        education: "MBA Finance",
-        occupation: "Assistant Manager",
-        pargana: "Charotar Pargana",
-        age: 28,
-        height: "5'9\"",
-      },
-      {
-        id: "VNK-103",
-        firstName: "Jignesh",
-        lastName: "Vankar",
-        gender: "MALE",
-        maritalStatus: "NEVER_MARRIED",
-        city: "Gandhinagar",
-        education: "BE Mechanical",
-        occupation: "GPSC Class-2 Officer",
-        pargana: "North Gujarat Pargana",
-        age: 29,
-        height: "5'11\"",
-      },
-      {
-        id: "VNK-104",
-        firstName: "Hiralben",
-        lastName: "Kapadiya",
-        gender: "FEMALE",
-        maritalStatus: "NEVER_MARRIED",
-        city: "Idar",
-        education: "B.Ed Teacher",
-        occupation: "Teacher",
-        pargana: "Sabarkantha Pargana",
-        age: 24,
-        height: "5'3\"",
-      },
-      {
-        id: "VNK-105",
-        firstName: "Hemantkumar",
-        lastName: "Kapadiya",
-        gender: "MALE",
-        maritalStatus: "NEVER_MARRIED",
-        city: "Himatnagar",
-        education: "B.E. Engineer",
-        occupation: "Engineer",
-        pargana: "Sabarkantha Pargana",
-        age: 27,
-        height: "5'7\"",
-      },
-    ];
+        city,
+        education,
+        occupation,
+        pargana,
+        age,
+        height,
+        photoUrl: `https://picsum.photos/seed/${i + 100}/400/400`,
+      };
+    });
 
     try {
       const whereClause: any = {};

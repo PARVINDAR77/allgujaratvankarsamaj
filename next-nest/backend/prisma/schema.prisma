@@ -1,9 +1,8 @@
 // Prisma Schema for All Gujarat Vankar Samaj Matrimony
-// Step 2: Foundation schema with PostgreSQL provider and minimal technical health entity
 
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
 datasource db {
@@ -11,9 +10,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Minimal technical foundation model required by Prisma to validate schema,
-// generate Prisma Client artifacts, and verify database migration connectivity.
-// No domain or matrimonial entities are declared at this step.
 model SystemHealth {
   id        String   @id @default(uuid())
   status    String   @default("ok")
@@ -61,6 +57,31 @@ enum MaritalStatus {
   SEPARATED
 }
 
+enum ProfileStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum InterestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED
+  DISMISSED
+}
+
 model MatrimonialProfile {
   id            String        @id @default(uuid())
   userId        String        @unique @map("user_id")
@@ -72,16 +93,225 @@ model MatrimonialProfile {
   maritalStatus MaritalStatus @map("marital_status")
   religion      String?
   caste         String?
+  subcaste      String?
+  nativePlace   String?       @map("native_place")
   city          String?
   state         String?
   country       String?
   education     String?
   occupation    String?
   about         String?
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
+  photoUrl      String?       @map("photo_url")
+
+  stateId    String?   @map("state_id")
+  districtId String?   @map("district_id")
+  talukaId   String?   @map("taluka_id")
+  parganaId  String?   @map("pargana_id")
+  villageId  String?   @map("village_id")
+  stateRef   State?    @relation(fields: [stateId], references: [id], onDelete: SetNull)
+  district   District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  taluka     Taluka?   @relation(fields: [talukaId], references: [id], onDelete: SetNull)
+  pargana    Pargana?  @relation(fields: [parganaId], references: [id], onDelete: SetNull)
+  village    Village?  @relation(fields: [villageId], references: [id], onDelete: SetNull)
+
+  status     ProfileStatus @default(APPROVED)
+  isVerified Boolean       @default(false) @map("is_verified")
+  isFeatured Boolean       @default(false) @map("is_featured")
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
 
   @@map("matrimonial_profiles")
 }
 
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@map("site_settings")
+}
+
+model State {
+  id           String               @id @default(uuid())
+  name         String
+  gujaratiName String?              @map("gujarati_name")
+  code         String               @unique
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  districts    District[]
+  profiles     MatrimonialProfile[]
+
+  @@map("states")
+}
+
+model District {
+  id           String               @id @default(uuid())
+  stateId      String               @map("state_id")
+  state        State                @relation(fields: [stateId], references: [id], onDelete: Restrict)
+  name         String
+  gujaratiName String?              @map("gujarati_name")
+  code         String?
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  talukas      Taluka[]
+  profiles     MatrimonialProfile[]
+
+  @@index([stateId])
+  @@map("districts")
+}
+
+model Taluka {
+  id           String               @id @default(uuid())
+  districtId   String               @map("district_id")
+  district     District             @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  name         String
+  gujaratiName String?              @map("gujarati_name")
+  code         String?
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  parganas     ParganaTaluka[]
+  villages     Village[]
+  profiles     MatrimonialProfile[]
+
+  @@index([districtId])
+  @@map("talukas")
+}
+
+model Pargana {
+  id             String               @id @default(uuid())
+  name           String
+  gujaratiName   String?              @map("gujarati_name")
+  code           String?              @unique
+  description    String?
+  villageCount   String?              @map("village_count")
+  districtRegion String?              @map("district_region")
+  leaderName     String?              @map("leader_name")
+  contactPhone   String?              @map("contact_phone")
+  manualCount    Int?                 @map("manual_count")
+  totalCount     Int                  @default(0) @map("total_count")
+  isActive       Boolean              @default(true) @map("is_active")
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+  talukas        ParganaTaluka[]
+  villages       Village[]
+  profiles       MatrimonialProfile[]
+
+  @@map("parganas")
+}
+
+model ParganaTaluka {
+  parganaId String  @map("pargana_id")
+  talukaId  String  @map("taluka_id")
+  pargana   Pargana @relation(fields: [parganaId], references: [id], onDelete: Cascade)
+  taluka    Taluka  @relation(fields: [talukaId], references: [id], onDelete: Cascade)
+
+  @@id([parganaId, talukaId])
+  @@map("pargana_talukas")
+}
+
+model Village {
+  id           String               @id @default(uuid())
+  parganaId    String?              @map("pargana_id")
+  pargana      Pargana?             @relation(fields: [parganaId], references: [id], onDelete: SetNull)
+  talukaId     String?              @map("taluka_id")
+  taluka       Taluka?              @relation(fields: [talukaId], references: [id], onDelete: SetNull)
+  name         String
+  gujaratiName String?              @map("gujarati_name")
+  code         String?
+  pincode      String?
+  isActive     Boolean              @default(true) @map("is_active")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+  profiles     MatrimonialProfile[]
+
+  @@index([parganaId])
+  @@index([talukaId])
+  @@map("villages")
+}
+
+model VerificationRequest {
+  id              String             @id @default(uuid())
+  profileId       String             @map("profile_id")
+  documentType    String             @map("document_type")
+  documentUrl     String             @map("document_url")
+  status          VerificationStatus @default(PENDING)
+  rejectionReason String?            @map("rejection_reason")
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  @@map("verification_requests")
+}
+
+model MatchInterest {
+  id                String         @id @default(uuid())
+  senderProfileId   String         @map("sender_profile_id")
+  receiverProfileId String         @map("receiver_profile_id")
+  status            InterestStatus @default(PENDING)
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  @@map("match_interests")
+}
+
+model Report {
+  id              String       @id @default(uuid())
+  reporterUserId  String       @map("reporter_user_id")
+  targetProfileId String       @map("target_profile_id")
+  reason          String
+  details         String?
+  status          ReportStatus @default(OPEN)
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  @@map("reports")
+}
+
+model SuccessStory {
+  id          String   @id @default(uuid())
+  brideName   String   @map("bride_name")
+  groomName   String   @map("groom_name")
+  weddingDate String?  @map("wedding_date")
+  story       String
+  imageUrl    String?  @map("image_url")
+  isPublished Boolean  @default(true) @map("is_published")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("success_stories")
+}
+
+model SamajService {
+  id            String               @id @default(uuid())
+  title         String
+  category      String               @default("General")
+  icon          String               @default("🤝")
+  contactPhone  String?              @map("contact_phone")
+  contactPerson String?              @map("contact_person")
+  description   String?
+  isActive      Boolean              @default(true) @map("is_active")
+  createdAt     DateTime             @default(now()) @map("created_at")
+  updatedAt     DateTime             @updatedAt @map("updated_at")
+  persons       SamajServicePerson[]
+
+  @@map("samaj_services")
+}
+
+model SamajServicePerson {
+  id           String       @id @default(uuid())
+  serviceId    String       @map("service_id")
+  service      SamajService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name         String
+  gujaratiName String?      @map("gujarati_name")
+  photoUrl     String?      @map("photo_url")
+  phone        String
+  address      String?
+  city         String?
+  description  String?
+  experience   String?
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  @@index([serviceId])
+  @@map("samaj_service_persons")
+}

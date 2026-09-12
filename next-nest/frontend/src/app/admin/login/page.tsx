@@ -7,6 +7,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("admin@vankarsamaj.org");
   const [password, setPassword] = useState("password123");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -16,7 +17,6 @@ export default function AdminLoginPage() {
     setError("");
 
     try {
-      // Direct authentication check or fallback
       if (email.trim() && password.trim()) {
         if (typeof window !== "undefined") {
           localStorage.setItem("adminToken", "demo-admin-jwt-token");
@@ -27,91 +27,320 @@ export default function AdminLoginPage() {
         }
         router.push("/admin/dashboard");
       } else {
-        setError("Please enter valid admin credentials");
+        setError("Please enter valid administrator credentials.");
       }
     } catch {
-      setError("Failed to sign in. Please check your network connection.");
+      setError("Unable to connect to authentication services.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#0A1628] text-white flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#0F2040] border border-[#997D20]/50 rounded-3xl p-8 shadow-[0_0_50px_rgba(212,175,55,0.15)] relative overflow-hidden">
-        {/* Top Metallic Gold Accent Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#D4AF37] via-[#E8C95A] to-[#D4AF37]" />
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100%",
+        backgroundColor: "#061224",
+        color: "#ffffff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px",
+        fontFamily: "'Inter', system-ui, sans-serif",
+        position: "relative",
+        boxSizing: "border-box",
+      }}
+    >
+      {/* Background Radial Glow */}
+      <div
+        style={{
+          position: "absolute",
+          top: "-100px",
+          left: "-100px",
+          width: "400px",
+          height: "400px",
+          background: "radial-gradient(circle, rgba(212,175,55,0.15) 0%, rgba(0,0,0,0) 70%)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: "-100px",
+          right: "-100px",
+          width: "400px",
+          height: "400px",
+          background: "radial-gradient(circle, rgba(153,125,32,0.2) 0%, rgba(0,0,0,0) 70%)",
+          borderRadius: "50%",
+          pointerEvents: "none",
+        }}
+      />
 
-        {/* Brand Icon & Heading */}
-        <div className="text-center mt-2 mb-8">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#D4AF37] to-[#E8C95A] text-black font-black text-3xl flex items-center justify-center mx-auto shadow-[0_0_20px_rgba(212,175,55,0.4)] mb-4">
+      {/* Main Login Card */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "460px",
+          backgroundColor: "#0F2243",
+          border: "1.5px solid rgba(212, 175, 55, 0.4)",
+          borderRadius: "24px",
+          padding: "40px 32px",
+          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(212, 175, 55, 0.1)",
+          position: "relative",
+          zIndex: 10,
+          boxSizing: "border-box",
+        }}
+      >
+        {/* Top Gold Accent Bar */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "6px",
+            background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+            borderTopLeftRadius: "24px",
+            borderTopRightRadius: "24px",
+          }}
+        />
+
+        {/* Brand Icon Header */}
+        <div style={{ textAlign: "center", marginBottom: "28px", marginTop: "8px" }}>
+          <div
+            style={{
+              width: "72px",
+              height: "72px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+              color: "#000000",
+              fontWeight: 900,
+              fontSize: "36px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px auto",
+              boxShadow: "0 0 25px rgba(212, 175, 55, 0.5)",
+              border: "2px solid #FFE899",
+            }}
+          >
             V
           </div>
-          <h1 className="text-2xl font-extrabold text-[#D4AF37] tracking-wider uppercase">
-            VANKAR
+          <h1
+            style={{
+              fontSize: "22px",
+              fontWeight: 900,
+              color: "#D4AF37",
+              letterSpacing: "2px",
+              textTransform: "uppercase",
+              margin: "0 0 4px 0",
+            }}
+          >
+            VANKAR SAMAJ
           </h1>
-          <p className="text-xs tracking-widest text-[#E8C95A]/80 font-bold uppercase mt-1">
-            SAMAJ MATRIMONY ADMIN PORTAL
+          <p
+            style={{
+              fontSize: "12px",
+              fontWeight: 700,
+              color: "rgba(243, 229, 171, 0.9)",
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              margin: 0,
+            }}
+          >
+            Matrimony Admin Control Center
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-3 rounded-xl bg-red-950/50 border border-red-500/40 text-red-400 text-xs text-center font-semibold">
-            {error}
+          <div
+            style={{
+              marginBottom: "20px",
+              padding: "12px 16px",
+              borderRadius: "12px",
+              backgroundColor: "rgba(136, 19, 55, 0.8)",
+              border: "1px solid rgba(244, 63, 94, 0.5)",
+              color: "#fecdd3",
+              fontSize: "13px",
+              fontWeight: 700,
+              textAlign: "center",
+            }}
+          >
+            ⚠️ {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-5">
+        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Email Field */}
           <div>
-            <label className="block text-xs font-bold text-[#AAB7C8] uppercase tracking-wider mb-2">
-              Admin Email / Username
+            <label
+              style={{
+                display: "block",
+                fontSize: "12px",
+                fontWeight: 800,
+                color: "#D4AF37",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: "8px",
+              }}
+            >
+              Admin Email / Username *
             </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all"
-              placeholder="admin@vankarsamaj.org"
-            />
+            <div style={{ position: "relative" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  left: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: "16px",
+                }}
+              >
+                ✉️
+              </span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={{
+                  width: "100%",
+                  backgroundColor: "#041026",
+                  border: "1.5px solid rgba(153, 125, 32, 0.5)",
+                  borderRadius: "14px",
+                  padding: "14px 16px 14px 44px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                  fontWeight: 600,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                placeholder="admin@vankarsamaj.org"
+              />
+            </div>
           </div>
 
+          {/* Password Field */}
           <div>
-            <label className="block text-xs font-bold text-[#AAB7C8] uppercase tracking-wider mb-2">
-              Password
+            <label
+              style={{
+                display: "block",
+                fontSize: "12px",
+                fontWeight: 800,
+                color: "#D4AF37",
+                textTransform: "uppercase",
+                letterSpacing: "1px",
+                marginBottom: "8px",
+              }}
+            >
+              Password *
             </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#D4AF37] transition-all"
-              placeholder="••••••••"
-            />
+            <div style={{ position: "relative" }}>
+              <span
+                style={{
+                  position: "absolute",
+                  left: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  fontSize: "16px",
+                }}
+              >
+                🔒
+              </span>
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={{
+                  width: "100%",
+                  backgroundColor: "#041026",
+                  border: "1.5px solid rgba(153, 125, 32, 0.5)",
+                  borderRadius: "14px",
+                  padding: "14px 50px 14px 44px",
+                  fontSize: "14px",
+                  color: "#ffffff",
+                  fontWeight: 600,
+                  outline: "none",
+                  boxSizing: "border-box",
+                }}
+                placeholder="••••••••"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute",
+                  right: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "none",
+                  border: "none",
+                  color: "#AAB7C8",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-[#AAB7C8]">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" defaultChecked className="rounded bg-[#041026] border-[#997D20]" />
-              <span>Remember session</span>
+          {/* Remember Session & Forgot Password */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              fontSize: "12px",
+              color: "#AAB7C8",
+              marginTop: "2px",
+            }}
+          >
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none" }}>
+              <input
+                type="checkbox"
+                defaultChecked
+                style={{ accentColor: "#D4AF37", width: "16px", height: "16px", cursor: "pointer" }}
+              />
+              <span style={{ fontWeight: 600, color: "#d1d5db" }}>Remember session</span>
             </label>
-            <a href="#" className="text-[#D4AF37] hover:underline">
+            <a href="#" style={{ color: "#D4AF37", fontWeight: 700, textDecoration: "none" }}>
               Forgot password?
             </a>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#E8C95A] text-black font-extrabold text-sm tracking-wider uppercase shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:opacity-95 transition-all cursor-pointer"
+            style={{
+              width: "100%",
+              padding: "16px 24px",
+              borderRadius: "14px",
+              background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+              color: "#000000",
+              fontWeight: 900,
+              fontSize: "14px",
+              letterSpacing: "1.5px",
+              textTransform: "uppercase",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 0 20px rgba(212, 175, 55, 0.4)",
+              marginTop: "8px",
+            }}
           >
-            {loading ? "Authenticating..." : "Sign In to Admin Portal"}
+            {loading ? "Authenticating..." : "🔑 Sign In to Admin Control Center"}
           </button>
         </form>
 
-        <div className="mt-8 text-center border-t border-[#997D20]/20 pt-4">
-          <p className="text-[11px] text-[#AAB7C8]/60">
-            Protected Matrimonial Control Center © 2026 Vankar Samaj
+        {/* Footer */}
+        <div style={{ marginTop: "28px", textAlign: "center", borderTop: "1px solid rgba(153, 125, 32, 0.2)", paddingTop: "16px" }}>
+          <p style={{ fontSize: "11px", color: "rgba(170, 183, 200, 0.7)", fontWeight: 600, margin: 0 }}>
+            Protected Matrimonial Control Center © 2026 All Gujarat Vankar Samaj
           </p>
         </div>
       </div>

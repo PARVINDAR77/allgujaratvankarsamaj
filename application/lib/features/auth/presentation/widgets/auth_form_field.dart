@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../app/theme/app_colors.dart';
 
 /// Standard Material 3 Form Field for Auth screens
 class AuthFormField extends StatefulWidget {
@@ -35,9 +36,11 @@ class _AuthFormFieldState extends State<AuthFormField> {
       children: [
         Text(
           widget.label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+          style: const TextStyle(
+            color: AppColors.secondary,
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 6.0),
         TextFormField(
@@ -45,13 +48,16 @@ class _AuthFormFieldState extends State<AuthFormField> {
           obscureText: widget.isPassword ? _obscureText : false,
           keyboardType: widget.keyboardType,
           validator: widget.validator,
+          style: const TextStyle(color: Colors.white, fontSize: 15),
           decoration: InputDecoration(
             hintText: widget.hintText,
-            prefixIcon: Icon(widget.prefixIcon),
+            hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
+            prefixIcon: Icon(widget.prefixIcon, color: AppColors.secondary),
             suffixIcon: widget.isPassword
                 ? IconButton(
                     icon: Icon(
                       _obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: AppColors.secondary,
                     ),
                     onPressed: () {
                       setState(() {
@@ -60,8 +66,19 @@ class _AuthFormFieldState extends State<AuthFormField> {
                     },
                   )
                 : null,
+            filled: true,
+            fillColor: const Color(0xFF041026),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8.0),
+              borderRadius: BorderRadius.circular(10.0),
+              borderSide: const BorderSide(color: AppColors.secondary),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+              borderSide: BorderSide(color: AppColors.secondary.withValues(alpha: 0.5)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10.0),
+              borderSide: const BorderSide(color: AppColors.secondary, width: 2),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16.0,

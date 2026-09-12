@@ -44,33 +44,25 @@ export class CreateProfileDto {
     description: "Date of birth (ISO 8601 format: YYYY-MM-DD)",
     example: "1995-08-15",
   })
-  @IsMinAge(18, {
-    message:
-      "User must be at least 18 years old and date of birth cannot be in the future",
-  })
-  @IsNotEmpty({ message: "Date of birth is required" })
-  dateOfBirth: string;
+  @IsOptional()
+  @IsString()
+  dateOfBirth?: string;
 
   @ApiProperty({
     description: "Gender of the profile owner",
     enum: Gender,
     example: Gender.MALE,
   })
-  @IsEnum(Gender, { message: "Gender must be MALE, FEMALE, or OTHER" })
-  @IsNotEmpty({ message: "Gender is required" })
-  gender: Gender;
+  @IsOptional()
+  gender?: Gender;
 
   @ApiProperty({
     description: "Marital status",
     enum: MaritalStatus,
     example: MaritalStatus.NEVER_MARRIED,
   })
-  @IsEnum(MaritalStatus, {
-    message:
-      "Marital status must be NEVER_MARRIED, DIVORCED, WIDOWED, or SEPARATED",
-  })
-  @IsNotEmpty({ message: "Marital status is required" })
-  maritalStatus: MaritalStatus;
+  @IsOptional()
+  maritalStatus?: MaritalStatus;
 
   @ApiPropertyOptional({
     description: "Religion",
@@ -167,4 +159,11 @@ export class CreateProfileDto {
   @Matches(/^(?!\s*$).+/, { message: "About must not be whitespace-only" })
   @MaxLength(2000, { message: "About cannot exceed 2000 characters" })
   about?: string;
+
+  @ApiPropertyOptional({
+    description: "Profile photo URL or base64 data URI",
+  })
+  @IsOptional()
+  @IsString()
+  photoUrl?: string;
 }

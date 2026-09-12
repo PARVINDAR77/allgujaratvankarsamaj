@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../features/auth/presentation/screens/auth_loading_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
-import '../../features/community/presentation/screens/community_landing_screen.dart';
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
+import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
 import '../../features/family/presentation/screens/family_details_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/match/presentation/screens/mutual_interest_screen.dart';
@@ -43,7 +42,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final location = state.uri.toString();
 
-      // Redirect legacy /welcome or /splash to /login
+      // Redirect welcome/splash or root to /login
       if (location == '/welcome' || location == '/splash') {
         return '/login';
       }
@@ -54,17 +53,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/splash',
         name: 'splash',
-        builder: (context, state) => const AuthLoadingScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/welcome',
         name: 'welcome',
-        builder: (context, state) => const CommunityLandingScreen(),
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) {
+          final pageParam = state.uri.queryParameters['page'];
+          final initialPage = (pageParam != null && pageParam == '1') ? 1 : 0;
+          return LoginScreen(initialPage: initialPage);
+        },
       ),
       GoRoute(
         path: '/register',
@@ -95,6 +98,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/samaj-services',
         name: 'samaj-services',
         builder: (context, state) => const SamajServicesScreen(),
+      ),
+      GoRoute(
+        path: '/samaj-super-stars',
+        name: 'samaj-super-stars',
+        builder: (context, state) => const SamajSuperStarsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

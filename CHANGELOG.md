@@ -4,10 +4,23 @@ All notable changes to the All Gujarat Vankar Samaj Matrimony project will be do
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
-
-### Added
-- Defined complete project documentation structure in `docs/`.
+- **Step 9 - Dynamic System Architecture & API Integration (Admin Panel → NestJS → PostgreSQL → Flutter APK)** (2026-09-11):
+  - **Prisma Database Schema Expansion**:
+    - Added `SiteSetting`, `Pargana`, `VerificationRequest`, `MatchInterest`, `Report`, and `SuccessStory` domain models.
+    - Added `ProfileStatus`, `VerificationStatus`, `InterestStatus`, and `ReportStatus` enums.
+    - Extended `MatrimonialProfile` model with `status` (`APPROVED`), `isVerified`, `isFeatured`, `photoUrl`, `subcaste`, and `nativePlace`.
+    - Generated updated Prisma Client artifacts (`npx prisma generate`).
+  - **NestJS Backend Endpoints**:
+    - Built `SettingsModule`, `SettingsController`, `SettingsService` providing `GET /settings/public`, `GET /admin/settings`, and `PUT /admin/settings`.
+    - Built `ParganasModule`, `ParganasController`, `ParganasService` providing `GET /parganas`, `GET /admin/parganas`, `POST /admin/parganas`, `PATCH /admin/parganas/:id`, `DELETE /admin/parganas/:id`.
+    - Extended `AdminModule` with `GET /admin/profiles`, `PATCH /admin/profiles/:id/status`, `PATCH /admin/profiles/:id/feature`, `GET /admin/verifications`, `PATCH /admin/verifications/:id`, `GET /admin/reports`, `PATCH /admin/reports/:id`, `GET /admin/matches`.
+  - **Next.js Admin Panel API Integration**:
+    - Expanded `lib/admin-api.ts` with typed API functions for settings, parganas, candidate profiles moderation, verifications, reports, and matches.
+    - Connected `app/admin/settings/page.tsx` to `adminApi.getSettings()` and `adminApi.updateSettings()`.
+    - Connected `app/admin/parganas/page.tsx` to `adminApi.getParganas()`, `createPargana()`, `updatePargana()`, and `deletePargana()`.
+    - Connected `app/admin/profiles/page.tsx` to `adminApi.getProfiles()`, `updateProfileStatus()`, and `toggleProfileFeatured()`.
+    - Verified Next.js static production build (`npm run build`) passing with zero TypeScript/Turbopack errors.
+  - **Defined complete project documentation structure in `docs/`.**
 - Created initial `CHANGELOG.md` and `README.md`.
 - **Step 1 - Docker Foundation & Environment** (2026-09-09):
   - Established `docker-compose.yml` orchestrating `postgres` (PostgreSQL 15 Alpine) and `backend` (Node 20 Alpine) containers.

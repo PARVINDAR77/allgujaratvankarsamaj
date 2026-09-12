@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -107,7 +108,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // ─── Profile Header ──────────────────────────────────────────
-            _buildProfileHeader(context, theme, profile.fullName, profile.gender),
+            _buildProfileHeader(context, theme, profile.fullName, profile.gender, profile.photoUrl),
 
             const SizedBox(height: 20),
 
@@ -294,7 +295,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Widget _buildProfileHeader(
-      BuildContext context, ThemeData theme, String name, String gender) {
+      BuildContext context, ThemeData theme, String name, String gender, String? photoUrl) {
+    ImageProvider? imageProvider;
+    if (photoUrl != null && photoUrl.isNotEmpty) {
+      if (photoUrl.startsWith('data:image')) {
+        final base64Str = photoUrl.split(',').last;
+        try {
+          imageProvider = MemoryImage(base64Decode(base64Str));
+        } catch (_) {}
+      } else {
+        imageProvider = NetworkImage(photoUrl);
+      }
+    }
+
     return Row(
       children: [
         Container(
@@ -311,15 +324,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
             ],
           ),
-          child: Center(
-            child: Text(
-              _initials(name),
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+          child: ClipOval(
+            child: imageProvider != null
+                ? Image(
+                    image: imageProvider,
+                    width: 72,
+                    height: 72,
+                    fit: BoxFit.cover,
+                  )
+                : Center(
+                    child: Text(
+                      _initials(name),
+                      style: const TextStyle(
+                        color: Colors.black87,
+                        fontSize: 26,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
           ),
         ),
         const SizedBox(width: 16),
