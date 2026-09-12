@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.example.vankar_samaj_matrimony"
-    compileSdk = 37
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
