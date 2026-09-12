@@ -42,7 +42,7 @@ class ApiConfig {
     try {
       if (Platform.isAndroid) {
         // Host machine LAN IP for physical mobile devices and emulators
-        return 'http://192.168.1.2:3000/api/v1';
+        return 'http://192.168.1.5:3000/api/v1';
       }
     } catch (_) {
       // Fallback for non-IO platforms

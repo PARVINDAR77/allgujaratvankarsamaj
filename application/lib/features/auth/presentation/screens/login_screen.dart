@@ -80,6 +80,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         } else {
           context.go('/home');
         }
+      } else if (updatedAuth.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(updatedAuth.errorMessage!),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     }
   }
