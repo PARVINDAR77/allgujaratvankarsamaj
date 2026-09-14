@@ -25,10 +25,13 @@ class ApiConfig {
 
     switch (environment) {
       case Environment.staging:
-        return 'https://staging-api.vankarsamaj.org/api/v1';
+        return 'https://allgujaratvankarsamaj.com/api/v1';
       case Environment.production:
-        return 'https://api.vankarsamaj.org/api/v1';
+        return 'https://allgujaratvankarsamaj.com/api/v1';
       case Environment.development:
+        if (kIsWeb) {
+          return 'https://allgujaratvankarsamaj.com/api/v1';
+        }
         return _developmentBaseUrl;
     }
   }
