@@ -129,7 +129,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                     height: posterH,
                     child: Stack(
                       children: [
-                        // Background template poster
+                        // Single Master Poster Artwork (High Resolution)
                         Positioned.fill(
                           child: Image.asset(
                             'assets/images/template_pargana.jpg',
@@ -138,19 +138,6 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                               'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM.jpeg',
                               fit: BoxFit.fill,
                             ),
-                          ),
-                        ),
-
-                        // High-Resolution Lord Buddha (2.png) centered perfectly over lotus throne
-                        Positioned(
-                          left: screenW * 0.16,
-                          top: posterH * 0.22,
-                          width: screenW * 0.68,
-                          height: posterH * 0.38,
-                          child: Image.asset(
-                            'assets/images/buddha_statue.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
                           ),
                         ),
 
