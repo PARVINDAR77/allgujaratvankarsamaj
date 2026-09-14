@@ -68,19 +68,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Initial session resolution on app launch
   Future<void> initializeAuth() async {
-    try {
-      final user = await repository.getCurrentUser().timeout(
-            const Duration(seconds: 1),
-            onTimeout: () => null,
-          );
-      if (user != null) {
-        state = AuthState.authenticated(user);
-      } else {
-        state = AuthState.unauthenticated();
-      }
-    } catch (e) {
-      state = AuthState.unauthenticated();
-    }
+    // Keep initial state unauthenticated so login poster remains visible on app/site open
+    state = AuthState.unauthenticated();
   }
 
   /// Logs in user with email & password

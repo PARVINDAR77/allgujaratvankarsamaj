@@ -41,15 +41,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: authListenable,
     redirect: (context, state) {
       final location = state.uri.toString();
-      final authState = ref.read(authNotifierProvider);
 
-      // If user is already logged in and tries to access /login, /splash, or /welcome -> redirect to /home
-      if (authState.isAuthenticated &&
-          (location == '/login' || location == '/splash' || location == '/welcome')) {
-        return '/home';
-      }
-
-      // Redirect welcome/splash or root to /login if unauthenticated
+      // Redirect welcome/splash or root to /login
       if (location == '/welcome' || location == '/splash') {
         return '/login';
       }
