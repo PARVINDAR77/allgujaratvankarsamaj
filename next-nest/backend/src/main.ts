@@ -11,8 +11,13 @@ async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
 
-  // Security middlewares
-  app.use(helmet());
+  // Security middlewares (configured for Web CORS compatibility)
+  app.use(
+    helmet({
+      crossOriginResourcePolicy: false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   // Setup Morgan logger
   morgan.token("request-id", (req: any) => {
