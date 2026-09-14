@@ -117,18 +117,19 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Poster Image Banner (Exact full-bleed ratio 1024/700 matching original poster template)
+              // 1. Poster Image Banner (Exact 1535:1024 ratio matching original template_pargana.jpg dimensions)
               LayoutBuilder(
                 builder: (context, constraints) {
                   final screenW = constraints.maxWidth;
-                  // Original poster artwork aspect ratio (width: 700, height: 1024)
-                  final posterH = screenW * (1024 / 700);
+                  // Exact aspect ratio of template_pargana.jpg (width: 1024px, height: 1535px)
+                  final posterH = screenW * (1535 / 1024);
 
                   return SizedBox(
                     width: screenW,
                     height: posterH,
                     child: Stack(
                       children: [
+                        // Background template poster
                         Positioned.fill(
                           child: Image.asset(
                             'assets/images/template_pargana.jpg',
@@ -140,13 +141,26 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                           ),
                         ),
 
+                        // High-Resolution Lord Buddha (2.png) centered perfectly over lotus throne
+                        Positioned(
+                          left: screenW * 0.16,
+                          top: posterH * 0.22,
+                          width: screenW * 0.68,
+                          height: posterH * 0.38,
+                          child: Image.asset(
+                            'assets/images/buddha_statue.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                          ),
+                        ),
+
                         // Interactive Hotspots on Medallions
                         // Medallion 1: 35 Pargana (Top Left)
                         Positioned(
                           left: screenW * 0.05,
-                          top: posterH * 0.58,
+                          top: posterH * 0.60,
                           width: screenW * 0.28,
-                          height: posterH * 0.16,
+                          height: posterH * 0.14,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '35'),
@@ -156,9 +170,9 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                         // Medallion 2: 27 Pargana (Top Center)
                         Positioned(
                           left: screenW * 0.36,
-                          top: posterH * 0.58,
+                          top: posterH * 0.60,
                           width: screenW * 0.28,
-                          height: posterH * 0.16,
+                          height: posterH * 0.14,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '27'),
@@ -168,9 +182,9 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                         // Medallion 3: 16 Pargana (Top Right)
                         Positioned(
                           left: screenW * 0.67,
-                          top: posterH * 0.58,
+                          top: posterH * 0.60,
                           width: screenW * 0.28,
-                          height: posterH * 0.16,
+                          height: posterH * 0.14,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '16'),
@@ -182,7 +196,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                           left: screenW * 0.20,
                           top: posterH * 0.77,
                           width: screenW * 0.28,
-                          height: posterH * 0.15,
+                          height: posterH * 0.14,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '14'),
@@ -194,7 +208,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                           left: screenW * 0.52,
                           top: posterH * 0.77,
                           width: screenW * 0.28,
-                          height: posterH * 0.15,
+                          height: posterH * 0.14,
                           child: InkWell(
                             borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = ''),
