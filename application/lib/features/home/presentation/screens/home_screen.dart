@@ -151,7 +151,7 @@ class HomeScreen extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final screenW = constraints.maxWidth;
-            final croppedH = screenW * (1455 / 736); // Display height cropping out the printed bottom nav bar
+            final croppedH = screenW * (1540 / 736); // Display height showing full top banner and bottom quote ribbon
             final totalImageH = screenW * (1600 / 736); // Full artwork height
 
             return SingleChildScrollView(
@@ -180,18 +180,6 @@ class HomeScreen extends ConsumerWidget {
                                 color: const Color(0xFF06152D),
                               ),
                             ),
-                          ),
-                        ),
-
-                        // High-Resolution Lord Buddha Statue Overlay (2.png)
-                        Positioned(
-                          left: screenW * 0.28,
-                          top: totalImageH * 0.165,
-                          width: screenW * 0.44,
-                          height: totalImageH * 0.22,
-                          child: Image.asset(
-                            'assets/images/buddha_statue.png',
-                            fit: BoxFit.contain,
                           ),
                         ),
 
