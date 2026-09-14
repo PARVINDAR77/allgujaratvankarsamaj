@@ -139,6 +139,19 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                           ),
                         ),
 
+                        // High-Resolution Pristine Lord Buddha Statue Overlay (2.png)
+                        Positioned(
+                          left: screenW * 0.30,
+                          top: posterH * 0.28,
+                          width: screenW * 0.40,
+                          height: posterH * 0.32,
+                          child: Image.asset(
+                            'assets/images/buddha_statue.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                          ),
+                        ),
+
                         // Interactive Hotspots on Medallions
                         // Medallion 1: 35 Pargana (Top Left)
                         Positioned(
