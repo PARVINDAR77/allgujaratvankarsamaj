@@ -183,6 +183,18 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ),
 
+                        // High-Resolution Lord Buddha Statue Overlay (2.png)
+                        Positioned(
+                          left: screenW * 0.28,
+                          top: totalImageH * 0.165,
+                          width: screenW * 0.44,
+                          height: totalImageH * 0.22,
+                          child: Image.asset(
+                            'assets/images/buddha_statue.png',
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+
                         // 2. Top-Left Menu Icon (☰)
                         Positioned(
                           left: screenW * 0.03,
