@@ -38,8 +38,8 @@ class ApiConfig {
 
   static String get _developmentBaseUrl {
     if (kIsWeb) {
-      // Web / Chrome browser targets host localhost directly
-      return 'http://localhost:3000/api/v1';
+      // Web browser uses relative path /api/v1 on current domain host
+      return '/api/v1';
     }
 
     try {

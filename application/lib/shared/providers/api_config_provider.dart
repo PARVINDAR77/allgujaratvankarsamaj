@@ -4,7 +4,7 @@ import '../../core/network/dio_client.dart';
 import '../../features/auth/providers/auth_provider.dart';
 
 final apiConfigProvider = Provider<ApiConfig>((ref) {
-  return const ApiConfig(environment: Environment.development);
+  return const ApiConfig(environment: Environment.production);
 });
 
 final dioClientProvider = Provider<DioClient>((ref) {
