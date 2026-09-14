@@ -17,17 +17,17 @@ export class PrismaService
     try {
       await this.$connect();
       this.logger.log(
-        "Successfully connected to PostgreSQL database via Prisma",
+        "Successfully connected to MySQL database via Prisma",
       );
     } catch (error: any) {
       this.logger.warn(
-        `PostgreSQL database not yet reachable at DATABASE_URL (${error.message || error}). Backend will retry on demand.`,
+        `MySQL database not yet reachable at DATABASE_URL (${error.message || error}). Backend will retry on demand.`,
       );
     }
   }
 
   async onModuleDestroy() {
     await this.$disconnect();
-    this.logger.log("Disconnected from PostgreSQL database");
+    this.logger.log("Disconnected from MySQL database");
   }
 }
