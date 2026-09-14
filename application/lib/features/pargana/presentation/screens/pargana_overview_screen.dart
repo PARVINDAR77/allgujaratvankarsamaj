@@ -117,24 +117,28 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. Poster Image Banner (Compact height to ensure list visibility below)
+              // 1. Poster Image Banner (Proportional display of the full poster & Lord Buddha)
               LayoutBuilder(
                 builder: (context, constraints) {
                   final posterW = constraints.maxWidth;
-                  final posterH = posterW * (1200 / 1024);
+                  // Original image aspect ratio is 1:1 (square 1024x1024)
+                  final posterH = posterW;
 
-                  return SizedBox(
+                  return Container(
                     width: posterW,
-                    height: posterH > 340 ? 340 : posterH,
+                    height: posterH,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF041026),
+                    ),
                     child: Stack(
                       children: [
                         Positioned.fill(
                           child: Image.asset(
                             'assets/images/template_pargana.jpg',
-                            fit: BoxFit.fill,
+                            fit: BoxFit.contain,
                             errorBuilder: (context, error, stackTrace) => Image.asset(
                               'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM.jpeg',
-                              fit: BoxFit.fill,
+                              fit: BoxFit.contain,
                             ),
                           ),
                         ),
@@ -142,44 +146,48 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                         // Interactive Hotspots on Medallions
                         // Medallion 1: 35 Pargana (Top Left)
                         Positioned(
-                          left: posterW * 0.05,
-                          top: 210,
-                          width: posterW * 0.28,
-                          height: 70,
+                          left: posterW * 0.08,
+                          top: posterH * 0.61,
+                          width: posterW * 0.26,
+                          height: posterH * 0.16,
                           child: InkWell(
+                            borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '35'),
                           ),
                         ),
 
                         // Medallion 2: 27 Pargana (Top Center)
                         Positioned(
-                          left: posterW * 0.36,
-                          top: 210,
-                          width: posterW * 0.28,
-                          height: 70,
+                          left: posterW * 0.37,
+                          top: posterH * 0.61,
+                          width: posterW * 0.26,
+                          height: posterH * 0.16,
                           child: InkWell(
+                            borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '27'),
                           ),
                         ),
 
                         // Medallion 3: 16 Pargana (Top Right)
                         Positioned(
-                          left: posterW * 0.67,
-                          top: 210,
-                          width: posterW * 0.28,
-                          height: 70,
+                          left: posterW * 0.66,
+                          top: posterH * 0.61,
+                          width: posterW * 0.26,
+                          height: posterH * 0.16,
                           child: InkWell(
+                            borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '16'),
                           ),
                         ),
 
                         // Medallion 4: 14 Pargana (Bottom Left)
                         Positioned(
-                          left: posterW * 0.20,
-                          top: 275,
-                          width: posterW * 0.28,
-                          height: 60,
+                          left: posterW * 0.22,
+                          top: posterH * 0.79,
+                          width: posterW * 0.26,
+                          height: posterH * 0.16,
                           child: InkWell(
+                            borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = '14'),
                           ),
                         ),
@@ -187,10 +195,11 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                         // Medallion 5: Other Pargana (Bottom Right)
                         Positioned(
                           left: posterW * 0.52,
-                          top: 275,
-                          width: posterW * 0.28,
-                          height: 60,
+                          top: posterH * 0.79,
+                          width: posterW * 0.26,
+                          height: posterH * 0.16,
                           child: InkWell(
+                            borderRadius: BorderRadius.circular(40),
                             onTap: () => setState(() => _searchFilter = ''),
                           ),
                         ),
