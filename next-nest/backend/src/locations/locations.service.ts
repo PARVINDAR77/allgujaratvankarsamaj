@@ -244,8 +244,8 @@ export class LocationsService {
         ...(search
           ? {
               OR: [
-                { name: { contains: search, mode: "insensitive" } },
-                { gujaratiName: { contains: search, mode: "insensitive" } },
+                { name: { contains: search } },
+                { gujaratiName: { contains: search } },
               ],
             }
           : {}),
@@ -264,8 +264,8 @@ export class LocationsService {
         ...(search
           ? {
               OR: [
-                { name: { contains: search, mode: "insensitive" } },
-                { gujaratiName: { contains: search, mode: "insensitive" } },
+                { name: { contains: search } },
+                { gujaratiName: { contains: search } },
               ],
             }
           : {}),

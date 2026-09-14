@@ -9,7 +9,7 @@ abstract class AppException implements Exception {
 }
 
 class NetworkException extends AppException {
-  const NetworkException([super.message = 'Network connection failed']);
+  const NetworkException([super.message = 'Unable to reach server. Please check your internet connection and try again.']);
 }
 
 class ServerException extends AppException {

@@ -15,8 +15,11 @@ class ProfileApi {
   Future<MatrimonialProfileModel> getMyProfile() async {
     try {
       final response = await dioClient.dio.get('/profile/me');
-      return MatrimonialProfileModel.fromJson(
-          response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return MatrimonialProfileModel.fromJson(
+            response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid profile response format');
     } on DioException catch (e) {
       throw _mapDioError(e);
     }
@@ -31,8 +34,11 @@ class ProfileApi {
         '/profile',
         data: request.toJson(),
       );
-      return MatrimonialProfileModel.fromJson(
-          response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return MatrimonialProfileModel.fromJson(
+            response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid profile response format');
     } on DioException catch (e) {
       throw _mapDioError(e);
     }
@@ -47,8 +53,11 @@ class ProfileApi {
         '/profile/me',
         data: request.toJson(),
       );
-      return MatrimonialProfileModel.fromJson(
-          response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return MatrimonialProfileModel.fromJson(
+            response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid profile response format');
     } on DioException catch (e) {
       throw _mapDioError(e);
     }
@@ -69,8 +78,11 @@ class ProfileApi {
   Future<ReferenceDataModel> getReferenceData() async {
     try {
       final response = await dioClient.dio.get('/profile/reference-data');
-      return ReferenceDataModel.fromJson(
-          response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return ReferenceDataModel.fromJson(
+            response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid reference data format');
     } on DioException catch (e) {
       throw _mapDioError(e);
     }
@@ -81,8 +93,11 @@ class ProfileApi {
   Future<CompletenessModel> getCompleteness() async {
     try {
       final response = await dioClient.dio.get('/profile/completeness');
-      return CompletenessModel.fromJson(
-          response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return CompletenessModel.fromJson(
+            response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid completeness format');
     } on DioException catch (e) {
       throw _mapDioError(e);
     }

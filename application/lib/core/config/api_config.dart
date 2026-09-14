@@ -23,35 +23,7 @@ class ApiConfig {
       return envUrl;
     }
 
-    switch (environment) {
-      case Environment.staging:
-        return 'https://allgujaratvankarsamaj.com/api/v1';
-      case Environment.production:
-        return 'https://allgujaratvankarsamaj.com/api/v1';
-      case Environment.development:
-        if (kIsWeb) {
-          return 'https://allgujaratvankarsamaj.com/api/v1';
-        }
-        return _developmentBaseUrl;
-    }
-  }
-
-  static String get _developmentBaseUrl {
-    if (kIsWeb) {
-      // Web browser uses relative path /api/v1 on current domain host
-      return '/api/v1';
-    }
-
-    try {
-      if (Platform.isAndroid) {
-        // Host machine LAN IP for physical mobile devices and emulators
-        return 'http://192.168.1.5:3000/api/v1';
-      }
-    } catch (_) {
-      // Fallback for non-IO platforms
-    }
-
-    // Default for iOS Simulator, Windows Desktop, macOS
-    return 'http://localhost:3000/api/v1';
+    // Default to live production backend domain across Web, Android (APK), iOS, etc.
+    return 'https://allgujaratvankarsamaj.com/api/v1';
   }
 }

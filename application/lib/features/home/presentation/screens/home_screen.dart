@@ -151,7 +151,7 @@ class HomeScreen extends ConsumerWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final screenW = constraints.maxWidth;
-            final croppedH = screenW * (1540 / 736); // Display height showing full top banner and bottom quote ribbon
+            final croppedH = screenW * (1455 / 736); // Display height cropping out the printed bottom nav bar
             final totalImageH = screenW * (1600 / 736); // Full artwork height
 
             return SingleChildScrollView(

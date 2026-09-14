@@ -17,7 +17,10 @@ class AuthApi {
         '/auth/register',
         data: request.toJson(),
       );
-      return UserModel.fromJson(response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return UserModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid server response format');
     } on DioException catch (e) {
       if (e.error is AppException) {
         throw e.error as AppException;
@@ -33,7 +36,10 @@ class AuthApi {
         '/auth/login',
         data: request.toJson(),
       );
-      return LoginResponse.fromJson(response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return LoginResponse.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid server response format');
     } on DioException catch (e) {
       if (e.error is AppException) {
         throw e.error as AppException;
@@ -46,7 +52,10 @@ class AuthApi {
   Future<UserModel> getCurrentUser() async {
     try {
       final response = await dioClient.dio.get('/auth/me');
-      return UserModel.fromJson(response.data as Map<String, dynamic>);
+      if (response.data is Map<String, dynamic>) {
+        return UserModel.fromJson(response.data as Map<String, dynamic>);
+      }
+      throw const ServerException('Invalid server response format');
     } on DioException catch (e) {
       if (e.error is AppException) {
         throw e.error as AppException;
