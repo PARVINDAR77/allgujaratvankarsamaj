@@ -11,6 +11,7 @@ export default function MatrimonyPage() {
     { title: "યોગ્ય પસંદગી (Find Match)", href: "/search", icon: "💍", desc: "મનપસંદ ફિલ્ટર્સ વડે શોધો" },
     { title: "પ્રોફાઇલ બનાવો (Create Profile)", href: "/profile", icon: "📝", desc: "તમારી માહિતી ઉમેરો" },
     { title: "પરગણા વાઇઝ શોધો (Pargana Search)", href: "/pargana", icon: "📍", desc: "૩૫, ૨૭, ૧૬, ૧૪ પરગણા" },
+    { title: "સરકારી કર્મચારી (Govt Employees)", href: "/government-employees", icon: "🏛️", desc: "ચકાસાયેલ સરકારી અધિકારીઓ અને કર્મચારીઓ" },
     { title: "વેરિફાઇડ પ્રોફાઇલ્સ (Verified Profiles)", href: "/verified-profile", icon: "✅", desc: "મંડળ માન્ય પ્રોફાઇલ્સ" },
   ];
 
