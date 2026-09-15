@@ -224,8 +224,6 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ),
 
-
-
                         // 4. Left Action Box 1: છોકરો શોધો (Find Boy)
                         Positioned(
                           left: screenW * 0.02,
@@ -414,25 +412,6 @@ class HomeScreen extends ConsumerWidget {
                               splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
                               borderRadius: BorderRadius.circular(30),
                               onTap: () => context.push('/family-details'),
-                            ),
-                          ),
-                        ),
-
-                        // 16. Central Golden Circle: Government Employees Section (Top Layer Hotspot)
-                        Positioned(
-                          left: screenW * 0.22,
-                          top: totalImageH * 0.355,
-                          width: screenW * 0.56,
-                          height: totalImageH * 0.325,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.4),
-                              highlightColor: const Color(0xFFD4AF37).withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(150),
-                              onTap: () {
-                                context.push('/government-employees');
-                              },
                             ),
                           ),
                         ),

@@ -12,6 +12,9 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 import { GovernmentEmployeesService } from './government-employees.service';
 import {
   CreateGovtEmploymentDto,
@@ -99,7 +102,8 @@ export class GovernmentEmployeesController {
   // ==========================================
 
   @Get('admin/government-employees/stats')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get Admin dashboard government employee statistics' })
   getAdminStats() {
@@ -107,7 +111,8 @@ export class GovernmentEmployeesController {
   }
 
   @Get('admin/government-employees')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all government employee profiles for Admin review' })
   getAdminProfiles(
@@ -123,7 +128,8 @@ export class GovernmentEmployeesController {
   }
 
   @Patch('admin/government-employees/:id/verify')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Approve or Reject government employment verification' })
   verifyProfile(
@@ -135,7 +141,8 @@ export class GovernmentEmployeesController {
   }
 
   @Patch('admin/government-employees/:id/feature')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Set government employment featured status' })
   setFeatured(
@@ -147,7 +154,8 @@ export class GovernmentEmployeesController {
   }
 
   @Patch('admin/government-employees/:id/status')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Set government employment active status' })
   setStatus(
@@ -160,42 +168,48 @@ export class GovernmentEmployeesController {
 
   // Admin Master Data CRUD
   @Post('admin/government-departments')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   createDepartment(@Req() req: any, @Body() dto: CreateDepartmentDto) {
     return this.govtEmployeesService.createDepartment(dto, req.user.id);
   }
 
   @Patch('admin/government-departments/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   updateDepartment(@Req() req: any, @Param('id') id: string, @Body() dto: Partial<CreateDepartmentDto>) {
     return this.govtEmployeesService.updateDepartment(id, dto, req.user.id);
   }
 
   @Delete('admin/government-departments/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   deleteDepartment(@Req() req: any, @Param('id') id: string) {
     return this.govtEmployeesService.softDeleteDepartment(id, req.user.id);
   }
 
   @Post('admin/government-designations')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   createDesignation(@Req() req: any, @Body() dto: CreateDesignationDto) {
     return this.govtEmployeesService.createDesignation(dto, req.user.id);
   }
 
   @Patch('admin/government-designations/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   updateDesignation(@Req() req: any, @Param('id') id: string, @Body() dto: Partial<CreateDesignationDto>) {
     return this.govtEmployeesService.updateDesignation(id, dto, req.user.id);
   }
 
   @Delete('admin/government-designations/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   @ApiBearerAuth()
   deleteDesignation(@Req() req: any, @Param('id') id: string) {
     return this.govtEmployeesService.softDeleteDesignation(id, req.user.id);
