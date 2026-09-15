@@ -136,118 +136,55 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Top Header Artwork Section with Lord Buddha Head Logo, Peacocks & Crest
-              SizedBox(
-                width: double.infinity,
-                height: 200,
-                child: Stack(
-                  children: [
-                    // Full Peacock & Lord Buddha Header Image Banner Background
-                    Positioned.fill(
-                      child: Image.asset(
-                        'assets/images/5.jpeg',
-                        fit: BoxFit.cover,
-                        alignment: const Alignment(0, -0.65), // Focus exactly on top Lord Buddha face
-                        errorBuilder: (context, error, stackTrace) => Image.asset(
-                          'assets/images/WhatsApp Image 2026-09-08 at 10.08.45 PM.jpeg',
-                          fit: BoxFit.cover,
-                          alignment: const Alignment(0, -0.65),
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: const Color(0xFF021B3D),
-                          ),
-                        ),
+              // Top Header Artwork Section - Exact Full 5.jpeg Layout Banner Image
+              Stack(
+                children: [
+                  // Exact Full Header Artwork Image (assets/images/5.jpeg)
+                  Image.asset(
+                    'assets/images/5.jpeg',
+                    width: double.infinity,
+                    fit: BoxFit.fitWidth,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/images/WhatsApp Image 2026-09-08 at 10.08.45 PM.jpeg',
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 220,
+                        color: const Color(0xFF021B3D),
                       ),
                     ),
+                  ),
 
-                    // Top Navigation Overlay Action Bar
-                    Positioned(
-                      top: 8,
-                      left: 10,
-                      right: 10,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: const Color(0xFF003875).withOpacity(0.85),
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 16),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
+                  // Top Navigation Bar (Back & Notifications)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    right: 10,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: const Color(0xFF003875).withOpacity(0.85),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+                            onPressed: () => Navigator.of(context).pop(),
                           ),
-                          CircleAvatar(
-                            radius: 16,
-                            backgroundColor: const Color(0xFF003875).withOpacity(0.85),
-                            child: IconButton(
-                              padding: EdgeInsets.zero,
-                              icon: const Icon(Icons.notifications, color: Colors.white, size: 16),
-                              onPressed: () {},
-                            ),
+                        ),
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: const Color(0xFF003875).withOpacity(0.85),
+                          child: IconButton(
+                            padding: EdgeInsets.zero,
+                            icon: const Icon(Icons.notifications, color: Colors.white, size: 18),
+                            onPressed: () {},
                           ),
-                        ],
-                      ),
-                    ),
-
-                    // Lower Floating Government Employees Section Badge Ribbon
-                    Positioned(
-                      bottom: 6,
-                      left: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.96),
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: const Color(0xFF0056B3), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(5),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF0056B3),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(Icons.groups_rounded, color: Colors.white, size: 18),
-                            ),
-                            const SizedBox(width: 8),
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Government Employees',
-                                  style: TextStyle(
-                                    color: Color(0xFF002B5B),
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                                Text(
-                                  'સરકારી સેવા - સમાજની સેવા',
-                                  style: TextStyle(
-                                    color: Color(0xFFD90429),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 10,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 10),
