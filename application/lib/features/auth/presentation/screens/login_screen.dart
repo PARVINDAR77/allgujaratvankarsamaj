@@ -345,13 +345,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(25),
-                                onTap: () async {
+                                onTap: () {
                                   if (_pageController.hasClients) {
-                                    await _pageController.animateToPage(
-                                      1,
-                                      duration: const Duration(milliseconds: 400),
-                                      curve: Curves.easeInOut,
-                                    );
+                                    _pageController.jumpToPage(1);
                                   }
                                   _performLogin();
                                 },
@@ -370,13 +366,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(25),
-                                onTap: () async {
+                                onTap: () {
                                   if (_pageController.hasClients) {
-                                    await _pageController.animateToPage(
-                                      1,
-                                      duration: const Duration(milliseconds: 400),
-                                      curve: Curves.easeInOut,
-                                    );
+                                    _pageController.jumpToPage(1);
                                   }
                                   context.go('/register');
                                 },
