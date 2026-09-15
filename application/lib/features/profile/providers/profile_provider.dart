@@ -374,3 +374,37 @@ final searchFilterProvider =
   return SearchFilterNotifier();
 });
 
+/// Fetches candidate profiles dynamically from the backend live API database endpoint `POST /api/v1/profile/search-query`
+final liveCandidateProfilesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final filter = ref.watch(searchFilterProvider);
+  final targetLookingFor = ref.watch(targetLookingForLabelProvider);
+
+  final lookingFor = filter.lookingFor.isNotEmpty ? filter.lookingFor : targetLookingFor;
+
+  const apiConfig = ApiConfig();
+  final dio = Dio();
+
+  try {
+    final response = await dio.post(
+      '${apiConfig.baseUrl}/profile/search-query',
+      data: {
+        'lookingFor': lookingFor,
+        'maritalStatus': filter.maritalStatus,
+        'city': filter.livingIn,
+        'education': filter.education,
+        'occupation': filter.occupation,
+        'keyword': filter.keyword,
+      },
+    ).timeout(const Duration(seconds: 4));
+
+    if (response.statusCode == 200 && response.data is List) {
+      final List<dynamic> data = response.data;
+      return data.map((item) => Map<String, dynamic>.from(item as Map)).toList();
+    }
+  } catch (_) {
+    // Graceful fallback to local seed data if backend API is unreachable
+  }
+
+  return [];
+});
+

@@ -345,7 +345,9 @@ class VerifiedProfileScreen extends ConsumerWidget {
                         final searchFilter = ref.watch(searchFilterProvider);
                         final isTargetBoy = targetGender == 'MALE' || searchFilter.lookingFor == 'Groom';
 
-                        final allCandidates = isTargetBoy
+                        final liveCandidatesAsync = ref.watch(liveCandidateProfilesProvider);
+
+                        final fallbackCandidates = isTargetBoy
                             ? [
                                 {'name': 'અલ્પેશ પરમાર', 'id': 'VNK1001', 'age': '26', 'city': 'અમદાવાદ', 'pargana': 'ચોરાસી', 'status': 'Never Married', 'edu': 'B.Tech IT', 'occ': 'Software Engineer'},
                                 {'name': 'જીગ્નેશ ચૌહાણ', 'id': 'VNK1002', 'age': '28', 'city': 'સુરત', 'pargana': 'બેતાલીસી', 'status': 'Never Married', 'edu': 'M.Com', 'occ': 'Bank Officer'},
@@ -355,32 +357,35 @@ class VerifiedProfileScreen extends ConsumerWidget {
                               ]
                             : [
                                 {'name': 'પૂજા પરમાર', 'id': 'VNK2001', 'age': '24', 'city': 'અમદાવાદ', 'pargana': 'ચોરાસી', 'status': 'Never Married', 'edu': 'B.Sc Nursing', 'occ': 'Staff Nurse'},
-                                {'name': 'નેહા ચૌહાણ', 'id': 'VNK2002', 'age': '23', 'city': 'સુરત', 'pargana': 'બેતાલીસી', 'status': 'Never Married', 'edu': 'B.Ed', 'occ': 'Teacher'},
+                                {'name': 'નેહા ચૌહાણ', 'id': 'VNK2002', 'age': '23', 'city': 'સુરત', 'pargana': 'બેતાલીસી', 'status': 'Never Married', 'edu': 'M.Ed', 'occ': 'Teacher'},
                                 {'name': 'પ્રિયા સોલંકી', 'id': 'VNK2003', 'age': '25', 'city': 'વડોદરા', 'pargana': 'છગાંવ', 'status': 'Divorced', 'edu': 'B.Pharm', 'occ': 'Pharmacist'},
                                 {'name': 'અંજલી રાઠોડ', 'id': 'VNK2004', 'age': '24', 'city': 'રાજકોટ', 'pargana': 'સત્તાવીસી', 'status': 'Never Married', 'edu': 'M.Sc Data Science', 'occ': 'Analyst'},
                                 {'name': 'રીયા વાઘેલા', 'id': 'VNK2005', 'age': '22', 'city': 'ગાંધીનગર', 'pargana': 'ચોરાસી', 'status': 'Never Married', 'edu': 'BBA', 'occ': 'HR Executive'},
                               ];
 
-                        // Apply dynamic filters
-                        final candidates = allCandidates.where((c) {
-                          if (searchFilter.maritalStatus != 'Any' && searchFilter.maritalStatus.isNotEmpty && c['status'] != searchFilter.maritalStatus) {
-                            return false;
-                          }
-                          if (searchFilter.pargana != 'Any' && searchFilter.pargana.isNotEmpty && !c['pargana']!.contains(searchFilter.pargana)) {
-                            return false;
-                          }
-                          if (searchFilter.livingIn != 'Any' && searchFilter.livingIn.isNotEmpty && !c['city']!.contains(searchFilter.livingIn)) {
-                            return false;
-                          }
-                          if (searchFilter.keyword.isNotEmpty) {
-                            final k = searchFilter.keyword.toLowerCase();
-                            final fullText = '${c['name']} ${c['city']} ${c['edu']} ${c['occ']} ${c['pargana']}'.toLowerCase();
-                            if (!fullText.contains(k)) return false;
-                          }
-                          return true;
-                        }).toList();
-
-                        final activeCandidateList = candidates.isNotEmpty ? candidates : allCandidates;
+                        final activeCandidateList = liveCandidatesAsync.maybeWhen(
+                          data: (liveData) {
+                            if (liveData.isNotEmpty) {
+                              return liveData.map((item) {
+                                final fn = item['firstName'] ?? '';
+                                final ln = item['lastName'] ?? '';
+                                final fullName = '$fn $ln'.trim();
+                                return {
+                                  'name': fullName.isNotEmpty ? fullName : (item['name'] ?? 'ઉમેદવાર'),
+                                  'id': item['id']?.toString() ?? 'VNK-00',
+                                  'age': item['age']?.toString() ?? '25',
+                                  'city': item['city']?.toString() ?? 'ગુજરાત',
+                                  'pargana': item['pargana']?.toString() ?? 'સમાજ પર્ગના',
+                                  'status': item['maritalStatus']?.toString() ?? 'Never Married',
+                                  'edu': item['education']?.toString() ?? 'ગ્રેજ્યુએટ',
+                                  'occ': item['occupation']?.toString() ?? 'પ્રાઇવેટ જોબ',
+                                };
+                              }).toList();
+                            }
+                            return fallbackCandidates;
+                          },
+                          orElse: () => fallbackCandidates,
+                        );
 
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
