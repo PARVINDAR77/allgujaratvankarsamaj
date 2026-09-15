@@ -221,21 +221,15 @@ class SamajServicePersonsScreen extends ConsumerWidget {
                       children: [
                         const Icon(Icons.location_on, color: AppColors.secondary, size: 12),
                         const SizedBox(width: 2),
-                        Flexible(
-                          child: Text(
-                            person.city.isNotEmpty ? person.city : 'Gujarat',
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(color: Colors.white70, fontSize: 11),
-                          ),
+                        Text(
+                          person.city.isNotEmpty ? person.city : 'Gujarat',
+                          style: const TextStyle(color: Colors.white70, fontSize: 11),
                         ),
                         if (person.experience.isNotEmpty) ...[
                           const Text(' • ', style: TextStyle(color: Colors.white54)),
-                          Flexible(
-                            child: Text(
-                              person.experience,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white70, fontSize: 11),
-                            ),
+                          Text(
+                            person.experience,
+                            style: const TextStyle(color: Colors.white70, fontSize: 11),
                           ),
                         ],
                       ],

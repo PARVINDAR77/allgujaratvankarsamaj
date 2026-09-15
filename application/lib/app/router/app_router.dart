@@ -38,14 +38,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = ref.watch(authRouterListenableProvider);
 
   return GoRouter(
-    initialLocation: '/home',
+    initialLocation: '/login',
     refreshListenable: authListenable,
     redirect: (context, state) {
       final location = state.uri.toString();
 
-      // Redirect root/login/welcome/splash straight to /home
-      if (location == '/' || location == '/login' || location == '/welcome' || location == '/splash') {
-        return '/home';
+      // Redirect welcome/splash or root to /login
+      if (location == '/welcome' || location == '/splash') {
+        return '/login';
       }
 
       return null;
