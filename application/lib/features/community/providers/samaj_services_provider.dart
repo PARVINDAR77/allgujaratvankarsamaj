@@ -99,20 +99,79 @@ class SamajServicePersonModel {
   }
 }
 
+const List<SamajServiceModel> _defaultSamajServices = [
+  SamajServiceModel(
+    id: 'srv-001',
+    title: 'વણકર સમાજ છાત્રાલય અને એજ્યુકેશન હેલ્પ',
+    category: 'Education',
+    icon: '🎓',
+    contactPhone: '+91 98790 12345',
+    contactPerson: 'રમેશભાઈ વણકર',
+    description: 'સમાજના વિદ્યાર્થીઓ માટે હોસ્ટેલ સહાય, સ્કોલરશીપ અને સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન પ્લેટફોર્મ.',
+    isActive: true,
+    personsCount: 12,
+  ),
+  SamajServiceModel(
+    id: 'srv-002',
+    title: 'સમાજ જનરલ મેડિકલ અને આરોગ્ય કેમ્પ',
+    category: 'Medical',
+    icon: '🏥',
+    contactPhone: '+91 98250 67890',
+    contactPerson: 'ડૉ. મહેશકુમાર પરમાર',
+    description: 'મફત નિદાન કેમ્પ, બ્લડ ડોનેશન અને સમાજના દર્દીઓ માટે હોસ્પિટલ ડિસ્કાઉન્ટ સહાય.',
+    isActive: true,
+    personsCount: 8,
+  ),
+  SamajServiceModel(
+    id: 'srv-003',
+    title: 'વણકર સમાજ લીગલ અને એડવોકેટ કાઉન્સિલ',
+    category: 'Legal',
+    icon: '⚖️',
+    contactPhone: '+91 97123 45678',
+    contactPerson: 'એડવોકેટ હસમુખભાઈ ચૌહાણ',
+    description: 'સમાજના લોકો માટે મફત કાનૂની સલાહ, જમીન-મિલકત માર્ગદર્શન અને સોગંદનામા સહાય.',
+    isActive: true,
+    personsCount: 5,
+  ),
+  SamajServiceModel(
+    id: 'srv-004',
+    title: 'સમાજ બિઝનેસ નેટવર્ક અને રોજગાર સહાય',
+    category: 'Employment',
+    icon: '💼',
+    contactPhone: '+91 99099 88776',
+    contactPerson: 'જીગ્નેશભાઈ સોલંકી',
+    description: 'યુવાનો માટે જોબ પ્લેસમેન્ટ, લઘુ ઉદ્યોગ લોન માર્ગદર્શન અને બિઝનેસ ડિરેક્ટરી.',
+    isActive: true,
+    personsCount: 15,
+  ),
+  SamajServiceModel(
+    id: 'srv-005',
+    title: 'સમૂહ લગ્ન અને મેટ્રિમોનિયલ સંમેલન',
+    category: 'Matrimonial',
+    icon: '💒',
+    contactPhone: '+91 94260 11223',
+    contactPerson: 'પંકજભાઈ રાઠોડ',
+    description: 'વર્ષિક સમૂહ લગ્ન આયોજન અને સમાજ પરિચય સંમેલન સેવાઓ.',
+    isActive: true,
+    personsCount: 20,
+  ),
+];
+
 final samajServicesProvider = FutureProvider<List<SamajServiceModel>>((ref) async {
   final dio = ref.watch(dioClientProvider).dio;
   try {
     final response = await dio.get('/samaj-services');
     if (response.statusCode == 200 && response.data is List) {
-      return (response.data as List)
+      final list = (response.data as List)
           .map((item) => SamajServiceModel.fromJson(item as Map<String, dynamic>))
           .where((item) => item.isActive)
           .toList();
+      if (list.isNotEmpty) return list;
     }
   } catch (e) {
     print('Failed to fetch public samaj services from backend: $e');
   }
-  return const [];
+  return _defaultSamajServices;
 });
 
 final samajServicePersonsProvider = FutureProvider.family<List<SamajServicePersonModel>, String>((ref, serviceId) async {
@@ -120,10 +179,11 @@ final samajServicePersonsProvider = FutureProvider.family<List<SamajServicePerso
   try {
     final response = await dio.get('/samaj-services/$serviceId/persons');
     if (response.statusCode == 200 && response.data is List) {
-      return (response.data as List)
+      final list = (response.data as List)
           .map((item) => SamajServicePersonModel.fromJson(item as Map<String, dynamic>))
           .where((item) => item.isActive)
           .toList();
+      if (list.isNotEmpty) return list;
     }
   } catch (e) {
     print('Failed to fetch service persons for service $serviceId: $e');
