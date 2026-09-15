@@ -643,12 +643,15 @@ export default function AdminServicesPage() {
                       onChange={(e) => setSvcCategory(e.target.value)}
                       style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(212, 175, 55, 0.4)", color: "#FFF" }}
                     >
-                      <option value="E – Electrical Works & Lighting">⚡ E – Electrical Works & Lighting</option>
-                      <option value="A – AC Repair & Services | Audio & Sound">🔧 A – AC Repair & Sound</option>
-                      <option value="B – Beauty Parlor & Bridal Makeup">💄 B – Beauty Parlor & Bridal</option>
-                      <option value="C – Cameraman & Photography | Car Rental">📸 C – Photography & Car Rental</option>
-                      <option value="D – Drone Videography | DJ Sound">🛸 D – Drone & DJ Sound</option>
-                      <option value="M – Mandap & Decoration | Mehendi Artist">⛺ M – Mandap & Decoration</option>
+                      <option value="Home & Daily Life Services">🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Home & Life)</option>
+                      <option value="Vehicle & Transport">🚗 2. Vehicle & Transport (વાહન અને ટ્રાન્સપોર્ટ)</option>
+                      <option value="Computer & Digital Services">💻 3. Computer & Digital Services (ડિજિટલ સેવાઓ)</option>
+                      <option value="Education Services">📚 4. Education Services (શિક્ષણ અને કોચિંગ)</option>
+                      <option value="Job & Business Services">💼 5. Job & Business Services (રોજગાર અને ઉદ્યોગ)</option>
+                      <option value="Legal & Financial Services">⚖️ 6. Legal & Financial Services (કાનૂની અને ફાઇનાન્સ)</option>
+                      <option value="Health & Emergency">🏥 7. Health & Emergency (આરોગ્ય અને ઇમરજન્સી)</option>
+                      <option value="Business & Local Shops">🏪 8. Business & Local Shops (વેપાર અને દુકાનો)</option>
+                      <option value="Skilled Professionals">🧑🔧 9. Skilled Professionals (કુશળ કારીગરો)</option>
                       <option value="General">🤝 General Service</option>
                     </select>
                   </div>
