@@ -643,16 +643,126 @@ export default function AdminServicesPage() {
                       onChange={(e) => setSvcCategory(e.target.value)}
                       style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(212, 175, 55, 0.4)", color: "#FFF" }}
                     >
-                      <option value="Home & Daily Life Services">🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Home & Life)</option>
-                      <option value="Vehicle & Transport">🚗 2. Vehicle & Transport (વાહન અને ટ્રાન્સપોર્ટ)</option>
-                      <option value="Computer & Digital Services">💻 3. Computer & Digital Services (ડિજિટલ સેવાઓ)</option>
-                      <option value="Education Services">📚 4. Education Services (શિક્ષણ અને કોચિંગ)</option>
-                      <option value="Job & Business Services">💼 5. Job & Business Services (રોજગાર અને ઉદ્યોગ)</option>
-                      <option value="Legal & Financial Services">⚖️ 6. Legal & Financial Services (કાનૂની અને ફાઇનાન્સ)</option>
-                      <option value="Health & Emergency">🏥 7. Health & Emergency (આરોગ્ય અને ઇમરજન્સી)</option>
-                      <option value="Business & Local Shops">🏪 8. Business & Local Shops (વેપાર અને દુકાનો)</option>
-                      <option value="Skilled Professionals">🧑🔧 9. Skilled Professionals (કુશળ કારીગરો)</option>
-                      <option value="General">🤝 General Service</option>
+                      <optgroup label="🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Home & Daily Life)">
+                        <option value="Home & Daily Life Services">🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Main Category)</option>
+                        <option value="Construction">🏠 ઘર બાંધકામ / Construction</option>
+                        <option value="Mason Work">🧱 Mason / Raj Mistri (રાજ મિસ્ત્રી)</option>
+                        <option value="Painter">🎨 Painter (કલરકામ & પેઇન્ટિંગ)</option>
+                        <option value="Plumber">🔧 Plumber (પ્લમ્બિંગ & ગીઝર)</option>
+                        <option value="Electrician">⚡ Electrician (ઇલેક્ટ્રિશિયન & વાયરિંગ)</option>
+                        <option value="AC & Fridge Repair">❄️ AC / Fridge Repair (એસી & ફ્રિજ રીપેર)</option>
+                        <option value="Carpenter">🪚 Carpenter (સુથારીકામ & ફર્નિચર)</option>
+                        <option value="Aluminium & Glass">🪟 Aluminium / Glass Work</option>
+                        <option value="Furniture & Interior">🚪 Furniture / Interior Design</option>
+                        <option value="House Cleaning">🧹 House Cleaning & Housekeeping</option>
+                        <option value="Pest Control">🐜 Pest Control (ઉધઇ & જંતુનાશક)</option>
+                        <option value="Packers & Movers">🚚 Packers & Movers (શિફ્ટિંગ)</option>
+                      </optgroup>
+                      <optgroup label="🚗 2. Vehicle & Transport">
+                        <option value="Vehicle & Transport">🚗 2. Vehicle & Transport (Main Category)</option>
+                        <option value="Car Rental">🚗 Car Rental (કાર રેન્ટલ & બુકિંગ)</option>
+                        <option value="Bike Repair">🛵 Bike / Scooter Repair</option>
+                        <option value="Car Garage">🚘 Car Repair / Garage</option>
+                        <option value="Tyre & Puncture">🛞 Tyre & Puncture (પંચર સર્વિસ)</option>
+                        <option value="Battery Service">🔋 Battery Service</option>
+                        <option value="Taxi Service">🚕 Taxi / Cab Service</option>
+                        <option value="Bus & Tempo">🚌 Bus / Tempo Transport</option>
+                        <option value="Goods Transport">🚛 Goods Transport (માલસામાન)</option>
+                        <option value="Driver Service">🚗 Driver Service (ડ્રાઇવર)</option>
+                        <option value="Parking Service">🅿️ Parking Service</option>
+                      </optgroup>
+                      <optgroup label="💻 3. Computer & Digital Services">
+                        <option value="Computer & Digital Services">💻 3. Computer & Digital Services (Main Category)</option>
+                        <option value="Computer Repair">💻 Computer / Laptop Repair</option>
+                        <option value="Printer Repair">🖨️ Printer Repair & Cartridge</option>
+                        <option value="Mobile Repair">📱 Mobile Repair (મોબાઇલ સર્વિસ)</option>
+                        <option value="Website Development">🌐 Website Development</option>
+                        <option value="App Development">📱 App Development</option>
+                        <option value="Graphic Design">🎨 Graphic Design & Banner</option>
+                        <option value="Printing & Xerox">🖨️ Printing / Xerox Press</option>
+                        <option value="Photo Studio">📸 Photo Studio & Photography</option>
+                        <option value="Online Form Filling">🪪 Online Form Filling (સરકારી ફોર્મ)</option>
+                        <option value="Document Scanning">📄 Document Scanning & PDF</option>
+                        <option value="Digital Payment">💳 Digital Payment Assistance</option>
+                      </optgroup>
+                      <optgroup label="📚 4. Education Services">
+                        <option value="Education Services">📚 4. Education Services (Main Category)</option>
+                        <option value="Tuition & Coaching">👨🏫 Tuition / Coaching Classes</option>
+                        <option value="School Admission">🏫 School Admission Guidance</option>
+                        <option value="College Admission">🎓 College Admission Guidance</option>
+                        <option value="Competitive Exams">📝 Competitive Exam Coaching (GPSC/TET)</option>
+                        <option value="Career Guidance">💼 Career Guidance & Mentorship</option>
+                        <option value="Foreign Study">🌍 Foreign Study Guidance (વિદેશ અભ્યાસ)</option>
+                        <option value="Books & Stationery">📖 Books / Stationery Shop</option>
+                        <option value="Computer Training">💻 Computer Training Institute</option>
+                        <option value="English Speaking">🗣️ English Speaking Course</option>
+                        <option value="Scholarship Info">🏆 Scholarship Information</option>
+                      </optgroup>
+                      <optgroup label="💼 5. Job & Business Services">
+                        <option value="Job & Business Services">💼 5. Job & Business Services (Main Category)</option>
+                        <option value="Job Placement">💼 Job Placement (નોકરી માહિતી)</option>
+                        <option value="Skilled Jobs">👷 Skilled Worker Jobs</option>
+                        <option value="Private Jobs">🏢 Private Job Information</option>
+                        <option value="Government Jobs">🏛️ Government Job Guidance</option>
+                        <option value="Resume & CV">📄 Resume / CV Making</option>
+                        <option value="Interview Prep">💼 Interview Preparation</option>
+                        <option value="Business Directory">🏪 Business Directory (વેપારી ડિરેક્ટરી)</option>
+                        <option value="Business Networking">🤝 Business Networking</option>
+                        <option value="Business Consultant">📈 Business Consultant</option>
+                        <option value="GST & Tax">🧾 GST / Tax Consultant</option>
+                      </optgroup>
+                      <optgroup label="⚖️ 6. Legal & Financial Services">
+                        <option value="Legal & Financial Services">⚖️ 6. Legal & Financial Services (Main Category)</option>
+                        <option value="Advocate & Legal">⚖️ Advocate / Legal Advice (વકીલ સલાહ)</option>
+                        <option value="Document Writer">📑 Document Writer (દસ્તાવેજ લેખક)</option>
+                        <option value="Bank Loan">🏦 Bank Loan Assistance (હોમ/બિઝનેસ લોન)</option>
+                        <option value="Financial Consultant">💰 Financial Consultant</option>
+                        <option value="Income Tax">🧾 Income Tax / GST Filing</option>
+                        <option value="Property Docs">🏠 Property Documents & Registry</option>
+                        <option value="Insurance Agent">📜 Insurance Agent (લાઇફ/મેડીક્લેમ)</option>
+                        <option value="Finance Services">💳 Loan / Finance Services</option>
+                        <option value="Banking Assistance">🏦 Banking Assistance</option>
+                      </optgroup>
+                      <optgroup label="🏥 7. Health & Emergency">
+                        <option value="Health & Emergency">🏥 7. Health & Emergency (Main Category)</option>
+                        <option value="Hospital">🏥 Hospital (હોસ્પિટલ)</option>
+                        <option value="Doctor">👨⚕️ Doctor (ડૉક્ટર પેનલ)</option>
+                        <option value="Dentist">🦷 Dentist (દાંતના ડૉક્ટર)</option>
+                        <option value="Eye Care">👓 Eye Care (આંખના ડૉક્ટર/ચશ્મા)</option>
+                        <option value="Medical Store">💊 Medical Store (દવાની દુકાન)</option>
+                        <option value="Ambulance">🚑 Ambulance (એમ્બ્યુલન્સ ૨૪x૭)</option>
+                        <option value="Blood Bank">🩸 Blood Donor Directory (રક્તદાતા)</option>
+                        <option value="Diagnostic Lab">🧪 Laboratory / Diagnostic</option>
+                        <option value="Home Nursing">🧑⚕️ Home Nursing Care</option>
+                        <option value="Elderly Assistance">♿ Elderly Assistance (વરિષ્ઠ સહાય)</option>
+                      </optgroup>
+                      <optgroup label="🏪 8. Business & Local Shops">
+                        <option value="Business & Local Shops">🏪 8. Business & Local Shops (Main Category)</option>
+                        <option value="Grocery Shop">🛒 Grocery (કરિયાણું)</option>
+                        <option value="Garments">👗 Clothes / Garments (કપડાં)</option>
+                        <option value="Footwear">👟 Footwear (શૂઝ/ચંપલ)</option>
+                        <option value="Mobile Shop">📱 Mobile Shop (મોબાઇલ દુકાન)</option>
+                        <option value="Electronics">💻 Electronics Shop</option>
+                        <option value="Furniture Shop">🪑 Furniture Shop</option>
+                        <option value="Jewellery">💎 Jewellery (સોના-ચાંદી જ્વેલર્સ)</option>
+                        <option value="Bakery">🍰 Bakery & Sweets</option>
+                        <option value="Restaurant">🍽️ Restaurant / Food Zone</option>
+                        <option value="Printing Press">🖨️ Printing Press</option>
+                      </optgroup>
+                      <optgroup label="🧑🔧 9. Skilled Professionals">
+                        <option value="Skilled Professionals">🧑🔧 9. Skilled Professionals (Main Category)</option>
+                        <option value="Electrician Trade">👨🔧 Electrician (ઇલેક્ટ્રિશિયન)</option>
+                        <option value="Plumber Trade">🔧 Plumber (પ્લમ્બર)</option>
+                        <option value="Carpenter Trade">🪚 Carpenter (સુથાર)</option>
+                        <option value="Welder">🔨 Welder (વેલ્ડર)</option>
+                        <option value="Mason Trade">🧱 Mason (રાજ મિસ્ત્રી)</option>
+                        <option value="Painter Trade">🎨 Painter (પેઇન્ટર)</option>
+                        <option value="Computer Tech">👨💻 Computer Technician</option>
+                        <option value="Mobile Tech">📱 Mobile Technician</option>
+                        <option value="Mechanic">🚗 Mechanic (કાર/મોટર ગેરેજ)</option>
+                        <option value="AC Tech">❄️ AC Technician</option>
+                        <option value="TV Tech">📺 TV Technician</option>
+                      </optgroup>
                     </select>
                   </div>
 
