@@ -136,13 +136,13 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Top Header Artwork Section with Lord Buddha, Peacocks & Banner Title
+              // Top Header Artwork Section with Lord Buddha, Peacocks, Crest & Government Employees Pill Banner
               SizedBox(
                 width: double.infinity,
-                height: 240,
+                height: 310,
                 child: Stack(
                   children: [
-                    // Master Peacock & Buddha Header Image Asset Background
+                    // Full Peacock & Buddha Header Image Banner Background
                     Positioned.fill(
                       child: Image.asset(
                         'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
@@ -159,11 +159,11 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                       ),
                     ),
 
-                    // Top Navigation Overlay Buttons Bar
+                    // Top Navigation Overlay Action Bar
                     Positioned(
-                      top: 12,
-                      left: 12,
-                      right: 12,
+                      top: 10,
+                      left: 10,
+                      right: 10,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -173,29 +173,6 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
                               onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF041126).withOpacity(0.9),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.4),
-                                  blurRadius: 6,
-                                ),
-                              ],
-                            ),
-                            child: const Text(
-                              'VANKAR SAMAJ MATRIMONY',
-                              style: TextStyle(
-                                color: Color(0xFFFFD700),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 12,
-                                letterSpacing: 0.5,
-                              ),
                             ),
                           ),
                           CircleAvatar(
@@ -210,24 +187,22 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                       ),
                     ),
 
-                    // Lower Floating Title Crest
+                    // Lower Floating Government Employees Section Badge Ribbon
                     Positioned(
-                      bottom: 12,
+                      bottom: 8,
                       left: 12,
                       right: 12,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF002B5B), Color(0xFF0056B3), Color(0xFF002B5B)],
-                          ),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                          color: Colors.white.withOpacity(0.96),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: const Color(0xFF0056B3), width: 1.5),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
                             ),
                           ],
                         ),
@@ -237,12 +212,12 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: const BoxDecoration(
-                                color: Color(0xFF003875),
+                                color: Color(0xFF0056B3),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.groups_rounded, color: Color(0xFFFFD700), size: 24),
+                              child: const Icon(Icons.groups_rounded, color: Colors.white, size: 20),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 8),
                             const Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
@@ -250,20 +225,17 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                                 Text(
                                   'Government Employees',
                                   style: TextStyle(
-                                    color: Colors.white,
+                                    color: Color(0xFF002B5B),
                                     fontWeight: FontWeight.w900,
-                                    fontSize: 18,
-                                    shadows: [
-                                      Shadow(color: Colors.black, blurRadius: 4, offset: Offset(1, 1)),
-                                    ],
+                                    fontSize: 16,
                                   ),
                                 ),
                                 Text(
                                   'સરકારી સેવા - સમાજની સેવા',
                                   style: TextStyle(
-                                    color: Color(0xFFFFD700),
+                                    color: Color(0xFFD90429),
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                                    fontSize: 11,
                                   ),
                                 ),
                               ],
