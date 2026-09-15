@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dio/dio.dart';
+import '../../../core/config/api_config.dart';
 import '../../../shared/providers/api_config_provider.dart';
 import '../data/profile_api.dart';
 import '../data/profile_models.dart';
