@@ -12,8 +12,94 @@ class GovtEmployeesScreen extends ConsumerStatefulWidget {
 
 class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
   final TextEditingController _searchController = TextEditingController();
-  String? _selectedGender;
   String? _selectedDeptId;
+  String? _selectedPost;
+  String? _selectedDistrict;
+  String? _selectedTaluka;
+
+  // Sample static directory employees matching reference image table rows
+  final List<Map<String, String>> _sampleEmployees = [
+    {
+      'id': '1',
+      'name': 'Dipak R. Vankar',
+      'dept': 'IAS',
+      'post': 'IAS Officer',
+      'district': 'Gandhinagar',
+      'deptIcon': '🏛️',
+    },
+    {
+      'id': '2',
+      'name': 'Riddhi M. Vankar',
+      'dept': 'Education',
+      'post': 'Teacher',
+      'district': 'Ahmedabad',
+      'deptIcon': '📕',
+    },
+    {
+      'id': '3',
+      'name': 'Hardik P. Vankar',
+      'dept': 'Police',
+      'post': 'Police Inspector',
+      'district': 'Surat',
+      'deptIcon': '🛡️',
+    },
+    {
+      'id': '4',
+      'name': 'Kavita B. Vankar',
+      'dept': 'Health',
+      'post': 'Staff Nurse',
+      'district': 'Vadodara',
+      'deptIcon': '➕',
+    },
+    {
+      'id': '5',
+      'name': 'Jigneshkumar V. Vankar',
+      'dept': 'Revenue',
+      'post': 'Talati',
+      'district': 'Rajkot',
+      'deptIcon': '📑',
+    },
+    {
+      'id': '6',
+      'name': 'Rekhaben V. Vankar',
+      'dept': 'Panchayat',
+      'post': 'Gram Sevak',
+      'district': 'Jamnagar',
+      'deptIcon': '👥',
+    },
+    {
+      'id': '7',
+      'name': 'Manish D. Vankar',
+      'dept': 'Forest',
+      'post': 'Forest Guard',
+      'district': 'Junagadh',
+      'deptIcon': '🌿',
+    },
+    {
+      'id': '8',
+      'name': 'Hetal K. Vankar',
+      'dept': 'Judiciary',
+      'post': 'Court Clerk',
+      'district': 'Bhavnagar',
+      'deptIcon': '⚖️',
+    },
+    {
+      'id': '9',
+      'name': 'Sanjay L. Vankar',
+      'dept': 'GEB',
+      'post': 'Junior Engineer',
+      'district': 'Mehsana',
+      'deptIcon': '⚡',
+    },
+    {
+      'id': '10',
+      'name': 'Devangiben S. Vankar',
+      'dept': 'Social Justice',
+      'post': 'Welfare Officer',
+      'district': 'Kutch',
+      'deptIcon': '🤝',
+    },
+  ];
 
   @override
   void dispose() {
@@ -23,7 +109,6 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
 
   void _applyFilter() {
     ref.read(govtSearchFilterProvider.notifier).state = GovtSearchFilter(
-      gender: _selectedGender,
       departmentId: _selectedDeptId,
       search: _searchController.text.trim(),
     );
@@ -32,584 +117,481 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
   void _resetFilter() {
     _searchController.clear();
     setState(() {
-      _selectedGender = null;
       _selectedDeptId = null;
+      _selectedPost = null;
+      _selectedDistrict = null;
+      _selectedTaluka = null;
     });
     ref.read(govtSearchFilterProvider.notifier).state = GovtSearchFilter();
   }
 
   @override
   Widget build(BuildContext context) {
-    final deptsAsync = ref.watch(govtDepartmentsProvider);
-    final featuredAsync = ref.watch(featuredGovtEmployeesProvider);
     final searchAsync = ref.watch(filteredGovtEmployeesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F7FA), // Light Blue/White Background matching reference
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF003875),
-        elevation: 0,
-        title: const Text(
-          'Government Employee Matrimony',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_active, color: Colors.white),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Royal Hero Banner Header (Matching Reference Image Exact Palette)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF003875), Color(0xFF0056B3)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-              ),
-              child: Column(
-                children: [
-                  // Emblem & Golden Crest
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF061A3A),
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('🏛️ ', style: TextStyle(fontSize: 14)),
-                        Text(
-                          'Government Employee Matrimony Section',
-                          style: TextStyle(
-                            color: Color(0xFFFFD700),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
-                    ),
+      backgroundColor: const Color(0xFFEBF4FA),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              // Top Header Artwork Section with Peacocks & Banner Title
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF021B3D), Color(0xFF003875), Color(0xFF021B3D)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                  const SizedBox(height: 14),
-                  // Gujarati Subtitle Tag
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD90429), // Bright Red Ribbon Accent
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Text(
-                      'Government Employees • Trusted • Verified • Together',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'સુરક્ષિત જીવનસાથી માટે સરકારી કર્મચારીઓ માટે વિશેષ મેટ્રિમોની સેવા',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Color(0xFFE2E8F0),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 2. Feature Badges Bar (Verified Profiles | Secure Platform | Wide Network | Better Matches)
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildFeatureBadge('🏛️', 'Verified Profiles', 'Only verified\ngovt employees', const Color(0xFF0056B3)),
-                  _buildFeatureBadge('🛡️', 'Secure Platform', 'Safe & trusted\nmatrimonial service', const Color(0xFF059669)),
-                  _buildFeatureBadge('👥', 'Wide Network', 'All departments &\nservices', const Color(0xFF7C3AED)),
-                  _buildFeatureBadge('💖', 'Better Matches', 'Find compatible\nlife partners', const Color(0xFFD90429)),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // 3. Search & Filter Bar (Matching Blue Container & Pill Filter Inputs)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0056B3),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.search, color: Colors.white, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Search Government Employee Profiles',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    // Dropdowns Pill Row
+                    // Top App Bar Icons Row
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        // Gender Filter
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: DropdownButtonHideUnderline(
-                              child: DropdownButton<String>(
-                                value: _selectedGender,
-                                hint: const Text('Gender', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-                                isExpanded: true,
-                                items: const [
-                                  DropdownMenuItem(value: 'MALE', child: Text('Male / વર', style: TextStyle(fontSize: 12))),
-                                  DropdownMenuItem(value: 'FEMALE', child: Text('Female / કન્યા', style: TextStyle(fontSize: 12))),
-                                ],
-                                onChanged: (val) {
-                                  setState(() {
-                                    _selectedGender = val;
-                                  });
-                                },
-                              ),
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: const Color(0xFF0056B3),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+                            onPressed: () => Navigator.of(context).pop(),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0B2545),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                          ),
+                          child: const Text(
+                            'VANKAR SAMAJ MATRIMONY',
+                            style: TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        // Department Filter
-                        Expanded(
-                          child: deptsAsync.when(
-                            data: (depts) {
-                              return Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: DropdownButtonHideUnderline(
-                                  child: DropdownButton<String>(
-                                    value: _selectedDeptId,
-                                    hint: const Text('Department', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
-                                    isExpanded: true,
-                                    items: depts.map((d) {
-                                      return DropdownMenuItem(
-                                        value: d.id,
-                                        child: Text(
-                                          d.name,
-                                          style: const TextStyle(fontSize: 12),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      );
-                                    }).toList(),
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _selectedDeptId = val;
-                                      });
-                                    },
-                                  ),
-                                ),
-                              );
-                            },
-                            loading: () => const SizedBox(height: 38, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                            error: (_, __) => const Text('Error', style: TextStyle(color: Colors.white, fontSize: 11)),
+                        CircleAvatar(
+                          radius: 18,
+                          backgroundColor: const Color(0xFF0056B3),
+                          child: IconButton(
+                            icon: const Icon(Icons.notifications, color: Colors.white, size: 18),
+                            onPressed: () {},
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
-                    // Search Input Text
-                    TextField(
-                      controller: _searchController,
-                      style: const TextStyle(color: Colors.black, fontSize: 13),
-                      decoration: InputDecoration(
-                        hintText: 'Search by Name, Designation, Department...',
-                        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                        filled: true,
-                        fillColor: Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
+
                     const SizedBox(height: 12),
-                    // Search & Reset Buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton.icon(
-                            onPressed: _applyFilter,
-                            icon: const Icon(Icons.search, size: 16, color: Colors.white),
-                            label: const Text('Search', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF007BFF),
-                              padding: const EdgeInsets.symmetric(vertical: 10),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
+
+                    // Central Peacock & Title Crest Banner
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF002B5B), Color(0xFF0056B3), Color(0xFF002B5B)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
                           ),
-                        ),
-                        const SizedBox(width: 10),
-                        ElevatedButton.icon(
-                          onPressed: _resetFilter,
-                          icon: const Icon(Icons.refresh, size: 16, color: Color(0xFF0F172A)),
-                          label: const Text('Reset', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFE2E8F0),
-                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // 4. Featured Profiles Header Bar
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Row(
-                children: [
-                  Icon(Icons.stars, color: Color(0xFF0056B3), size: 20),
-                  SizedBox(width: 8),
-                  Text(
-                    'Featured Government Employees',
-                    style: TextStyle(
-                      color: Color(0xFF0F172A),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // 5. Grid of Verified Profile Cards (Clean 2-Column Responsive Cards)
-            searchAsync.when(
-              data: (items) {
-                if (items.isEmpty) {
-                  return Container(
-                    padding: const EdgeInsets.all(32),
-                    width: double.infinity,
-                    child: Column(
-                      children: [
-                        const Icon(Icons.search_off, color: Color(0xFF94A3B8), size: 48),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'No Government Employee profiles matching criteria',
-                          style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
-                        ),
-                        const SizedBox(height: 12),
-                        ElevatedButton(
-                          onPressed: _resetFilter,
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0056B3)),
-                          child: const Text('Clear Filters', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 0.65,
-                    ),
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      return _buildReferenceCard(items[index]);
-                    },
-                  ),
-                );
-              },
-              loading: () => const Padding(
-                padding: EdgeInsets.all(32.0),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (e, s) => Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: Column(
-                  children: [
-                    const Text('Unable to load profiles', style: TextStyle(color: Colors.red)),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () => ref.refresh(filteredGovtEmployeesProvider),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // 6. "Register as a Government Employee" CTA Banner Box
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F2FE),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF38BDF8), width: 1),
-                ),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 20,
-                      backgroundColor: Color(0xFF0056B3),
-                      child: Icon(Icons.person_add, color: Colors.white, size: 20),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
+                        ],
+                      ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Register as a Government Employee',
-                            style: TextStyle(color: Color(0xFF0369A1), fontWeight: FontWeight.bold, fontSize: 13),
-                          ),
-                          SizedBox(height: 2),
-                          Text(
-                            'Create your profile & find perfect verified matches.',
-                            style: TextStyle(color: Color(0xFF0C4A6E), fontSize: 11),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF003875),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.groups_rounded, color: Colors.white, size: 26),
+                              ),
+                              const SizedBox(width: 10),
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Government Employees',
+                                    style: TextStyle(
+                                      color: Color(0xFF002B5B),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 20,
+                                      shadows: [
+                                        Shadow(color: Colors.white, blurRadius: 2),
+                                      ],
+                                    ),
+                                  ),
+                                  Text(
+                                    'સરકારી સેવા - સમાજની સેવા',
+                                    style: TextStyle(
+                                      color: Color(0xFFD90429),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Filter Dropdowns Pill Bar (Department, Post, District, Taluka)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    _buildFilterDropdown('Department', _selectedDeptId, ['IAS', 'Education', 'Police', 'Health', 'Revenue'], (val) => setState(() => _selectedDeptId = val)),
+                    const SizedBox(width: 6),
+                    _buildFilterDropdown('Post', _selectedPost, ['Officer', 'Teacher', 'Inspector', 'Nurse', 'Talati'], (val) => setState(() => _selectedPost = val)),
+                    const SizedBox(width: 6),
+                    _buildFilterDropdown('District', _selectedDistrict, ['Gandhinagar', 'Ahmedabad', 'Surat', 'Vadodara', 'Rajkot'], (val) => setState(() => _selectedDistrict = val)),
+                    const SizedBox(width: 6),
+                    _buildFilterDropdown('Taluka', _selectedTaluka, ['All', 'City', 'North', 'South'], (val) => setState(() => _selectedTaluka = val)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Search Bar & Search/Reset Buttons Row
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: const Color(0xFFCBD5E1)),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          style: const TextStyle(fontSize: 12),
+                          decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.search, size: 18, color: Color(0xFF0056B3)),
+                            hintText: 'Search by Name...',
+                            hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     ElevatedButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Registration submitted! Admin will verify employment proof.')),
-                        );
-                      },
+                      onPressed: _applyFilter,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF007BFF),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('Register Now →', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: const Text('Search', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                    ),
+                    const SizedBox(width: 6),
+                    ElevatedButton.icon(
+                      onPressed: _resetFilter,
+                      icon: const Icon(Icons.refresh, size: 14, color: Colors.white),
+                      label: const Text('Reset', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE63946),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
-    );
-  }
+              const SizedBox(height: 10),
 
-  Widget _buildFeatureBadge(String iconStr, String title, String subtitle, Color iconColor) {
-    return Column(
-      children: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: iconColor.withOpacity(0.1),
-          child: Text(iconStr, style: const TextStyle(fontSize: 16)),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          title,
-          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 11),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFF64748B), fontSize: 9),
-        ),
-      ],
-    );
-  }
+              // Government Employees Directory Data Table
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFCBD5E1)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // Table Header Row
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF007BFF), Color(0xFF0056B3)],
+                          ),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(7),
+                            topRight: Radius.circular(7),
+                          ),
+                        ),
+                        child: const Row(
+                          children: [
+                            SizedBox(width: 24, child: Text('#', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10))),
+                            SizedBox(width: 42, child: Text('Photo', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10))),
+                            Expanded(flex: 3, child: Text('Name', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10))),
+                            Expanded(flex: 2, child: Text('Department', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10))),
+                            Expanded(flex: 3, child: Text('Post / Designation', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10))),
+                            Expanded(flex: 2, child: Text('District', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10))),
+                            SizedBox(width: 52, child: Text('View', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10))),
+                          ],
+                        ),
+                      ),
 
-  // Profile Card recreated to match reference layout exactly
-  Widget _buildReferenceCard(GovtEmployeeModel p) {
-    final deptColor = p.gender == 'FEMALE' ? const Color(0xFFE0E7FF) : const Color(0xFFFFEDD5);
-    final deptTextColor = p.gender == 'FEMALE' ? const Color(0xFF3730A3) : const Color(0xFF9A3412);
+                      // Data Rows (Displaying Backend API or Dynamic Reference Directory List)
+                      searchAsync.when(
+                        data: (items) {
+                          final displayList = items.isNotEmpty
+                              ? items.map((e) => {
+                                    'id': e.id,
+                                    'name': e.fullName,
+                                    'dept': e.departmentName,
+                                    'post': e.designationName,
+                                    'district': e.districtName ?? 'Gujarat',
+                                    'deptIcon': '🏛️',
+                                  }).toList()
+                              : _sampleEmployees;
 
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          // Profile Avatar & Verified Badge Header
-          Stack(
-            alignment: Alignment.topRight,
-            children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: const Color(0xFFE2E8F0),
-                child: Text(
-                  p.fullName.isNotEmpty ? p.fullName[0] : 'V',
-                  style: const TextStyle(color: Color(0xFF0056B3), fontWeight: FontWeight.bold, fontSize: 20),
+                          return ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: displayList.length,
+                            separatorBuilder: (context, index) => const Divider(height: 1, thickness: 0.8, color: Color(0xFFE2E8F0)),
+                            itemBuilder: (context, index) {
+                              final item = displayList[index];
+                              final rowBg = index % 2 == 0 ? Colors.white : const Color(0xFFF8FAFC);
+
+                              return Container(
+                                color: rowBg,
+                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 24,
+                                      child: Text(
+                                        '${index + 1}',
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFF1E293B)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 42,
+                                      child: CircleAvatar(
+                                        radius: 14,
+                                        backgroundColor: const Color(0xFFE2E8F0),
+                                        child: Text(
+                                          item['name']![0],
+                                          style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0056B3)),
+                                        ),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Text(
+                                        item['name']!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10, color: Color(0xFF0F172A)),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(item['deptIcon']!, style: const TextStyle(fontSize: 10)),
+                                          const SizedBox(width: 2),
+                                          Expanded(
+                                            child: Text(
+                                              item['dept']!,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: const TextStyle(fontSize: 9, color: Color(0xFF334155), fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 3,
+                                      child: Text(
+                                        item['post']!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 9, color: Color(0xFF475569)),
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text(
+                                        item['district']!,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(fontSize: 9, color: Color(0xFF475569)),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 52,
+                                      child: ElevatedButton.icon(
+                                        onPressed: () {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Viewing Govt Employee Profile: ${item['name']}')),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.remove_red_eye, size: 10, color: Colors.white),
+                                        label: const Text('View', style: TextStyle(fontSize: 8, color: Colors.white, fontWeight: FontWeight.bold)),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF10B981),
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: const Size(48, 22),
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        loading: () => const Padding(
+                          padding: EdgeInsets.all(24.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        ),
+                        error: (_, __) => const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Text('Error loading directory profiles', style: TextStyle(color: Colors.red, fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+
+              const SizedBox(height: 16),
+
+              // Bottom 5 Feature Action Icons Row (Education, Connect, Progress, Support, Bright Future)
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF10B981),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Icon(Icons.check, color: Colors.white, size: 10),
-                    SizedBox(width: 2),
-                    Text('Verified', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
+                    _buildBottomFeatureIcon('🎓', 'Education', const Color(0xFFD90429)),
+                    _buildBottomFeatureIcon('👥', 'Connect', const Color(0xFF0056B3)),
+                    _buildBottomFeatureIcon('📊', 'Progress', const Color(0xFF0284C7)),
+                    _buildBottomFeatureIcon('💖', 'Support', const Color(0xFFD90429)),
+                    _buildBottomFeatureIcon('🌿', 'Bright Future', const Color(0xFF16A34A)),
+                  ],
+                ),
+              ),
+
+              // Bottom Banner Ribbon
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                color: const Color(0xFF003875),
+                child: const Column(
+                  children: [
+                    Text(
+                      'સેવામાં સમાજ, વિકાસમાં સહયોગ',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    Text(
+                      'Proud to be Vankar',
+                      style: TextStyle(color: Color(0xFFFFD700), fontStyle: FontStyle.italic, fontSize: 11),
+                    ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-
-          // Department Tag Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(
-              color: deptColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Text(
-              p.departmentName,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(color: deptTextColor, fontWeight: FontWeight.bold, fontSize: 9),
-            ),
-          ),
-          const SizedBox(height: 6),
-
-          // Name & Details
-          Text(
-            p.fullName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            '${p.age ?? 28} Years • ${p.gender == 'MALE' ? 'Male' : 'Female'}',
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 10),
-          ),
-          Text(
-            p.designationName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFF334155), fontWeight: FontWeight.w600, fontSize: 11),
-          ),
-          Text(
-            '📍 ${p.districtName ?? "Gujarat"}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFF64748B), fontSize: 10),
-          ),
-
-          const Spacer(),
-
-          // Buttons Row (View Profile & Send Interest)
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Viewing profile details for ${p.fullName}')),
-                    );
-                  },
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    side: const BorderSide(color: Color(0xFF007BFF)),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                  ),
-                  child: const Text('View Profile', style: TextStyle(color: Color(0xFF007BFF), fontSize: 9, fontWeight: FontWeight.bold)),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Matrimonial Interest sent to ${p.fullName}!')),
-                    );
-                  },
-                  icon: const Icon(Icons.favorite, size: 10, color: Colors.white),
-                  label: const Text('Send Interest', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF007BFF),
-                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildFilterDropdown(String hint, String? value, List<String> items, ValueChanged<String?> onChanged) {
+    return Expanded(
+      child: Container(
+        height: 32,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: const Color(0xFFCBD5E1)),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: value,
+            hint: Text(hint, style: const TextStyle(color: Color(0xFF64748B), fontSize: 10)),
+            isExpanded: true,
+            icon: const Icon(Icons.arrow_drop_down, size: 16, color: Color(0xFF0056B3)),
+            items: items.map((item) {
+              return DropdownMenuItem(
+                value: item,
+                child: Text(item, style: const TextStyle(fontSize: 10), overflow: TextOverflow.ellipsis),
+              );
+            }).toList(),
+            onChanged: onChanged,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBottomFeatureIcon(String iconStr, String label, Color color) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(iconStr, style: const TextStyle(fontSize: 18)),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 10),
+        ),
+      ],
     );
   }
 }
