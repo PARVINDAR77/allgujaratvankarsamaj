@@ -36,6 +36,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (_isLoading) return;
     setState(() => _isLoading = true);
 
+    if (_pageController.hasClients) {
+      _pageController.jumpToPage(1);
+    }
+
     final useEmail = email ?? _emailController.text.trim();
     final usePassword = password ?? _passwordController.text;
 
@@ -43,6 +47,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           useEmail,
           usePassword,
         );
+
+    // Keep second poster image visible for 2.5 seconds before navigating
+    await Future.delayed(const Duration(milliseconds: 2500));
 
     if (mounted) {
       setState(() => _isLoading = false);
@@ -366,11 +373,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(25),
-                                onTap: () {
+                                onTap: () async {
                                   if (_pageController.hasClients) {
                                     _pageController.jumpToPage(1);
                                   }
-                                  context.go('/register');
+                                  await Future.delayed(const Duration(milliseconds: 2500));
+                                  if (context.mounted) {
+                                    context.go('/register');
+                                  }
                                 },
                               ),
                             ),
