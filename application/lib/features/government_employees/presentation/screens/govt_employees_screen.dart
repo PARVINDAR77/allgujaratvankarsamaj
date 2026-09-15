@@ -145,11 +145,11 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                     // Full Peacock & Buddha Header Image Banner Background
                     Positioned.fill(
                       child: Image.asset(
-                        'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
+                        'assets/images/WhatsApp Image 2026-09-08 at 10.08.45 PM.jpeg',
                         fit: BoxFit.cover,
                         alignment: Alignment.topCenter,
                         errorBuilder: (context, error, stackTrace) => Image.asset(
-                          'assets/images/buddha_home_poster.jpg',
+                          'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
                           fit: BoxFit.cover,
                           alignment: Alignment.topCenter,
                           errorBuilder: (context, error, stackTrace) => Container(
