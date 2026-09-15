@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/models/govt_employee_model.dart';
+import '../../data/models/govt_employee_model.dart';
 import '../providers/govt_employees_provider.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
