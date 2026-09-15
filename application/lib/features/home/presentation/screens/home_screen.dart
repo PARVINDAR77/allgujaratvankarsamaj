@@ -224,21 +224,7 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ),
 
-                        // 3.5. Central Golden Circle: Government Employees Section
-                        Positioned(
-                          left: screenW * 0.22,
-                          top: totalImageH * 0.360,
-                          width: screenW * 0.56,
-                          height: totalImageH * 0.320,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(150),
-                              onTap: () => context.push('/government-employees'),
-                            ),
-                          ),
-                        ),
+
 
                         // 4. Left Action Box 1: છોકરો શોધો (Find Boy)
                         Positioned(
@@ -428,6 +414,22 @@ class HomeScreen extends ConsumerWidget {
                               splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
                               borderRadius: BorderRadius.circular(30),
                               onTap: () => context.push('/family-details'),
+                            ),
+                          ),
+                        ),
+
+                        // 16. Central Golden Circle: Government Employees Section (Top Layer Hotspot)
+                        Positioned(
+                          left: screenW * 0.20,
+                          top: totalImageH * 0.350,
+                          width: screenW * 0.60,
+                          height: totalImageH * 0.340,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
+                              borderRadius: BorderRadius.circular(150),
+                              onTap: () => context.push('/government-employees'),
                             ),
                           ),
                         ),
