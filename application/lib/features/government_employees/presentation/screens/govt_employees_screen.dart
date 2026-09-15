@@ -136,120 +136,140 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Top Header Artwork Section with Peacocks & Banner Title
-              Container(
+              // Top Header Artwork Section with Lord Buddha, Peacocks & Banner Title
+              SizedBox(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF021B3D), Color(0xFF003875), Color(0xFF021B3D)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                ),
-                child: Column(
+                height: 240,
+                child: Stack(
                   children: [
-                    // Top App Bar Icons Row
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: const Color(0xFF0056B3),
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
-                            onPressed: () => Navigator.of(context).pop(),
+                    // Master Peacock & Buddha Header Image Asset Background
+                    Positioned.fill(
+                      child: Image.asset(
+                        'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.topCenter,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/images/buddha_home_poster.jpg',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.topCenter,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFF021B3D),
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0B2545),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
-                          ),
-                          child: const Text(
-                            'VANKAR SAMAJ MATRIMONY',
-                            style: TextStyle(
-                              color: Color(0xFFFFD700),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: const Color(0xFF0056B3),
-                          child: IconButton(
-                            icon: const Icon(Icons.notifications, color: Colors.white, size: 18),
-                            onPressed: () {},
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
 
-                    const SizedBox(height: 12),
-
-                    // Central Peacock & Title Crest Banner
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF002B5B), Color(0xFF0056B3), Color(0xFF002B5B)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.3),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
+                    // Top Navigation Overlay Buttons Bar
+                    Positioned(
+                      top: 12,
+                      left: 12,
+                      right: 12,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: const Color(0xFF003875).withOpacity(0.85),
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF041126).withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.4),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              'VANKAR SAMAJ MATRIMONY',
+                              style: TextStyle(
+                                color: Color(0xFFFFD700),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ),
+                          CircleAvatar(
+                            radius: 18,
+                            backgroundColor: const Color(0xFF003875).withOpacity(0.85),
+                            child: IconButton(
+                              icon: const Icon(Icons.notifications, color: Colors.white, size: 18),
+                              onPressed: () {},
+                            ),
                           ),
                         ],
                       ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF003875),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.groups_rounded, color: Colors.white, size: 26),
-                              ),
-                              const SizedBox(width: 10),
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Government Employees',
-                                    style: TextStyle(
-                                      color: Color(0xFF002B5B),
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 20,
-                                      shadows: [
-                                        Shadow(color: Colors.white, blurRadius: 2),
-                                      ],
-                                    ),
-                                  ),
-                                  Text(
-                                    'સરકારી સેવા - સમાજની સેવા',
-                                    style: TextStyle(
-                                      color: Color(0xFFD90429),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                    ),
+
+                    // Lower Floating Title Crest
+                    Positioned(
+                      bottom: 12,
+                      left: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF002B5B), Color(0xFF0056B3), Color(0xFF002B5B)],
                           ),
-                        ],
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.5),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF003875),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.groups_rounded, color: Color(0xFFFFD700), size: 24),
+                            ),
+                            const SizedBox(width: 10),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Government Employees',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 18,
+                                    shadows: [
+                                      Shadow(color: Colors.black, blurRadius: 4, offset: Offset(1, 1)),
+                                    ],
+                                  ),
+                                ),
+                                Text(
+                                  'સરકારી સેવા - સમાજની સેવા',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
