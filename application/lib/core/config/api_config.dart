@@ -1,6 +1,3 @@
-import 'dart:io' show Platform;
-import 'package:flutter/foundation.dart' show kIsWeb;
-
 enum Environment { development, staging, production }
 
 class ApiConfig {

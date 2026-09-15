@@ -16,6 +16,7 @@ import '../../features/profile/presentation/screens/create_profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/privacy_contact_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
+import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
 import '../../shared/presentation/screens/main_navigation_screen.dart';
@@ -43,8 +44,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final location = state.uri.toString();
 
-      // Redirect welcome/splash or root to /login
-      if (location == '/welcome' || location == '/splash') {
+      // Redirect welcome/splash/poster or root to /login
+      if (location == '/welcome' || location == '/splash' || location == '/poster') {
         return '/login';
       }
 
@@ -69,6 +70,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final initialPage = (pageParam != null && pageParam == '1') ? 1 : 0;
           return LoginScreen(initialPage: initialPage);
         },
+      ),
+      GoRoute(
+        path: '/poster',
+        name: 'poster',
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/register',
@@ -177,6 +183,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     path: 'edit',
                     name: 'profile-edit',
                     builder: (context, state) => const EditProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: 'under-review',
+                    name: 'profile-under-review',
+                    builder: (context, state) => const ProfileUnderReviewScreen(),
                   ),
                 ],
               ),

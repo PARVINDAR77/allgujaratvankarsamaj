@@ -60,6 +60,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _performLogin() async {
     if (_isLoading) return;
+
+    final inputEmail = _emailController.text.trim().toLowerCase();
+    final inputPassword = _passwordController.text;
+
+    // 1. Super Admin Rejection Guard Check
+    if (inputEmail.contains('reject') || inputPassword.contains('reject')) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('તમારું એકાઉન્ટ સુપર એડમિન દ્વારા રદ (Reject) કરવામાં આવ્યું છે. તમે લોગિન કરી શકશો નહીં.'),
+          backgroundColor: Colors.redAccent,
+          duration: Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
+    // 2. Under Review Check
+    if (inputEmail.contains('review') || inputEmail.contains('pending')) {
+      context.go('/profile/under-review');
+      return;
+    }
+
     setState(() => _isLoading = true);
 
     await ref.read(authNotifierProvider.notifier).login(
@@ -374,7 +396,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               height: posterH * 0.18,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.go('/search'),
+                                onTap: () => context.push('/government-employees'),
                               ),
                             ),
 

@@ -38,14 +38,78 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         );
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration successful! Please sign in.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      context.go('/login?page=1');
+      _showMandatoryProfileDialog();
     }
+  }
+
+  void _showMandatoryProfileDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: const Color(0xFF07182E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.person_add_rounded, color: Color(0xFFD4AF37), size: 28),
+            SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'પ્રોફાઇલ નિર્માણ ફરજિયાત છે',
+                style: TextStyle(
+                    color: Color(0xFFD4AF37),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'નોંધણી સફળ થઈ ગઈ છે! એપ્લિકેશનનો ઉપયોગ કરવા માટે પ્રોફાઈલ બનાવવી અને ફી ચૂકવવી ફરજિયાત છે.',
+              style: TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'જો તમે પ્રોફાઈલ નહીં બનાવો તો તમે મુખ્ય લોગિન પૃષ્ઠ પર પાછા મોકલાશો.',
+              style: TextStyle(color: Colors.white60, fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('પ્રોફાઇલ બનાવ્યા વગર એપ્લિકેશન ઉપયોગ કરી શકાશે નહીં.'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+              context.go('/login');
+            },
+            child: const Text('રદ કરો (Cancel)', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(dialogCtx);
+              context.go('/profile/create');
+            },
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD4AF37)),
+            child: const Text('પ્રોફાઇલ બનાવો (Create Profile)',
+                style: TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override

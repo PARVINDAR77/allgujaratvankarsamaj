@@ -181,8 +181,32 @@ class _ProfileFormState extends State<ProfileForm> {
     _educationCtrl.text = p?.education ?? '';
     _occupationCtrl.text = p?.occupation ?? '';
     _aboutCtrl.text = p?.about ?? '';
-    _selectedGender = p?.gender ?? 'MALE';
-    _selectedMaritalStatus = p?.maritalStatus ?? 'NEVER_MARRIED';
+    if (p?.gender != null) {
+      if (p!.gender.toUpperCase().contains('FEMALE')) {
+        _selectedGender = 'Female (સ્ત્રી)';
+      } else if (p.gender.toUpperCase().contains('OTHER')) {
+        _selectedGender = 'Other (અન્ય)';
+      } else {
+        _selectedGender = 'Male (પુરુષ)';
+      }
+    } else {
+      _selectedGender = 'Male (પુરુષ)';
+    }
+
+    if (p?.maritalStatus != null) {
+      final ms = p!.maritalStatus.toUpperCase();
+      if (ms.contains('DIVORCED')) {
+        _selectedMaritalStatus = 'Divorced (છૂટાછેડા લીધેલ)';
+      } else if (ms.contains('WIDOWED')) {
+        _selectedMaritalStatus = 'Widowed (વિધવા / વિધુર)';
+      } else if (ms.contains('SEPARATED')) {
+        _selectedMaritalStatus = 'Separated (અલગ રહેતા)';
+      } else {
+        _selectedMaritalStatus = 'Never Married (અવિવાહિત)';
+      }
+    } else {
+      _selectedMaritalStatus = 'Never Married (અવિવાહિત)';
+    }
   }
 
   @override
@@ -267,7 +291,11 @@ class _ProfileFormState extends State<ProfileForm> {
             label: 'Gender (જાતિ) *',
             value: _selectedGender,
             icon: Icons.wc_outlined,
-            items: widget.referenceData.gender,
+            items: const [
+              'Male (પુરુષ)',
+              'Female (સ્ત્રી)',
+              'Other (અન્ય)',
+            ],
             onChanged: (v) => setState(() => _selectedGender = v),
             validator: (v) => v == null ? 'Gender is required' : null,
           ),
@@ -277,7 +305,12 @@ class _ProfileFormState extends State<ProfileForm> {
             label: 'Marital Status (વૈવાહિક સ્થિતિ) *',
             value: _selectedMaritalStatus,
             icon: Icons.favorite_border_rounded,
-            items: widget.referenceData.maritalStatus,
+            items: const [
+              'Never Married (અવિવાહિત)',
+              'Divorced (છૂટાછેડા લીધેલ)',
+              'Widowed (વિધવા / વિધુર)',
+              'Separated (અલગ રહેતા)',
+            ],
             onChanged: (v) => setState(() => _selectedMaritalStatus = v),
             validator: (v) => v == null ? 'Marital status is required' : null,
           ),
@@ -1049,7 +1082,7 @@ class _ProfileFormState extends State<ProfileForm> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Date of Birth *',
+          'Date of Birth (જન્મ તારીખ) *',
           style: TextStyle(
             color: AppColors.goldAccent,
             fontWeight: FontWeight.w600,
@@ -1064,12 +1097,12 @@ class _ProfileFormState extends State<ProfileForm> {
           style: const TextStyle(color: Colors.black87, fontSize: 14),
           decoration: _inputDecoration(
             id: 'profile_dob',
-            hintText: 'Tap to select date of birth',
+            hintText: 'Tap to select date of birth (તારીખ પસંદ કરો)',
             icon: Icons.cake_outlined,
           ),
           validator: (v) {
             if (_dateOfBirth == null || v == null || v.trim().isEmpty) {
-              return 'Date of birth is required';
+              return 'Date of birth is required (જન્મ તારીખ જરૂરી છે)';
             }
             return null;
           },

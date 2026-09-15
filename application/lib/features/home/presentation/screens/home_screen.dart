@@ -75,6 +75,15 @@ class HomeScreen extends ConsumerWidget {
               ),
               ListTile(
                 dense: true,
+                leading: const Icon(Icons.auto_awesome, color: Color(0xFFD4AF37)),
+                title: const Text('Main Poster Page (મુખ્ય પોસ્ટર પૃષ્ઠ)', style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.go('/login');
+                },
+              ),
+              ListTile(
+                dense: true,
                 leading: const Icon(Icons.search, color: Color(0xFFD4AF37)),
                 title: const Text('Search Profiles (શોધો)', style: TextStyle(color: Colors.white)),
                 onTap: () {
