@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/models/govt_employee_model.dart';
-import '../data/repositories/govt_employees_repository.dart';
+import '../../data/models/govt_employee_model.dart';
+import '../../data/repositories/govt_employees_repository.dart';
 
 final govtEmployeesRepositoryProvider = Provider<GovtEmployeesRepository>((ref) {
   return GovtEmployeesRepository();
