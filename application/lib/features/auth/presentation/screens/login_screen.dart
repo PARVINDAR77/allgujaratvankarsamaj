@@ -374,7 +374,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               height: posterH * 0.18,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/government-employees'),
+                                onTap: () {
+                                  context.push('/government-employees');
+                                },
                               ),
                             ),
 
