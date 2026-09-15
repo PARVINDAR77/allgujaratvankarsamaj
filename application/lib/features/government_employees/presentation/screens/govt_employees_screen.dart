@@ -136,22 +136,22 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
           physics: const BouncingScrollPhysics(),
           child: Column(
             children: [
-              // Top Header Artwork Section with Lord Buddha, Peacocks, Crest & Government Employees Pill Banner
+              // Top Header Artwork Section with Lord Buddha Head Logo, Peacocks & Crest
               SizedBox(
                 width: double.infinity,
-                height: 310,
+                height: 200,
                 child: Stack(
                   children: [
-                    // Full Peacock & Buddha Header Image Banner Background
+                    // Full Peacock & Lord Buddha Header Image Banner Background
                     Positioned.fill(
                       child: Image.asset(
                         'assets/images/5.jpeg',
                         fit: BoxFit.cover,
-                        alignment: Alignment.topCenter,
+                        alignment: const Alignment(0, -0.65), // Focus exactly on top Lord Buddha face
                         errorBuilder: (context, error, stackTrace) => Image.asset(
                           'assets/images/WhatsApp Image 2026-09-08 at 10.08.45 PM.jpeg',
                           fit: BoxFit.cover,
-                          alignment: Alignment.topCenter,
+                          alignment: const Alignment(0, -0.65),
                           errorBuilder: (context, error, stackTrace) => Container(
                             color: const Color(0xFF021B3D),
                           ),
@@ -161,25 +161,27 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
 
                     // Top Navigation Overlay Action Bar
                     Positioned(
-                      top: 10,
+                      top: 8,
                       left: 10,
                       right: 10,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           CircleAvatar(
-                            radius: 18,
+                            radius: 16,
                             backgroundColor: const Color(0xFF003875).withOpacity(0.85),
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 18),
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.arrow_back, color: Colors.white, size: 16),
                               onPressed: () => Navigator.of(context).pop(),
                             ),
                           ),
                           CircleAvatar(
-                            radius: 18,
+                            radius: 16,
                             backgroundColor: const Color(0xFF003875).withOpacity(0.85),
                             child: IconButton(
-                              icon: const Icon(Icons.notifications, color: Colors.white, size: 18),
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.notifications, color: Colors.white, size: 16),
                               onPressed: () {},
                             ),
                           ),
@@ -189,11 +191,11 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
 
                     // Lower Floating Government Employees Section Badge Ribbon
                     Positioned(
-                      bottom: 8,
+                      bottom: 6,
                       left: 12,
                       right: 12,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.96),
                           borderRadius: BorderRadius.circular(30),
@@ -201,8 +203,8 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
                             ),
                           ],
                         ),
@@ -210,12 +212,12 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(6),
+                              padding: const EdgeInsets.all(5),
                               decoration: const BoxDecoration(
                                 color: Color(0xFF0056B3),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.groups_rounded, color: Colors.white, size: 20),
+                              child: const Icon(Icons.groups_rounded, color: Colors.white, size: 18),
                             ),
                             const SizedBox(width: 8),
                             const Column(
@@ -227,7 +229,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                                   style: TextStyle(
                                     color: Color(0xFF002B5B),
                                     fontWeight: FontWeight.w900,
-                                    fontSize: 16,
+                                    fontSize: 15,
                                   ),
                                 ),
                                 Text(
@@ -235,7 +237,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                                   style: TextStyle(
                                     color: Color(0xFFD90429),
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 11,
+                                    fontSize: 10,
                                   ),
                                 ),
                               ],
