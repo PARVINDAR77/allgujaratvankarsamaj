@@ -43,26 +43,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final useEmail = email ?? _emailController.text.trim();
     final usePassword = password ?? _passwordController.text;
 
-    final success = await ref.read(authNotifierProvider.notifier).login(
-          useEmail,
-          usePassword,
-        );
+    try {
+      final success = await ref.read(authNotifierProvider.notifier).login(
+            useEmail,
+            usePassword,
+          );
 
-    // Keep second poster image visible for 2.5 seconds before navigating
-    await Future.delayed(const Duration(milliseconds: 2500));
+      // Brief delay to display poster 2 before entering application
+      await Future.delayed(const Duration(milliseconds: 1200));
 
-    if (mounted) {
-      setState(() => _isLoading = false);
-      if (success) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        if (success) {
+          context.go('/home');
+        } else {
+          final authState = ref.read(authNotifierProvider);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(authState.errorMessage ?? 'Login failed'),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
         context.go('/home');
-      } else {
-        final authState = ref.read(authNotifierProvider);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(authState.errorMessage ?? 'Login failed'),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
       }
     }
   }
