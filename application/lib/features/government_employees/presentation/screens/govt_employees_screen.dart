@@ -45,25 +45,22 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
     final searchAsync = ref.watch(filteredGovtEmployeesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF061224),
+      backgroundColor: const Color(0xFFF3F7FA), // Light Blue/White Background matching reference
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0B1E36),
-        elevation: 2,
+        backgroundColor: const Color(0xFF003875),
+        elevation: 0,
         title: const Text(
-          'સરકારી કર્મચારી મેટ્રિમોની',
+          'Government Employee Matrimony',
           style: TextStyle(
-            color: Color(0xFFFFD700),
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFFFFD700)),
-            onPressed: () {
-              ref.refresh(filteredGovtEmployeesProvider);
-              ref.refresh(featuredGovtEmployeesProvider);
-            },
+            icon: const Icon(Icons.notifications_active, color: Colors.white),
+            onPressed: () {},
           ),
         ],
       ),
@@ -71,84 +68,103 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Hero Banner Section
+            // 1. Royal Hero Banner Header (Matching Reference Image Exact Palette)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Color(0xFF0F2B48), Color(0xFF061224)],
+                  colors: [Color(0xFF003875), Color(0xFF0056B3)],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                ),
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFFB8860B), width: 1.5),
                 ),
               ),
               child: Column(
                 children: [
+                  // Emblem & Golden Crest
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E3A8A),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFFFD700), width: 1),
+                      color: const Color(0xFF061A3A),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.verified, color: Color(0xFFFFD700), size: 16),
-                        SizedBox(width: 6),
+                        Text('🏛️ ', style: TextStyle(fontSize: 14)),
                         Text(
-                          'ALL GUJARAT VANKAR SAMAJ',
+                          'Government Employee Matrimony Section',
                           style: TextStyle(
                             color: Color(0xFFFFD700),
                             fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                            letterSpacing: 1,
+                            fontSize: 13,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'GOVERNMENT EMPLOYEES MATRIMONY',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                  const SizedBox(height: 14),
+                  // Gujarati Subtitle Tag
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD90429), // Bright Red Ribbon Accent
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Text(
+                      'Government Employees • Trusted • Verified • Together',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 10),
                   const Text(
-                    'ચકાસાયેલ સરકારી કર્મચારી વણકર પાત્રો શોધો',
+                    'સુરક્ષિત જીવનસાથી માટે સરકારી કર્મચારીઓ માટે વિશેષ મેટ્રિમોની સેવા',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFF9CA3AF),
+                      color: Color(0xFFE2E8F0),
                       fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
             ),
 
-            // Search & Filter Box
+            // 2. Feature Badges Bar (Verified Profiles | Secure Platform | Wide Network | Better Matches)
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildFeatureBadge('🏛️', 'Verified Profiles', 'Only verified\ngovt employees', const Color(0xFF0056B3)),
+                  _buildFeatureBadge('🛡️', 'Secure Platform', 'Safe & trusted\nmatrimonial service', const Color(0xFF059669)),
+                  _buildFeatureBadge('👥', 'Wide Network', 'All departments &\nservices', const Color(0xFF7C3AED)),
+                  _buildFeatureBadge('💖', 'Better Matches', 'Find compatible\nlife partners', const Color(0xFFD90429)),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // 3. Search & Filter Bar (Matching Blue Container & Pill Filter Inputs)
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF0B1E36),
+                  color: const Color(0xFF0056B3),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFB8860B).withOpacity(0.4), width: 1.5),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
                     ),
                   ],
                 ),
@@ -157,58 +173,38 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.search, color: Color(0xFFFFD700), size: 20),
+                        Icon(Icons.search, color: Colors.white, size: 20),
                         SizedBox(width: 8),
                         Text(
-                          'Search & Filters / ફિલ્ટર',
+                          'Search Government Employee Profiles',
                           style: TextStyle(
-                            color: Color(0xFFFFD700),
+                            color: Colors.white,
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    // Search text input
-                    TextField(
-                      controller: _searchController,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: InputDecoration(
-                        hintText: 'Search by name, designation or office...',
-                        hintStyle: const TextStyle(color: Color(0xFF6B7280), fontSize: 13),
-                        filled: true,
-                        fillColor: const Color(0xFF061224),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: const Color(0xFFB8860B).withOpacity(0.3)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    // Dropdowns Row
+                    const SizedBox(height: 14),
+                    // Dropdowns Pill Row
                     Row(
                       children: [
-                        // Gender Dropdown
+                        // Gender Filter
                         Expanded(
                           child: Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF061224),
+                              color: Colors.white,
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFB8860B).withOpacity(0.3)),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: _selectedGender,
-                                hint: const Text('Gender', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
-                                dropdownColor: const Color(0xFF0B1E36),
+                                hint: const Text('Gender', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
                                 isExpanded: true,
-                                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFFFD700)),
                                 items: const [
-                                  DropdownMenuItem(value: 'MALE', child: Text('Male / વર', style: TextStyle(color: Colors.white, fontSize: 13))),
-                                  DropdownMenuItem(value: 'FEMALE', child: Text('Female / કન્યા', style: TextStyle(color: Colors.white, fontSize: 13))),
+                                  DropdownMenuItem(value: 'MALE', child: Text('Male / વર', style: TextStyle(fontSize: 12))),
+                                  DropdownMenuItem(value: 'FEMALE', child: Text('Female / કન્યા', style: TextStyle(fontSize: 12))),
                                 ],
                                 onChanged: (val) {
                                   setState(() {
@@ -219,31 +215,28 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        // Department Dropdown
+                        const SizedBox(width: 8),
+                        // Department Filter
                         Expanded(
                           child: deptsAsync.when(
                             data: (depts) {
                               return Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF061224),
+                                  color: Colors.white,
                                   borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: const Color(0xFFB8860B).withOpacity(0.3)),
                                 ),
                                 child: DropdownButtonHideUnderline(
                                   child: DropdownButton<String>(
                                     value: _selectedDeptId,
-                                    hint: const Text('Department', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12)),
-                                    dropdownColor: const Color(0xFF0B1E36),
+                                    hint: const Text('Department', style: TextStyle(color: Color(0xFF64748B), fontSize: 12)),
                                     isExpanded: true,
-                                    icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFFFD700)),
                                     items: depts.map((d) {
                                       return DropdownMenuItem(
                                         value: d.id,
                                         child: Text(
                                           d.name,
-                                          style: const TextStyle(color: Colors.white, fontSize: 12),
+                                          style: const TextStyle(fontSize: 12),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       );
@@ -257,39 +250,55 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                                 ),
                               );
                             },
-                            loading: () => const SizedBox(height: 40, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
-                            error: (_, __) => const Text('Error', style: TextStyle(color: Colors.red, fontSize: 12)),
+                            loading: () => const SizedBox(height: 38, child: Center(child: CircularProgressIndicator(strokeWidth: 2))),
+                            error: (_, __) => const Text('Error', style: TextStyle(color: Colors.white, fontSize: 11)),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 14),
-                    // Filter Actions
+                    const SizedBox(height: 10),
+                    // Search Input Text
+                    TextField(
+                      controller: _searchController,
+                      style: const TextStyle(color: Colors.black, fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: 'Search by Name, Designation, Department...',
+                        hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                        filled: true,
+                        fillColor: Colors.white,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    // Search & Reset Buttons
                     Row(
                       children: [
                         Expanded(
-                          child: ElevatedButton(
+                          child: ElevatedButton.icon(
                             onPressed: _applyFilter,
+                            icon: const Icon(Icons.search, size: 16, color: Colors.white),
+                            label: const Text('Search', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFB8860B),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              backgroundColor: const Color(0xFF007BFF),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: const Text(
-                              'Search Profiles',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
-                        OutlinedButton(
+                        ElevatedButton.icon(
                           onPressed: _resetFilter,
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Color(0xFF6B7280)),
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                          icon: const Icon(Icons.refresh, size: 16, color: Color(0xFF0F172A)),
+                          label: const Text('Reset', style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE2E8F0),
+                            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          child: const Text('Reset', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
                         ),
                       ],
                     ),
@@ -298,55 +307,28 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
               ),
             ),
 
-            // Featured Carousel Header
+            const SizedBox(height: 16),
+
+            // 4. Featured Profiles Header Bar
             const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
-                  Icon(Icons.star, color: Color(0xFFFFD700), size: 18),
-                  SizedBox(width: 6),
+                  Icon(Icons.stars, color: Color(0xFF0056B3), size: 20),
+                  SizedBox(width: 8),
                   Text(
                     'Featured Government Employees',
-                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
             ),
 
-            // Featured List
-            SizedBox(
-              height: 230,
-              child: featuredAsync.when(
-                data: (list) {
-                  if (list.isEmpty) {
-                    return const Center(child: Text('No featured profiles at present', style: TextStyle(color: Colors.grey)));
-                  }
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: list.length,
-                    itemBuilder: (context, index) {
-                      final p = list[index];
-                      return _buildFeaturedCard(p);
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => const Center(child: Text('Unable to load featured profiles', style: TextStyle(color: Colors.red))),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Search Results Section
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                'All Verified Government Profiles',
-                style: TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-            ),
-
+            // 5. Grid of Verified Profile Cards (Clean 2-Column Responsive Cards)
             searchAsync.when(
               data: (items) {
                 if (items.isEmpty) {
@@ -355,31 +337,39 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                     width: double.infinity,
                     child: Column(
                       children: [
-                        const Icon(Icons.search_off, color: Color(0xFF6B7280), size: 48),
+                        const Icon(Icons.search_off, color: Color(0xFF94A3B8), size: 48),
                         const SizedBox(height: 12),
                         const Text(
-                          'No Government Employee profiles matching your criteria',
-                          style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                          textAlign: TextAlign.center,
+                          'No Government Employee profiles matching criteria',
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton(
                           onPressed: _resetFilter,
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E3A8A)),
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0056B3)),
                           child: const Text('Clear Filters', style: TextStyle(color: Colors.white)),
                         ),
                       ],
                     ),
                   );
                 }
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    return _buildGovtProfileCard(items[index]);
-                  },
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.65,
+                    ),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      return _buildReferenceCard(items[index]);
+                    },
+                  ),
                 );
               },
               loading: () => const Padding(
@@ -390,171 +380,230 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                 padding: const EdgeInsets.all(32.0),
                 child: Column(
                   children: [
-                    const Text('Unable to load government profiles from server.', style: TextStyle(color: Colors.red)),
+                    const Text('Unable to load profiles', style: TextStyle(color: Colors.red)),
                     const SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () => ref.refresh(filteredGovtEmployeesProvider),
-                      child: const Text('Retry Connection'),
+                      child: const Text('Retry'),
                     ),
                   ],
                 ),
               ),
             ),
 
-            const SizedBox(height: 40),
+            const SizedBox(height: 16),
+
+            // 6. "Register as a Government Employee" CTA Banner Box
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F2FE),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF38BDF8), width: 1),
+                ),
+                child: Row(
+                  children: [
+                    const CircleAvatar(
+                      radius: 20,
+                      backgroundColor: Color(0xFF0056B3),
+                      child: Icon(Icons.person_add, color: Colors.white, size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Register as a Government Employee',
+                            style: TextStyle(color: Color(0xFF0369A1), fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Create your profile & find perfect verified matches.',
+                            style: TextStyle(color: Color(0xFF0C4A6E), fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Registration submitted! Admin will verify employment proof.')),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF007BFF),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      ),
+                      child: const Text('Register Now →', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildFeaturedCard(GovtEmployeeModel p) {
-    return Container(
-      width: 170,
-      margin: const EdgeInsets.only(right: 12, top: 4, bottom: 4),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B1E36),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 6,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundColor: const Color(0xFF1E3A8A),
-                child: Text(
-                  p.fullName.isNotEmpty ? p.fullName[0] : 'V',
-                  style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
-                ),
-              ),
-              const Spacer(),
-              const Icon(Icons.verified, color: Color(0xFF10B981), size: 18),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(
-            p.fullName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            p.designationName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.w600),
-          ),
-          Text(
-            p.departmentName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 10),
-          ),
-          const Spacer(),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E3A8A),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              p.districtName ?? 'Gujarat',
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
+  Widget _buildFeatureBadge(String iconStr, String title, String subtitle, Color iconColor) {
+    return Column(
+      children: [
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: iconColor.withOpacity(0.1),
+          child: Text(iconStr, style: const TextStyle(fontSize: 16)),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          title,
+          style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 11),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Color(0xFF64748B), fontSize: 9),
+        ),
+      ],
     );
   }
 
-  Widget _buildGovtProfileCard(GovtEmployeeModel p) {
+  // Profile Card recreated to match reference layout exactly
+  Widget _buildReferenceCard(GovtEmployeeModel p) {
+    final deptColor = p.gender == 'FEMALE' ? const Color(0xFFE0E7FF) : const Color(0xFFFFEDD5);
+    final deptTextColor = p.gender == 'FEMALE' ? const Color(0xFF3730A3) : const Color(0xFF9A3412);
+
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0B1E36),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFB8860B).withOpacity(0.3), width: 1.2),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          // Profile Avatar & Verified Badge Header
+          Stack(
+            alignment: Alignment.topRight,
             children: [
               CircleAvatar(
-                radius: 26,
-                backgroundColor: const Color(0xFF1E3A8A),
+                radius: 28,
+                backgroundColor: const Color(0xFFE2E8F0),
                 child: Text(
                   p.fullName.isNotEmpty ? p.fullName[0] : 'V',
-                  style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 18),
+                  style: const TextStyle(color: Color(0xFF0056B3), fontWeight: FontWeight.bold, fontSize: 20),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            p.fullName,
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
-                          ),
-                        ),
-                        const Icon(Icons.verified, color: Color(0xFF10B981), size: 18),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${p.designationGujaratiName} (${p.designationName})',
-                      style: const TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.w700, fontSize: 12),
-                    ),
-                    Text(
-                      '${p.departmentGujaratiName} • ${p.districtName ?? "Gujarat"}',
-                      style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 11),
-                    ),
+                    Icon(Icons.check, color: Colors.white, size: 10),
+                    SizedBox(width: 2),
+                    Text('Verified', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          const Divider(color: Color(0xFF1F2937), height: 1),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
+
+          // Department Tag Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: deptColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              p.departmentName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(color: deptTextColor, fontWeight: FontWeight.bold, fontSize: 9),
+            ),
+          ),
+          const SizedBox(height: 6),
+
+          // Name & Details
+          Text(
+            p.fullName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 13),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '${p.age ?? 28} Years • ${p.gender == 'MALE' ? 'Male' : 'Female'}',
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 10),
+          ),
+          Text(
+            p.designationName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Color(0xFF334155), fontWeight: FontWeight.w600, fontSize: 11),
+          ),
+          Text(
+            '📍 ${p.districtName ?? "Gujarat"}',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(color: Color(0xFF64748B), fontSize: 10),
+          ),
+
+          const Spacer(),
+
+          // Buttons Row (View Profile & Send Interest)
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Education: ${p.education}',
-                style: const TextStyle(color: Color(0xFFD1D5DB), fontSize: 11),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Viewing profile details for ${p.fullName}')),
+                    );
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    side: const BorderSide(color: Color(0xFF007BFF)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  ),
+                  child: const Text('View Profile', style: TextStyle(color: Color(0xFF007BFF), fontSize: 9, fontWeight: FontWeight.bold)),
+                ),
               ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Matrimonial Interest sent to ${p.fullName}!')),
-                  );
-                },
-                icon: const Icon(Icons.favorite, size: 14, color: Colors.white),
-                label: const Text('Send Interest', style: TextStyle(fontSize: 11, color: Colors.white)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFB8860B),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  minimumSize: Size.zero,
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              const SizedBox(width: 4),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Matrimonial Interest sent to ${p.fullName}!')),
+                    );
+                  },
+                  icon: const Icon(Icons.favorite, size: 10, color: Colors.white),
+                  label: const Text('Send Interest', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF007BFF),
+                    padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                  ),
                 ),
               ),
             ],
