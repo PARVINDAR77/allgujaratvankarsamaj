@@ -114,11 +114,12 @@ model MatrimonialProfile {
   pargana    Pargana?  @relation(fields: [parganaId], references: [id], onDelete: SetNull)
   village    Village?  @relation(fields: [villageId], references: [id], onDelete: SetNull)
 
-  status     ProfileStatus @default(APPROVED)
-  isVerified Boolean       @default(false) @map("is_verified")
-  isFeatured Boolean       @default(false) @map("is_featured")
-  createdAt  DateTime      @default(now()) @map("created_at")
-  updatedAt  DateTime      @updatedAt @map("updated_at")
+  status               ProfileStatus         @default(APPROVED)
+  isVerified           Boolean               @default(false) @map("is_verified")
+  isFeatured           Boolean               @default(false) @map("is_featured")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  governmentEmployment GovernmentEmployment?
 
   @@map("matrimonial_profiles")
 }
@@ -315,3 +316,107 @@ model SamajServicePerson {
   @@index([serviceId])
   @@map("samaj_service_persons")
 }
+
+enum GovtEmploymentType {
+  CENTRAL_GOVT
+  STATE_GOVT
+  PSU
+  SEMI_GOVT
+  DEFENSE
+  BANKING
+  RAILWAYS
+}
+
+enum GovtVerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+model GovtDepartment {
+  id           String             @id @default(uuid())
+  name         String
+  gujaratiName String?            @map("gujarati_name")
+  code         String?            @unique
+  isActive     Boolean            @default(true) @map("is_active")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  designations GovtDesignation[]
+  employments  GovernmentEmployment[]
+
+  @@map("govt_departments")
+}
+
+model GovtDesignation {
+  id           String             @id @default(uuid())
+  departmentId String             @map("department_id")
+  department   GovtDepartment     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  name         String
+  gujaratiName String?            @map("gujarati_name")
+  code         String?
+  isActive     Boolean            @default(true) @map("is_active")
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  employments  GovernmentEmployment[]
+
+  @@index([departmentId])
+  @@map("govt_designations")
+}
+
+model GovernmentEmployment {
+  id                      String                            @id @default(uuid())
+  profileId               String                            @unique @map("profile_id")
+  profile                 MatrimonialProfile                @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  employmentType          GovtEmploymentType                @default(STATE_GOVT) @map("employment_type")
+  departmentId            String?                           @map("department_id")
+  department              GovtDepartment?                   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  designationId           String?                           @map("designation_id")
+  designation             GovtDesignation?                  @relation(fields: [designationId], references: [id], onDelete: SetNull)
+  officeLocation          String?                           @map("office_location")
+  joiningYear             Int?                              @map("joining_year")
+  verificationStatus      GovtVerificationStatus            @default(PENDING) @map("verification_status")
+  verificationSubmittedAt DateTime?                         @map("verification_submitted_at")
+  verifiedAt              DateTime?                         @map("verified_at")
+  verifiedBy              String?                           @map("verified_by")
+  rejectionReason         String?                           @map("rejection_reason")
+  isFeatured              Boolean                           @default(false) @map("is_featured")
+  isActive                Boolean                           @default(true) @map("is_active")
+  createdAt               DateTime                          @default(now()) @map("created_at")
+  updatedAt               DateTime                          @updatedAt @map("updated_at")
+  verifications           GovernmentEmploymentVerification[]
+
+  @@index([departmentId])
+  @@index([designationId])
+  @@map("government_employments")
+}
+
+model GovernmentEmploymentVerification {
+  id              String                 @id @default(uuid())
+  employmentId    String                 @map("employment_id")
+  employment      GovernmentEmployment   @relation(fields: [employmentId], references: [id], onDelete: Cascade)
+  documentType    String                 @default("GOVT_ID_CARD") @map("document_type")
+  documentUrl     String                 @map("document_url")
+  status          GovtVerificationStatus @default(PENDING)
+  reviewedBy      String?                @map("reviewed_by")
+  reviewedAt      DateTime?              @map("reviewed_at")
+  rejectionReason String?                @map("rejection_reason")
+  createdAt       DateTime               @default(now()) @map("created_at")
+  updatedAt       DateTime               @updatedAt @map("updated_at")
+
+  @@index([employmentId])
+  @@map("government_employment_verifications")
+}
+
+model AdminAuditLog {
+  id         String   @id @default(uuid())
+  adminId    String   @map("admin_id")
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String   @map("entity_id")
+  oldValue   String?  @map("old_value")
+  newValue   String?  @map("new_value")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("admin_audit_logs")
+}
+

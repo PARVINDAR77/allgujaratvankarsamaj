@@ -21,6 +21,7 @@ const menuSections = [
     items: [
       { name: "Users", href: "/admin/users", icon: "👥" },
       { name: "Profiles", href: "/admin/profiles", icon: "👤" },
+      { name: "Govt. Employees", href: "/admin/government-employees", icon: "💼" },
       { name: "Verifications", href: "/admin/verifications", icon: "🛡️" },
     ],
   },

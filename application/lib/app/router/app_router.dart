@@ -7,6 +7,7 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
+import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
 import '../../features/family/presentation/screens/family_details_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/match/presentation/screens/mutual_interest_screen.dart';
@@ -103,6 +104,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/samaj-super-stars',
         name: 'samaj-super-stars',
         builder: (context, state) => const SamajSuperStarsScreen(),
+      ),
+      GoRoute(
+        path: '/government-employees',
+        name: 'government-employees',
+        builder: (context, state) => const GovtEmployeesScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

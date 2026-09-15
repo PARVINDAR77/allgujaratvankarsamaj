@@ -120,6 +120,15 @@ class HomeScreen extends ConsumerWidget {
               ),
               ListTile(
                 dense: true,
+                leading: const Icon(Icons.work, color: Color(0xFFD4AF37)),
+                title: const Text('Govt. Employees (સરકારી કર્મચારી)', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/government-employees');
+                },
+              ),
+              ListTile(
+                dense: true,
                 leading: const Icon(Icons.verified_user, color: Color(0xFFD4AF37)),
                 title: const Text('Verified Profiles (વેરિફાઈડ પ્રોફાઈલ)', style: TextStyle(color: Colors.white)),
                 onTap: () {
