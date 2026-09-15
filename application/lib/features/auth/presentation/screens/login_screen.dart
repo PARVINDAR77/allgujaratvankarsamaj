@@ -209,24 +209,24 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       return Stack(
                         children: [
-                          // 1. Poster Image Carousel (Page 0 & Page 1)
+                          // 1. Poster Image Carousel (Page 0: 1 (2).jpeg -> Page 1: Poster)
                           Positioned.fill(
                             child: PageView(
                               controller: _pageController,
                               children: [
                                 Image.asset(
-                                  'assets/images/buddha_welcome_poster.jpg',
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                                    'assets/images/main_login_poster.jpg',
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                                Image.asset(
                                   'assets/images/login_poster_2.jpg',
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) => Image.asset(
                                     'assets/images/login_poster_2.jpeg',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                Image.asset(
+                                  'assets/images/buddha_welcome_poster.jpg',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                                    'assets/images/main_login_poster.jpg',
                                     fit: BoxFit.cover,
                                   ),
                                 ),
