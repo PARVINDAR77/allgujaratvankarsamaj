@@ -1,6 +1,6 @@
 {
-    "name": "vankar_samaj_matrimony",
-    "short_name": "vankar_samaj_matrimony",
+    "name": "application",
+    "short_name": "application",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -1,393 +1,412 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../app/theme/app_colors.dart';
-import '../../../../shared/widgets/vankar_header.dart';
-import '../../providers/samaj_services_provider.dart';
-import 'samaj_service_persons_screen.dart';
+import 'package:go_router/go_router.dart';
 
-class SamajServicesScreen extends ConsumerWidget {
+class SamajServicesScreen extends StatefulWidget {
   const SamajServicesScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final servicesAsync = ref.watch(samajServicesProvider);
+  State<SamajServicesScreen> createState() => _SamajServicesScreenState();
+}
 
+class _SamajServicesScreenState extends State<SamajServicesScreen> {
+  static final List<Map<String, dynamic>> _serviceCategories = [
+    {
+      'title': '1. ઘર અને દૈનિક જીવનની સેવાઓ',
+      'color': Colors.orange,
+      'items': [
+        '🧱 Mason / Raj Mistri',
+        '🎨 Painter',
+        '🔧 Plumber',
+        '⚡ Electrician',
+        '❄️ AC / Fridge Repair',
+        '🪚 Carpenter',
+        '🪟 Aluminium / Glass Work',
+        '🚪 Furniture / Interior',
+        '🧹 House Cleaning',
+        '🐜 Pest Control',
+        '🚚 Packers & Movers',
+      ],
+    },
+    {
+      'title': '2. Vehicle & Transport',
+      'color': Colors.blue,
+      'items': [
+        '🚗 Car Rental',
+        '🛵 Bike/Scooter Repair',
+        '🚘 Car Repair / Garage',
+        '🛞 Tyre & Puncture',
+        '🔋 Battery Service',
+        '🚕 Taxi / Cab',
+        '🚌 Bus / Tempo',
+        '🚛 Goods Transport',
+        '🚗 Driver Service',
+        '🅿️ Parking Service',
+      ],
+    },
+    {
+      'title': '3. Computer & Digital Services',
+      'color': Colors.purple,
+      'items': [
+        '💻 Computer/Laptop Repair',
+        '🖨️ Printer Repair',
+        '📱 Mobile Repair',
+        '🌐 Website Development',
+        '📱 App Development',
+        '🎨 Graphic Design',
+        '🖨️ Printing / Xerox',
+        '📸 Photo Studio',
+        '🪪 Online Form Filling',
+        '📄 Document Scanning',
+        '💳 Digital Payment Assistance',
+      ],
+    },
+    {
+      'title': '4. Education Services',
+      'color': Colors.green,
+      'items': [
+        '👨‍🏫 Tuition / Coaching',
+        '🏫 School Admission Guidance',
+        '🎓 College Admission Guidance',
+        '📝 Competitive Exam Coaching',
+        '💼 Career Guidance',
+        '🌍 Foreign Study Guidance',
+        '📖 Books / Stationery',
+        '💻 Computer Training',
+        '🗣️ English Speaking',
+        '🏆 Scholarship Information',
+      ],
+    },
+    {
+      'title': '5. Job & Business Services',
+      'color': Colors.teal,
+      'items': [
+        '💼 Job Placement',
+        '👷 Skilled Worker Jobs',
+        '🏢 Private Job Information',
+        '🏛️ Government Job Guidance',
+        '📄 Resume / CV Making',
+        '💼 Interview Preparation',
+        '🏪 Business Directory',
+        '🤝 Business Networking',
+        '📈 Business Consultant',
+        '🧾 GST / Tax Consultant',
+      ],
+    },
+    {
+      'title': '6. Legal & Financial Services',
+      'color': Colors.indigo,
+      'items': [
+        '⚖️ Advocate / Legal Advice',
+        '📑 Document Writer',
+        '🏦 Bank Loan Assistance',
+        '💰 Financial Consultant',
+        '🧾 Income Tax / GST',
+        '🏠 Property Documents',
+        '📜 Insurance Agent',
+        '💳 Loan / Finance Services',
+        '🏦 Banking Assistance',
+      ],
+    },
+    {
+      'title': '7. Health & Emergency',
+      'color': Colors.red,
+      'items': [
+        '🏥 Hospital',
+        '👨‍⚕️ Doctor',
+        '🦷 Dentist',
+        '👓 Eye Care',
+        '💊 Medical Store',
+        '🚑 Ambulance',
+        '🩸 Blood Donor Directory',
+        '🧪 Laboratory / Diagnostic',
+        '🧑‍⚕️ Home Nursing',
+        '♿ Elderly Assistance',
+      ],
+    },
+    {
+      'title': '8. Business & Local Shops',
+      'color': Colors.brown,
+      'items': [
+        '🛒 Grocery',
+        '👗 Clothes / Garments',
+        '👟 Footwear',
+        '📱 Mobile Shop',
+        '💻 Electronics',
+        '🪑 Furniture',
+        '💎 Jewellery',
+        '🍰 Bakery',
+        '🍽️ Restaurant / Food',
+        '🖨️ Printing Press',
+      ],
+    },
+    {
+      'title': '9. Skilled Professionals',
+      'color': Colors.blueGrey,
+      'items': [
+        '👨‍🔧 Electrician',
+        '🔧 Plumber',
+        '🪚 Carpenter',
+        '🔨 Welder',
+        '🧱 Mason',
+        '🎨 Painter',
+        '👨‍💻 Computer Technician',
+        '📱 Mobile Technician',
+        '🚗 Mechanic',
+        '❄️ AC Technician',
+        '📺 TV Technician',
+      ],
+    },
+    {
+      'title': '10. Event & Wedding Services (A-Z)',
+      'color': Colors.pink,
+      'items': [
+        '❄️ AC Repair & Services',
+        '🔈 Audio & Sound System Rental',
+        '💄 Beauty Parlor & Bridal Makeup',
+        '🏛️ Banquet Hall Booking',
+        '🥁 Brass Band & Dhol',
+        '📷 Cameraman & Photography',
+        '🚗 Car Rental (Luxury & Wedding Cars)',
+        '🍽️ Catering Services',
+        '🚁 Drone Videography & Aerial Shots',
+        '🎛️ DJ Sound & Disco Lighting',
+        '🎪 Event Management & Planning',
+        '⚡ Electrical Works & Lighting',
+        '🌸 Flower Decoration & Stage Setup',
+        '🍛 Food Stalls & Live Counters',
+        '🔌 Generator Rental',
+        '🎨 Graphic Design & Banner Printing',
+        '✨ Haldi & Mehendi Decoration',
+        '💇‍♀️ Hair Styling & Unisex Salon',
+        '💌 Invitation Card Printing & E-Invites',
+        '🛋️ Interior Decoration',
+        '💍 Jewelry Rental & Bridal Accessories',
+        '🤹 Juggler & Mascot Entertainment',
+        '✉️ Kankotri & Wedding Card Shop',
+        '🧑‍🍳 Kitchen Catering & Halwai Services',
+        '🎥 Live YouTube & Facebook Streaming',
+        '📺 LED Screen (Video Wall) Setup',
+        '🎪 Mandap & Shamiana Decoration',
+        '✍️ Mehendi Artist',
+        '📱 Mobile & Electronics Shop',
+        '🎇 Name Entry Setup & Cold Pyro Effects',
+        '🪴 Nursery & Floral Supply',
+        '💻 Online Cyber Cafe Services',
+        '👮 Officers & Bouncer Security Services',
+        '📸 Pre-Wedding Photography & Cinematography',
+        '🖨️ Printing & Flex Shop',
+        '🧽 Quick Car Wash & Detailing',
+        '📦 Quick Courier & Transport',
+        '🚌 Rental Cars, Buses & Tempo Travellers',
+        '💧 RO Water Filter Service',
+        '🔊 Sound System & DJ Setup',
+        '⛩️ Stage & Entry Gate Decoration',
+        '✂️ Tailoring Shop',
+        '⛺ Tent, Chair & Table Rental',
+        '✈️ Tours & Travels Booking',
+        '🔧 Utility Repair Services',
+        '⛱️ Umbrella & Outdoor Canopy Rental',
+        '📹 Video Shooting (4K / Cinematic HD)',
+        '🚘 Vintage Car Rental for Groom Entry',
+        '💍 Wedding Planning & Coordination',
+        '🚰 Water Tanker Supply',
+        '🙋‍♀️ Welcome Girls & Hostess',
+        '🖨️ Xerox, Lamination & Document Printing',
+        '▶️ YouTube Live Streaming & Broadcast',
+        '🪡 Zari & Embroidery Works',
+        '🧥 Groom Wear & Sherwani Rental',
+      ],
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: const Color(0xFFF4F9FF),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Top Standard Vankar Header
-            const VankarHeader(
-              showBackButton: true,
-              subtitle: '“સમાજ માટે – સમાજ દ્વારા”',
-            ),
-
-            // Scrollable Content
-            Expanded(
-              child: servicesAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(color: AppColors.secondary),
-                ),
-                error: (err, stack) => _buildBody(context, ref, []),
-                data: (services) => _buildBody(context, ref, services),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBody(BuildContext context, WidgetRef ref, List<SamajServiceModel> services) {
-    final eventServices = services.where((s) => s.category != 'Business Directory').toList();
-    final directoryContacts = services.where((s) => s.category == 'Business Directory').toList();
-
-    return RefreshIndicator(
-      color: AppColors.secondary,
-      onRefresh: () async {
-        ref.invalidate(samajServicesProvider);
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
-        child: Column(
-          children: [
-            // Header: VANKAR Samaj Services
-            const Text(
-              'VANKAR',
-              style: TextStyle(
-                color: AppColors.secondary,
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
-              ),
-            ),
-            const Text(
-              'Samaj Services',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(width: 20, height: 1, color: AppColors.secondary),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8.0),
-                  child: Text(
-                    'સમાજ માટે – સમાજ દ્વારા',
-                    style: TextStyle(
-                      color: AppColors.goldLight,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                Container(width: 20, height: 1, color: AppColors.secondary),
-              ],
-            ),
-            const SizedBox(height: 12),
-
-            // Dynamic Live Event Service Cards Grid
-            _buildServicesGrid(context, eventServices),
-            const SizedBox(height: 16),
-
-            // Directory Section Title
-            if (directoryContacts.isNotEmpty) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(width: 24, height: 1, color: AppColors.secondary),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'વ્યવસાય મુજબ સંપર્ક માહિતી',
-                      style: TextStyle(
-                        color: AppColors.secondary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Container(width: 24, height: 1, color: AppColors.secondary),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Directory Table
-              _buildDirectoryTable(context, directoryContacts),
-              const SizedBox(height: 14),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildServicesGrid(BuildContext context, List<SamajServiceModel> services) {
-    if (services.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(24),
-        child: const Text(
-          'No active Samaj Services created yet.\nAdmin can add new services from Admin Panel.',
-          textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white60, fontSize: 13),
-        ),
-      );
-    }
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 1.05,
-      ),
-      itemCount: services.length,
-      itemBuilder: (context, index) {
-        final item = services[index];
-        return _buildServiceTile(
-          context,
-          service: item,
-        );
-      },
-    );
-  }
-
-  Widget _buildServiceTile(
-    BuildContext context, {
-    required SamajServiceModel service,
-  }) {
-    return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SamajServicePersonsScreen(
-              serviceId: service.id,
-              serviceTitle: service.title,
-            ),
-          ),
-        );
-      },
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF041026),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.cardBorder, width: 1.2),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.secondary.withValues(alpha: 0.15),
-                  ),
-                  child: Text(service.icon.isNotEmpty ? service.icon : "🤝", style: const TextStyle(fontSize: 16)),
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        service.title,
-                        style: const TextStyle(color: AppColors.goldLight, fontSize: 11, fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        service.category,
-                        style: const TextStyle(color: Colors.white70, fontSize: 9),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              service.description.isNotEmpty ? service.description : 'Tap to view registered service persons.',
-              style: const TextStyle(color: Colors.white60, fontSize: 9, height: 1.3),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.secondary.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '👤 ${service.personsCount} Persons',
-                    style: const TextStyle(color: AppColors.goldLight, fontSize: 8, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.goldGradient,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Text(
-                        'View Persons',
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth > 850;
+            return Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: Column(
+                  children: [
+                    // Custom Header
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32 : 16, vertical: 24),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF041126), Color(0xFF0A2A5E)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.only(
+                          bottomLeft: Radius.circular(32),
+                          bottomRight: Radius.circular(32),
                         ),
                       ),
-                      SizedBox(width: 2),
-                      Icon(Icons.arrow_forward, color: Colors.black87, size: 9),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDirectoryTable(BuildContext context, List<SamajServiceModel> contacts) {
-    if (contacts.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF041026),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.cardBorder, width: 1.2),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(13),
-        child: Table(
-          border: TableBorder(
-            horizontalInside: BorderSide(color: AppColors.secondary.withValues(alpha: 0.25), width: 0.8),
-            verticalInside: BorderSide(color: AppColors.secondary.withValues(alpha: 0.25), width: 0.8),
-          ),
-          columnWidths: const {
-            0: FlexColumnWidth(2.6),
-            1: FlexColumnWidth(2.6),
-            2: FlexColumnWidth(2.6),
-            3: FlexColumnWidth(1.2),
-          },
-          children: [
-            const TableRow(
-              decoration: BoxDecoration(color: Color(0xFF0A1F3D)),
-              children: [
-                _HeaderCol('વ્યવસાય'),
-                _HeaderCol('નામ'),
-                _HeaderCol('ફોન નંબર'),
-                _HeaderCol('કોલ'),
-              ],
-            ),
-            ...contacts.map((SamajServiceModel c) {
-              final idx = contacts.indexOf(c);
-              return TableRow(
-                decoration: BoxDecoration(
-                  color: idx.isEven ? const Color(0xFF041026) : const Color(0xFF061633),
-                ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(c.icon, style: const TextStyle(fontSize: 12)),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            c.title,
-                            style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              InkWell(
+                                onTap: () {
+                                  if (context.canPop()) context.pop();
+                                  else context.go('/home');
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.arrow_back, color: Color(0xFFD4AF37), size: 24),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Vankar Samaj Services',
+                                      style: TextStyle(color: const Color(0xFFD4AF37), fontSize: isDesktop ? 28 : 22, fontWeight: FontWeight.bold),
+                                    ),
+                                    const Text(
+                                      'સમાજ માટે - સમાજ દ્વારા',
+                                      style: TextStyle(color: Colors.white70, fontSize: 14, fontStyle: FontStyle.italic),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.handshake, color: const Color(0xFFD4AF37).withValues(alpha: 0.8), size: isDesktop ? 48 : 36),
+                            ],
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  _DataCol(c.contactPerson, isGold: true),
-                  _DataCol(c.contactPhone),
-                  InkWell(
-                    onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Calling ${c.contactPerson} (${c.contactPhone})...')),
-                      );
-                    },
-                    child: const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 6),
-                      child: Icon(Icons.call, color: Color(0xFF2EB85C), size: 14),
+                    
+                    // Services List
+                    Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: _serviceCategories.length,
+                        itemBuilder: (context, index) {
+                          final category = _serviceCategories[index];
+                          final Color color = category['color'];
+                          final List<String> items = category['items'];
+                          
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 24, left: 8, right: 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Category Header
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: color.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: color.withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.category, color: color, size: 20),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          category['title'],
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: color.withValues(alpha: 0.9),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                
+                                // Items Grid
+                                GridView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                                    maxCrossAxisExtent: 280,
+                                    mainAxisExtent: 60,
+                                    crossAxisSpacing: 12,
+                                    mainAxisSpacing: 12,
+                                  ),
+                                  itemCount: items.length,
+                                  itemBuilder: (context, itemIndex) {
+                                    final String fullItem = items[itemIndex];
+                                    final int spaceIndex = fullItem.indexOf(' ');
+                                    final String emoji = spaceIndex != -1 ? fullItem.substring(0, spaceIndex) : '';
+                                    final String text = spaceIndex != -1 ? fullItem.substring(spaceIndex + 1) : fullItem;
+                                    
+                                    return InkWell(
+                                      onTap: () {},
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(color: Colors.grey.shade200),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.03),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            if (emoji.isNotEmpty) ...[
+                                              Text(emoji, style: const TextStyle(fontSize: 22)),
+                                              const SizedBox(width: 12),
+                                            ],
+                                            Expanded(
+                                              child: Text(
+                                                text,
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF041126),
+                                                  height: 1.2,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
+                                            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 16),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              );
-            }),
-          ],
+                  ],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
   }
 }
 
-class _HeaderCol extends StatelessWidget {
-  final String title;
-  const _HeaderCol(this.title);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-      child: Text(
-        title,
-        style: const TextStyle(color: AppColors.secondary, fontSize: 10, fontWeight: FontWeight.bold),
-        textAlign: TextAlign.center,
-      ),
-    );
-  }
-}
-
-class _DataCol extends StatelessWidget {
-  final String text;
-  final bool isGold;
-  const _DataCol(this.text, {this.isGold = false});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 2),
-      child: Text(
-        text,
-        style: TextStyle(
-          color: isGold ? AppColors.goldLight : Colors.white,
-          fontSize: 10,
-          fontWeight: isGold ? FontWeight.bold : FontWeight.w500,
-        ),
-        textAlign: TextAlign.center,
-        overflow: TextOverflow.ellipsis,
-      ),
-    );
-  }
-}

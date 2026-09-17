@@ -1,347 +1,112 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class MutualInterestScreen extends ConsumerWidget {
+class MutualInterestScreen extends StatelessWidget {
   const MutualInterestScreen({super.key});
 
-  void _showNotificationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF041126),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.notifications_active, color: Color(0xFFD4AF37)),
-            SizedBox(width: 8),
-            Text(
-              'સૂચનાઓ (Notifications)',
-              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('• હેમંતકુમાર અને હીરાલબેન વચ્ચે પરસ્પર પસંદગી થઈ છે.', style: TextStyle(color: Colors.white70)),
-            SizedBox(height: 6),
-            Text('• બંને પરિવારો સંપર્કમાં છે.', style: TextStyle(color: Colors.white70)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK', style: TextStyle(color: Color(0xFFD4AF37))),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showMenuDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: const Color(0xFF041126),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'All Gujarat Vankar Samaj',
-                style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.home, color: Color(0xFFD4AF37)),
-                title: const Text('Home (મુખ્ય પૃષ્ઠ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.go('/home');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.search, color: Color(0xFFD4AF37)),
-                title: const Text('Search Profiles (શોધો)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.go('/search');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.favorite, color: Color(0xFFD4AF37)),
-                title: const Text('Mutual Interest (મેળ / પસંદગી)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.go('/match');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.groups, color: Color(0xFFD4AF37)),
-                title: const Text('View Families (પરિવાર જુઓ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/family-details');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.location_city, color: Color(0xFFD4AF37)),
-                title: const Text('Pargana Overview (પરગણાં)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/pargana-overview');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.handshake, color: Color(0xFFD4AF37)),
-                title: const Text('Samaj Services (સમાજ સેવાઓ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/samaj-services');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.verified_user, color: Color(0xFFD4AF37)),
-                title: const Text('Verified Profiles (વેરિફાઈડ પ્રોફાઈલ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/verified-profile');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.person_add, color: Color(0xFFD4AF37)),
-                title: const Text('Create Profile (પ્રોફાઈલ બનાવો)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/profile/create');
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF01060E),
+      backgroundColor: const Color(0xFF040A18),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            final screenW = constraints.maxWidth;
-            final screenH = constraints.maxHeight;
+            final double imageWidth = constraints.maxWidth;
+            // The aspect ratio of the image is 1080 x 2322
+            final double imageHeight = imageWidth * (2322 / 1080);
 
-            final posterW = screenW;
-            final posterH = screenH > 0
-                ? (screenH > screenW * (1536 / 1024) ? screenH : screenW * (1536 / 1024))
-                : 600.0;
-            final imageH = posterH / 0.905;
-
-            return SingleChildScrollView(
-              physics: const ClampingScrollPhysics(),
-              child: SizedBox(
-                width: posterW,
-                height: posterH,
-                child: Stack(
-                  children: [
-                    // 1. Full Master Mutual Interest Image - OverflowBox & ClipRect physically crops printed bottom icons
-                    Positioned.fill(
-                      child: ClipRect(
-                        child: OverflowBox(
-                          alignment: Alignment.topCenter,
-                          minWidth: posterW,
-                          maxWidth: posterW,
-                          minHeight: imageH,
-                          maxHeight: imageH,
-                          child: Image.asset(
-                            'assets/images/template_mutual.jpg',
-                            fit: BoxFit.fill,
-                            errorBuilder: (context, error, stackTrace) => Image.asset(
-                              'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (2).jpeg',
-                              fit: BoxFit.fill,
+            return Center(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: SizedBox(
+                  width: imageWidth,
+                  height: imageHeight,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // 1. BASE LAYER: The exact uploaded poster image
+                      Image.asset(
+                        'assets/images/mutual_interest_bg.jpg',
+                        fit: BoxFit.fill,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          color: const Color(0xFF040A18),
+                          child: const Center(
+                            child: Text(
+                              'Background Image Missing',
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ),
                       ),
-                    ),
 
-                    // 2. Top-Left Menu Icon (☰)
-                    Positioned(
-                      left: posterW * 0.02,
-                      top: imageH * 0.01,
-                      width: posterW * 0.14,
-                      height: imageH * 0.06,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(30),
-                          onTap: () => _showMenuDialog(context),
+                      // 2. OVERLAY LAYER: Dynamic Blocks for Bride
+                      // Bride Name Ribbon Cover-Up (Left)
+                      Positioned(
+                        top: imageHeight * 0.575, // Adjusted to ~57% down the image
+                        left: imageWidth * 0.042,
+                        width: imageWidth * 0.448,
+                        height: imageHeight * 0.027,
+                        child: _buildNameCover(
+                          color: const Color(0xFFD81B60),
+                          name: 'Hiral Kapadiya',
                         ),
                       ),
-                    ),
-
-                    // 3. Top-Right Notification Bell Icon (🔔 5)
-                    Positioned(
-                      right: posterW * 0.02,
-                      top: imageH * 0.01,
-                      width: posterW * 0.14,
-                      height: imageH * 0.06,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(30),
-                          onTap: () => _showNotificationDialog(context),
+                      
+                      // Bride Details Cover-Up
+                      Positioned(
+                        top: imageHeight * 0.608, // Adjusted to ~60% down the image
+                        left: imageWidth * 0.055,
+                        width: imageWidth * 0.422,
+                        height: imageHeight * 0.075,
+                        child: _buildDetailsCover(
+                          profession: 'Teacher',
+                          age: '24 Years',
+                          income: '7 Lakh (Yearly)',
+                          city: 'Idar',
                         ),
                       ),
-                    ),
 
-                    // 4. Action Button 1: Send Message / સંદેશ મોકલો (Green)
-                    Positioned(
-                      left: posterW * 0.04,
-                      top: imageH * 0.755,
-                      width: posterW * 0.29,
-                      height: imageH * 0.055,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () {
-                            context.go('/messages');
+                      // 3. OVERLAY LAYER: Dynamic Blocks for Groom
+                      // Groom Name Ribbon Cover-Up (Right)
+                      Positioned(
+                        top: imageHeight * 0.575,
+                        right: imageWidth * 0.042,
+                        width: imageWidth * 0.448,
+                        height: imageHeight * 0.027,
+                        child: _buildNameCover(
+                          color: const Color(0xFF0D47A1),
+                          name: 'Hemant Kapadiya',
+                        ),
+                      ),
+                      
+                      // Groom Details Cover-Up
+                      Positioned(
+                        top: imageHeight * 0.608,
+                        right: imageWidth * 0.055,
+                        width: imageWidth * 0.422,
+                        height: imageHeight * 0.075,
+                        child: _buildDetailsCover(
+                          profession: 'Engineer (Ele)',
+                          age: '25 Years',
+                          income: '7 Lakh (Yearly)',
+                          city: 'Himatnagar',
+                        ),
+                      ),
+
+                      // Back Button
+                      Positioned(
+                        top: 16,
+                        left: 16,
+                        child: IconButton(
+                          icon: const Icon(Icons.arrow_back_ios, color: Colors.white, shadows: [Shadow(color: Colors.black, blurRadius: 4)]),
+                          onPressed: () {
+                            if (context.canPop()) context.pop();
+                            else context.go('/home');
                           },
                         ),
                       ),
-                    ),
-
-                    // 5. Action Button 2: Call Now / હવે કોલ કરો (Blue)
-                    Positioned(
-                      left: posterW * 0.355,
-                      top: imageH * 0.755,
-                      width: posterW * 0.29,
-                      height: imageH * 0.055,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                backgroundColor: Color(0xFF041026),
-                                content: Text(
-                                  'Calling Hemantkumar Kapadiya (+91 98765 43210)...',
-                                  style: TextStyle(color: Color(0xFFD4AF37)),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    // 6. Action Button 3: View Families / પરિવાર જુઓ (Purple)
-                    Positioned(
-                      left: posterW * 0.67,
-                      top: imageH * 0.755,
-                      width: posterW * 0.29,
-                      height: imageH * 0.055,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(20),
-                          onTap: () => context.push('/family-details'),
-                        ),
-                      ),
-                    ),
-
-                    // 7. Pargana Pill 1: 35 પરગણાં
-                    Positioned(
-                      left: posterW * 0.135,
-                      top: imageH * 0.825,
-                      width: posterW * 0.175,
-                      height: imageH * 0.075,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => context.push('/pargana-overview'),
-                        ),
-                      ),
-                    ),
-
-                    // 8. Pargana Pill 2: 27 પરગણાં
-                    Positioned(
-                      left: posterW * 0.32,
-                      top: imageH * 0.825,
-                      width: posterW * 0.175,
-                      height: imageH * 0.075,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => context.push('/pargana-overview'),
-                        ),
-                      ),
-                    ),
-
-                    // 9. Pargana Pill 3: 16 પરગણાં
-                    Positioned(
-                      left: posterW * 0.505,
-                      top: imageH * 0.825,
-                      width: posterW * 0.175,
-                      height: imageH * 0.075,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => context.push('/pargana-overview'),
-                        ),
-                      ),
-                    ),
-
-                    // 10. Pargana Pill 4: 14 પરગણાં
-                    Positioned(
-                      left: posterW * 0.69,
-                      top: imageH * 0.825,
-                      width: posterW * 0.175,
-                      height: imageH * 0.075,
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () => context.push('/pargana-overview'),
-                        ),
-                      ),
-                    ),
-
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -350,5 +115,65 @@ class MutualInterestScreen extends ConsumerWidget {
       ),
     );
   }
-}
 
+  Widget _buildNameCover({required Color color, required String name}) {
+    return Container(
+      color: color,
+      alignment: Alignment.center,
+      child: Text(
+        name,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+          letterSpacing: 0.5,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+    );
+  }
+
+  Widget _buildDetailsCover({required String profession, required String age, required String income, required String city}) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          _buildDetailRow(Icons.work, 'Profession', profession),
+          _buildDetailRow(Icons.person, 'Age', age),
+          _buildDetailRow(Icons.account_balance_wallet, 'Income', income),
+          _buildDetailRow(Icons.location_on, 'City', city),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      children: [
+        Icon(icon, size: 14, color: const Color(0xFF040A18)),
+        const SizedBox(width: 4),
+        Expanded(
+          child: RichText(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: '$label  :  ',
+                  style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+                TextSpan(
+                  text: value,
+                  style: const TextStyle(color: Colors.black87, fontSize: 11, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

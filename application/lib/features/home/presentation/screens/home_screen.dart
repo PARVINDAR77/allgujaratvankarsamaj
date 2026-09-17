@@ -145,17 +145,51 @@ class HomeScreen extends ConsumerWidget {
                   context.push('/verified-profile');
                 },
               ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.person_add, color: Color(0xFFD4AF37)),
-                title: const Text('Create Profile (પ્રોફાઈલ બનાવો)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/profile/create');
-                },
-              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _showCategoryModal(BuildContext context, String title, String details, IconData icon, Color color) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF041126),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+              child: Icon(icon, color: Colors.white, size: 32),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              details,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD4AF37),
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
         ),
       ),
     );
@@ -164,274 +198,235 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: const Color(0xFF06152D),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final screenW = constraints.maxWidth;
-            final croppedH = screenW * (1455 / 736); // Display height cropping out the printed bottom nav bar
-            final totalImageH = screenW * (1600 / 736); // Full artwork height
-
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: SizedBox(
-                width: screenW,
-                height: croppedH,
-                child: ClipRect(
-                  child: OverflowBox(
-                    alignment: Alignment.topCenter,
-                    minWidth: screenW,
-                    maxWidth: screenW,
-                    minHeight: totalImageH,
-                    maxHeight: totalImageH,
-                    child: Stack(
-                      children: [
-                        // 1. Full Master Peacock & Lotus Theme Layout Image
-                        Positioned.fill(
-                          child: Image.asset(
-                            'assets/images/main_home_layout.jpg',
-                            fit: BoxFit.fill,
-                            errorBuilder: (context, error, stackTrace) => Image.asset(
-                              'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
-                              fit: BoxFit.fill,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                color: const Color(0xFF06152D),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        // 2. Top-Left Menu Icon (☰)
-                        Positioned(
-                          left: screenW * 0.03,
-                          top: totalImageH * 0.012,
-                          width: screenW * 0.14,
-                          height: totalImageH * 0.045,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: () => _showMenuDialog(context),
-                            ),
-                          ),
-                        ),
-
-                        // 3. Top-Right Notification Bell Icon (🔔 5)
-                        Positioned(
-                          right: screenW * 0.03,
-                          top: totalImageH * 0.012,
-                          width: screenW * 0.14,
-                          height: totalImageH * 0.045,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: () => _showNotificationDialog(context),
-                            ),
-                          ),
-                        ),
-
-                        // 4. Left Action Box 1: છોકરો શોધો (Find Boy)
-                        Positioned(
-                          left: screenW * 0.02,
-                          top: totalImageH * 0.365,
-                          width: screenW * 0.20,
-                          height: totalImageH * 0.105,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.go('/search'),
-                            ),
-                          ),
-                        ),
-
-                        // 5. Left Action Box 2: છોકરી શોધો (Find Girl)
-                        Positioned(
-                          left: screenW * 0.02,
-                          top: totalImageH * 0.48,
-                          width: screenW * 0.20,
-                          height: totalImageH * 0.105,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.go('/search'),
-                            ),
-                          ),
-                        ),
-
-                        // 6. Left Action Box 3: મેળ શોધો (Find Match)
-                        Positioned(
-                          left: screenW * 0.02,
-                          top: totalImageH * 0.595,
-                          width: screenW * 0.20,
-                          height: totalImageH * 0.105,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.go('/match'),
-                            ),
-                          ),
-                        ),
-
-                        // 7. Right Action Box 1: પ્રોફાઈલ બનાવો (Create Profile)
-                        Positioned(
-                          left: screenW * 0.78,
-                          top: totalImageH * 0.365,
-                          width: screenW * 0.20,
-                          height: totalImageH * 0.105,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.go('/profile/create'),
-                            ),
-                          ),
-                        ),
-
-                        // 8. Right Action Box 2: શોધો (Search)
-                        Positioned(
-                          left: screenW * 0.78,
-                          top: totalImageH * 0.48,
-                          width: screenW * 0.20,
-                          height: totalImageH * 0.105,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.go('/search'),
-                            ),
-                          ),
-                        ),
-
-                        // 9. Right Action Box 3: વેરિફાઈડ પ્રોફાઈલ (Verified Profiles)
-                        Positioned(
-                          left: screenW * 0.78,
-                          top: totalImageH * 0.595,
-                          width: screenW * 0.20,
-                          height: totalImageH * 0.105,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(16),
-                              onTap: () => context.push('/verified-profile'),
-                            ),
-                          ),
-                        ),
-
-                        // 10. Center Golden Pill: હમણાં જ જોડાઓ (Join Now)
-                        Positioned(
-                          left: screenW * 0.28,
-                          top: totalImageH * 0.695,
-                          width: screenW * 0.44,
-                          height: totalImageH * 0.045,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(24),
-                              onTap: () => context.go('/profile/create'),
-                            ),
-                          ),
-                        ),
-
-                        // 11. Bottom Feature Icon 1: Education for Better Tomorrow
-                        Positioned(
-                          left: screenW * 0.04,
-                          top: totalImageH * 0.755,
-                          width: screenW * 0.16,
-                          height: totalImageH * 0.075,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: () => context.push('/samaj-services'),
-                            ),
-                          ),
-                        ),
-
-                        // 12. Bottom Feature Icon 2: Unity in Diversity
-                        Positioned(
-                          left: screenW * 0.23,
-                          top: totalImageH * 0.755,
-                          width: screenW * 0.16,
-                          height: totalImageH * 0.075,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: () => context.push('/pargana-overview'),
-                            ),
-                          ),
-                        ),
-
-                        // 13. Bottom Feature Icon 3: Progress Through Support
-                        Positioned(
-                          left: screenW * 0.42,
-                          top: totalImageH * 0.755,
-                          width: screenW * 0.16,
-                          height: totalImageH * 0.075,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: () => context.push('/verified-profile'),
-                            ),
-                          ),
-                        ),
-
-                        // 14. Bottom Feature Icon 4: Service to Society
-                        Positioned(
-                          left: screenW * 0.61,
-                          top: totalImageH * 0.755,
-                          width: screenW * 0.16,
-                          height: totalImageH * 0.075,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: () => context.push('/samaj-services'),
-                            ),
-                          ),
-                        ),
-
-                        // 15. Bottom Feature Icon 5: Strong Roots Bright Future
-                        Positioned(
-                          left: screenW * 0.80,
-                          top: totalImageH * 0.755,
-                          width: screenW * 0.16,
-                          height: totalImageH * 0.075,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              splashColor: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-                              borderRadius: BorderRadius.circular(30),
-                              onTap: () => context.push('/family-details'),
-                            ),
-                          ),
-                        ),
-
-                      ],
+      backgroundColor: const Color(0xFF020B18),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: AspectRatio(
+          aspectRatio: 1080 / 1920,
+          child: FittedBox(
+            fit: BoxFit.fill,
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              width: 1080,
+              height: 1920,
+            child: Stack(
+              children: [
+                // Post-Login Matrimony Graphic
+                Positioned.fill(
+                  child: Image.asset(
+                    'assets/images/home_poster_v3.jpg',
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Image.asset(
+                      'assets/images/1 (1).jpeg',
+                      fit: BoxFit.cover,
                     ),
                   ),
                 ),
-              ),
-            );
-          },
+
+                // Top-Left Menu Button (Hamburger)
+                Positioned(
+                  left: 20,
+                  top: 30,
+                  width: 150,
+                  height: 90,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(45),
+                      onTap: () => _showMenuDialog(context),
+                    ),
+                  ),
+                ),
+
+                // Top-Right Notification Bell Icon (🔔)
+                Positioned(
+                  right: 20,
+                  top: 30,
+                  width: 150,
+                  height: 90,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(45),
+                      onTap: () => _showNotificationDialog(context),
+                    ),
+                  ),
+                ),
+
+                // --- Left Side Buttons ---
+                // 1. Find Boy (Blue)
+                Positioned(
+                  left: 0,
+                  top: 730,
+                  width: 280,
+                  height: 250,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/search'),
+                    ),
+                  ),
+                ),
+                // 2. Find Girl (Pink)
+                Positioned(
+                  left: 0,
+                  top: 1000,
+                  width: 280,
+                  height: 250,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/search?lookingFor=Bride'),
+                    ),
+                  ),
+                ),
+                // 3. Find Match (Green)
+                Positioned(
+                  left: 0,
+                  top: 1270,
+                  width: 280,
+                  height: 250,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/match'),
+                    ),
+                  ),
+                ),
+
+                // --- Right Side Buttons ---
+                // 4. Create Profile (Orange)
+                Positioned(
+                  right: 0,
+                  top: 730,
+                  width: 280,
+                  height: 250,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/profile/create'),
+                    ),
+                  ),
+                ),
+                // 5. Search (Purple)
+                Positioned(
+                  right: 0,
+                  top: 1000,
+                  width: 280,
+                  height: 250,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/search'),
+                    ),
+                  ),
+                ),
+                // 6. Verified Profiles (Teal)
+                Positioned(
+                  right: 0,
+                  top: 1270,
+                  width: 280,
+                  height: 250,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/verified-profile'),
+                    ),
+                  ),
+                ),
+
+                // --- Center Bottom ---
+                // 7. Join Now
+                Positioned(
+                  left: 300,
+                  top: 1555,
+                  width: 480,
+                  height: 100,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(50),
+                      onTap: () => context.push('/profile/create'),
+                    ),
+                  ),
+                ),
+
+                // --- Bottom Icons ---
+                // 8. Education
+                Positioned(
+                  left: 0,
+                  top: 1670,
+                  width: 216,
+                  height: 170,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showCategoryModal(context, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0)),
+                    ),
+                  ),
+                ),
+                // 9. Unity
+                Positioned(
+                  left: 216,
+                  top: 1670,
+                  width: 216,
+                  height: 170,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showCategoryModal(context, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315)),
+                    ),
+                  ),
+                ),
+                // 10. Progress
+                Positioned(
+                  left: 432,
+                  top: 1670,
+                  width: 216,
+                  height: 170,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showCategoryModal(context, 'Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32)),
+                    ),
+                  ),
+                ),
+                // 11. Service
+                Positioned(
+                  left: 648,
+                  top: 1670,
+                  width: 216,
+                  height: 170,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showCategoryModal(context, 'Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828)),
+                    ),
+                  ),
+                ),
+                // 12. Strong Roots
+                Positioned(
+                  left: 864,
+                  top: 1670,
+                  width: 216,
+                  height: 170,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _showCategoryModal(context, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0)),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            ),
+          ),
         ),
       ),
     );

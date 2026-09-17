@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/community/presentation/screens/pavan_prernadata_screen.dart';
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
 import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
@@ -19,12 +20,13 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
+import '../../features/search/presentation/screens/search_results_screen.dart';
 import '../../shared/presentation/screens/main_navigation_screen.dart';
+import '../../features/home/presentation/screens/main_poster_screen.dart';
 
-/// Helper to convert AuthNotifier changes into a Listenable for GoRouter refresh
 class AuthRouterListenable extends ChangeNotifier {
   AuthRouterListenable(Ref ref) {
-    ref.listen<AuthState>(authNotifierProvider, (_, __) {
+    ref.listen<AuthState>(authNotifierProvider, (_, _) {
       notifyListeners();
     });
   }
@@ -34,34 +36,13 @@ final authRouterListenableProvider = Provider<AuthRouterListenable>((ref) {
   return AuthRouterListenable(ref);
 });
 
-/// Central GoRouter configuration with Riverpod authentication state redirection
 final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = ref.watch(authRouterListenableProvider);
 
   return GoRouter(
     initialLocation: '/login',
     refreshListenable: authListenable,
-    redirect: (context, state) {
-      final location = state.uri.toString();
-
-      // Redirect welcome/splash/poster or root to /login
-      if (location == '/welcome' || location == '/splash' || location == '/poster') {
-        return '/login';
-      }
-
-      return null;
-    },
     routes: [
-      GoRoute(
-        path: '/splash',
-        name: 'splash',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
-        path: '/welcome',
-        name: 'welcome',
-        builder: (context, state) => const LoginScreen(),
-      ),
       GoRoute(
         path: '/login',
         name: 'login',
@@ -72,14 +53,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: '/poster',
-        name: 'poster',
-        builder: (context, state) => const LoginScreen(),
-      ),
-      GoRoute(
         path: '/register',
         name: 'register',
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/main-poster',
+        name: 'main-poster',
+        builder: (context, state) => const MainPosterScreen(),
       ),
       GoRoute(
         path: '/family-details',
@@ -112,9 +93,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SamajSuperStarsScreen(),
       ),
       GoRoute(
+        path: '/pavan-prernadata',
+        name: 'pavan-prernadata',
+        builder: (context, state) => const PavanPrernadataScreen(),
+      ),
+      GoRoute(
         path: '/government-employees',
         name: 'government-employees',
         builder: (context, state) => const GovtEmployeesScreen(),
+      ),
+      GoRoute(
+        path: '/search-results',
+        name: 'search-results',
+        builder: (context, state) => const SearchResultsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -135,7 +126,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/search',
                 name: 'search',
-                builder: (context, state) => const AdvancedSearchScreen(),
+                builder: (context, state) {
+                  final lookingFor = state.uri.queryParameters['lookingFor'] ?? 'Groom';
+                  return AdvancedSearchScreen(initialLookingFor: lookingFor);
+                },
               ),
             ],
           ),

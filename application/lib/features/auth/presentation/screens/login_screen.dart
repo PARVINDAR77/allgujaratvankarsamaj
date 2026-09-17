@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../providers/auth_provider.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -17,10 +16,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailController = TextEditingController(text: 'panjabiparvindar77@gmail.com');
   final _passwordController = TextEditingController(text: 'Parvindar@123');
   bool _isLoading = false;
+  int _currentPage = 0;
 
   @override
   void initState() {
     super.initState();
+    _currentPage = widget.initialPage;
     _pageController = PageController(initialPage: widget.initialPage);
   }
 
@@ -38,7 +39,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final inputEmail = _emailController.text.trim().toLowerCase();
     final inputPassword = _passwordController.text;
 
-    // 1. Super Admin Rejection Guard Check
     if (inputEmail.contains('reject') || inputPassword.contains('reject')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -50,41 +50,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       return;
     }
 
-    // 2. Under Review Check
-    if (inputEmail.contains('review') || inputEmail.contains('pending')) {
-      context.go('/profile/under-review');
-      return;
-    }
-
     setState(() => _isLoading = true);
 
-    final useEmail = email ?? _emailController.text.trim();
-    final usePassword = password ?? _passwordController.text;
-
     try {
-      final success = await ref.read(authNotifierProvider.notifier).login(
-            useEmail,
-            usePassword,
+      await ref.read(authNotifierProvider.notifier).login(
+            email ?? _emailController.text.trim(),
+            password ?? _passwordController.text,
           );
 
       if (mounted) {
         setState(() => _isLoading = false);
-        if (success) {
-          context.go('/home');
-        } else {
-          final authState = ref.read(authNotifierProvider);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(authState.errorMessage ?? 'Login failed'),
-              backgroundColor: Colors.redAccent,
-            ),
-          );
-        }
+        context.go('/main-poster');
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        context.go('/home');
+        context.go('/main-poster');
       }
     }
   }
@@ -238,24 +219,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                       return Stack(
                         children: [
-                          // 1. Poster Image Carousel (Page 0: 1 (2).jpeg -> Page 1: Poster)
+                          // 1. Poster Image Carousel (Page 0: Login Poster -> Page 1: Buddha Layout)
                           Positioned.fill(
                             child: PageView(
                               controller: _pageController,
+                              onPageChanged: (page) {
+                                setState(() => _currentPage = page);
+                              },
                               children: [
                                 Image.asset(
                                   'assets/images/login_poster_2.jpg',
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) => Image.asset(
-                                    'assets/images/login_poster_2.jpeg',
+                                    'assets/images/1 (2).jpeg',
                                     fit: BoxFit.cover,
                                   ),
                                 ),
                                 Image.asset(
-                                  'assets/images/buddha_welcome_poster.jpg',
+                                  'assets/images/buddha_home_poster.jpeg',
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stackTrace) => Image.asset(
-                                    'assets/images/main_login_poster.jpg',
+                                    'assets/images/1 (1).jpeg',
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -274,129 +258,199 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
 
-                          // 2. Circle 1: Government Employees (Red)
-                          Positioned(
-                            left: w * 0.02,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/government-employees'),
-                              ),
-                            ),
-                          ),
-
-                          // 3. Circle 2: Matrimony (Maroon) -> Performs Direct Login & Entry
-                          Positioned(
-                            left: w * 0.21,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => _performLogin(),
-                              ),
-                            ),
-                          ),
-
-                          // 4. Circle 3: Private Job (Blue)
-                          Positioned(
-                            left: w * 0.40,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => _showCategoryInfo(
-                                  'Private Job',
-                                  'Business | Professional | Self Employed | Career Opportunities',
-                                  Icons.business_center,
-                                  const Color(0xFF0D3B6E),
+                          if (_currentPage == 0) ...[
+                            // Page 0 Hotspots
+                            Positioned(
+                              left: w * 0.02,
+                              top: h * 0.56,
+                              width: w * 0.18,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(50),
+                                  onTap: () => context.push('/government-employees'),
                                 ),
                               ),
                             ),
-                          ),
-
-                          // 5. Circle 4: VANKAR SAMAJ Services (Green) -> Goes to /samaj-services
-                          Positioned(
-                            left: w * 0.60,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => context.push('/samaj-services'),
-                              ),
-                            ),
-                          ),
-
-                          // 6. Circle 5: Students 12+ (Purple)
-                          Positioned(
-                            left: w * 0.79,
-                            top: h * 0.56,
-                            width: w * 0.18,
-                            height: h * 0.16,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(40),
-                                onTap: () => _showCategoryInfo(
-                                  'Students (12+)',
-                                  'Study Guidance | Career Support | Scholarship Info | Skill Development | Bright Future',
-                                  Icons.school,
-                                  const Color(0xFF3D1A6B),
+                            Positioned(
+                              left: w * 0.21,
+                              top: h * 0.56,
+                              width: w * 0.18,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: _showCustomLoginDialog,
                                 ),
                               ),
                             ),
-                          ),
-
-                          // 7. Blue Button on Image: [👤 Login >]
-                          Positioned(
-                            left: w * 0.15,
-                            top: h * 0.82,
-                            width: w * 0.33,
-                            height: h * 0.08,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(25),
-                                onTap: () => _performLogin(),
-                                onLongPress: _showCustomLoginDialog,
+                            Positioned(
+                              left: w * 0.40,
+                              top: h * 0.56,
+                              width: w * 0.18,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: () => _showCategoryInfo(
+                                    'Private Job',
+                                    'Business | Professional | Self Employed | Career Opportunities',
+                                    Icons.business_center,
+                                    const Color(0xFF1565C0),
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-
-                          // 8. Green Button on Image: [👤+ Registration >]
-                          Positioned(
-                            left: w * 0.52,
-                            top: h * 0.82,
-                            width: w * 0.33,
-                            height: h * 0.08,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(25),
-                                onTap: () async {
-                                  if (_pageController.hasClients) {
-                                    _pageController.jumpToPage(1);
-                                  }
-                                  await Future.delayed(const Duration(milliseconds: 2500));
-                                  if (context.mounted) {
-                                    context.go('/register');
-                                  }
-                                },
+                            Positioned(
+                              left: w * 0.60,
+                              top: h * 0.56,
+                              width: w * 0.18,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: () => context.push('/samaj-services'),
+                                ),
                               ),
                             ),
-                          ),
+                            Positioned(
+                              left: w * 0.79,
+                              top: h * 0.56,
+                              width: w * 0.18,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(40),
+                                  onTap: () => _showCategoryInfo(
+                                    'Students (12+)',
+                                    'Study Guidance | Career Support | Scholarship Info | Skill Development | Bright Future',
+                                    Icons.school,
+                                    const Color(0xFF3D1A6B),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Blue Login Button
+                            Positioned(
+                              left: w * 0.15,
+                              top: h * 0.82,
+                              width: w * 0.33,
+                              height: h * 0.08,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(25),
+                                  onTap: _showCustomLoginDialog,
+                                ),
+                              ),
+                            ),
+                            // Green Register Button
+                            Positioned(
+                              left: w * 0.52,
+                              top: h * 0.82,
+                              width: w * 0.33,
+                              height: h * 0.08,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(25),
+                                  onTap: () => context.push('/register'),
+                                ),
+                              ),
+                            ),
+                          ] else ...[
+                            // Page 1 Hotspots (Buddha layout)
+                            Positioned(
+                              left: w * 0.02,
+                              top: h * 0.49,
+                              width: w * 0.22,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(50),
+                                  onTap: () => context.push('/government-employees'),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: w * 0.26,
+                              top: h * 0.49,
+                              width: w * 0.22,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(50),
+                                  onTap: () => context.push('/search'),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: w * 0.50,
+                              top: h * 0.49,
+                              width: w * 0.22,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(50),
+                                  onTap: () => _showCategoryInfo(
+                                    'Private Job (ખાનગી નોકરી અને વેપાર)',
+                                    'Business | Professional | Self Employed | Career Opportunities',
+                                    Icons.business_center,
+                                    const Color(0xFF1565C0),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              left: w * 0.74,
+                              top: h * 0.49,
+                              width: w * 0.22,
+                              height: h * 0.16,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(50),
+                                  onTap: () => context.push('/samaj-services'),
+                                ),
+                              ),
+                            ),
+                            // Gold Button 1: પાવન પ્રેરણાદાતા
+                            Positioned(
+                              left: w * 0.08,
+                              top: h * 0.77,
+                              width: w * 0.42,
+                              height: h * 0.15,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(30),
+                                  onTap: () => context.push('/pavan-prernadata'),
+                                ),
+                              ),
+                            ),
+                            // Gold Button 2: Samaj Super Stars
+                            Positioned(
+                              left: w * 0.50,
+                              top: h * 0.77,
+                              width: w * 0.42,
+                              height: h * 0.15,
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(30),
+                                  onTap: () => context.push('/samaj-super-stars'),
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       );
                     },
