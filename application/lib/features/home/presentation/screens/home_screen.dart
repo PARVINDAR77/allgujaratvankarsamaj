@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../auth/providers/auth_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -45,7 +46,7 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  void _showMenuDialog(BuildContext context) {
+  void _showMenuDialog(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -79,7 +80,7 @@ class HomeScreen extends ConsumerWidget {
                 title: const Text('Main Poster Page (મુખ્ય પોસ્ટર પૃષ્ઠ)', style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.go('/login');
+                  context.push('/main-poster');
                 },
               ),
               ListTile(
@@ -233,7 +234,7 @@ class HomeScreen extends ConsumerWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(45),
-                      onTap: () => _showMenuDialog(context),
+                      onTap: () => _showMenuDialog(context, ref),
                     ),
                   ),
                 ),

@@ -2,18 +2,30 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../providers/profile_provider.dart';
+import '../../../../shared/models/profile_model.dart';
 
-class CreateProfileScreen extends StatefulWidget {
+class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
 
   @override
-  State<CreateProfileScreen> createState() => _CreateProfileScreenState();
+  ConsumerState<CreateProfileScreen> createState() => _CreateProfileScreenState();
 }
 
-class _CreateProfileScreenState extends State<CreateProfileScreen> {
+class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   Uint8List? _profileImageBytes;
   final ImagePicker _picker = ImagePicker();
+
+  String _firstName = '';
+  String _lastName = '';
+  String _employmentType = 'Government Sector (સરકારી નોકરી / સેકટર)';
+  String _department = 'State Government (રાજ્ય સરકાર)';
+  String _designation = '';
+  String _district = '';
+  String _taluka = '';
+  String _pargana = 'Select Pargana';
 
   Future<void> _pickImage() async {
     try {
@@ -27,6 +39,26 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     } catch (e) {
       debugPrint('Error picking image: $e');
     }
+  }
+
+  void _submitProfile() {
+    final newProfile = ProfileModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      firstName: _firstName.isNotEmpty ? _firstName : 'New',
+      lastName: _lastName.isNotEmpty ? _lastName : 'User',
+      gender: 'Male (પુરુષ)',
+      maritalStatus: 'Never Married (અપરિણીત)',
+      dateOfBirth: '2000-01-01',
+      employmentType: _employmentType,
+      department: _department,
+      designation: _designation.isNotEmpty ? _designation : 'Employee',
+      district: _district.isNotEmpty ? _district : 'Ahmedabad',
+      taluka: _taluka.isNotEmpty ? _taluka : 'Ahmedabad City',
+      pargana: _pargana != 'Select Pargana' ? _pargana : 'Not Specified',
+    );
+
+    ref.read(profileNotifierProvider.notifier).addProfile(newProfile);
+    context.go('/home');
   }
 
   @override
@@ -114,8 +146,8 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               // Personal Details Section
               _buildSectionHeader(Icons.person_outline, 'Personal Details (અંગત માહિતી)'),
               const SizedBox(height: 16),
-              _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined),
-              _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined),
+              _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined, onChanged: (v) => setState(() => _firstName = v)),
+              _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, onChanged: (v) => setState(() => _lastName = v)),
               _buildTextField('Date of Birth *', 'Tap to select date of birth', Icons.cake_outlined, isDropdown: true),
               _buildDropdownField('Gender (જાતિ) *', 'Male (પુરુષ)', Icons.people_alt_outlined, ['Male (પુરુષ)', 'Female (સ્ત્રી)']),
               _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)']),
@@ -138,8 +170,16 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               const SizedBox(height: 16),
               _buildTextField('Flat / House / Building Name & No. (મકાન / બિલ્ડિંગ નંબર)', 'Enter Flat / House / Building Name & No...', Icons.domain),
               _buildTextField('Area / Society / Landmark (સોસાયટી / વિસ્તાર / લેન્ડમાર્ક)', 'Enter Area / Society / Landmark...', Icons.explore_outlined),
-              _buildTextField('City / Taluka (શહેર / તાલુકો) *', 'Enter City / Taluka (શહેર / તાલુકો)', Icons.location_city),
-              _buildTextField('District & State (જિલ્લો અને રાજ્ય) *', 'Enter District & State (જિલ્લો અને રાજ્ય)', Icons.map_outlined),
+              _buildTextField('City / Taluka (શહેર / તાલુકો) *', 'Enter City / Taluka (શહેર / તાલુકો)', Icons.location_city, onChanged: (v) => setState(() => _taluka = v)),
+              _buildTextField('District & State (જિલ્લો અને રાજ્ય) *', 'Enter District & State (જિલ્લો અને રાજ્ય)', Icons.map_outlined, onChanged: (v) => setState(() => _district = v)),
+              _buildDropdownField(
+                'Which Pargana you have? (તમારું પરગણું કયું છે?) *', 
+                'Select Pargana', 
+                Icons.account_tree_outlined, 
+                ['Select Pargana', '7 Pargana (૭ પરગણા)', '22 Pargana (૨૨ પરગણા)', '24 Pargana / Chovisey (ચોવીસી)', '42 Pargana (૪૨ પરગણા)', 'Other (અન્ય)'],
+                value: _pargana,
+                onChanged: (v) => setState(() => _pargana = v ?? _pargana),
+              ),
               _buildTextField('Country (દેશ) *', 'Enter Country (દેશ)', Icons.public),
               _buildTextField('Pincode / Zip Code (પીનકોડ)', 'Enter Pincode / Zip Code (પીનકોડ)', Icons.markunread_mailbox_outlined),
 
@@ -148,9 +188,23 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               _buildSectionHeader(Icons.work_outline, 'Career & Employment Details (શિક્ષણ, વ્યવસાય અને નોકરીની વિગત)'),
               const SizedBox(height: 16),
               _buildTextField('Education / Degree (અભ્યાસ / ડિગ્રી) *', 'Enter Education / Degree (અભ્યાસ / ડિગ્રી)', Icons.school_outlined),
-              _buildDropdownField('Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 'Government Sector (સરકારી નોકરી / સેકટર)', Icons.work_outline, ['Government Sector (સરકારી નોકરી / સેકટર)', 'Private Sector (ખાનગી નોકરી / સેકટર)', 'Business / Self-Employed (વ્યવસાય / સ્વરોજગાર)', 'Not Working (કોઈ નોકરી નથી)']),
-              _buildDropdownField('Government Department / Service', 'Select Department', Icons.account_balance_outlined, ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)']),
-              _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined),
+              _buildDropdownField(
+                'Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 
+                'Government Sector (સરકારી નોકરી / સેકટર)', 
+                Icons.work_outline, 
+                ['Government Sector (સરકારી નોકરી / સેકટર)', 'Private Sector (ખાનગી નોકરી / સેકટર)', 'Business / Self-Employed (વ્યવસાય / સ્વરોજગાર)', 'Not Working (કોઈ નોકરી નથી)'],
+                value: _employmentType,
+                onChanged: (v) => setState(() => _employmentType = v ?? _employmentType),
+              ),
+              _buildDropdownField(
+                'Government Department / Service', 
+                'Select Department', 
+                Icons.account_balance_outlined, 
+                ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)'],
+                value: _department,
+                onChanged: (v) => setState(() => _department = v ?? _department),
+              ),
+              _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, onChanged: (v) => setState(() => _designation = v)),
               _buildTextField('Yearly Income (વાર્ષિક આવક - રૂ.)', 'Enter Yearly Income (વાર્ષિક આવક - રૂ.)', Icons.payments_outlined),
 
               const SizedBox(height: 24),
@@ -176,7 +230,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
               const SizedBox(height: 32),
               // Submit Button
               ElevatedButton(
-                onPressed: () => context.go('/home'),
+                onPressed: _submitProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD4AF37),
                   foregroundColor: Colors.black,
@@ -221,7 +275,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false}) {
+  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false, Function(String)? onChanged}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -234,17 +288,19 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF0A1830),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
             ),
             child: TextField(
               maxLines: isMultiline ? 4 : 1,
-              style: const TextStyle(color: Colors.black87),
+              style: const TextStyle(color: Colors.white),
+              onChanged: onChanged,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
-                prefixIcon: Icon(prefixIcon, color: Colors.black87, size: 20),
-                suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Colors.black87) : null,
+                hintStyle: const TextStyle(color: Colors.white54, fontSize: 14),
+                prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
+                suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Color(0xFFD4AF37)) : null,
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
@@ -255,7 +311,7 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
     );
   }
 
-  Widget _buildDropdownField(String label, String hint, IconData prefixIcon, List<String> items) {
+  Widget _buildDropdownField(String label, String hint, IconData prefixIcon, List<String> items, {String? value, Function(String?)? onChanged}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -268,27 +324,29 @@ class _CreateProfileScreenState extends State<CreateProfileScreen> {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: const Color(0xFF0A1830),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
             ),
             child: DropdownButtonFormField<String>(
+              value: value,
               decoration: InputDecoration(
-                prefixIcon: Icon(prefixIcon, color: Colors.black87, size: 20),
+                prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
-              hint: Text(hint, style: const TextStyle(color: Colors.black38, fontSize: 14)),
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
+              hint: Text(hint, style: const TextStyle(color: Colors.white54, fontSize: 14)),
+              icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFD4AF37)),
               isExpanded: true,
-              dropdownColor: Colors.white,
-              style: const TextStyle(color: Colors.black87, fontSize: 14),
-              items: items.map((String value) {
+              dropdownColor: const Color(0xFF0A1830),
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              items: items.map((String val) {
                 return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
+                  value: val,
+                  child: Text(val),
                 );
               }).toList(),
-              onChanged: (_) {},
+              onChanged: onChanged,
             ),
           ),
         ],

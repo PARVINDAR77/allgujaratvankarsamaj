@@ -9,6 +9,7 @@ import '../../features/community/presentation/screens/pavan_prernadata_screen.da
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
 import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
+import '../../features/government_employees/presentation/screens/private_employees_screen.dart';
 import '../../features/family/presentation/screens/family_details_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/match/presentation/screens/mutual_interest_screen.dart';
@@ -42,6 +43,24 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/login',
     refreshListenable: authListenable,
+    redirect: (context, state) {
+      final authState = ref.read(authNotifierProvider);
+      final isLoggingIn = state.uri.toString() == '/login' || state.uri.toString() == '/register';
+
+      if (authState.status == AuthStatus.initial) {
+        return null;
+      }
+
+      if (!authState.isAuthenticated && !isLoggingIn) {
+        return '/login';
+      }
+
+      if (authState.isAuthenticated && isLoggingIn) {
+        return '/home';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/login',
@@ -101,6 +120,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/government-employees',
         name: 'government-employees',
         builder: (context, state) => const GovtEmployeesScreen(),
+      ),
+      GoRoute(
+        path: '/private-employees',
+        name: 'private-employees',
+        builder: (context, state) => const PrivateEmployeesScreen(),
       ),
       GoRoute(
         path: '/search-results',

@@ -90,32 +90,38 @@ class MainPosterScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.paddingOf(context);
+    final availableHeight = size.height - padding.top - padding.bottom;
+    final isMobile = size.width < 600;
+
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
+            physics: isMobile ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
-              margin: const EdgeInsets.all(6),
+              width: isMobile ? size.width : 500,
+              height: isMobile ? availableHeight : (500 * (1000 / 685)),
+              margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: const Color(0xFF020B18),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFD4AF37), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                    blurRadius: 14,
-                  ),
-                ],
+                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(16),
+                border: isMobile ? null : Border.all(color: const Color(0xFFD4AF37), width: 2),
+                boxShadow: isMobile
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          blurRadius: 14,
+                        ),
+                      ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: AspectRatio(
-                  aspectRatio: 685 / 1000,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
+                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(14),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
                       final w = constraints.maxWidth;
                       final h = constraints.maxHeight;
 
@@ -125,10 +131,10 @@ class MainPosterScreen extends ConsumerWidget {
                           Positioned.fill(
                             child: Image.asset(
                               'assets/images/buddha_home_poster.jpeg',
-                              fit: BoxFit.cover,
+                              fit: BoxFit.fill,
                               errorBuilder: (context, error, stackTrace) => Image.asset(
                                 'assets/images/1 (1).jpeg',
-                                fit: BoxFit.cover,
+                                fit: BoxFit.fill,
                               ),
                             ),
                           ),
@@ -188,13 +194,7 @@ class MainPosterScreen extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => _showCategoryModal(
-                                  context,
-                                  'Private Job (ખાનગી નોકરી અને વેપાર)',
-                                  'Business | Professional | Self Employed | Career Opportunities',
-                                  Icons.business_center,
-                                  const Color(0xFF1565C0),
-                                ),
+                                onTap: () => context.push('/private-employees'),
                               ),
                             ),
                           ),
@@ -252,7 +252,6 @@ class MainPosterScreen extends ConsumerWidget {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

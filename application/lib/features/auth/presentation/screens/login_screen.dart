@@ -190,30 +190,37 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.paddingOf(context);
+    final availableHeight = size.height - padding.top - padding.bottom;
+    final isMobile = size.width < 600;
+
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
+            physics: isMobile ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
             child: Container(
-              constraints: const BoxConstraints(maxWidth: 500),
-              margin: const EdgeInsets.all(6),
+              width: isMobile ? size.width : 500,
+              height: isMobile ? availableHeight : (500 * (1000 / 685)),
+              margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFD4AF37), width: 2),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                    blurRadius: 14,
-                  ),
-                ],
+                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(16),
+                border: isMobile ? null : Border.all(color: const Color(0xFFD4AF37), width: 2),
+                boxShadow: isMobile
+                    ? []
+                    : [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          blurRadius: 14,
+                        ),
+                      ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: AspectRatio(
-                  aspectRatio: 685 / 1000,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
+                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(14),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
                       final w = constraints.maxWidth;
                       final h = constraints.maxHeight;
 
@@ -222,6 +229,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           // 1. Poster Image Carousel (Page 0: Login Poster -> Page 1: Buddha Layout)
                           Positioned.fill(
                             child: PageView(
+                              physics: const NeverScrollableScrollPhysics(),
                               controller: _pageController,
                               onPageChanged: (page) {
                                 setState(() => _currentPage = page);
@@ -229,18 +237,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               children: [
                                 Image.asset(
                                   'assets/images/login_poster_2.jpg',
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.fill,
                                   errorBuilder: (context, error, stackTrace) => Image.asset(
                                     'assets/images/1 (2).jpeg',
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.fill,
                                   ),
                                 ),
                                 Image.asset(
                                   'assets/images/buddha_home_poster.jpeg',
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.fill,
                                   errorBuilder: (context, error, stackTrace) => Image.asset(
                                     'assets/images/1 (1).jpeg',
-                                    fit: BoxFit.cover,
+                                    fit: BoxFit.fill,
                                   ),
                                 ),
                               ],
@@ -460,7 +468,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

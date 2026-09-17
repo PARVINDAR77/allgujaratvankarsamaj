@@ -1,62 +1,113 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../app/theme/app_colors.dart';
 
 class VerifiedProfileScreen extends StatelessWidget {
   const VerifiedProfileScreen({super.key});
 
-  static const List<String> _unknownImages = [
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (1).jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM (2).jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.42 PM.jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.43 PM (1).jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.43 PM.jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.44 PM (1).jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.44 PM (2).jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.44 PM.jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.45 PM (2).jpeg',
-    'assets/images/WhatsApp Image 2026-09-08 at 10.08.45 PM (3).jpeg',
-    'assets/images/WhatsApp Image 2026-09-12 at 1.20.08 PM.jpeg',
-    'assets/images/2.png',
-    'assets/images/3.png',
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.paddingOf(context);
+    final availableHeight = size.height - padding.top - padding.bottom;
+    final isMobile = size.width < 600;
+
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: const Color(0xFF020B18),
       appBar: AppBar(
-        backgroundColor: AppColors.background,
-        title: const Text('Find the Correct Image', style: TextStyle(color: AppColors.secondary)),
-        iconTheme: const IconThemeData(color: AppColors.secondary),
+        backgroundColor: const Color(0xFF041126),
+        title: const Text('Verified Profile Details', style: TextStyle(color: Color(0xFFFFD700), fontSize: 16)),
+        iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
         centerTitle: true,
       ),
-      body: ListView.builder(
-        itemCount: _unknownImages.length,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white10,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.secondary),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  _unknownImages[index].split('/').last,
-                  style: const TextStyle(color: AppColors.secondary, fontSize: 18, fontWeight: FontWeight.bold),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: Center(
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          blurRadius: 14,
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Column(
+                        children: [
+                          Image.asset(
+                            'assets/images/varified propfile.png',
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'assets/images/WhatsApp Image 2026-09-08 at 10.08.44 PM (1).jpeg',
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                            ),
+                          ),
+                          Container(
+                            color: const Color(0xFF041126),
+                            padding: const EdgeInsets.all(12.0),
+                            child: InkWell(
+                              onTap: () {
+                                if (context.canPop()) {
+                                  context.pop();
+                                } else {
+                                  context.go('/profile');
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(25),
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.goldGradient,
+                                  borderRadius: BorderRadius.circular(25),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: AppColors.secondary.withValues(alpha: 0.5),
+                                      blurRadius: 8,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.arrow_back_rounded, color: Colors.black87, size: 20),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'પાછા જાઓ (Back)',
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Image.asset(
-                  _unknownImages[index],
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, err, stack) => const Text('Image Failed', style: TextStyle(color: Colors.red)),
-                ),
-              ],
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

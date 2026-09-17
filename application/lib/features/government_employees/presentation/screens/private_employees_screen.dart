@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
 
-class GovtEmployeesScreen extends ConsumerStatefulWidget {
-  const GovtEmployeesScreen({super.key});
+class PrivateEmployeesScreen extends ConsumerStatefulWidget {
+  const PrivateEmployeesScreen({super.key});
 
   @override
-  ConsumerState<GovtEmployeesScreen> createState() => _GovtEmployeesScreenState();
+  ConsumerState<PrivateEmployeesScreen> createState() => _PrivateEmployeesScreenState();
 }
 
-class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
+class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen> {
   String _department = 'All';
   String _post = 'All';
   String _district = 'All';
@@ -19,9 +19,9 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
 
   List<Map<String, dynamic>> get _allData {
     final profiles = ref.watch(profileNotifierProvider);
-    final govtProfiles = profiles.where((p) => p.employmentType.contains('Government')).toList();
+    final privateProfiles = profiles.where((p) => p.employmentType.contains('Private') || p.employmentType.contains('Business')).toList();
     
-    return govtProfiles.map((p) => {
+    return privateProfiles.map((p) => {
       'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id, // Just showing a short ID
       'name': p.fullName,
       'dept': p.department,
@@ -278,11 +278,11 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       Text(
-                                        'Government Employees',
+                                        'Private Job & Business',
                                         style: TextStyle(color: const Color(0xFF0056D2), fontSize: isDesktop ? 24 : 20, fontWeight: FontWeight.bold),
                                       ),
                                       Text(
-                                        'સરકારી સેવા - સમાજની સેવા',
+                                        'ખાનગી નોકરી અને વેપાર',
                                         style: TextStyle(color: const Color(0xFF0056D2), fontSize: isDesktop ? 14 : 12, fontWeight: FontWeight.bold),
                                       ),
                                     ],

@@ -31,7 +31,24 @@ final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
 class AuthNotifier extends StateNotifier<AuthState> {
   final SecureStorageService storage;
 
-  AuthNotifier(this.storage) : super(AuthState.unauthenticated());
+  AuthNotifier(this.storage) : super(AuthState.initial()) {
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final token = await storage.getToken();
+    if (token != null && token.isNotEmpty) {
+      final user = UserModel(
+        id: '1',
+        email: 'user@example.com',
+        role: 'USER',
+        status: 'ACTIVE',
+      );
+      state = AuthState.authenticated(user);
+    } else {
+      state = AuthState.unauthenticated();
+    }
+  }
 
   Future<bool> login(String email, String password) async {
     state = AuthState.loading();
