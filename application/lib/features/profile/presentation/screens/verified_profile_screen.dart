@@ -57,46 +57,86 @@ class VerifiedProfileScreen extends StatelessWidget {
                           Container(
                             color: const Color(0xFF041126),
                             padding: const EdgeInsets.all(12.0),
-                            child: InkWell(
-                              onTap: () {
-                                if (context.canPop()) {
-                                  context.pop();
-                                } else {
-                                  context.go('/profile');
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(25),
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.goldGradient,
-                                  borderRadius: BorderRadius.circular(25),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.secondary.withValues(alpha: 0.5),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.arrow_back_rounded, color: Colors.black87, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'પાછા જાઓ (Back)',
-                                      style: TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.0,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: InkWell(
+                                    onTap: () {
+                                      if (context.canPop()) {
+                                        context.pop();
+                                      } else {
+                                        context.go('/profile');
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(25),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        gradient: AppColors.goldGradient,
+                                        borderRadius: BorderRadius.circular(25),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: AppColors.secondary.withValues(alpha: 0.5),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(Icons.arrow_back_rounded, color: Colors.black87, size: 20),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'પાછા જાઓ (Back)',
+                                            style: TextStyle(
+                                              color: Colors.black87,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 1.0,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                                const SizedBox(width: 12),
+                                StatefulBuilder(
+                                  builder: (context, setState) {
+                                    bool isLiked = false;
+                                    return InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          isLiked = !isLiked;
+                                        });
+                                        if (isLiked) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('You liked this profile! (તમે આ પ્રોફાઇલ પસંદ કરી છે!)'),
+                                              backgroundColor: Colors.green,
+                                            ),
+                                          );
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(25),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white10,
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: AppColors.secondary, width: 1.5),
+                                        ),
+                                        child: Icon(
+                                          isLiked ? Icons.favorite : Icons.favorite_border,
+                                          color: isLiked ? Colors.red : AppColors.secondary,
+                                          size: 24,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
                             ),
                           ),
                         ],

@@ -56,14 +56,47 @@ class SearchResultsScreen extends StatelessWidget {
                           const Text('Location: Ahmedabad'),
                           const Text('Profession: Engineer'),
                           const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0056D2),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                            ),
-                            child: const Text('View Profile'),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () {},
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0056D2),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  ),
+                                  child: const Text('View Profile'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              StatefulBuilder(
+                                builder: (context, setState) {
+                                  bool isLiked = false;
+                                  return IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isLiked = !isLiked;
+                                      });
+                                      if (isLiked) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('You liked this profile! (તમે આ પ્રોફાઇલ પસંદ કરી છે!)'),
+                                            backgroundColor: Colors.green,
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    icon: Icon(
+                                      isLiked ? Icons.favorite : Icons.favorite_border,
+                                      color: isLiked ? Colors.red : Colors.grey,
+                                      size: 28,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           )
                         ],
                       ),

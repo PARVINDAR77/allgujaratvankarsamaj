@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../profile/providers/profile_provider.dart';
 
-class AdvancedSearchScreen extends StatefulWidget {
+class AdvancedSearchScreen extends ConsumerStatefulWidget {
   final String initialLookingFor;
 
   const AdvancedSearchScreen({
@@ -10,10 +12,10 @@ class AdvancedSearchScreen extends StatefulWidget {
   });
 
   @override
-  State<AdvancedSearchScreen> createState() => _AdvancedSearchScreenState();
+  ConsumerState<AdvancedSearchScreen> createState() => _AdvancedSearchScreenState();
 }
 
-class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
+class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   late String _lookingFor;
   String _maritalStatus = 'Never Married';
   String _ageRange = '22 to 30 Years';
@@ -26,6 +28,14 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
   String _religion = 'Any';
   String _income = 'Any';
   String _motherTongue = 'Any';
+  
+  final TextEditingController _idSearchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _idSearchController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -86,6 +96,67 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
                     const SizedBox(height: 8),
                     Container(height: 2, width: 100, color: const Color(0xFFF3C34D)), // Gold underline
                     const SizedBox(height: 20),
+                    
+                    // Search by ID Section
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: IntrinsicHeight(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            const SizedBox(width: 12),
+                            const Icon(Icons.badge, color: Color(0xFF0056D2)),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: TextField(
+                                controller: _idSearchController,
+                                decoration: const InputDecoration(
+                                  hintText: 'Enter Unique ID (યુનિક આઈડી દાખલ કરો)',
+                                  hintStyle: TextStyle(color: Colors.black45, fontSize: 13),
+                                  border: InputBorder.none,
+                                  contentPadding: EdgeInsets.symmetric(vertical: 14),
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () {
+                                final id = _idSearchController.text.trim();
+                                if (id.isEmpty) return;
+                                
+                                final profiles = ref.read(profileNotifierProvider);
+                                final foundProfile = profiles.where((p) => p.id == id).firstOrNull;
+                                
+                                if (foundProfile != null) {
+                                  context.push('/family-details');
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Profile not found for this ID! (આ ID માટે પ્રોફાઇલ મળેલ નથી!)'),
+                                      backgroundColor: Colors.red,
+                                    ),
+                                  );
+                                }
+                              },
+                              borderRadius: const BorderRadius.horizontal(right: Radius.circular(11)),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                alignment: Alignment.center,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF0056D2),
+                                  borderRadius: BorderRadius.horizontal(right: Radius.circular(11)),
+                                ),
+                                child: const Text('Find', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     
                     // Dynamic Boy/Girl Banner
                     Container(

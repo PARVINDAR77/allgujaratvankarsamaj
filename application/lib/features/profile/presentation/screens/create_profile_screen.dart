@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
+import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../providers/profile_provider.dart';
@@ -42,8 +43,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   }
 
   void _submitProfile() {
+    final uniqueId = 'VNK${math.Random().nextInt(90000) + 10000}';
+    final password = '${math.Random().nextInt(900000) + 100000}'; // 6 digit random pass
+
     final newProfile = ProfileModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      id: uniqueId,
       firstName: _firstName.isNotEmpty ? _firstName : 'New',
       lastName: _lastName.isNotEmpty ? _lastName : 'User',
       gender: 'Male (પુરુષ)',
@@ -58,7 +62,90 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     );
 
     ref.read(profileNotifierProvider.notifier).addProfile(newProfile);
-    context.go('/home');
+    
+    // Show Success Dialog with ID and Password
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF111111),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+        ),
+        title: const Column(
+          children: [
+            Icon(Icons.check_circle, color: Colors.greenAccent, size: 48),
+            SizedBox(height: 12),
+            Text(
+              'Profile Created Successfully!',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Please save your login details:',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white24),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Unique ID:', style: TextStyle(color: Colors.white54, fontSize: 14)),
+                      Text(uniqueId, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    ],
+                  ),
+                  const Divider(color: Colors.white24, height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Password:', style: TextStyle(color: Colors.white54, fontSize: 14)),
+                      Text(password, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'You can use this ID to search for this profile in the Advance Search section.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+            ),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                context.go('/home');
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD4AF37),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Continue to Home', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
