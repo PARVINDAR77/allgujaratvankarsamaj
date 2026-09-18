@@ -9,6 +9,11 @@ class SamajServicesScreen extends StatefulWidget {
 }
 
 class _SamajServicesScreenState extends State<SamajServicesScreen> {
+  String? selectedDistrict;
+  String? selectedTaluka;
+  String? selectedVillage;
+  final TextEditingController _searchController = TextEditingController();
+
   static final List<Map<String, dynamic>> _serviceCategories = [
     {
       'title': '1. ઘર અને દૈનિક જીવનની સેવાઓ',
@@ -220,7 +225,18 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
   ];
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Default placeholder lists for UI layout testing
+    final districts = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot'];
+    final talukas = ['City', 'Rural', 'East', 'West'];
+    final villages = ['Village A', 'Village B', 'Village C'];
+
     return Scaffold(
       backgroundColor: const Color(0xFFF4F9FF),
       body: SafeArea(
@@ -290,6 +306,124 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                       ),
                     ),
                     
+                    // --- SEARCH & FILTER SECTION ---
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF041126),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                        ],
+                        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Search Bar
+                          TextField(
+                            controller: _searchController,
+                            style: const TextStyle(color: Colors.white),
+                            decoration: InputDecoration(
+                              hintText: 'Search services, professions...',
+                              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                              prefixIcon: const Icon(Icons.search, color: Color(0xFFD4AF37)),
+                              filled: true,
+                              fillColor: Colors.white.withValues(alpha: 0.05),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.5))),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          
+                          // Location Dropdowns Row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  dropdownColor: const Color(0xFF041126),
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    hintText: 'District',
+                                    hintStyle: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.3))),
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(alpha: 0.05),
+                                  ),
+                                  value: selectedDistrict,
+                                  items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis))).toList(),
+                                  onChanged: (val) => setState(() => selectedDistrict = val),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  dropdownColor: const Color(0xFF041126),
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    hintText: 'Taluka',
+                                    hintStyle: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.3))),
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(alpha: 0.05),
+                                  ),
+                                  value: selectedTaluka,
+                                  items: talukas.map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis))).toList(),
+                                  onChanged: (val) => setState(() => selectedTaluka = val),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: DropdownButtonFormField<String>(
+                                  isExpanded: true,
+                                  dropdownColor: const Color(0xFF041126),
+                                  style: const TextStyle(color: Colors.white),
+                                  decoration: InputDecoration(
+                                    hintText: 'Village',
+                                    hintStyle: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.3))),
+                                    filled: true,
+                                    fillColor: Colors.white.withValues(alpha: 0.05),
+                                  ),
+                                  value: selectedVillage,
+                                  items: villages.map((v) => DropdownMenuItem(value: v, child: Text(v, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis))).toList(),
+                                  onChanged: (val) => setState(() => selectedVillage = val),
+                                ),
+                              ),
+                            ],
+                          ),
+                          
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Search backend is temporarily disconnected.')),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD4AF37),
+                              foregroundColor: const Color(0xFF041126),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text('Search', style: TextStyle(fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // --- END SEARCH & FILTER SECTION ---
+
                     // Services List
                     Expanded(
                       child: ListView.builder(

@@ -116,7 +116,7 @@ class HomeScreen extends ConsumerWidget {
                 title: const Text('Pargana Overview (પરગણાં)', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.push('/pargana-overview');
+                  context.go('/pargana-overview');
                 },
               ),
               ListTile(

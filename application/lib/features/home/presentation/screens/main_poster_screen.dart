@@ -88,6 +88,44 @@ class MainPosterScreen extends ConsumerWidget {
     );
   }
 
+  void _showImageModal(BuildContext context, String imagePath) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black, // Dark background
+      builder: (ctx) => Dialog.fullscreen(
+        backgroundColor: Colors.black,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Full screen static image view (no zooming allowed)
+            SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: Image.asset(
+                imagePath,
+                fit: BoxFit.contain,
+                alignment: Alignment.center,
+              ),
+            ),
+            // Custom Back button at the top
+            Positioned(
+              top: MediaQuery.of(ctx).padding.top + 10,
+              left: 10,
+              child: Material(
+                color: Colors.black54,
+                shape: const CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                  onPressed: () => Navigator.pop(ctx),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
@@ -98,16 +136,15 @@ class MainPosterScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            physics: isMobile ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
-            child: Container(
-              width: isMobile ? size.width : 500,
-              height: isMobile ? availableHeight : (500 * (1000 / 685)),
-              margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFF020B18),
-                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(16),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Container(
+            width: isMobile ? size.width : 500,
+            height: isMobile ? (size.width * (1600 / 735)) : (500 * (1600 / 735)),
+            margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF020B18),
+              borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(16),
                 border: isMobile ? null : Border.all(color: const Color(0xFFD4AF37), width: 2),
                 boxShadow: isMobile
                     ? []
@@ -269,7 +306,82 @@ class MainPosterScreen extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: () => context.push('/pargana-overview'),
+                                onTap: () => context.go('/pargana-overview'),
+                              ),
+                            ),
+                          ),
+
+                          // 12. Bottom Icon 1: Education for Better Tomorrow
+                          Positioned(
+                            left: w * 0.04,
+                            top: h * 0.86,
+                            width: w * 0.14,
+                            height: h * 0.10,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => _showImageModal(context, 'assets/images/samaj ratna.jpeg'),
+                              ),
+                            ),
+                          ),
+
+                          // 13. Bottom Icon 2: Unity in Diversity (Advertisement Space 1)
+                          Positioned(
+                            left: w * 0.23,
+                            top: h * 0.86,
+                            width: w * 0.14,
+                            height: h * 0.10,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => _showImageModal(context, 'assets/images/1.jpeg'), // Placeholder for Admin Ad 1
+                              ),
+                            ),
+                          ),
+
+                          // 14. Bottom Icon 3: Progress Through Support (Live Statistics)
+                          Positioned(
+                            left: w * 0.43,
+                            top: h * 0.86,
+                            width: w * 0.14,
+                            height: h * 0.10,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => context.push('/statistics'),
+                              ),
+                            ),
+                          ),
+
+                          // 15. Bottom Icon 4: Service to Society (Today's Birthdays)
+                          Positioned(
+                            left: w * 0.63,
+                            top: h * 0.86,
+                            width: w * 0.14,
+                            height: h * 0.10,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => context.push('/birthdays'),
+                              ),
+                            ),
+                          ),
+
+                          // 16. Bottom Icon 5: Strong Roots Bright Future (Advertisement Space 2)
+                          Positioned(
+                            left: w * 0.82,
+                            top: h * 0.86,
+                            width: w * 0.14,
+                            height: h * 0.10,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => _showImageModal(context, 'assets/images/4.jpeg'), // Placeholder for Admin Ad 2
                               ),
                             ),
                           ),
@@ -281,7 +393,6 @@ class MainPosterScreen extends ConsumerWidget {
               ),
             ),
           ),
-        ),
       );
   }
 }

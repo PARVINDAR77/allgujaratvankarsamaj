@@ -12,6 +12,7 @@ import { ParganasModule } from "./parganas/parganas.module";
 import { SamajServicesModule } from "./samaj-services/samaj-services.module";
 import { LocationsModule } from "./locations/locations.module";
 import { GovernmentEmployeesModule } from "./government-employees/government-employees.module";
+import { StatisticsModule } from "./statistics/statistics.module";
 import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
 
 @Module({
@@ -31,6 +32,7 @@ import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
     SamajServicesModule,
     LocationsModule,
     GovernmentEmployeesModule,
+    StatisticsModule,
   ],
 })
 export class AppModule implements NestModule {

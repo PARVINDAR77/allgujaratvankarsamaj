@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
+import '../../../../shared/constants/gov_departments.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
   const GovtEmployeesScreen({super.key});
@@ -10,16 +11,37 @@ class GovtEmployeesScreen extends ConsumerStatefulWidget {
   ConsumerState<GovtEmployeesScreen> createState() => _GovtEmployeesScreenState();
 }
 
-class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
+class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> with SingleTickerProviderStateMixin {
+  TabController? _tabController;
   String _department = 'All';
   String _post = 'All';
   String _district = 'All';
   String _taluka = 'All';
   final TextEditingController _searchController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController!.addListener(() {
+      if (!_tabController!.indexIsChanging) {
+        _resetFilters();
+      }
+    });
+  }
+
   List<Map<String, dynamic>> get _allData {
     final profiles = ref.watch(profileNotifierProvider);
-    final govtProfiles = profiles.where((p) => p.employmentType.contains('Government')).toList();
+    final isGujaratTab = (_tabController?.index ?? 0) == 0;
+    
+    final govtProfiles = profiles.where((p) {
+      if (!p.employmentType.contains('Government')) return false;
+      if (isGujaratTab) {
+        return !GovDepartments.centralGov.contains(p.department);
+      } else {
+        return GovDepartments.centralGov.contains(p.department);
+      }
+    }).toList();
     
     return govtProfiles.map((p) => {
       'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id, // Just showing a short ID
@@ -133,19 +155,38 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
   }
 
   List<String> get _departments {
-    final list = _allData.map((e) => e['dept'] as String).toSet().toList();
+    final isGujaratTab = (_tabController?.index ?? 0) == 0;
+    List<String> list = isGujaratTab 
+      ? GovDepartments.gujaratGov.where((e) => e != 'Select Category').toList()
+      : GovDepartments.centralGov.where((e) => e != 'Select Category').toList();
     list.sort();
     return ['All', ...list];
   }
 
   List<String> get _posts {
-    final list = _allData.map((e) => e['post'] as String).toSet().toList();
+    final allProfiles = ref.watch(profileNotifierProvider);
+    final isGujaratTab = (_tabController?.index ?? 0) == 0;
+    
+    var govProfiles = allProfiles.where((p) {
+      if (!p.employmentType.contains('Government')) return false;
+      if (isGujaratTab) {
+        return !GovDepartments.centralGov.contains(p.department);
+      } else {
+        return GovDepartments.centralGov.contains(p.department);
+      }
+    });
+
+    if (_department != 'All') {
+      govProfiles = govProfiles.where((p) => p.department == _department);
+    }
+    
+    final list = govProfiles.map((p) => p.designation).where((d) => d.isNotEmpty).toSet().toList();
     list.sort();
     return ['All', ...list];
   }
 
   List<String> get _districts {
-    final list = _allData.map((e) => e['district'] as String).toSet().toList();
+    final list = _districtTalukas.keys.toList();
     list.sort();
     return ['All', ...list];
   }
@@ -185,11 +226,18 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    _tabController ??= TabController(length: 2, vsync: this)..addListener(() {
+      if (!_tabController!.indexIsChanging) {
+        _resetFilters();
+      }
+    });
+
     return Scaffold(
       backgroundColor: const Color(0xFFF0F8FF),
       body: SafeArea(
@@ -297,6 +345,23 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                     
                     // Filters Section
                     Container(
+                      color: Colors.white,
+                      margin: const EdgeInsets.only(top: 8),
+                      child: TabBar(
+                        controller: _tabController,
+                        labelColor: const Color(0xFF0056D2),
+                        unselectedLabelColor: Colors.grey.shade600,
+                        indicatorColor: const Color(0xFF0056D2),
+                        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                        indicatorWeight: 3,
+                        tabs: const [
+                          Tab(text: 'Gujarat Gov (ગુજરાત સરકાર)'),
+                          Tab(text: 'Central Gov (કેન્દ્ર સરકાર)'),
+                        ],
+                      ),
+                    ),
+                    Container(
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       decoration: BoxDecoration(
@@ -309,7 +374,12 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                           if (isDesktop)
                             Row(
                               children: [
-                                Expanded(child: _buildDropdown('Department (વિભાગ)', _department, _departments, (v) => setState(() => _department = v!))),
+                                Expanded(child: _buildDropdown('Department (વિભાગ)', _department, _departments, (v) {
+                                  setState(() {
+                                    _department = v!;
+                                    _post = 'All'; // Reset post when department changes
+                                  });
+                                })),
                                 const SizedBox(width: 8),
                                 Expanded(child: _buildDropdown('Post (હોદ્દો)', _post, _posts, (v) => setState(() => _post = v!))),
                                 const SizedBox(width: 8),
@@ -328,7 +398,12 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
                               children: [
                                 Row(
                                   children: [
-                                    Expanded(child: _buildDropdown('Department (વિભાગ)', _department, _departments, (v) => setState(() => _department = v!))),
+                                    Expanded(child: _buildDropdown('Department (વિભાગ)', _department, _departments, (v) {
+                                   setState(() {
+                                     _department = v!;
+                                     _post = 'All'; // Reset post when department changes
+                                   });
+                                 })),
                                     const SizedBox(width: 8),
                                     Expanded(child: _buildDropdown('Post (હોદ્દો)', _post, _posts, (v) => setState(() => _post = v!))),
                                   ],
@@ -567,6 +642,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
   }
 
   Widget _buildDropdown(String label, String value, List<String> options, ValueChanged<String?> onChanged) {
+    final validValue = options.contains(value) ? value : (options.isNotEmpty ? options.first : null);
     return Container(
       height: 36,
       decoration: BoxDecoration(
@@ -582,7 +658,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen> {
           Expanded(
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                value: value,
+                value: validValue,
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 menuMaxHeight: 350,

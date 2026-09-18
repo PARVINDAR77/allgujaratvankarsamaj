@@ -24,6 +24,8 @@ import '../../features/search/presentation/screens/advanced_search_screen.dart';
 import '../../features/search/presentation/screens/search_results_screen.dart';
 import '../../shared/presentation/screens/main_navigation_screen.dart';
 import '../../features/home/presentation/screens/main_poster_screen.dart';
+import '../../features/home/presentation/screens/live_statistics_screen.dart';
+import '../../features/home/presentation/screens/birthdays_screen.dart';
 
 class AuthRouterListenable extends ChangeNotifier {
   AuthRouterListenable(Ref ref) {
@@ -80,6 +82,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/main-poster',
         name: 'main-poster',
         builder: (context, state) => const MainPosterScreen(),
+      ),
+      GoRoute(
+        path: '/statistics',
+        name: 'statistics',
+        builder: (context, state) => const LiveStatisticsScreen(),
+      ),
+      GoRoute(
+        path: '/birthdays',
+        name: 'birthdays',
+        builder: (context, state) => const BirthdaysScreen(),
       ),
       GoRoute(
         path: '/family-details',

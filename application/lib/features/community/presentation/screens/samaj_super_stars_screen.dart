@@ -41,14 +41,9 @@ class SamajSuperStarsScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           Image.asset(
-                            'assets/images/samaj_super_stars_poster.jpeg',
+                            'assets/images/samaj ratna.jpeg',
                             fit: BoxFit.cover,
                             width: double.infinity,
-                            errorBuilder: (context, error, stackTrace) => Image.asset(
-                              'assets/images/super_stars.jpeg',
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            ),
                           ),
                           Container(
                             color: const Color(0xFF041126),

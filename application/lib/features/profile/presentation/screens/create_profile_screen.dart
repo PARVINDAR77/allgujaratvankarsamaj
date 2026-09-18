@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/constants/gov_departments.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
@@ -23,10 +24,17 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String _lastName = '';
   String _employmentType = 'Government Sector (સરકારી નોકરી / સેકટર)';
   String _department = 'State Government (રાજ્ય સરકાર)';
+  String _govCategory = 'Select Category';
   String _designation = '';
   String _district = '';
   String _taluka = '';
   String _pargana = 'Select Pargana';
+  String? _gender;
+  String? _maritalStatus;
+  String? _bloodGroup;
+  String? _isVankar;
+  String? _casteCategory;
+  String? _dob;
 
   Future<void> _pickImage() async {
     try {
@@ -42,6 +50,33 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     }
   }
 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000, 1, 1),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFFFD700),
+              onPrimary: Colors.black,
+              surface: Color(0xFF111111),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _dob = "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
+      });
+    }
+  }
+
   void _submitProfile() {
     final uniqueId = 'VNK${math.Random().nextInt(90000) + 10000}';
     final password = '${math.Random().nextInt(900000) + 100000}'; // 6 digit random pass
@@ -50,11 +85,13 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       id: uniqueId,
       firstName: _firstName.isNotEmpty ? _firstName : 'New',
       lastName: _lastName.isNotEmpty ? _lastName : 'User',
-      gender: 'Male (પુરુષ)',
-      maritalStatus: 'Never Married (અપરિણીત)',
-      dateOfBirth: '2000-01-01',
+      gender: _gender ?? 'Male (પુરુષ)',
+      maritalStatus: _maritalStatus ?? 'Never Married (અપરિણીત)',
+      dateOfBirth: _dob ?? '2000-01-01',
       employmentType: _employmentType,
-      department: _department,
+      department: _employmentType.contains('Government')
+          ? (_govCategory != 'Select Category' ? _govCategory : _department)
+          : _department,
       designation: _designation.isNotEmpty ? _designation : 'Employee',
       district: _district.isNotEmpty ? _district : 'Ahmedabad',
       taluka: _taluka.isNotEmpty ? _taluka : 'Ahmedabad City',
@@ -235,13 +272,13 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               const SizedBox(height: 16),
               _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined, onChanged: (v) => setState(() => _firstName = v)),
               _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, onChanged: (v) => setState(() => _lastName = v)),
-              _buildTextField('Date of Birth *', 'Tap to select date of birth', Icons.cake_outlined, isDropdown: true),
-              _buildDropdownField('Gender (જાતિ) *', 'Male (પુરુષ)', Icons.people_alt_outlined, ['Male (પુરુષ)', 'Female (સ્ત્રી)']),
-              _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)']),
-              _buildDropdownField('Blood Group (બ્લડ ગ્રુપ)', 'Select Blood Group', Icons.water_drop_outlined, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)']),
-              _buildDropdownField('Are you Vankar? (તમે વણકર છો?) *', 'Yes (હા)', Icons.verified_user_outlined, ['Yes (હા)', 'No (ના)']),
+              _buildTextField('Date of Birth *', _dob ?? 'Tap to select date of birth', Icons.cake_outlined, isDropdown: true, readOnly: true, onTap: () => _selectDate(context)),
+              _buildDropdownField('Gender (જાતિ) *', 'Male (પુરુષ)', Icons.people_alt_outlined, ['Male (પુરુષ)', 'Female (સ્ત્રી)'], value: _gender, onChanged: (v) => setState(() => _gender = v)),
+              _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'], value: _maritalStatus, onChanged: (v) => setState(() => _maritalStatus = v)),
+              _buildDropdownField('Blood Group (બ્લડ ગ્રુપ)', 'Select Blood Group', Icons.water_drop_outlined, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)'], value: _bloodGroup, onChanged: (v) => setState(() => _bloodGroup = v)),
+              _buildDropdownField('Are you Vankar? (તમે વણકર છો?) *', 'Yes (હા)', Icons.verified_user_outlined, ['Yes (હા)', 'No (ના)'], value: _isVankar, onChanged: (v) => setState(() => _isVankar = v)),
               _buildTextField('Religion (ધર્મ) *', 'Enter Religion (ધર્મ)', Icons.settings_brightness),
-              _buildDropdownField('Caste Category (જ્ઞાતિ પસંદ કરો) *', 'Hindu-vankar (હિન્દુ-વણકર)', Icons.groups_outlined, ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)']),
+              _buildDropdownField('Caste Category (જ્ઞાતિ પસંદ કરો) *', 'Hindu-vankar (હિન્દુ-વણકર)', Icons.groups_outlined, ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)'], value: _casteCategory, onChanged: (v) => setState(() => _casteCategory = v)),
 
               const SizedBox(height: 24),
               // Contact Details Section
@@ -283,14 +320,37 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 value: _employmentType,
                 onChanged: (v) => setState(() => _employmentType = v ?? _employmentType),
               ),
-              _buildDropdownField(
-                'Government Department / Service', 
-                'Select Department', 
-                Icons.account_balance_outlined, 
-                ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)'],
-                value: _department,
-                onChanged: (v) => setState(() => _department = v ?? _department),
-              ),
+              if (_employmentType.contains('Government')) ...[
+                _buildDropdownField(
+                  'Government Department / Service', 
+                  'Select Department', 
+                  Icons.account_balance_outlined, 
+                  ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)'],
+                  value: _department,
+                  onChanged: (v) => setState(() {
+                    _department = v ?? _department;
+                    _govCategory = 'Select Category';
+                  }),
+                ),
+                if (_department == 'State Government (રાજ્ય સરકાર)')
+                  _buildDropdownField(
+                    'Gujarat Government Category',
+                    'Select Category',
+                    Icons.account_balance,
+                    GovDepartments.gujaratGov,
+                    value: _govCategory,
+                    onChanged: (v) => setState(() => _govCategory = v ?? _govCategory),
+                  ),
+                if (_department == 'Central Government (કેન્દ્ર સરકાર)')
+                  _buildDropdownField(
+                    'Central Government Category',
+                    'Select Category',
+                    Icons.account_balance,
+                    GovDepartments.centralGov,
+                    value: _govCategory,
+                    onChanged: (v) => setState(() => _govCategory = v ?? _govCategory),
+                  ),
+              ],
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, onChanged: (v) => setState(() => _designation = v)),
               _buildTextField('Yearly Income (વાર્ષિક આવક - રૂ.)', 'Enter Yearly Income (વાર્ષિક આવક - રૂ.)', Icons.payments_outlined),
 
@@ -362,7 +422,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false, Function(String)? onChanged}) {
+  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false, Function(String)? onChanged, bool readOnly = false, VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -383,9 +443,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               maxLines: isMultiline ? 4 : 1,
               style: const TextStyle(color: Colors.white),
               onChanged: onChanged,
+              readOnly: readOnly,
+              onTap: onTap,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: Colors.white54, fontSize: 14),
+                hintStyle: TextStyle(color: readOnly && hint != 'Tap to select date of birth' ? Colors.white : Colors.white54, fontSize: 14),
                 prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
                 suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Color(0xFFD4AF37)) : null,
                 border: InputBorder.none,

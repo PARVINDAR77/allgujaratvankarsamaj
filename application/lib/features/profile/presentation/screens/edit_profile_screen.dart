@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../shared/constants/gov_departments.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -15,6 +16,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Uint8List? _profileImageBytes;
   final ImagePicker _picker = ImagePicker();
 
+  String _employmentType = 'Government Sector (સરકારી નોકરી / સેકટર)';
+  String _department = 'State Government (રાજ્ય સરકાર)';
+  String _govCategory = 'Select Category';
+  String _pargana = 'Select Pargana';
+  String? _gender;
+  String? _maritalStatus;
+  String? _bloodGroup;
+  String? _isVankar;
+  String? _casteCategory;
+  String? _dob;
+
   Future<void> _pickImage() async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -26,6 +38,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     } catch (e) {
       debugPrint('Error picking image: $e');
+    }
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(2000, 1, 1),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFFFFD700),
+              onPrimary: Colors.black,
+              surface: Color(0xFF111111),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        _dob = "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
+      });
     }
   }
 
@@ -116,8 +155,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 16),
               _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined),
               _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined),
-              _buildTextField('Date of Birth *', 'Tap to select date of birth', Icons.cake_outlined, isDropdown: true),
-              _buildDropdownField('Gender (જાતિ) *', 'Male (પુરુષ)', Icons.people_alt_outlined, ['Male (પુરુષ)', 'Female (સ્ત્રી)']),
+              _buildTextField(
+                'Date of Birth *',
+                _dob ?? 'Tap to select date of birth',
+                Icons.cake_outlined,
+                isDropdown: true,
+                readOnly: true,
+                onTap: () => _selectDate(context),
+              ),
+              _buildDropdownField(
+                'Gender (જાતિ) *',
+                'Male (પુરુષ)',
+                Icons.people_alt_outlined,
+                ['Male (પુરુષ)', 'Female (સ્ત્રી)'],
+                value: _gender,
+                onChanged: (v) => setState(() => _gender = v),
+              ),
               _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)']),
               _buildDropdownField('Blood Group (બ્લડ ગ્રુપ)', 'Select Blood Group', Icons.water_drop_outlined, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)']),
               _buildDropdownField('Are you Vankar? (તમે વણકર છો?) *', 'Yes (હા)', Icons.verified_user_outlined, ['Yes (હા)', 'No (ના)']),
@@ -148,8 +201,45 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               _buildSectionHeader(Icons.work_outline, 'Career & Employment Details (શિક્ષણ, વ્યવસાય અને નોકરીની વિગત)'),
               const SizedBox(height: 16),
               _buildTextField('Education / Degree (અભ્યાસ / ડિગ્રી) *', 'Enter Education / Degree (અભ્યાસ / ડિગ્રી)', Icons.school_outlined),
-              _buildDropdownField('Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 'Government Sector (સરકારી નોકરી / સેકટર)', Icons.work_outline, ['Government Sector (સરકારી નોકરી / સેકટર)', 'Private Sector (ખાનગી નોકરી / સેકટર)', 'Business / Self-Employed (વ્યવસાય / સ્વરોજગાર)', 'Not Working (કોઈ નોકરી નથી)']),
-              _buildDropdownField('Government Department / Service', 'Select Department', Icons.account_balance_outlined, ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)']),
+              _buildDropdownField(
+                'Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 
+                'Government Sector (સરકારી નોકરી / સેકટર)', 
+                Icons.work_outline, 
+                ['Government Sector (સરકારી નોકરી / સેકટર)', 'Private Sector (ખાનગી નોકરી / સેકટર)', 'Business / Self-Employed (વ્યવસાય / સ્વરોજગાર)', 'Not Working (કોઈ નોકરી નથી)'],
+                value: _employmentType,
+                onChanged: (v) => setState(() => _employmentType = v ?? _employmentType),
+              ),
+              if (_employmentType.contains('Government')) ...[
+                _buildDropdownField(
+                  'Government Department / Service', 
+                  'Select Department', 
+                  Icons.account_balance_outlined, 
+                  ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)'],
+                  value: _department,
+                  onChanged: (v) => setState(() {
+                    _department = v ?? _department;
+                    _govCategory = 'Select Category';
+                  }),
+                ),
+                if (_department == 'State Government (રાજ્ય સરકાર)')
+                  _buildDropdownField(
+                    'Gujarat Government Category',
+                    'Select Category',
+                    Icons.account_balance,
+                    GovDepartments.gujaratGov,
+                    value: _govCategory,
+                    onChanged: (v) => setState(() => _govCategory = v ?? _govCategory),
+                  ),
+                if (_department == 'Central Government (કેન્દ્ર સરકાર)')
+                  _buildDropdownField(
+                    'Central Government Category',
+                    'Select Category',
+                    Icons.account_balance,
+                    GovDepartments.centralGov,
+                    value: _govCategory,
+                    onChanged: (v) => setState(() => _govCategory = v ?? _govCategory),
+                  ),
+              ],
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined),
               _buildTextField('Yearly Income (વાર્ષિક આવક - રૂ.)', 'Enter Yearly Income (વાર્ષિક આવક - રૂ.)', Icons.payments_outlined),
 
@@ -225,7 +315,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false}) {
+  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false, bool readOnly = false, VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -243,10 +333,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             ),
             child: TextField(
               maxLines: isMultiline ? 4 : 1,
+              readOnly: readOnly,
+              onTap: onTap,
               style: const TextStyle(color: Colors.black87),
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
+                hintStyle: TextStyle(color: readOnly && hint != 'Tap to select date of birth' ? Colors.black87 : Colors.black38, fontSize: 14),
                 prefixIcon: Icon(prefixIcon, color: Colors.black87, size: 20),
                 suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Colors.black87) : null,
                 border: InputBorder.none,
@@ -259,44 +351,54 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildDropdownField(String label, String hint, IconData prefixIcon, List<String> items) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(color: Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: DropdownButtonFormField<String>(
-              decoration: InputDecoration(
-                prefixIcon: Icon(prefixIcon, color: Colors.black87, size: 20),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  Widget _buildDropdownField(String label, String hint, IconData prefixIcon, List<String> items, {String? value, void Function(String?)? onChanged}) {
+    String? internalValue;
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
               ),
-              hint: Text(hint, style: const TextStyle(color: Colors.black38, fontSize: 14)),
-              icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
-              isExpanded: true,
-              dropdownColor: Colors.white,
-              style: const TextStyle(color: Colors.black87, fontSize: 14),
-              items: items.map((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (_) {},
-            ),
+              const SizedBox(height: 8),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: DropdownButtonFormField<String>(
+                  value: value ?? internalValue,
+                  onChanged: (val) {
+                    if (onChanged != null) {
+                      onChanged(val);
+                    } else {
+                      setState(() {
+                        internalValue = val;
+                      });
+                    }
+                  },
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(prefixIcon, color: Colors.black87, size: 20),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                  hint: Text(hint, style: const TextStyle(color: Colors.black38, fontSize: 14)),
+                  items: items.map((item) {
+                    return DropdownMenuItem(
+                      value: item,
+                      child: Text(item, style: const TextStyle(color: Colors.black87)),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      }
     );
   }
 }
