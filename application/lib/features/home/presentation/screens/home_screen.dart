@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../auth/providers/auth_provider.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -200,36 +199,60 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: AspectRatio(
-          aspectRatio: 1080 / 1920,
-          child: FittedBox(
-            fit: BoxFit.fill,
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              width: 1080,
-              height: 1920,
-            child: Stack(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final screenW = constraints.maxWidth;
+          final screenH = constraints.maxHeight > 0
+              ? constraints.maxHeight
+              : MediaQuery.of(context).size.height;
+          // Scale factors: poster is 1080x1920, scale to fill the screen
+          final double scaleX = screenW / 1080;
+          final double scaleY = screenH / 1920;
+          // Use the larger scale to cover entire screen (cover behavior)
+          final double scale = scaleX > scaleY ? scaleX : scaleY;
+          final double renderedW = 1080 * scale;
+          final double renderedH = 1920 * scale;
+          final double offsetX = (renderedW - screenW) / 2;
+          final double offsetY = (renderedH - screenH) / 2;
+
+          // Helper to convert poster coords to screen coords
+          double sx(double x) => x * scale - offsetX;
+          double sy(double y) => y * scale - offsetY;
+          double sw(double w) => w * scale;
+          double sh(double h) => h * scale;
+
+          return SizedBox(
+            width: screenW,
+            height: screenH,
+            child: ClipRect(
+              child: Stack(
               children: [
-                // Post-Login Matrimony Graphic
-                Positioned.fill(
+                // Post-Login Matrimony Graphic — covers full screen
+                Positioned(
+                  left: -offsetX,
+                  top: -offsetY,
+                  width: renderedW,
+                  height: renderedH,
                   child: Image.asset(
                     'assets/images/home_poster_v3.jpg',
-                    fit: BoxFit.cover,
+                    fit: BoxFit.fill,
+                    width: renderedW,
+                    height: renderedH,
                     errorBuilder: (context, error, stackTrace) => Image.asset(
                       'assets/images/1 (1).jpeg',
-                      fit: BoxFit.cover,
+                      fit: BoxFit.fill,
+                      width: renderedW,
+                      height: renderedH,
                     ),
                   ),
                 ),
 
                 // Top-Left Menu Button (Hamburger)
                 Positioned(
-                  left: 20,
-                  top: 30,
-                  width: 150,
-                  height: 90,
+                  left: sx(20),
+                  top: sy(30),
+                  width: sw(150),
+                  height: sh(90),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -241,10 +264,10 @@ class HomeScreen extends ConsumerWidget {
 
                 // Top-Right Notification Bell Icon (🔔)
                 Positioned(
-                  right: 20,
-                  top: 30,
-                  width: 150,
-                  height: 90,
+                  left: sx(910),
+                  top: sy(30),
+                  width: sw(150),
+                  height: sh(90),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -257,10 +280,10 @@ class HomeScreen extends ConsumerWidget {
                 // --- Left Side Buttons ---
                 // 1. Find Boy (Blue)
                 Positioned(
-                  left: 0,
-                  top: 730,
-                  width: 280,
-                  height: 250,
+                  left: sx(0),
+                  top: sy(730),
+                  width: sw(280),
+                  height: sh(250),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -271,10 +294,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 2. Find Girl (Pink)
                 Positioned(
-                  left: 0,
-                  top: 1000,
-                  width: 280,
-                  height: 250,
+                  left: sx(0),
+                  top: sy(1000),
+                  width: sw(280),
+                  height: sh(250),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -285,10 +308,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 3. Find Match (Green)
                 Positioned(
-                  left: 0,
-                  top: 1270,
-                  width: 280,
-                  height: 250,
+                  left: sx(0),
+                  top: sy(1270),
+                  width: sw(280),
+                  height: sh(250),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -301,10 +324,10 @@ class HomeScreen extends ConsumerWidget {
                 // --- Right Side Buttons ---
                 // 4. Create Profile (Orange)
                 Positioned(
-                  right: 0,
-                  top: 730,
-                  width: 280,
-                  height: 250,
+                  left: sx(800),
+                  top: sy(730),
+                  width: sw(280),
+                  height: sh(250),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -315,10 +338,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 5. Search (Purple)
                 Positioned(
-                  right: 0,
-                  top: 1000,
-                  width: 280,
-                  height: 250,
+                  left: sx(800),
+                  top: sy(1000),
+                  width: sw(280),
+                  height: sh(250),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -329,10 +352,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 6. Verified Profiles (Teal)
                 Positioned(
-                  right: 0,
-                  top: 1270,
-                  width: 280,
-                  height: 250,
+                  left: sx(800),
+                  top: sy(1270),
+                  width: sw(280),
+                  height: sh(250),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -345,10 +368,10 @@ class HomeScreen extends ConsumerWidget {
                 // --- Center Bottom ---
                 // 7. Join Now
                 Positioned(
-                  left: 300,
-                  top: 1555,
-                  width: 480,
-                  height: 100,
+                  left: sx(300),
+                  top: sy(1555),
+                  width: sw(480),
+                  height: sh(100),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -361,10 +384,10 @@ class HomeScreen extends ConsumerWidget {
                 // --- Bottom Icons ---
                 // 8. Education
                 Positioned(
-                  left: 0,
-                  top: 1670,
-                  width: 216,
-                  height: 170,
+                  left: sx(0),
+                  top: sy(1670),
+                  width: sw(216),
+                  height: sh(170),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -374,10 +397,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 9. Unity
                 Positioned(
-                  left: 216,
-                  top: 1670,
-                  width: 216,
-                  height: 170,
+                  left: sx(216),
+                  top: sy(1670),
+                  width: sw(216),
+                  height: sh(170),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -387,10 +410,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 10. Progress
                 Positioned(
-                  left: 432,
-                  top: 1670,
-                  width: 216,
-                  height: 170,
+                  left: sx(432),
+                  top: sy(1670),
+                  width: sw(216),
+                  height: sh(170),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -400,10 +423,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 11. Service
                 Positioned(
-                  left: 648,
-                  top: 1670,
-                  width: 216,
-                  height: 170,
+                  left: sx(648),
+                  top: sy(1670),
+                  width: sw(216),
+                  height: sh(170),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -413,10 +436,10 @@ class HomeScreen extends ConsumerWidget {
                 ),
                 // 12. Strong Roots
                 Positioned(
-                  left: 864,
-                  top: 1670,
-                  width: 216,
-                  height: 170,
+                  left: sx(864),
+                  top: sy(1670),
+                  width: sw(216),
+                  height: sh(170),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
@@ -426,9 +449,9 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            ),
           ),
-        ),
+        );
+        },
       ),
     );
   }
