@@ -64,9 +64,9 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF040A18), // Dark Navy Background
+      backgroundColor: Colors.black, // Pure Black Background
       appBar: AppBar(
-        backgroundColor: const Color(0xFF040A18),
+        backgroundColor: Colors.black,
         elevation: 0,
         title: const Text(
           'Create Profile',
@@ -87,7 +87,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF040A18),
+                  color: Colors.black,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
                 ),
@@ -256,7 +256,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF0A1830), // Slightly lighter navy for section headers
+        color: const Color(0xFF111111), // Pure dark for section headers
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5), width: 1),
       ),
@@ -288,7 +288,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0A1830),
+              color: const Color(0xFF111111), // Pure dark for input fields
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
             ),
@@ -324,7 +324,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF0A1830),
+              color: const Color(0xFF111111), // Pure dark for dropdown
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
             ),
@@ -338,7 +338,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               hint: Text(hint, style: const TextStyle(color: Colors.white54, fontSize: 14)),
               icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFD4AF37)),
               isExpanded: true,
-              dropdownColor: const Color(0xFF0A1830),
+              dropdownColor: const Color(0xFF111111),
               style: const TextStyle(color: Colors.white, fontSize: 14),
               items: items.map((String val) {
                 return DropdownMenuItem<String>(

@@ -127,10 +127,10 @@ class MainPosterScreen extends ConsumerWidget {
 
                       return Stack(
                         children: [
-                          // 1. Post-Login Home Graphic: 1 (1).jpeg (Buddha Layout)
+                          // 1. Post-Login Home Graphic: 2 image.jpeg (New layout)
                           Positioned.fill(
                             child: Image.asset(
-                              'assets/images/buddha_home_poster.jpeg',
+                              'assets/images/2 image.jpeg',
                               fit: BoxFit.fill,
                               errorBuilder: (context, error, stackTrace) => Image.asset(
                                 'assets/images/1 (1).jpeg',
@@ -157,9 +157,9 @@ class MainPosterScreen extends ConsumerWidget {
                           // 4. Circle 1: Government Employees (Red)
                           Positioned(
                             left: w * 0.02,
-                            top: h * 0.49,
-                            width: w * 0.22,
-                            height: h * 0.16,
+                            top: h * 0.48,
+                            width: w * 0.18,
+                            height: h * 0.12,
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -169,12 +169,12 @@ class MainPosterScreen extends ConsumerWidget {
                             ),
                           ),
 
-                          // 5. Circle 2: Matrimony (Maroon) - GOES TO HOME
+                          // 5. Circle 2: Matrimony (Pink)
                           Positioned(
-                            left: w * 0.26,
-                            top: h * 0.49,
-                            width: w * 0.22,
-                            height: h * 0.16,
+                            left: w * 0.21,
+                            top: h * 0.48,
+                            width: w * 0.18,
+                            height: h * 0.12,
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -186,10 +186,10 @@ class MainPosterScreen extends ConsumerWidget {
 
                           // 6. Circle 3: Private Job (Blue)
                           Positioned(
-                            left: w * 0.50,
-                            top: h * 0.49,
-                            width: w * 0.22,
-                            height: h * 0.16,
+                            left: w * 0.41,
+                            top: h * 0.48,
+                            width: w * 0.18,
+                            height: h * 0.12,
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -201,10 +201,10 @@ class MainPosterScreen extends ConsumerWidget {
 
                           // 7. Circle 4: VANKAR SAMAJ Services (Green)
                           Positioned(
-                            left: w * 0.74,
-                            top: h * 0.49,
-                            width: w * 0.22,
-                            height: h * 0.16,
+                            left: w * 0.61,
+                            top: h * 0.48,
+                            width: w * 0.18,
+                            height: h * 0.12,
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
@@ -214,32 +214,62 @@ class MainPosterScreen extends ConsumerWidget {
                             ),
                           ),
 
-                          // 8. Gold Button 1: પાવન પ્રેરણાદાતા (Bottom Left)
+                          // 8. Circle 5: VANKAR SAMAJ Ratna (Purple)
                           Positioned(
-                            left: w * 0.08,
-                            top: h * 0.77,
-                            width: w * 0.42,
-                            height: h * 0.15,
+                            left: w * 0.80,
+                            top: h * 0.48,
+                            width: w * 0.18,
+                            height: h * 0.12,
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(50),
+                                onTap: () => context.push('/samaj-super-stars'),
+                              ),
+                            ),
+                          ),
+
+                          // 9. Gold Button 1: પાવન પ્રેરણાદાતા
+                          Positioned(
+                            left: w * 0.03,
+                            top: h * 0.75,
+                            width: w * 0.30,
+                            height: h * 0.08,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
                                 onTap: () => context.push('/pavan-prernadata'),
                               ),
                             ),
                           ),
 
-                          // 9. Gold Button 2: Samaj Super Stars (Bottom Right)
+                          // 10. Gold Button 2: Samaj Super Stars
                           Positioned(
-                            left: w * 0.50,
-                            top: h * 0.77,
-                            width: w * 0.42,
-                            height: h * 0.15,
+                            left: w * 0.35,
+                            top: h * 0.75,
+                            width: w * 0.30,
+                            height: h * 0.08,
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                borderRadius: BorderRadius.circular(30),
+                                borderRadius: BorderRadius.circular(20),
                                 onTap: () => context.push('/samaj-super-stars'),
+                              ),
+                            ),
+                          ),
+
+                          // 11. Gold Button 3: Family Directory
+                          Positioned(
+                            left: w * 0.67,
+                            top: h * 0.75,
+                            width: w * 0.30,
+                            height: h * 0.08,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () => context.push('/pargana-overview'),
                               ),
                             ),
                           ),
