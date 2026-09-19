@@ -8,9 +8,11 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/community/presentation/screens/pavan_prernadata_screen.dart';
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
+import '../../features/community/presentation/screens/samaj_super_stars_poster_screen.dart';
 import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
 import '../../features/government_employees/presentation/screens/private_employees_screen.dart';
 import '../../features/family/presentation/screens/family_details_screen.dart';
+import '../../features/family/presentation/screens/family_directory_poster_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/match/presentation/screens/mutual_interest_screen.dart';
 import '../../features/pargana/presentation/screens/pargana_overview_screen.dart';
@@ -127,6 +129,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/pavan-prernadata',
         name: 'pavan-prernadata',
         builder: (context, state) => const PavanPrernadataScreen(),
+      ),
+      GoRoute(
+        path: '/samaj-super-stars-poster',
+        name: 'samaj-super-stars-poster',
+        builder: (context, state) => const SamajSuperStarsPosterScreen(),
+      ),
+      GoRoute(
+        path: '/family-directory-poster',
+        name: 'family-directory-poster',
+        builder: (context, state) => const FamilyDirectoryPosterScreen(),
       ),
       GoRoute(
         path: '/government-employees',

@@ -291,7 +291,7 @@ class MainPosterScreen extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: () => context.push('/samaj-super-stars'),
+                                onTap: () => context.push('/samaj-super-stars-poster'),
                               ),
                             ),
                           ),
@@ -306,7 +306,7 @@ class MainPosterScreen extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: () => context.go('/pargana-overview'),
+                                onTap: () => context.push('/family-directory-poster'),
                               ),
                             ),
                           ),
