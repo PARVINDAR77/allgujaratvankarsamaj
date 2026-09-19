@@ -45,11 +45,11 @@ class VerifiedProfileScreen extends StatelessWidget {
                       child: Column(
                         children: [
                           Image.asset(
-                            'assets/images/varified propfile.png',
+                            'assets/images/5 (6).jpeg',
                             fit: BoxFit.cover,
                             width: double.infinity,
                             errorBuilder: (context, error, stackTrace) => Image.asset(
-                              'assets/images/WhatsApp Image 2026-09-08 at 10.08.44 PM (1).jpeg',
+                              'assets/images/5 (6).jpeg',
                               fit: BoxFit.cover,
                               width: double.infinity,
                             ),

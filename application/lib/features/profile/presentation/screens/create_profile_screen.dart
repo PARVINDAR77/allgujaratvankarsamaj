@@ -59,11 +59,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFFFFD700),
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFFD4AF37),
               onPrimary: Colors.black,
-              surface: Color(0xFF111111),
-              onSurface: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black87,
             ),
           ),
           child: child!,
@@ -105,19 +105,19 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF111111),
+        backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+          side: BorderSide(color: Colors.grey.shade300, width: 1.5),
         ),
         title: const Column(
           children: [
-            Icon(Icons.check_circle, color: Colors.greenAccent, size: 48),
+            Icon(Icons.check_circle, color: Colors.green, size: 48),
             SizedBox(height: 12),
             Text(
               'Profile Created Successfully!',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -126,31 +126,31 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           children: [
             const Text(
               'Please save your login details:',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
+              style: TextStyle(color: Colors.black54, fontSize: 14),
             ),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black,
+                color: const Color(0xFFF5F7FA),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white24),
+                border: Border.all(color: Colors.grey.shade300),
               ),
               child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Unique ID:', style: TextStyle(color: Colors.white54, fontSize: 14)),
-                      Text(uniqueId, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      const Text('Unique ID:', style: TextStyle(color: Colors.black54, fontSize: 14)),
+                      Text(uniqueId, style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
                     ],
                   ),
-                  const Divider(color: Colors.white24, height: 24),
+                  Divider(color: Colors.grey.shade300, height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Password:', style: TextStyle(color: Colors.white54, fontSize: 14)),
-                      Text(password, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      const Text('Password:', style: TextStyle(color: Colors.black54, fontSize: 14)),
+                      Text(password, style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
                     ],
                   ),
                 ],
@@ -160,7 +160,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
             const Text(
               'You can use this ID to search for this profile in the Advance Search section.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12),
+              style: TextStyle(color: Colors.black54, fontSize: 12),
             ),
           ],
         ),
@@ -188,15 +188,15 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black, // Pure Black Background
+      backgroundColor: const Color(0xFFF5F7FA), // Soft Light Grey Background
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
           'Create Profile',
-          style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
-        iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
+        iconTheme: const IconThemeData(color: Colors.black87),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -211,9 +211,12 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.black,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                  ],
                 ),
                 child: Row(
                   children: [
@@ -221,8 +224,9 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                       width: 80,
                       height: 80,
                       decoration: BoxDecoration(
-                        color: const Color(0xFFD4AF37),
+                        color: const Color(0xFFF5F7FA),
                         shape: BoxShape.circle,
+                        border: Border.all(color: Colors.grey.shade300),
                         image: _profileImageBytes != null
                             ? DecorationImage(
                                 image: MemoryImage(_profileImageBytes!),
@@ -231,7 +235,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                             : null,
                       ),
                       child: _profileImageBytes == null
-                          ? const Icon(Icons.add_a_photo, color: Colors.black, size: 36)
+                          ? const Icon(Icons.add_a_photo, color: Colors.black54, size: 36)
                           : null,
                     ),
                     const SizedBox(width: 16),
@@ -241,23 +245,23 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                         children: [
                           const Text(
                             'Upload Profile Photo (ફોટો અપલોડ કરો)',
-                            style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 14),
+                            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14),
                           ),
                           const SizedBox(height: 6),
                           const Text(
                             'તમારો પાસપોર્ટ સાઈઝ અથવા સુંદર પ્રોફાઈલ ફોટો અહીં અપલોડ કરો.',
-                            style: TextStyle(color: Colors.white70, fontSize: 12),
+                            style: TextStyle(color: Colors.black54, fontSize: 12),
                           ),
                           const SizedBox(height: 12),
                           OutlinedButton.icon(
                             onPressed: _pickImage,
                             style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFFFD700)),
+                              side: const BorderSide(color: Color(0xFFD4AF37)),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             ),
-                            icon: const Icon(Icons.cloud_upload, color: Color(0xFFFFD700), size: 18),
-                            label: const Text('Choose Photo (ફોટો પસંદ કરો)', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                            icon: const Icon(Icons.cloud_upload, color: Color(0xFFD4AF37), size: 18),
+                            label: const Text('Choose Photo (ફોટો પસંદ કરો)', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -326,9 +330,9 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   'Select Department', 
                   Icons.account_balance_outlined, 
                   ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)'],
-                  value: _department,
+                  value: ['State Government (રાજ્ય સરકાર)', 'Central Government (કેન્દ્ર સરકાર)', 'Public Sector (જાહેર ક્ષેત્ર)', 'Other (અન્ય)'].contains(_department) ? _department : 'State Government (રાજ્ય સરકાર)',
                   onChanged: (v) => setState(() {
-                    _department = v ?? _department;
+                    _department = v ?? 'State Government (રાજ્ય સરકાર)';
                     _govCategory = 'Select Category';
                   }),
                 ),
@@ -338,8 +342,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     'Select Category',
                     Icons.account_balance,
                     GovDepartments.gujaratGov,
-                    value: _govCategory,
-                    onChanged: (v) => setState(() => _govCategory = v ?? _govCategory),
+                    value: GovDepartments.gujaratGov.contains(_govCategory) ? _govCategory : 'Select Category',
+                    onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                   ),
                 if (_department == 'Central Government (કેન્દ્ર સરકાર)')
                   _buildDropdownField(
@@ -347,9 +351,41 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     'Select Category',
                     Icons.account_balance,
                     GovDepartments.centralGov,
-                    value: _govCategory,
-                    onChanged: (v) => setState(() => _govCategory = v ?? _govCategory),
+                    value: GovDepartments.centralGov.contains(_govCategory) ? _govCategory : 'Select Category',
+                    onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                   ),
+              ],
+              if (_employmentType.contains('Private')) ...[
+                _buildDropdownField(
+                  'Private Sector Industry / Category (ખાનગી નોકરીનો પ્રકાર)',
+                  'Select Industry',
+                  Icons.business_center_outlined,
+                  ['Select Category', 'IT / Software', 'Banking / Finance', 'Healthcare / Medical', 'Engineering / Manufacturing', 'Education / Teaching', 'Sales / Marketing', 'Admin / HR', 'Other (અન્ય)'],
+                  value: ['Select Category', 'IT / Software', 'Banking / Finance', 'Healthcare / Medical', 'Engineering / Manufacturing', 'Education / Teaching', 'Sales / Marketing', 'Admin / HR', 'Other (અન્ય)'].contains(_govCategory) ? _govCategory : 'Select Category',
+                  onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
+                ),
+                _buildTextField(
+                  'Company Name (કંપનીનું નામ)',
+                  'Enter Company Name',
+                  Icons.business_outlined,
+                  onChanged: (v) => setState(() => _department = v),
+                ),
+              ],
+              if (_employmentType.contains('Business')) ...[
+                _buildDropdownField(
+                  'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
+                  'Select Business Type',
+                  Icons.storefront_outlined,
+                  ['Select Category', 'Retail / Shop (દુકાન)', 'Wholesale / Trading (જથ્થાબંધ વેપાર)', 'Manufacturing (ઉત્પાદન)', 'Agriculture / Farming (ખેતી)', 'Real Estate / Construction', 'Consultancy / Services', 'Other (અન્ય)'],
+                  value: ['Select Category', 'Retail / Shop (દુકાન)', 'Wholesale / Trading (જથ્થાબંધ વેપાર)', 'Manufacturing (ઉત્પાદન)', 'Agriculture / Farming (ખેતી)', 'Real Estate / Construction', 'Consultancy / Services', 'Other (અન્ય)'].contains(_govCategory) ? _govCategory : 'Select Category',
+                  onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
+                ),
+                _buildTextField(
+                  'Business / Shop Name (દુકાન / વ્યવસાયનું નામ)',
+                  'Enter Business Name',
+                  Icons.store_outlined,
+                  onChanged: (v) => setState(() => _department = v),
+                ),
               ],
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, onChanged: (v) => setState(() => _designation = v)),
               _buildTextField('Yearly Income (વાર્ષિક આવક - રૂ.)', 'Enter Yearly Income (વાર્ષિક આવક - રૂ.)', Icons.payments_outlined),
@@ -403,18 +439,21 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF111111), // Pure dark for section headers
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5), width: 1),
+        border: Border.all(color: Colors.grey.shade300, width: 1),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 4, offset: const Offset(0, 2)),
+        ],
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFFFFD700), size: 20),
+          Icon(icon, color: const Color(0xFFD4AF37), size: 20),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(color: Color(0xFFFFD700), fontSize: 15, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -430,26 +469,29 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF111111), // Pure dark for input fields
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+              border: Border.all(color: Colors.grey.shade300),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2)),
+              ],
             ),
             child: TextField(
               maxLines: isMultiline ? 4 : 1,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.black87),
               onChanged: onChanged,
               readOnly: readOnly,
               onTap: onTap,
               decoration: InputDecoration(
                 hintText: hint,
-                hintStyle: TextStyle(color: readOnly && hint != 'Tap to select date of birth' ? Colors.white : Colors.white54, fontSize: 14),
+                hintStyle: TextStyle(color: readOnly && hint != 'Tap to select date of birth' ? Colors.black87 : Colors.black38, fontSize: 14),
                 prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
-                suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Color(0xFFD4AF37)) : null,
+                suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Colors.black54) : null,
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),
@@ -468,14 +510,17 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         children: [
           Text(
             label,
-            style: const TextStyle(color: Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
+            style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF111111), // Pure dark for dropdown
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+              border: Border.all(color: Colors.grey.shade300),
+              boxShadow: [
+                BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2)),
+              ],
             ),
             child: DropdownButtonFormField<String>(
               value: value,
@@ -484,11 +529,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               ),
-              hint: Text(hint, style: const TextStyle(color: Colors.white54, fontSize: 14)),
-              icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFD4AF37)),
+              hint: Text(hint, style: const TextStyle(color: Colors.black38, fontSize: 14)),
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
               isExpanded: true,
-              dropdownColor: const Color(0xFF111111),
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              dropdownColor: Colors.white,
+              style: const TextStyle(color: Colors.black87, fontSize: 14),
               items: items.map((String val) {
                 return DropdownMenuItem<String>(
                   value: val,

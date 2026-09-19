@@ -115,7 +115,7 @@ class HomeScreen extends ConsumerWidget {
                 title: const Text('Pargana Overview (પરગણાં)', style: TextStyle(color: Colors.white)),
                 onTap: () {
                   Navigator.pop(ctx);
-                  context.go('/pargana-overview');
+                  context.push('/pargana-overview');
                 },
               ),
               ListTile(
@@ -346,7 +346,7 @@ class HomeScreen extends ConsumerWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.push('/search'),
+                      onTap: () => context.push('/advanced-search'),
                     ),
                   ),
                 ),

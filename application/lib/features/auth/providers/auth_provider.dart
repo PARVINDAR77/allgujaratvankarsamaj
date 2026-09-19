@@ -36,18 +36,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _checkAuth() async {
-    final token = await storage.getToken();
-    if (token != null && token.isNotEmpty) {
-      final user = UserModel(
-        id: '1',
-        email: 'user@example.com',
-        role: 'USER',
-        status: 'ACTIVE',
-      );
-      state = AuthState.authenticated(user);
-    } else {
-      state = AuthState.unauthenticated();
-    }
+    // Clear any previously saved token so the user must log in again
+    await storage.deleteToken();
+    // Always start in an unauthenticated state
+    state = AuthState.unauthenticated();
   }
 
   Future<bool> login(String email, String password) async {

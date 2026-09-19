@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
+import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/constants/gov_departments.dart';
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
   final String initialLookingFor;
@@ -320,17 +322,19 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
             top: 0,
             left: 0,
             right: 0,
-            child: Transform.scale(
-              scale: 1.2, // Zoom in to crop out the edges
-              child: Image.asset(
-                'assets/images/vankar_header_banner.png',
-                fit: BoxFit.cover,
-                height: 180,
-                alignment: Alignment.center,
-                errorBuilder: (context, error, stackTrace) => Container(
+            child: ClipRect(
+              child: Transform.scale(
+                scale: 1.2, // Zoom in to crop out the edges
+                child: Image.asset(
+                  'assets/images/vankar_header_banner.png',
+                  fit: BoxFit.cover,
                   height: 180,
-                  color: Colors.blue.shade100,
-                  child: const Center(child: Text('Logo Graphic Missing')),
+                  alignment: Alignment.center,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 180,
+                    color: Colors.blue.shade100,
+                    child: const Center(child: Text('Logo Graphic Missing')),
+                  ),
                 ),
               ),
             ),

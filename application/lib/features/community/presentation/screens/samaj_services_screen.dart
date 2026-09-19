@@ -220,6 +220,7 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
         '▶️ YouTube Live Broadcast (યુટ્યુબ લાઇવ)',
         '🪡 Zari & Embroidery Works (ઝરી / ભરતકામ)',
         '🧥 Groom Wear & Sherwani Rental (શેરવાની ભાડે)',
+        '👳 Safa Vala & Paghdi Tying (સાફા / પાઘડી બાંધનાર)',
       ],
     },
   ];
@@ -228,6 +229,161 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _showServiceProviders(BuildContext context, String serviceName) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _buildProvidersBottomSheet(ctx, serviceName),
+    );
+  }
+
+  Widget _buildProvidersBottomSheet(BuildContext context, String serviceName) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.85,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            height: 4,
+            width: 40,
+            decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Text(
+              '$serviceName Professionals',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF041126)),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: 3, // Dummy providers
+              padding: const EdgeInsets.all(16),
+              itemBuilder: (context, index) {
+                return _buildProviderCard(context, index);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProviderCard(BuildContext context, int index) {
+    int currentRating = 0;
+    return StatefulBuilder(
+      builder: (context, setLocalState) {
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          elevation: 2,
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.grey.shade200,
+                      child: const Icon(Icons.person, size: 36, color: Colors.grey),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Service Provider ${index + 1}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          const Text('10+ years experience', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                          const SizedBox(height: 4),
+                          const Row(
+                            children: [
+                              Icon(Icons.star, color: Colors.amber, size: 16),
+                              SizedBox(width: 4),
+                              Text('4.8 (120 reviews)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.message, size: 18),
+                        label: const Text('Message'),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        onPressed: () {},
+                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37), foregroundColor: Colors.white),
+                        icon: const Icon(Icons.call, size: 18),
+                        label: const Text('Contact'),
+                      ),
+                    ),
+                  ],
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Divider(),
+                ),
+                const Text('Rate this Professional:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: List.generate(5, (starIndex) {
+                        return IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: Icon(
+                            starIndex < currentRating ? Icons.star : Icons.star_border,
+                            color: Colors.amber,
+                            size: 32,
+                          ),
+                          onPressed: () {
+                            setLocalState(() {
+                              currentRating = starIndex + 1;
+                            });
+                          },
+                        );
+                      }),
+                    ),
+                    if (currentRating > 0)
+                      TextButton(
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Review submitted successfully!')));
+                          setLocalState(() {
+                            currentRating = 0;
+                          });
+                        },
+                        child: const Text('Submit', style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+    );
   }
 
   @override
@@ -485,7 +641,9 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                                     final String text = spaceIndex != -1 ? fullItem.substring(spaceIndex + 1) : fullItem;
                                     
                                     return InkWell(
-                                      onTap: () {},
+                                      onTap: () {
+                                        _showServiceProviders(context, text);
+                                      },
                                       borderRadius: BorderRadius.circular(12),
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

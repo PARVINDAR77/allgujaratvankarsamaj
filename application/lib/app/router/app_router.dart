@@ -24,6 +24,7 @@ import '../../features/profile/presentation/screens/profile_under_review_screen.
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
 import '../../features/search/presentation/screens/search_results_screen.dart';
+import '../../features/matrimonial_listing/presentation/screens/matrimonial_listing_screen.dart';
 import '../../shared/presentation/screens/main_navigation_screen.dart';
 import '../../features/home/presentation/screens/main_poster_screen.dart';
 import '../../features/home/presentation/screens/live_statistics_screen.dart';
@@ -177,6 +178,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (context, state) {
                   final lookingFor = state.uri.queryParameters['lookingFor'] ?? 'Groom';
                   return AdvancedSearchScreen(initialLookingFor: lookingFor);
+                },
+              ),
+              GoRoute(
+                path: '/advanced-search',
+                name: 'advanced-search',
+                builder: (context, state) {
+                  return const MatrimonialListingScreen();
                 },
               ),
             ],
