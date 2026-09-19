@@ -306,7 +306,7 @@ class MainPosterScreen extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(20),
-                                onTap: () => context.push('/pargana-overview'),
+                                onTap: () => context.push('/family-details'),
                               ),
                             ),
                           ),
