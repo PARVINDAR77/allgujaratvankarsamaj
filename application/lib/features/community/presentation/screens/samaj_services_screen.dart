@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/constants/app_data.dart';
 
 class SamajServicesScreen extends StatefulWidget {
   const SamajServicesScreen({super.key});
@@ -11,8 +12,8 @@ class SamajServicesScreen extends StatefulWidget {
 class _SamajServicesScreenState extends State<SamajServicesScreen> {
   String? selectedDistrict;
   String? selectedTaluka;
-  String? selectedVillage;
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _villageController = TextEditingController();
 
   static final List<Map<String, dynamic>> _serviceCategories = [
     {
@@ -228,6 +229,7 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    _villageController.dispose();
     super.dispose();
   }
 
@@ -388,10 +390,10 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Default placeholder lists for UI layout testing
-    final districts = ['Ahmedabad', 'Surat', 'Vadodara', 'Rajkot'];
-    final talukas = ['City', 'Rural', 'East', 'West'];
-    final villages = ['Village A', 'Village B', 'Village C'];
+    final districtsList = AppData.gujaratDistricts.keys.where((d) => d != 'Select District').toList();
+    final talukasList = selectedDistrict != null && AppData.gujaratDistricts.containsKey(selectedDistrict) 
+        ? AppData.gujaratDistricts[selectedDistrict]!.where((t) => t != 'Select Taluka').toList() 
+        : <String>[];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F9FF),
@@ -467,12 +469,12 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF041126),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                          BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
                         ],
-                        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.3)),
+                        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.6), width: 1.5),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -480,16 +482,16 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                           // Search Bar
                           TextField(
                             controller: _searchController,
-                            style: const TextStyle(color: Colors.white),
+                            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               hintText: 'Search services, professions...',
-                              hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
+                              hintStyle: const TextStyle(color: Colors.black54),
                               prefixIcon: const Icon(Icons.search, color: Color(0xFFD4AF37)),
                               filled: true,
-                              fillColor: Colors.white.withValues(alpha: 0.05),
+                              fillColor: const Color(0xFFF8FAFC),
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.5))),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 1.5)),
                               contentPadding: const EdgeInsets.symmetric(vertical: 0),
                             ),
                           ),
@@ -501,60 +503,70 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                               Expanded(
                                 child: DropdownButtonFormField<String>(
                                   isExpanded: true,
-                                  dropdownColor: const Color(0xFF041126),
-                                  style: const TextStyle(color: Colors.white),
+                                  dropdownColor: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  elevation: 8,
+                                  menuMaxHeight: 300,
+                                  iconEnabledColor: const Color(0xFFD4AF37),
+                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                                   decoration: InputDecoration(
                                     hintText: 'District',
-                                    hintStyle: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                                    hintStyle: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.3))),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.05),
+                                    fillColor: const Color(0xFFF8FAFC),
                                   ),
                                   value: selectedDistrict,
-                                  items: districts.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis))).toList(),
-                                  onChanged: (val) => setState(() => selectedDistrict = val),
+                                  items: districtsList.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
+                                  onChanged: (val) => setState(() {
+                                    selectedDistrict = val;
+                                    selectedTaluka = null; // Reset taluka on district change
+                                  }),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: DropdownButtonFormField<String>(
                                   isExpanded: true,
-                                  dropdownColor: const Color(0xFF041126),
-                                  style: const TextStyle(color: Colors.white),
+                                  dropdownColor: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  elevation: 8,
+                                  menuMaxHeight: 300,
+                                  iconEnabledColor: const Color(0xFFD4AF37),
+                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                                   decoration: InputDecoration(
                                     hintText: 'Taluka',
-                                    hintStyle: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                                    hintStyle: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.3))),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.05),
+                                    fillColor: const Color(0xFFF8FAFC),
                                   ),
                                   value: selectedTaluka,
-                                  items: talukas.map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis))).toList(),
+                                  items: talukasList.map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
                                   onChanged: (val) => setState(() => selectedTaluka = val),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  dropdownColor: const Color(0xFF041126),
-                                  style: const TextStyle(color: Colors.white),
+                                child: TextField(
+                                  controller: _villageController,
+                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
                                   decoration: InputDecoration(
-                                    hintText: 'Village',
-                                    hintStyle: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.5)),
+                                    hintText: 'Village Name',
+                                    hintStyle: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold),
                                     contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
                                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: const Color(0xFFD4AF37).withValues(alpha: 0.3))),
+                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
                                     filled: true,
-                                    fillColor: Colors.white.withValues(alpha: 0.05),
+                                    fillColor: const Color(0xFFF8FAFC),
                                   ),
-                                  value: selectedVillage,
-                                  items: villages.map((v) => DropdownMenuItem(value: v, child: Text(v, style: const TextStyle(fontSize: 12, color: Colors.white), overflow: TextOverflow.ellipsis))).toList(),
-                                  onChanged: (val) => setState(() => selectedVillage = val),
                                 ),
                               ),
                             ],
@@ -572,6 +584,7 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                               foregroundColor: const Color(0xFF041126),
                               padding: const EdgeInsets.symmetric(vertical: 12),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              elevation: 0,
                             ),
                             child: const Text('Search', style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
@@ -629,16 +642,16 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                                   physics: const NeverScrollableScrollPhysics(),
                                   gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
                                     maxCrossAxisExtent: 280,
-                                    mainAxisExtent: 60,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
+                                    mainAxisExtent: 68,
+                                    crossAxisSpacing: 10,
+                                    mainAxisSpacing: 10,
                                   ),
                                   itemCount: items.length,
                                   itemBuilder: (context, itemIndex) {
                                     final String fullItem = items[itemIndex];
-                                    final int spaceIndex = fullItem.indexOf(' ');
-                                    final String emoji = spaceIndex != -1 ? fullItem.substring(0, spaceIndex) : '';
-                                    final String text = spaceIndex != -1 ? fullItem.substring(spaceIndex + 1) : fullItem;
+                                    final match = RegExp(r'^(\S+)\s+(.*)$').firstMatch(fullItem);
+                                    final String emoji = match != null ? match.group(1) ?? '' : '';
+                                    final String text = match != null ? match.group(2) ?? fullItem : fullItem;
                                     
                                     return InkWell(
                                       onTap: () {
@@ -646,7 +659,7 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                                       },
                                       borderRadius: BorderRadius.circular(12),
                                       child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius: BorderRadius.circular(12),
@@ -662,14 +675,20 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                                         child: Row(
                                           children: [
                                             if (emoji.isNotEmpty) ...[
-                                              Text(emoji, style: const TextStyle(fontSize: 22)),
-                                              const SizedBox(width: 12),
+                                              Text(
+                                                emoji,
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontFamily: 'Roboto',
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
                                             ],
                                             Expanded(
                                               child: Text(
                                                 text,
                                                 style: const TextStyle(
-                                                  fontSize: 13,
+                                                  fontSize: 12,
                                                   fontWeight: FontWeight.w600,
                                                   color: Color(0xFF041126),
                                                   height: 1.2,
@@ -678,7 +697,7 @@ class _SamajServicesScreenState extends State<SamajServicesScreen> {
                                                 overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
-                                            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 16),
+                                            Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 14),
                                           ],
                                         ),
                                       ),

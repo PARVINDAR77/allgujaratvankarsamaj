@@ -19,9 +19,9 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
-  final Color _bgColor = const Color(0xFF091428);
-  final Color _cardColor = const Color(0xFF112240);
-  final Color _goldColor = const Color(0xFFF3C34D);
+  final Color _bgColor = Colors.white;
+  final Color _cardColor = const Color(0xFFF8FAFC);
+  final Color _goldColor = const Color(0xFFD4AF37);
 
   @override
   void dispose() {
@@ -93,7 +93,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                           const SizedBox(height: 16),
                           Text(
                             '${filteredProfiles.length} પ્રોફાઈલ મળ્યા (profiles found)',
-                            style: const TextStyle(color: Colors.white70, fontSize: 14),
+                            style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 12),
                           _buildProfileList(filteredProfiles),
@@ -192,12 +192,12 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
               children: [
                 const Text(
                   'Samaj Family Directory',
-                  style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'વણકર સમાજ - પરગણા પ્રમાણે સૂચિ',
-                  style: TextStyle(color: _goldColor, fontSize: 13),
+                  style: TextStyle(color: _goldColor, fontSize: 13, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -247,7 +247,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
       decoration: BoxDecoration(
         color: _cardColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _goldColor.withValues(alpha: 0.5)),
+        border: Border.all(color: _goldColor),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
@@ -255,12 +255,12 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
           isExpanded: true,
           dropdownColor: _cardColor,
           icon: Icon(Icons.keyboard_arrow_down, color: _goldColor),
-          style: TextStyle(color: _goldColor, fontSize: 14, fontWeight: FontWeight.bold),
+          style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
           onChanged: onChanged,
           items: options.map((String val) {
             return DropdownMenuItem<String>(
               value: val,
-              child: Text(val, overflow: TextOverflow.ellipsis),
+              child: Text(val, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
             );
           }).toList(),
         ),
@@ -275,7 +275,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
       decoration: BoxDecoration(
         color: _cardColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _goldColor.withValues(alpha: 0.5)),
+        border: Border.all(color: _goldColor),
       ),
       child: Row(
         children: [
@@ -284,10 +284,10 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
           Expanded(
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
                 hintText: 'નામ શોધો... (Search by Name)',
-                hintStyle: TextStyle(color: Colors.white54, fontSize: 14),
+                hintStyle: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.bold),
                 border: InputBorder.none,
               ),
               onChanged: (v) => setState(() => _searchQuery = v),
@@ -309,9 +309,9 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
         ),
         child: const Column(
           children: [
-            Icon(Icons.search_off, color: Colors.white54, size: 48),
+            Icon(Icons.search_off, color: Colors.black38, size: 48),
             SizedBox(height: 16),
-            Text('કોઈ પ્રોફાઇલ મળી નથી', style: TextStyle(color: Colors.white54, fontSize: 16)),
+            Text('કોઈ પ્રોફાઇલ મળી નથી', style: TextStyle(color: Colors.black54, fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       );
@@ -329,7 +329,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
           decoration: BoxDecoration(
             color: _cardColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+            border: Border.all(color: _goldColor),
           ),
           child: Row(
             children: [
@@ -340,7 +340,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                 decoration: BoxDecoration(
                   color: _bgColor,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: _goldColor.withValues(alpha: 0.5)),
+                  border: Border.all(color: _goldColor),
                 ),
                 child: Text(
                   '${index + 1}',
@@ -354,7 +354,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                   children: [
                     Text(
                       profile.fullName,
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
                     Row(
@@ -364,17 +364,17 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                         Expanded(
                           child: Text(
                             '${profile.pargana} / ${profile.taluka}',
-                            style: TextStyle(color: _goldColor, fontSize: 12),
+                            style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
-                        const Icon(Icons.business, color: Colors.white54, size: 12),
+                        const Icon(Icons.business, color: Colors.black38, size: 12),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             profile.district,
-                            style: const TextStyle(color: Colors.white54, fontSize: 12),
+                            style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -383,7 +383,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                     const SizedBox(height: 4),
                     Text(
                       profile.designation.isNotEmpty ? profile.designation : 'N/A',
-                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                      style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -429,7 +429,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
         const SizedBox(height: 6),
         Text(
           label,
-          style: const TextStyle(color: Colors.white54, fontSize: 10),
+          style: const TextStyle(color: Colors.black87, fontSize: 10, fontWeight: FontWeight.bold),
         ),
       ],
     );

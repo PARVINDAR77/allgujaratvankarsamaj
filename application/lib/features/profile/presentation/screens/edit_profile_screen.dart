@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:typed_data';
-import '../../../../app/theme/app_colors.dart';
+import '../../providers/profile_provider.dart';
+import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
+import '../../../../shared/constants/app_data.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -16,9 +18,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Uint8List? _profileImageBytes;
   final ImagePicker _picker = ImagePicker();
 
+  String _education = 'Select Degree';
+  String _customEducation = '';
   String _employmentType = 'Government Sector (સરકારી નોકરી / સેકટર)';
   String _department = 'State Government (રાજ્ય સરકાર)';
   String _govCategory = 'Select Category';
+  String _customGovCategory = '';
   String _pargana = 'Select Pargana';
   String? _gender;
   String? _maritalStatus;
@@ -204,7 +209,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               // Career & Employment Details Section
               _buildSectionHeader(Icons.work_outline, 'Career & Employment Details (શિક્ષણ, વ્યવસાય અને નોકરીની વિગત)'),
               const SizedBox(height: 16),
-              _buildTextField('Education / Degree (અભ્યાસ / ડિગ્રી) *', 'Enter Education / Degree (અભ્યાસ / ડિગ્રી)', Icons.school_outlined),
+              _buildDropdownField(
+                'Education / Degree (અભ્યાસ / ડિગ્રી) *',
+                'Select Degree',
+                Icons.school_outlined,
+                AppData.educationDegrees,
+                value: AppData.educationDegrees.contains(_education) ? _education : 'Select Degree',
+                onChanged: (v) => setState(() => _education = v ?? 'Select Degree'),
+              ),
+              if (_education == 'Other Qualification (અન્ય)')
+                _buildTextField(
+                  'Custom Education / Degree (અન્ય અભ્યાસ / ડિગ્રી)',
+                  'Enter your education/degree manually',
+                  Icons.school,
+                  onChanged: (v) => setState(() => _customEducation = v),
+                ),
               _buildDropdownField(
                 'Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 
                 'Government Sector (સરકારી નોકરી / સેકટર)', 
@@ -243,14 +262,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     value: GovDepartments.centralGov.contains(_govCategory) ? _govCategory : 'Select Category',
                     onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                   ),
+                if ((_department == 'State Government (રાજ્ય સરકાર)' || _department == 'Central Government (કેન્દ્ર સરકાર)') && _govCategory == 'Other (અન્ય)')
+                  _buildTextField(
+                    'Other Government Category (અન્ય સરકારી નોકરીનો પ્રકાર)',
+                    'Enter your category manually',
+                    Icons.account_balance,
+                    onChanged: (v) => setState(() => _customGovCategory = v),
+                  ),
               ],
               if (_employmentType.contains('Private')) ...[
                 _buildDropdownField(
                   'Private Sector Industry / Category (ખાનગી નોકરીનો પ્રકાર)',
                   'Select Industry',
                   Icons.business_center_outlined,
-                  ['Select Category', 'IT / Software', 'Banking / Finance', 'Healthcare / Medical', 'Engineering / Manufacturing', 'Education / Teaching', 'Sales / Marketing', 'Admin / HR', 'Other (અન્ય)'],
-                  value: ['Select Category', 'IT / Software', 'Banking / Finance', 'Healthcare / Medical', 'Engineering / Manufacturing', 'Education / Teaching', 'Sales / Marketing', 'Admin / HR', 'Other (અન્ય)'].contains(_govCategory) ? _govCategory : 'Select Category',
+                  AppData.privateSectors,
+                  value: AppData.privateSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -265,8 +291,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
                   'Select Business Type',
                   Icons.storefront_outlined,
-                  ['Select Category', 'Retail / Shop (દુકાન)', 'Wholesale / Trading (જથ્થાબંધ વેપાર)', 'Manufacturing (ઉત્પાદન)', 'Agriculture / Farming (ખેતી)', 'Real Estate / Construction', 'Consultancy / Services', 'Other (અન્ય)'],
-                  value: ['Select Category', 'Retail / Shop (દુકાન)', 'Wholesale / Trading (જથ્થાબંધ વેપાર)', 'Manufacturing (ઉત્પાદન)', 'Agriculture / Farming (ખેતી)', 'Real Estate / Construction', 'Consultancy / Services', 'Other (અન્ય)'].contains(_govCategory) ? _govCategory : 'Select Category',
+                  AppData.businessSectors,
+                  value: AppData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -431,10 +457,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   ),
                   hint: Text(hint, style: const TextStyle(color: Colors.black38, fontSize: 14)),
+                  isExpanded: true,
+                  dropdownColor: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  elevation: 8,
+                  menuMaxHeight: 300,
+                  iconEnabledColor: const Color(0xFFD4AF37),
+                  style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
                   items: items.map((item) {
                     return DropdownMenuItem(
                       value: item,
-                      child: Text(item, style: const TextStyle(color: Colors.black87)),
+                      child: Text(item, style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                     );
                   }).toList(),
                 ),

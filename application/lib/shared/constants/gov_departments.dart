@@ -20,6 +20,7 @@ class GovDepartments {
     'Government Hospitals',
     'GSEB / Education Boards',
     'Gujarat Government Corporations / Boards / PSUs',
+    'Other (અન્ય)',
   ];
 
   static const List<String> centralGov = [
@@ -48,6 +49,6 @@ class GovDepartments {
     'Election Commission',
     'UPSC',
     'Central PSUs',
-    'Others',
+    'Other (અન્ય)',
   ];
 }

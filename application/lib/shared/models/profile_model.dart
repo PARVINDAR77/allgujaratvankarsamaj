@@ -9,7 +9,8 @@ class ProfileModel {
   final String maritalStatus;
   final String dateOfBirth;
   
-  // Employment
+  // Employment & Education
+  final String education;
   final String employmentType;
   final String department;
   final String designation;
@@ -27,6 +28,7 @@ class ProfileModel {
     required this.gender,
     required this.maritalStatus,
     required this.dateOfBirth,
+    required this.education,
     required this.employmentType,
     required this.department,
     required this.designation,
@@ -46,6 +48,7 @@ class ProfileModel {
       gender: json['gender'] as String? ?? 'Male (પુરુષ)',
       maritalStatus: json['maritalStatus'] as String? ?? 'Never Married (અપરિણીત)',
       dateOfBirth: json['dateOfBirth'] as String? ?? '',
+      education: json['education'] as String? ?? '',
       employmentType: json['employmentType'] as String? ?? '',
       department: json['department'] as String? ?? '',
       designation: json['designation'] as String? ?? '',
@@ -64,6 +67,7 @@ class ProfileModel {
       'gender': gender,
       'maritalStatus': maritalStatus,
       'dateOfBirth': dateOfBirth,
+      'education': education,
       'employmentType': employmentType,
       'department': department,
       'designation': designation,

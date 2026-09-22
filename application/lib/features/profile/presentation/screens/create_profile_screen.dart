@@ -8,6 +8,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
+import '../../../../shared/constants/app_data.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
@@ -22,9 +23,12 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
 
   String _firstName = '';
   String _lastName = '';
+  String _education = 'Select Degree';
+  String _customEducation = '';
   String _employmentType = 'Government Sector (સરકારી નોકરી / સેકટર)';
   String _department = 'State Government (રાજ્ય સરકાર)';
   String _govCategory = 'Select Category';
+  String _customGovCategory = '';
   String _designation = '';
   String _district = '';
   String _taluka = '';
@@ -88,9 +92,10 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       gender: _gender ?? 'Male (પુરુષ)',
       maritalStatus: _maritalStatus ?? 'Never Married (અપરિણીત)',
       dateOfBirth: _dob ?? '2000-01-01',
+      education: _education == 'Other Qualification (અન્ય)' ? _customEducation : (_education != 'Select Degree' ? _education : 'Not Specified'),
       employmentType: _employmentType,
       department: _employmentType.contains('Government')
-          ? (_govCategory != 'Select Category' ? _govCategory : _department)
+          ? (_govCategory == 'Other (અન્ય)' ? _customGovCategory : (_govCategory != 'Select Category' ? _govCategory : _department))
           : _department,
       designation: _designation.isNotEmpty ? _designation : 'Employee',
       district: _district.isNotEmpty ? _district : 'Ahmedabad',
@@ -315,7 +320,21 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               // Career & Employment Details Section
               _buildSectionHeader(Icons.work_outline, 'Career & Employment Details (શિક્ષણ, વ્યવસાય અને નોકરીની વિગત)'),
               const SizedBox(height: 16),
-              _buildTextField('Education / Degree (અભ્યાસ / ડિગ્રી) *', 'Enter Education / Degree (અભ્યાસ / ડિગ્રી)', Icons.school_outlined),
+              _buildDropdownField(
+                'Education / Degree (અભ્યાસ / ડિગ્રી) *',
+                'Select Degree',
+                Icons.school_outlined,
+                AppData.educationDegrees,
+                value: AppData.educationDegrees.contains(_education) ? _education : 'Select Degree',
+                onChanged: (v) => setState(() => _education = v ?? 'Select Degree'),
+              ),
+              if (_education == 'Other Qualification (અન્ય)')
+                _buildTextField(
+                  'Custom Education / Degree (અન્ય અભ્યાસ / ડિગ્રી)',
+                  'Enter your education/degree manually',
+                  Icons.school,
+                  onChanged: (v) => setState(() => _customEducation = v),
+                ),
               _buildDropdownField(
                 'Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 
                 'Government Sector (સરકારી નોકરી / સેકટર)', 
@@ -354,14 +373,21 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     value: GovDepartments.centralGov.contains(_govCategory) ? _govCategory : 'Select Category',
                     onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                   ),
+                if ((_department == 'State Government (રાજ્ય સરકાર)' || _department == 'Central Government (કેન્દ્ર સરકાર)') && _govCategory == 'Other (અન્ય)')
+                  _buildTextField(
+                    'Other Government Category (અન્ય સરકારી નોકરીનો પ્રકાર)',
+                    'Enter your category manually',
+                    Icons.account_balance,
+                    onChanged: (v) => setState(() => _customGovCategory = v),
+                  ),
               ],
               if (_employmentType.contains('Private')) ...[
                 _buildDropdownField(
                   'Private Sector Industry / Category (ખાનગી નોકરીનો પ્રકાર)',
                   'Select Industry',
                   Icons.business_center_outlined,
-                  ['Select Category', 'IT / Software', 'Banking / Finance', 'Healthcare / Medical', 'Engineering / Manufacturing', 'Education / Teaching', 'Sales / Marketing', 'Admin / HR', 'Other (અન્ય)'],
-                  value: ['Select Category', 'IT / Software', 'Banking / Finance', 'Healthcare / Medical', 'Engineering / Manufacturing', 'Education / Teaching', 'Sales / Marketing', 'Admin / HR', 'Other (અન્ય)'].contains(_govCategory) ? _govCategory : 'Select Category',
+                  AppData.privateSectors,
+                  value: AppData.privateSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -376,8 +402,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
                   'Select Business Type',
                   Icons.storefront_outlined,
-                  ['Select Category', 'Retail / Shop (દુકાન)', 'Wholesale / Trading (જથ્થાબંધ વેપાર)', 'Manufacturing (ઉત્પાદન)', 'Agriculture / Farming (ખેતી)', 'Real Estate / Construction', 'Consultancy / Services', 'Other (અન્ય)'],
-                  value: ['Select Category', 'Retail / Shop (દુકાન)', 'Wholesale / Trading (જથ્થાબંધ વેપાર)', 'Manufacturing (ઉત્પાદન)', 'Agriculture / Farming (ખેતી)', 'Real Estate / Construction', 'Consultancy / Services', 'Other (અન્ય)'].contains(_govCategory) ? _govCategory : 'Select Category',
+                  AppData.businessSectors,
+                  value: AppData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -533,11 +559,15 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
               isExpanded: true,
               dropdownColor: Colors.white,
-              style: const TextStyle(color: Colors.black87, fontSize: 14),
+              borderRadius: BorderRadius.circular(12),
+              elevation: 8,
+              menuMaxHeight: 300,
+              iconEnabledColor: const Color(0xFFD4AF37),
+              style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
               items: items.map((String val) {
                 return DropdownMenuItem<String>(
                   value: val,
-                  child: Text(val),
+                  child: Text(val, style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
                 );
               }).toList(),
               onChanged: onChanged,
