@@ -28,8 +28,8 @@ class AppConfig {
         );
       case 'development':
       default:
-        // Tunnel URL for physical device testing over mobile data
-        return 'https://allgujaratvankarsamaj.com/api/loginv1';
+        // Pointing to the live server for APK distribution
+        return 'https://allgujaratvankarsamaj.com/api/v1';
     }
   }
 
