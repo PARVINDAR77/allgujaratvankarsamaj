@@ -130,8 +130,8 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                 final id = _idSearchController.text.trim();
                                 if (id.isEmpty) return;
                                 
-                                final profiles = ref.read(profileNotifierProvider);
-                                final foundProfile = profiles.where((p) => p.id == id).firstOrNull;
+                                final profileState = ref.read(profileNotifierProvider);
+                                final foundProfile = profileState.profiles.where((p) => p.id == id).firstOrNull;
                                 
                                 if (foundProfile != null) {
                                   context.push('/family-details');

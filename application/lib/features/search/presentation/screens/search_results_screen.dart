@@ -30,6 +30,7 @@ class SearchResultsScreen extends StatelessWidget {
           itemCount: 5, // Dummy profiles count
           itemBuilder: (context, index) {
             return Card(
+              color: Colors.white,
               margin: const EdgeInsets.only(bottom: 16),
               elevation: 4,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -39,7 +40,7 @@ class SearchResultsScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: Colors.blue.shade100,
+                      backgroundColor: Colors.blue.shade50,
                       child: const Icon(Icons.person, size: 50, color: Color(0xFF0056D2)),
                     ),
                     const SizedBox(width: 16),
@@ -52,9 +53,9 @@ class SearchResultsScreen extends StatelessWidget {
                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0056D2)),
                           ),
                           const SizedBox(height: 8),
-                          const Text('Age: 25 | Height: 5\'6"'),
-                          const Text('Location: Ahmedabad'),
-                          const Text('Profession: Engineer'),
+                          const Text('Age: 25 | Height: 5\'6"', style: TextStyle(color: Colors.black87)),
+                          const Text('Location: Ahmedabad', style: TextStyle(color: Colors.black87)),
+                          const Text('Profession: Engineer', style: TextStyle(color: Colors.black87)),
                           const SizedBox(height: 12),
                           Row(
                             children: [

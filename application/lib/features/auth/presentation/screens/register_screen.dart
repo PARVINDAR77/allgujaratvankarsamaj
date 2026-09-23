@@ -67,9 +67,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       if (success) {
         _showMandatoryProfileDialog();
       } else {
+        final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'નોંધણી નિષ્ફળ. ફરી પ્રયાસ કરો.';
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('નોંધણી નિષ્ફળ. ફરી પ્રયાસ કરો.'),
+          SnackBar(
+            content: Text(errorMsg),
             backgroundColor: Colors.red,
           ),
         );

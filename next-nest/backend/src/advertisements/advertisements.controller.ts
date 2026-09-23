@@ -4,9 +4,9 @@ import { AdvertisementsService } from './advertisements.service';
 import { CreateAdvertisementDto } from './dto/create-advertisement.dto';
 import { UpdateAdvertisementDto } from './dto/update-advertisement.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { Permissions } from '../auth/decorators/permissions.decorator';
-import { Permission } from '../auth/constants/permissions';
+import { CapabilitiesGuard } from '../auth/guards/capabilities.guard';
+import { Capabilities } from '../auth/decorators/capabilities.decorator';
+import { Capability } from '../auth/constants/capabilities';
 import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Advertisements')
@@ -22,8 +22,8 @@ export class AdvertisementsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.ADVERTISEMENTS_MANAGE)
   @Get('admin/advertisements')
   @ApiOperation({ summary: 'Get all advertisements (Admin)' })
   async findAllAdmin() {
@@ -31,8 +31,8 @@ export class AdvertisementsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.ADVERTISEMENTS_MANAGE)
   @Get('admin/advertisements/:id')
   @ApiOperation({ summary: 'Get a specific advertisement by ID (Admin)' })
   async findOne(@Param('id') id: string) {
@@ -40,8 +40,8 @@ export class AdvertisementsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.ADVERTISEMENTS_MANAGE)
   @Post('admin/advertisements')
   @ApiOperation({ summary: 'Create a new advertisement (Admin)' })
   async create(@Request() req: any, @Body() createAdvertisementDto: CreateAdvertisementDto) {
@@ -49,8 +49,8 @@ export class AdvertisementsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.ADVERTISEMENTS_MANAGE)
   @Patch('admin/advertisements/:id')
   @ApiOperation({ summary: 'Update an advertisement (Admin)' })
   async update(@Request() req: any, @Param('id') id: string, @Body() updateAdvertisementDto: UpdateAdvertisementDto) {
@@ -58,8 +58,8 @@ export class AdvertisementsController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.ADVERTISEMENTS_MANAGE)
   @Delete('admin/advertisements/:id')
   @ApiOperation({ summary: 'Delete an advertisement (Admin)' })
   async remove(@Request() req: any, @Param('id') id: string) {

@@ -36,4 +36,21 @@ class UserModel {
       'updatedAt': updatedAt?.toIso8601String(),
     };
   }
+
+  // ─── Role helpers (match Prisma Role enum) ───────────────────────────────
+
+  /// USER | ADMIN | SUPER_ADMIN | VERIFICATION_ADMIN | CONTENT_ADMIN
+  bool hasRole(String r) => role == r;
+
+  bool hasAnyRole(List<String> roles) => roles.contains(role);
+
+  bool get isAdmin => role == 'ADMIN' || role == 'SUPER_ADMIN';
+
+  bool get isSuperAdmin => role == 'SUPER_ADMIN';
+
+  bool get isVerificationAdmin =>
+      role == 'VERIFICATION_ADMIN' || role == 'SUPER_ADMIN';
+
+  bool get isContentAdmin =>
+      role == 'CONTENT_ADMIN' || role == 'SUPER_ADMIN';
 }

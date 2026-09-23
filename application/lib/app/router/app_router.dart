@@ -29,6 +29,7 @@ import '../../shared/presentation/screens/main_navigation_screen.dart';
 import '../../features/home/presentation/screens/main_poster_screen.dart';
 import '../../features/home/presentation/screens/live_statistics_screen.dart';
 import '../../features/home/presentation/screens/birthdays_screen.dart';
+import '../../features/success_stories/presentation/screens/success_stories_screen.dart';
 
 class AuthRouterListenable extends ChangeNotifier {
   AuthRouterListenable(Ref ref) {
@@ -155,6 +156,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/search-results',
         name: 'search-results',
         builder: (context, state) => const SearchResultsScreen(),
+      ),
+      GoRoute(
+        path: '/success-stories',
+        name: 'success-stories',
+        builder: (context, state) => const SuccessStoriesScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

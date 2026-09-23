@@ -3,22 +3,25 @@ class ProfileModel {
   final String firstName;
   final String lastName;
   final String? photoUrl;
-  
+
   // Personal
   final String gender;
   final String maritalStatus;
   final String dateOfBirth;
-  
+
   // Employment & Education
   final String education;
   final String employmentType;
   final String department;
   final String designation;
-  
+
   // Location
   final String district;
   final String taluka;
   final String pargana;
+
+  // Verification (Prisma: is_verified Boolean @default(false))
+  final bool? isVerified;
 
   const ProfileModel({
     required this.id,
@@ -35,6 +38,7 @@ class ProfileModel {
     required this.district,
     required this.taluka,
     required this.pargana,
+    this.isVerified,
   });
 
   String get fullName => '$firstName $lastName';
@@ -55,6 +59,7 @@ class ProfileModel {
       district: json['district'] as String? ?? '',
       taluka: json['taluka'] as String? ?? '',
       pargana: json['pargana'] as String? ?? '',
+      isVerified: json['isVerified'] as bool?,
     );
   }
 
@@ -74,6 +79,7 @@ class ProfileModel {
       'district': district,
       'taluka': taluka,
       'pargana': pargana,
+      'isVerified': isVerified,
     };
   }
 }

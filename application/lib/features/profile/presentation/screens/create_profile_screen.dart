@@ -83,7 +83,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     }
   }
 
-  void _submitProfile() {
+  Future<void> _submitProfile() async {
     final uniqueId = 'VNK${math.Random().nextInt(90000) + 10000}';
     final password = '${math.Random().nextInt(900000) + 100000}'; // 6 digit random pass
 
@@ -105,7 +105,18 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       pargana: _pargana != 'Select Pargana' ? _pargana : 'Not Specified',
     );
 
-    ref.read(profileNotifierProvider.notifier).addProfile(newProfile);
+    try {
+      final repository = ref.read(profileRepositoryProvider);
+      await repository.createProfile(newProfile);
+      ref.read(profileNotifierProvider.notifier).fetchFirstPage();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to create profile: $e')),
+      );
+      return;
+    }
+    
+    if (!mounted) return;
     
     // Show Success Dialog with ID and Password
     showDialog(

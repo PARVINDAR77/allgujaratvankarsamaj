@@ -3,18 +3,49 @@ import { PrismaService } from "../prisma/prisma.service";
 import { User, Role, Status, Gender } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
+import * as fs from "fs";
+import * as path from "path";
 
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
   // In-memory fallback repository when PostgreSQL is offline
   private readonly memoryUsers: Map<string, User> = new Map();
+  private readonly fallbackFilePath = path.join(process.cwd(), "fallback_users.json");
 
   constructor(private readonly prisma: PrismaService) {
     this._initDemoUsers();
   }
 
+  private _loadFallbackUsers() {
+    if (fs.existsSync(this.fallbackFilePath)) {
+      try {
+        const data = fs.readFileSync(this.fallbackFilePath, "utf8");
+        const users = JSON.parse(data);
+        for (const user of users) {
+          this.memoryUsers.set(user.email, user as User);
+          this.memoryUsers.set(user.id, user as User);
+        }
+      } catch (err) {
+        this.logger.error("Failed to load fallback users", err);
+      }
+    }
+  }
+
+  private _saveFallbackUsers() {
+    try {
+      const uniqueUsers = Array.from(this.memoryUsers.values()).filter(
+        (v, i, a) => a.findIndex((u) => u.id === v.id) === i
+      );
+      fs.writeFileSync(this.fallbackFilePath, JSON.stringify(uniqueUsers, null, 2), "utf8");
+    } catch (err) {
+      this.logger.error("Failed to save fallback users", err);
+    }
+  }
+
   private async _initDemoUsers() {
+    this._loadFallbackUsers();
+
     const passwordHash = await bcrypt.hash("password123", 10);
     const demoUser: User = {
       id: "demo-user-id-001",
@@ -28,8 +59,10 @@ export class UsersService {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.memoryUsers.set(demoUser.email!, demoUser);
-    this.memoryUsers.set(demoUser.id, demoUser);
+    if (!this.memoryUsers.has(demoUser.email!)) {
+      this.memoryUsers.set(demoUser.email!, demoUser);
+      this.memoryUsers.set(demoUser.id, demoUser);
+    }
 
     const parvindarUser: User = {
       id: "demo-user-id-002",
@@ -43,8 +76,12 @@ export class UsersService {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    this.memoryUsers.set(parvindarUser.email!, parvindarUser);
-    this.memoryUsers.set(parvindarUser.id, parvindarUser);
+    if (!this.memoryUsers.has(parvindarUser.email!)) {
+      this.memoryUsers.set(parvindarUser.email!, parvindarUser);
+      this.memoryUsers.set(parvindarUser.id, parvindarUser);
+    }
+
+    this._saveFallbackUsers();
   }
 
   async findByEmail(email?: string): Promise<User | null> {
@@ -56,7 +93,7 @@ export class UsersService {
       });
     } catch (err: any) {
       this.logger.warn(
-        `PostgreSQL offline, using in-memory user store for findByEmail(${normalized})`,
+        `PostgreSQL offline, using in-memory user store for findByEmail(${normalized})`
       );
       return this.memoryUsers.get(normalized) ?? null;
     }
@@ -74,7 +111,7 @@ export class UsersService {
       });
     } catch (err: any) {
       this.logger.warn(
-        `PostgreSQL offline, using in-memory user store for findById(${id})`,
+        `PostgreSQL offline, using in-memory user store for findById(${id})`
       );
       return this.memoryUsers.get(id) ?? null;
     }
@@ -102,7 +139,7 @@ export class UsersService {
       return user;
     } catch (err: any) {
       this.logger.warn(
-        `PostgreSQL offline, storing user in in-memory store for (${normalizedEmail})`,
+        `PostgreSQL offline, storing user in in-memory store for (${normalizedEmail})`
       );
       const user: User = {
         id: uuidv4(),
@@ -118,6 +155,7 @@ export class UsersService {
       };
       if (user.email) this.memoryUsers.set(user.email, user);
       this.memoryUsers.set(user.id, user);
+      this._saveFallbackUsers();
       return user;
     }
   }

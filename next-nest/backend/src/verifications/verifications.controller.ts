@@ -1,15 +1,15 @@
 import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { Permissions } from '../auth/decorators/permissions.decorator';
-import { Permission } from '../auth/constants/permissions';
+import { CapabilitiesGuard } from '../auth/guards/capabilities.guard';
+import { Capabilities } from '../auth/decorators/capabilities.decorator';
+import { Capability } from '../auth/constants/capabilities';
 import { VerificationsService } from './verifications.service';
 import { UpdateVerificationStatusDto } from './dto/update-verification.dto';
 
 @ApiTags('Verifications')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, PermissionsGuard)
+@UseGuards(JwtAuthGuard, CapabilitiesGuard)
 @Controller('verifications')
 export class VerificationsController {
   constructor(private readonly verificationsService: VerificationsService) {}
@@ -26,7 +26,7 @@ export class VerificationsController {
     return this.verificationsService.submitVerification(req.user.id, body.documentType, body.documentUrl);
   }
 
-  @Permissions(Permission.VERIFICATION_READ)
+  @Capabilities(Capability.VERIFICATION_READ)
   @Get('pending')
   @ApiOperation({ summary: 'Get all pending verification requests (Admin)' })
   @ApiResponse({ status: 200, description: 'List of pending requests' })
@@ -34,7 +34,7 @@ export class VerificationsController {
     return this.verificationsService.getPendingVerifications();
   }
 
-  @Permissions(Permission.VERIFICATION_REVIEW)
+  @Capabilities(Capability.VERIFICATION_APPROVE, Capability.VERIFICATION_REJECT)
   @Patch(':id/status')
   @ApiOperation({ summary: 'Update verification status (Admin)' })
   @ApiResponse({ status: 200, description: 'Status updated' })

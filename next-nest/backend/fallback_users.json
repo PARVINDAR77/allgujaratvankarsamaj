@@ -1,0 +1,26 @@
+[
+  {
+    "id": "demo-user-id-001",
+    "email": "test@example.com",
+    "phone": null,
+    "name": "Demo User",
+    "gender": null,
+    "passwordHash": "$2b$10$XgjQCZtgKsEaxKyLNVqN2u8eazjrOxtijj.p.2Pxj/LmQNu0y8hvm",
+    "role": "USER",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-23T10:00:59.676Z",
+    "updatedAt": "2026-09-23T10:00:59.676Z"
+  },
+  {
+    "id": "demo-user-id-002",
+    "email": "panjabiparvindar77@gmail.com",
+    "phone": null,
+    "name": "Parvindar",
+    "gender": null,
+    "passwordHash": "$2b$10$XgjQCZtgKsEaxKyLNVqN2u8eazjrOxtijj.p.2Pxj/LmQNu0y8hvm",
+    "role": "USER",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-23T10:00:59.676Z",
+    "updatedAt": "2026-09-23T10:00:59.676Z"
+  }
+]

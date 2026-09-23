@@ -31,7 +31,8 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final profiles = ref.watch(profileNotifierProvider);
+    final profileState = ref.watch(profileNotifierProvider);
+    final profiles = profileState.profiles;
 
     List<String> availableParganas = ['All'];
     List<String> availableDistricts = ['All'];
@@ -91,12 +92,16 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                           const SizedBox(height: 16),
                           _buildSearchBar(),
                           const SizedBox(height: 16),
-                          Text(
-                            '${filteredProfiles.length} પ્રોફાઈલ મળ્યા (profiles found)',
-                            style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 12),
-                          _buildProfileList(filteredProfiles),
+                          if (profileState.isLoading)
+                            const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
+                          else ...[
+                            Text(
+                              '${filteredProfiles.length} પ્રોફાઈલ મળ્યા (profiles found)',
+                              style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildProfileList(filteredProfiles),
+                          ],
                         ],
                       ),
                     ),

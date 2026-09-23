@@ -69,28 +69,9 @@ export class SubmitVerificationDto {
   documentUrl: string;
 }
 
-export class GovtEmployeeSearchQueryDto {
-  @ApiPropertyOptional({ example: 1 })
-  @IsOptional()
-  page?: number;
+import { BaseProfileQueryDto } from '../../profiles/dto/base-profile-query.dto';
 
-  @ApiPropertyOptional({ example: 20 })
-  @IsOptional()
-  limit?: number;
-
-  @ApiPropertyOptional({ example: 'MALE' })
-  @IsOptional()
-  @IsString()
-  gender?: string;
-
-  @ApiPropertyOptional({ example: 22 })
-  @IsOptional()
-  ageMin?: number;
-
-  @ApiPropertyOptional({ example: 45 })
-  @IsOptional()
-  ageMax?: number;
-
+export class GovtEmployeeSearchQueryDto extends BaseProfileQueryDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
@@ -100,31 +81,6 @@ export class GovtEmployeeSearchQueryDto {
   @IsOptional()
   @IsString()
   designationId?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  districtId?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  talukaId?: string;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  search?: string;
-
-  @ApiPropertyOptional({ example: 'createdAt' })
-  @IsOptional()
-  @IsString()
-  sortBy?: string;
-
-  @ApiPropertyOptional({ example: 'desc' })
-  @IsOptional()
-  @IsString()
-  sortOrder?: 'asc' | 'desc';
 }
 
 export class AdminVerifyGovtEmpDto {

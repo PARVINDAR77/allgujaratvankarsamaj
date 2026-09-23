@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../../../shared/constants/app_data.dart';
 
-class EditProfileScreen extends StatefulWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Uint8List? _profileImageBytes;
   final ImagePicker _picker = ImagePicker();
 
@@ -77,6 +78,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final myProfileAsync = ref.watch(myProfileProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Light Background
       appBar: AppBar(
@@ -90,82 +93,91 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Photo Upload Section
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F7FA),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300),
-                        image: _profileImageBytes != null
-                            ? DecorationImage(
-                                image: MemoryImage(_profileImageBytes!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: _profileImageBytes == null
-                          ? const Icon(Icons.add_a_photo, color: Colors.black54, size: 36)
-                          : null,
+        child: myProfileAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+          error: (err, stack) => Center(child: Text('Failed to load profile details: $err')),
+          data: (profile) {
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Photo Upload Section
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.grey.shade300, width: 1.5),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
+                      ],
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Update Profile Photo (ફોટો બદલો)',
-                            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF5F7FA),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.grey.shade300),
+                            image: _profileImageBytes != null
+                                ? DecorationImage(
+                                    image: MemoryImage(_profileImageBytes!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : (profile.photoUrl != null && profile.photoUrl!.isNotEmpty
+                                    ? DecorationImage(
+                                        image: NetworkImage(profile.photoUrl!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null),
                           ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'તમારો નવો પાસપોર્ટ સાઈઝ અથવા સુંદર પ્રોફાઈલ ફોટો અહીં અપલોડ કરો.',
-                            style: TextStyle(color: Colors.black54, fontSize: 12),
+                          child: _profileImageBytes == null && (profile.photoUrl == null || profile.photoUrl!.isEmpty)
+                              ? const Icon(Icons.add_a_photo, color: Colors.black54, size: 36)
+                              : null,
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Update Profile Photo (ફોટો બદલો)',
+                                style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'તમારો નવો પાસપોર્ટ સાઈઝ અથવા સુંદર પ્રોફાઈલ ફોટો અહીં અપલોડ કરો.',
+                                style: TextStyle(color: Colors.black54, fontSize: 12),
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: _pickImage,
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(color: Color(0xFFD4AF37)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                ),
+                                icon: const Icon(Icons.cloud_upload, color: Color(0xFFD4AF37), size: 18),
+                                label: const Text('Change Photo (ફોટો બદલો)', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: _pickImage,
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFD4AF37)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            ),
-                            icon: const Icon(Icons.cloud_upload, color: Color(0xFFD4AF37), size: 18),
-                            label: const Text('Change Photo (ફોટો બદલો)', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+                  ),
+                  const SizedBox(height: 24),
 
-              // Personal Details Section
-              _buildSectionHeader(Icons.person_outline, 'Personal Details (અંગત માહિતી)'),
-              const SizedBox(height: 16),
-              _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined),
-              _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined),
+                  // Personal Details Section
+                  _buildSectionHeader(Icons.person_outline, 'Personal Details (અંગત માહિતી)'),
+                  const SizedBox(height: 16),
+                  _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined, initialValue: profile.firstName),
+                  _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, initialValue: profile.lastName),
               _buildTextField(
                 'Date of Birth *',
                 _dob ?? 'Tap to select date of birth',
@@ -344,9 +356,38 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 32),
               // Submit Button
               ElevatedButton(
-                onPressed: () {
-                  if (context.canPop()) {
-                    context.pop();
+                onPressed: () async {
+                  try {
+                    final updateData = {
+                      if (_gender != null) 'gender': _gender,
+                      if (_maritalStatus != null) 'maritalStatus': _maritalStatus,
+                      if (_bloodGroup != null) 'bloodGroup': _bloodGroup,
+                      if (_isVankar != null) 'isVankar': _isVankar == 'Yes (હા)',
+                      if (_casteCategory != null) 'casteCategory': _casteCategory,
+                      if (_dob != null) 'dateOfBirth': _dob,
+                      if (_religion != 'Select Religion') 'religion': _religion,
+                      if (_education != 'Select Degree') 'education': _education,
+                      if (_employmentType != 'Select Sector') 'employmentType': _employmentType,
+                      if (_department != 'Select Department') 'department': _department,
+                      if (_yearlyIncome != 'Select Income') 'yearlyIncome': _yearlyIncome,
+                      if (_pargana != 'Select Pargana') 'pargana': _pargana,
+                      // We can add other fields as they are implemented
+                    };
+                    
+                    if (updateData.isNotEmpty) {
+                      await ref.read(profileRepositoryProvider).updateMyProfile(updateData);
+                      ref.invalidate(myProfileProvider);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
+                      }
+                    }
+                    if (context.mounted && context.canPop()) {
+                      context.pop();
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update profile: $e')));
+                    }
                   }
                 },
                 style: ElevatedButton.styleFrom(
@@ -364,9 +405,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               const SizedBox(height: 40),
             ],
           ),
-        ),
-      ),
-    );
+        );
+      },
+    ),
+  ),
+);
   }
 
   Widget _buildSectionHeader(IconData icon, String title) {
@@ -396,7 +439,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false, void Function(String)? onChanged, bool readOnly = false, VoidCallback? onTap}) {
+  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false, void Function(String)? onChanged, bool readOnly = false, VoidCallback? onTap, String? initialValue}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -416,7 +459,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2)),
               ],
             ),
-            child: TextField(
+            child: TextFormField(
+              initialValue: initialValue,
               maxLines: isMultiline ? 4 : 1,
               readOnly: readOnly,
               onTap: onTap,

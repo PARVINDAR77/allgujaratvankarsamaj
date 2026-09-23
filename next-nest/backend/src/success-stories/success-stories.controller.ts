@@ -4,9 +4,9 @@ import { SuccessStoriesService } from './success-stories.service';
 import { CreateSuccessStoryDto } from './dto/create-success-story.dto';
 import { UpdateSuccessStoryDto } from './dto/update-success-story.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { PermissionsGuard } from '../auth/guards/permissions.guard';
-import { Permissions } from '../auth/decorators/permissions.decorator';
-import { Permission } from '../auth/constants/permissions';
+import { CapabilitiesGuard } from '../auth/guards/capabilities.guard';
+import { Capabilities } from '../auth/decorators/capabilities.decorator';
+import { Capability } from '../auth/constants/capabilities';
 import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Success Stories')
@@ -22,8 +22,8 @@ export class SuccessStoriesController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.SUCCESS_STORIES_MANAGE)
   @Get('admin/success-stories')
   @ApiOperation({ summary: 'Get all success stories (Admin)' })
   async findAllAdmin() {
@@ -31,8 +31,8 @@ export class SuccessStoriesController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.SUCCESS_STORIES_MANAGE)
   @Get('admin/success-stories/:id')
   @ApiOperation({ summary: 'Get a specific success story by ID (Admin)' })
   async findOne(@Param('id') id: string) {
@@ -40,8 +40,8 @@ export class SuccessStoriesController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.SUCCESS_STORIES_MANAGE)
   @Post('admin/success-stories')
   @ApiOperation({ summary: 'Create a new success story (Admin)' })
   async create(@Request() req: any, @Body() createSuccessStoryDto: CreateSuccessStoryDto) {
@@ -49,8 +49,8 @@ export class SuccessStoriesController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.SUCCESS_STORIES_MANAGE)
   @Patch('admin/success-stories/:id')
   @ApiOperation({ summary: 'Update a success story (Admin)' })
   async update(@Request() req: any, @Param('id') id: string, @Body() updateSuccessStoryDto: UpdateSuccessStoryDto) {
@@ -58,8 +58,8 @@ export class SuccessStoriesController {
   }
 
   @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard, PermissionsGuard)
-  @Permissions(Permission.CONTENT_MANAGE)
+  @UseGuards(JwtAuthGuard, CapabilitiesGuard)
+  @Capabilities(Capability.SUCCESS_STORIES_MANAGE)
   @Delete('admin/success-stories/:id')
   @ApiOperation({ summary: 'Delete a success story (Admin)' })
   async remove(@Request() req: any, @Param('id') id: string) {

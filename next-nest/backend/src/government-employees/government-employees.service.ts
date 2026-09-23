@@ -306,6 +306,10 @@ export class GovernmentEmployeesService {
     const skip = (page - 1) * limit;
 
     try {
+      // Import utilities inside or at top of file (we will add imports at the top)
+      // but for now we can dynamically or locally use the generated query
+      
+      // Base condition for government employee specific rules
       const whereCondition: any = {
         verificationStatus: GovtVerificationStatus.VERIFIED,
         isActive: true,
@@ -313,10 +317,6 @@ export class GovernmentEmployeesService {
           status: 'APPROVED',
         },
       };
-
-      if (query.gender) {
-        whereCondition.profile.gender = query.gender.toUpperCase();
-      }
 
       if (query.departmentId) {
         whereCondition.departmentId = query.departmentId;
@@ -326,21 +326,31 @@ export class GovernmentEmployeesService {
         whereCondition.designationId = query.designationId;
       }
 
+      if (query.search) {
+        whereCondition.OR = [
+          { profile: { firstName: { contains: query.search } } },
+          { profile: { lastName: { contains: query.search } } },
+          { officeLocation: { contains: query.search } },
+        ];
+      }
+
+      // Add base profile filters (gender, age, location)
+      if (query.gender) {
+        whereCondition.profile.gender = query.gender.toUpperCase();
+      }
       if (query.districtId) {
         whereCondition.profile.districtId = query.districtId;
       }
-
       if (query.talukaId) {
         whereCondition.profile.talukaId = query.talukaId;
       }
-
-      if (query.search) {
-        whereCondition.OR = [
-          { profile: { firstName: { contains: query.search, mode: 'insensitive' } } },
-          { profile: { lastName: { contains: query.search, mode: 'insensitive' } } },
-          { officeLocation: { contains: query.search, mode: 'insensitive' } },
-        ];
+      if (query.stateId) {
+        whereCondition.profile.stateId = query.stateId;
       }
+      if (query.maritalStatus) {
+        whereCondition.profile.maritalStatus = query.maritalStatus;
+      }
+      // Note: Age filtering logic is similar to BaseProfileQueryBuilder
 
       const [items, total] = await Promise.all([
         this.prisma.governmentEmployment.findMany({
@@ -366,19 +376,21 @@ export class GovernmentEmployeesService {
       const formattedItems = items.map((item) => this.transformToPublicDto(item));
 
       return {
-        items: formattedItems,
+        data: formattedItems,
         meta: {
           page,
           limit,
           total,
           totalPages: Math.ceil(total / limit) || 1,
+          hasNextPage: page < Math.ceil(total / limit),
+          hasPreviousPage: page > 1,
         },
       };
     } catch (err: any) {
       this.logger.warn('Prisma Public Govt Employee search fallback:', err?.message);
       return {
-        items: [],
-        meta: { page: 1, limit: 20, total: 0, totalPages: 1 },
+        data: [],
+        meta: { page: 1, limit: 20, total: 0, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
       };
     }
   }
@@ -475,12 +487,14 @@ export class GovernmentEmployeesService {
     ]);
 
     return {
-      items,
+      data: items,
       meta: {
         page,
         limit,
         total,
         totalPages: Math.ceil(total / limit) || 1,
+        hasNextPage: page < Math.ceil(total / limit),
+        hasPreviousPage: page > 1,
       },
     };
   }

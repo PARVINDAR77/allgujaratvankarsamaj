@@ -1,21 +1,43 @@
 class AppConfig {
-  // Use a factory to support environments later if needed
-  static const String environment = String.fromEnvironment('ENV', defaultValue: 'development');
-  
+  /// Set via --dart-define=APP_ENV=development|staging|production
+  /// Defaults to development (Android emulator uses 10.0.2.2).
+  static const String environment =
+      String.fromEnvironment('APP_ENV', defaultValue: 'development');
+
+  /// For physical Android devices on LAN, override via:
+  ///   --dart-define=APP_ENV=development --dart-define=DEV_HOST=192.168.1.x
+  /// For Android emulator:
+  ///   --dart-define=DEV_HOST=10.0.2.2
+  /// Default: 192.168.1.5 — works for physical device on LAN.
+  static const String _devHost =
+      String.fromEnvironment('DEV_HOST', defaultValue: '192.168.1.5');
+
   static String get baseUrl {
     switch (environment) {
       case 'production':
-        return 'https://api.vankarsamaj.com/api/v1';
+        // Replace with your actual production domain when provisioned.
+        return String.fromEnvironment(
+          'PROD_API_URL',
+          defaultValue: 'https://api.vankarsamaj.com/api/v1',
+        );
       case 'staging':
-        return 'https://staging-api.vankarsamaj.com/api/v1';
+        // Replace with your actual staging domain when provisioned.
+        return String.fromEnvironment(
+          'STAGING_API_URL',
+          defaultValue: 'https://staging-api.vankarsamaj.com/api/v1',
+        );
       case 'development':
       default:
-        // Use 10.0.2.2 for Android Emulator, or localhost for iOS/Web
-        // For physical devices, this needs to be a LAN IP.
-        return 'http://10.0.2.2:3000/api/v1';
+        // Tunnel URL for physical device testing over mobile data
+        return 'https://allgujaratvankarsamaj.com/api/loginv1';
     }
   }
 
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);
+  static const Duration sendTimeout = Duration(seconds: 15);
+
+  static bool get isDevelopment => environment == 'development';
+  static bool get isProduction => environment == 'production';
 }
+

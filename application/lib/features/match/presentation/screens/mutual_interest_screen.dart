@@ -9,9 +9,10 @@ class MutualInterestScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profiles = ref.watch(profileNotifierProvider);
-    final bride = profiles.where((p) => p.gender.contains('Female')).toList().firstOrNull;
-    final groom = profiles.where((p) => p.gender.contains('Male')).toList().firstOrNull;
+    final profileState = ref.watch(profileNotifierProvider);
+    final profiles = profileState.profiles;
+    final bride = profiles.where((p) => p.gender.toLowerCase().contains('female')).toList().firstOrNull;
+    final groom = profiles.where((p) => p.gender.toLowerCase().contains('male')).toList().firstOrNull;
 
     return Scaffold(
       backgroundColor: const Color(0xFF040A18),

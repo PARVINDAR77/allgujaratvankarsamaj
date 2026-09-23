@@ -175,26 +175,7 @@ export const adminApi = {
     } catch (error) { throw error; }
   },
 
-  async getVerifications(): Promise<any[]> {
-    try {
-      const res = await fetch(`${API_BASE_URL}/admin/verifications`, { headers: getAuthHeaders() });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return await res.json();
-    } catch (error) { throw error; }
-  },
 
-  async updateVerificationStatus(id: string, action: string, reason?: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/verifications/${id}/verify`, {
-      method: "PATCH",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ action, reason }),
-    });
-    if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
-    }
-    return await res.json();
-  },
 
   async getUsers(): Promise<AdminUserItem[]> {
     try {

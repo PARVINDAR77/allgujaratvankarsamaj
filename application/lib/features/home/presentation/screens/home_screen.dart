@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../shared/widgets/ad_banner_carousel.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -444,6 +445,48 @@ class HomeScreen extends ConsumerWidget {
                     color: Colors.transparent,
                     child: InkWell(
                       onTap: () => _showCategoryModal(context, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0)),
+                    ),
+                  ),
+                ),
+                // ── Ad Banner Carousel overlay ─────────────────────────────
+                // Silently hidden if no active ads exist.
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: sh(200),
+                  child: const AdBannerCarousel(),
+                ),
+                // ── Success Stories quick-access button ────────────────────
+                Positioned(
+                  left: sx(30),
+                  bottom: sh(60),
+                  child: GestureDetector(
+                    onTap: () => context.push('/success-stories'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFD4AF37),
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.favorite, color: Colors.black, size: 18),
+                          SizedBox(width: 6),
+                          Text('Success Stories',
+                              style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13)),
+                        ],
+                      ),
                     ),
                   ),
                 ),

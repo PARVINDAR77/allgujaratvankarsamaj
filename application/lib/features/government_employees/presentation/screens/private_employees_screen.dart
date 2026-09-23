@@ -17,18 +17,32 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   String _taluka = 'All';
   final TextEditingController _searchController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(profileNotifierProvider.notifier).updateFilters(occupationCategory: 'Private');
+    });
+  }
+
   List<Map<String, dynamic>> get _allData {
-    final profiles = ref.watch(profileNotifierProvider);
-    final privateProfiles = profiles.where((p) => p.employmentType.contains('Private') || p.employmentType.contains('Business')).toList();
+    final profileState = ref.watch(profileNotifierProvider);
+    
+    // Fallback to local filter if the backend didn't strictly filter yet
+    final privateProfiles = profileState.profiles.where((p) => 
+      p.employmentType.toLowerCase().contains('private') || 
+      p.employmentType.toLowerCase().contains('business') ||
+      p.employmentType.isEmpty // Temporarily include empty for demo purposes if needed
+    ).toList();
     
     return privateProfiles.map((p) => {
-      'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id, // Just showing a short ID
+      'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id,
       'name': p.fullName,
-      'dept': p.department,
-      'post': p.designation,
-      'district': p.district,
-      'taluka': p.taluka,
-      'icon': Icons.account_balance,
+      'dept': p.department.isNotEmpty ? p.department : 'General',
+      'post': p.designation.isNotEmpty ? p.designation : 'Employee',
+      'district': p.district.isNotEmpty ? p.district : 'Unknown',
+      'taluka': p.taluka.isNotEmpty ? p.taluka : 'Unknown',
+      'icon': Icons.business,
       'iconColor': Colors.grey.shade800,
     }).toList();
   }
@@ -456,11 +470,22 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                           ],
                         ),
                         // Table Body
-                        if (_filteredData.isEmpty)
+                        if (ref.watch(profileNotifierProvider).isLoading)
+                          const Padding(
+                            padding: EdgeInsets.all(32.0),
+                            child: Center(child: CircularProgressIndicator(color: Color(0xFF0056D2))),
+                          )
+                        else if (ref.watch(profileNotifierProvider).error != null)
+                          Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: Center(child: Text(ref.watch(profileNotifierProvider).error!.message, style: const TextStyle(color: Colors.red, fontSize: 14))),
+                          )
+                        else if (_filteredData.isEmpty)
                           const Padding(
                             padding: EdgeInsets.all(32.0),
                             child: Center(child: Text('No employees found matching criteria.', style: TextStyle(fontSize: 14, color: Colors.black54))),
-                          ),
+                          )
+                        else
                         ..._filteredData.map((data) {
                           final isEven = _filteredData.indexOf(data) % 2 == 0;
                           return Container(

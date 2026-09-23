@@ -1,23 +1,27 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/network/api_client.dart';
 import '../models/samaj_service.dart';
 
 class SamajServiceRepository {
-  final String baseUrl = 'http://localhost:3000/api/v1';
+  final Dio _dio;
+
+  SamajServiceRepository(this._dio);
 
   Future<List<SamajService>> fetchServices() async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/samaj-services'));
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        return data.map((json) => SamajService.fromJson(json)).toList();
-      } else {
-        throw Exception('Failed to load services');
-      }
+      final response = await _dio.get('/samaj-services');
+      final List<dynamic> data = response.data as List<dynamic>;
+      return data.map((json) => SamajService.fromJson(json as Map<String, dynamic>)).toList();
+    } on DioException catch (e) {
+      throw Exception('Failed to load services: ${e.message}');
     } catch (e) {
-      // Return a simulated error so the UI can handle the database connection issue cleanly
       throw Exception('Database Connection Error: Cannot fetch services right now.');
     }
   }
 }
+
+final samajServiceRepositoryProvider = Provider<SamajServiceRepository>((ref) {
+  final dio = ref.watch(apiClientProvider);
+  return SamajServiceRepository(dio);
+});

@@ -55,24 +55,15 @@ export class AuthService {
     }
 
     if (!user) {
-      // Auto-provision user on the fly so login succeeds for any entered phone/email during dev/offline testing!
-      const saltRounds = 10;
-      const passwordHash = await bcrypt.hash(dto.password, saltRounds);
-      user = await this.usersService.createUser({
-        email: dto.email,
-        phone: dto.phone,
-        passwordHash,
-      });
-    } else {
-      const isPasswordValid = await bcrypt.compare(
-        dto.password,
-        user.passwordHash,
-      );
-      if (!isPasswordValid) {
-        // If password does not match, allow updating or logging in during development
-        const saltRounds = 10;
-        user.passwordHash = await bcrypt.hash(dto.password, saltRounds);
-      }
+      throw new UnauthorizedException("Invalid email/phone or password");
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException("Invalid email/phone or password");
     }
 
     if (user.status !== "ACTIVE") {

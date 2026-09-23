@@ -41,7 +41,16 @@ android {
 }
 
 kotlin {
-    jvmToolchain(17)
+    // Use the installed JDK (Java 25) for compilation.
+    jvmToolchain(25)
+}
+
+// Force Kotlin output bytecode to JVM 17 to match compileOptions (sourceCompatibility = VERSION_17).
+// jvmToolchain controls which JDK binary is used; this controls the bytecode output level.
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
 }
 
 flutter {

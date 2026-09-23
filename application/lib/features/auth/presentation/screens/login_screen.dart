@@ -53,19 +53,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await ref.read(authNotifierProvider.notifier).login(
+      final success = await ref.read(authNotifierProvider.notifier).login(
             email ?? _emailController.text.trim(),
             password ?? _passwordController.text,
           );
 
       if (mounted) {
         setState(() => _isLoading = false);
-        context.go('/main-poster');
+        if (success) {
+          context.go('/main-poster');
+        } else {
+          final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'લોગિન નિષ્ફળ';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(errorMsg),
+              backgroundColor: Colors.redAccent,
+            ),
+          );
+        }
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        context.go('/main-poster');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('અણધારી ભૂલ: $e'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
     }
   }
