@@ -6,80 +6,51 @@ export class StatisticsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getDashboardStatistics() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const [
+      totalUsers,
+      activeProfiles,
+      pendingVerifications,
+      openReports,
+      totalSuccessStories,
+      activeGovtEmployees
+    ] = await Promise.all([
+      this.prisma.user.count(),
+      this.prisma.matrimonialProfile.count({ where: { status: 'APPROVED' } }),
+      this.prisma.verificationRequest.count({ where: { status: 'PENDING' } }),
+      this.prisma.report.count({ where: { status: 'OPEN' } }),
+      this.prisma.successStory.count(),
+      this.prisma.governmentEmployment.count({ where: { isActive: true } }),
+    ]);
 
-    // 1. Live counter for today (Boys/Girls)
-    const todayProfiles = await this.prisma.matrimonialProfile.findMany({
-      where: {
-        createdAt: {
-          gte: today,
-        },
+    // Gather some gender breakdown for active profiles
+    const genderStats = await this.prisma.matrimonialProfile.groupBy({
+      by: ['gender'],
+      _count: {
+        id: true,
       },
-      select: { gender: true },
-    });
-
-    let boysToday = 0;
-    let girlsToday = 0;
-    for (const p of todayProfiles) {
-      if (p.gender === 'MALE') boysToday++;
-      else if (p.gender === 'FEMALE') girlsToday++;
-    }
-
-    // 2. Total number of candidates
-    const totalCandidates = await this.prisma.matrimonialProfile.count();
-
-    // 3. Department breakdown
-    // Government
-    const governmentProfiles = await this.prisma.governmentEmployment.findMany({
-      select: { employmentType: true },
-    });
-
-    const govMap = new Map<string, number>();
-    for (const p of governmentProfiles) {
-      const dept = p.employmentType || 'Other Govt';
-      govMap.set(dept, (govMap.get(dept) || 0) + 1);
-    }
-    const governmentStats = Array.from(govMap.entries()).map(([name, count]) => ({
-      name,
-      count,
-    }));
-
-    // Private (using occupation field)
-    const privateProfiles = await this.prisma.matrimonialProfile.findMany({
       where: {
-        governmentEmployment: {
-          is: null,
-        },
-        occupation: {
-          not: null,
-          notIn: [''],
-        },
-      },
-      select: { occupation: true },
+        status: 'APPROVED',
+      }
     });
 
-    const privMap = new Map<string, number>();
-    for (const p of privateProfiles) {
-      const occ = p.occupation || 'Private / Other';
-      privMap.set(occ, (privMap.get(occ) || 0) + 1);
-    }
-    const privateStats = Array.from(privMap.entries())
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 20);
+    const breakdown = {
+      MALE: 0,
+      FEMALE: 0,
+      OTHER: 0,
+    };
+
+    genderStats.forEach((stat) => {
+      breakdown[stat.gender] = stat._count.id;
+    });
 
     return {
-      today: {
-        boys: boysToday,
-        girls: girlsToday,
-        total: boysToday + girlsToday,
-      },
-      totalCandidates,
-      departments: {
-        government: governmentStats,
-        private: privateStats,
-      },
+      totalUsers,
+      activeProfiles,
+      pendingVerifications,
+      openReports,
+      totalSuccessStories,
+      activeGovtEmployees,
+      genderBreakdown: breakdown,
     };
   }
 
@@ -88,34 +59,18 @@ export class StatisticsService {
     const currentMonth = today.getMonth() + 1;
     const currentDay = today.getDate();
 
-    // Fetch all profiles and filter in JS to avoid raw SQL dialect issues
-    // Alternatively, use raw SQL. For now, we fetch select fields and filter.
-    const allProfiles = await this.prisma.matrimonialProfile.findMany({
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        gender: true,
-        photoUrl: true,
-        dateOfBirth: true,
+    const profiles = await this.prisma.matrimonialProfile.findMany({
+      where: {
+        status: 'APPROVED',
       },
     });
 
-    const birthdays = allProfiles.filter((p) => {
-      const dob = new Date(p.dateOfBirth);
+    // Filter profiles where birthday month and day match today
+    const birthdayProfiles = profiles.filter((profile) => {
+      const dob = new Date(profile.dateOfBirth);
       return dob.getMonth() + 1 === currentMonth && dob.getDate() === currentDay;
     });
 
-    return birthdays.map(p => {
-      const dob = new Date(p.dateOfBirth);
-      let age = today.getFullYear() - dob.getFullYear();
-      if (today.getMonth() < dob.getMonth() || (today.getMonth() === dob.getMonth() && today.getDate() < dob.getDate())) {
-        age--;
-      }
-      return {
-        ...p,
-        age,
-      };
-    });
+    return birthdayProfiles;
   }
 }

@@ -10,15 +10,24 @@ import { adminApi, DashboardStats } from "@/lib/admin-api";
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    adminApi.getDashboardStats().then((data) => {
-      setStats(data);
-      setLoading(false);
-    });
+    adminApi.getDashboardStats()
+      .then((data) => {
+        setStats(data);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error("Dashboard Stats Error:", err);
+        setError(err.message || "Failed to load dashboard statistics.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  if (loading || !stats) {
+  if (loading) {
     return (
       <AdminLayout title="Admin Dashboard" subtitle="Loading All Gujarat Vankar Samaj metrics...">
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px", color: "#D4AF37" }}>
@@ -26,6 +35,17 @@ export default function AdminDashboardPage() {
           <span style={{ marginLeft: "12px", fontSize: "14px", fontWeight: 700 }}>
             Loading Admin Dashboard...
           </span>
+        </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error || !stats) {
+    return (
+      <AdminLayout title="Admin Dashboard" subtitle="Overview">
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px", color: "#F43F5E", flexDirection: "column" }}>
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
+          <span style={{ fontSize: "16px", fontWeight: 700 }}>{error || "No data available."}</span>
         </div>
       </AdminLayout>
     );

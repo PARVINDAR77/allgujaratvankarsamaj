@@ -4,10 +4,11 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { Gender, MaritalStatus, MatrimonialProfile, ProfileStatus } from "@prisma/client";
+import { Prisma, Gender, MaritalStatus, MatrimonialProfile, ProfileStatus } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProfileDto } from "./dto/create-profile.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { BaseProfileQueryDto, SortOrder, ProfileSortField } from "./dto/profile-query.dto";
 import { v4 as uuidv4 } from "uuid";
 
 export interface CompletenessResult {
@@ -154,6 +155,8 @@ export class ProfilesService {
         country: dto.country ? dto.country.trim() : null,
         education: dto.education ? dto.education.trim() : null,
         occupation: dto.occupation ? dto.occupation.trim() : null,
+        organizationName: null,
+        designation: null,
         about: dto.about ? dto.about.trim() : null,
         photoUrl: dto.photoUrl ?? null,
         stateId: null,
@@ -186,6 +189,27 @@ export class ProfilesService {
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
       const profile = this.memoryProfiles.get(userId);
+      if (!profile) {
+        throw new NotFoundException("Profile not found");
+      }
+      return profile;
+    }
+  }
+
+  async getProfileById(id: string) {
+    try {
+      const profile = await this.prisma.matrimonialProfile.findUnique({
+        where: { id },
+      });
+
+      if (!profile) {
+        throw new NotFoundException("Profile not found");
+      }
+
+      return profile;
+    } catch (err: any) {
+      if (err instanceof NotFoundException) throw err;
+      const profile = Array.from(this.memoryProfiles.values()).find(p => p.id === id);
       if (!profile) {
         throw new NotFoundException("Profile not found");
       }
@@ -270,79 +294,119 @@ export class ProfilesService {
     }
   }
 
-  async searchProfiles(query: {
-    lookingFor?: string;
-    maritalStatus?: string;
-    city?: string;
-    education?: string;
-    occupation?: string;
-    keyword?: string;
-  }) {
-    const maleFirstNames = ['Ramesh', 'Suresh', 'Jignesh', 'Mahesh', 'Bhavesh', 'Pankaj', 'Jayesh', 'Kiran', 'Nitin', 'Vijay', 'Pravin', 'Dinesh', 'Ketan', 'Alpesh', 'Rajesh', 'Hitesh', 'Kamlesh', 'Chetan', 'Dipak', 'Vishal', 'Amit', 'Hardik', 'Sanjay', 'Girish', 'Ashok'];
-    const femaleFirstNames = ['Pooja', 'Hiral', 'Neeta', 'Kavita', 'Riddhi', 'Bhavana', 'Daxaben', 'Kinjal', 'Nisha', 'Sejal', 'Jalpa', 'Meghaben', 'Komal', 'Purvi', 'Swati', 'Priti', 'Payal', 'Sheetal', 'Sonam', 'Dipali', 'Arti', 'Geetaben', 'Rekhaben', 'Sonal', 'Varsha'];
-    const lastNames = ['Vankar', 'Parmar', 'Solanki', 'Chauhan', 'Rathod', 'Makwana', 'Jadav', 'Vaghela', 'Gohel', 'Kapadiya', 'Chavda', 'Dabhi', 'Rohit', 'Mahyavanshi', 'Chitroda'];
-    const cities = ['Ahmedabad', 'Vadodara', 'Surat', 'Rajkot', 'Gandhinagar', 'Himatnagar', 'Idar', 'Anand', 'Nadiad', 'Mehsana'];
-    const educations = ['B.Tech Computer Engineering', 'BE Mechanical', 'M.Sc IT', 'MBA Finance', 'MBBS Doctor', 'B.Ed Teacher', 'B.Com Accounting', 'M.Com', 'BCA / MCA', 'Diploma Electrical'];
-    const occupations = ['Software Engineer', 'GPSC Class-2 Officer', 'High School Teacher', 'Bank Manager', 'Government Servant', 'Assistant Engineer', 'Private Sector Employee', 'Business Owner', 'Pharmacist', 'Police Sub-Inspector'];
-    const parganas = ['35 Pargana', '27 Pargana', '16 Pargana', '14 Pargana', 'Kantha Pargana', 'Charotar Pargana', 'Sabarkantha Pargana', 'North Gujarat Pargana'];
+  async getProfiles(query: BaseProfileQueryDto) {
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
 
-    const demoCandidates = Array.from({ length: 100 }, (_, i) => {
-      const isMale = i % 2 !== 0;
-      const gender = isMale ? "MALE" : "FEMALE";
-      const firstName = isMale
-        ? maleFirstNames[i % maleFirstNames.length]
-        : femaleFirstNames[i % femaleFirstNames.length];
-      const lastName = lastNames[i % lastNames.length];
-      const city = cities[i % cities.length];
-      const education = educations[i % educations.length];
-      const occupation = occupations[i % occupations.length];
-      const pargana = parganas[i % parganas.length];
-      const age = 22 + (i % 16);
-      const feet = 5 + Math.floor((i % 10) / 4);
-      const inches = (i % 10);
-      const height = `${feet}'${inches}"`;
+    const where: Prisma.MatrimonialProfileWhereInput = {
+      // By default, only show active and approved profiles for public listings.
+      // (This should be configurable if called from Admin APIs, but we assume public here).
+      status: ProfileStatus.APPROVED,
+    };
 
-      return {
-        id: `VNK-${100 + i + 1}`,
-        firstName,
-        lastName,
-        gender,
-        maritalStatus: "NEVER_MARRIED",
-        city,
-        education,
-        occupation,
-        pargana,
-        age,
-        height,
-        photoUrl: `https://picsum.photos/seed/${i + 100}/400/400`,
-      };
-    });
-
-    try {
-      const whereClause: any = {};
-      if (query.lookingFor === "Bride") whereClause.gender = "FEMALE";
-      if (query.lookingFor === "Groom") whereClause.gender = "MALE";
-      if (query.city && query.city !== "Any") {
-        whereClause.city = { contains: query.city, mode: "insensitive" };
-      }
-      const dbProfiles = await this.prisma.matrimonialProfile.findMany({
-        where: whereClause,
-      });
-      if (dbProfiles && dbProfiles.length > 0) return dbProfiles;
-    } catch {
-      // Return filtered demo candidates if DB is offline/empty
+    if (query.gender) {
+      where.gender = query.gender;
     }
 
-    return demoCandidates.filter((c) => {
-      if (query.lookingFor === "Bride" && c.gender !== "FEMALE") return false;
-      if (query.lookingFor === "Groom" && c.gender !== "MALE") return false;
-      if (query.city && query.city !== "Any" && !c.city.toLowerCase().includes(query.city.toLowerCase())) return false;
-      if (query.keyword) {
-        const k = query.keyword.toLowerCase();
-        const fullText = `${c.firstName} ${c.lastName} ${c.city} ${c.education} ${c.occupation} ${c.pargana}`.toLowerCase();
-        if (!fullText.includes(k)) return false;
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    // Age filtering based on date of birth
+    if (query.ageMin || query.ageMax) {
+      const today = new Date();
+      where.dateOfBirth = {};
+      
+      if (query.ageMin) {
+        // If min age is 20, they must be born BEFORE (today - 20 years)
+        const maxDate = new Date(today.getFullYear() - query.ageMin, today.getMonth(), today.getDate());
+        where.dateOfBirth.lte = maxDate;
       }
-      return true;
-    });
+      
+      if (query.ageMax) {
+        // If max age is 30, they must be born AFTER (today - 31 years)
+        const minDate = new Date(today.getFullYear() - query.ageMax - 1, today.getMonth(), today.getDate());
+        where.dateOfBirth.gt = minDate;
+      }
+    }
+
+    if (query.districtId) {
+      where.districtId = query.districtId;
+    }
+
+    if (query.talukaId) {
+      where.talukaId = query.talukaId;
+    }
+
+    if (query.occupationCategory) {
+      // Handle occupation categories
+      if (query.occupationCategory.toUpperCase() === 'GOVERNMENT') {
+        where.governmentEmployment = { isNot: null };
+      } else {
+        where.occupation = { contains: query.occupationCategory };
+      }
+    }
+    
+    // Keyword search across multiple fields
+    if (query.search) {
+      where.OR = [
+        { firstName: { contains: query.search } },
+        { lastName: { contains: query.search } },
+        { city: { contains: query.search } },
+        { occupation: { contains: query.search } },
+        { organizationName: { contains: query.search } },
+        { designation: { contains: query.search } },
+      ];
+    }
+
+    // Sort order
+    const orderBy: Prisma.MatrimonialProfileOrderByWithRelationInput = {};
+    const sortOrder = query.sortOrder === SortOrder.ASC ? 'asc' : 'desc';
+
+    switch (query.sortBy) {
+      case ProfileSortField.FIRST_NAME:
+        orderBy.firstName = sortOrder;
+        break;
+      case ProfileSortField.AGE:
+        // Sorting by age descending means sorting by DOB ascending
+        orderBy.dateOfBirth = sortOrder === 'desc' ? 'asc' : 'desc';
+        break;
+      case ProfileSortField.UPDATED_AT:
+        orderBy.updatedAt = sortOrder;
+        break;
+      case ProfileSortField.CREATED_AT:
+      default:
+        orderBy.createdAt = sortOrder;
+        break;
+    }
+
+    const [total, items] = await Promise.all([
+      this.prisma.matrimonialProfile.count({ where }),
+      this.prisma.matrimonialProfile.findMany({
+        where,
+        orderBy,
+        skip,
+        take: limit,
+        include: {
+          governmentEmployment: {
+            include: {
+              department: true,
+              designation: true,
+            }
+          }
+        }
+      })
+    ]);
+
+    return {
+      items,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }

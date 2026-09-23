@@ -152,45 +152,48 @@ export interface SamajServicePersonItem {
 }
 
 export const adminApi = {
+  async login(email: string, password: string): Promise<{ accessToken: string; user: any }> {
+    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+    }
+    return await res.json();
+  },
+
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/stats`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE_URL}/admin/statistics/dashboard`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch (error) {
-      console.warn("Using fallback dashboard stats:", error);
-      return {
-        totalUsers: 12548,
-        totalProfiles: 8732,
-        totalMatches: 3420,
-        totalMessages: 18940,
-        monthlyGrowth: [
-          { month: "Jan", users: 1200, profiles: 950 },
-          { month: "Feb", users: 2100, profiles: 1600 },
-          { month: "Mar", users: 3400, profiles: 2800 },
-          { month: "Apr", users: 4800, profiles: 3900 },
-          { month: "May", users: 6200, profiles: 5100 },
-          { month: "Jun", users: 7900, profiles: 6400 },
-          { month: "Jul", users: 9500, profiles: 7800 },
-          { month: "Aug", users: 11200, profiles: 9200 },
-          { month: "Sep", users: 12548, profiles: 8732 },
-        ],
-        parganaBreakdown: [
-          { name: "35 Pargana", count: 4850, percentage: 38 },
-          { name: "27 Pargana", count: 3200, percentage: 26 },
-          { name: "16 Pargana", count: 2100, percentage: 17 },
-          { name: "14 Pargana", count: 1400, percentage: 11 },
-          { name: "Other Pargana", count: 998, percentage: 8 },
-        ],
-        recentActivities: [
-          { id: "act-1", icon: "👤", title: "New Profile Created", user: "Ramesh Parmar", time: "10 mins ago", status: "completed" },
-          { id: "act-2", icon: "🛡️", title: "Verification Approved", user: "Priya Vankar", time: "25 mins ago", status: "completed" },
-          { id: "act-3", icon: "💖", title: "Mutual Match Found", user: "Amit & Neha", time: "1 hour ago", status: "completed" },
-        ],
-        recentUsers: [],
-        recentVerifications: [],
-      };
+    } catch (error) { throw error; }
+  },
+
+  async getVerifications(): Promise<any[]> {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/verifications`, { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (error) { throw error; }
+  },
+
+  async updateVerificationStatus(id: string, action: string, reason?: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/verifications/${id}/verify`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ action, reason }),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
     }
+    return await res.json();
   },
 
   async getUsers(): Promise<AdminUserItem[]> {
@@ -198,9 +201,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/users`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   async updateUserStatus(userId: string, status: string) {
@@ -217,9 +218,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/profiles`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   async updateProfileStatus(profileId: string, status: string) {
@@ -245,14 +244,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/parganas`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [
-        { id: "pg-1", name: "35 Pargana", code: "PARGANA_35", description: "Central Gujarat Region", leaderName: "Rameshbhai Vankar", contactPhone: "+91 98765 43210", totalCount: 420 },
-        { id: "pg-2", name: "27 Pargana", code: "PARGANA_27", description: "North Gujarat Region", leaderName: "Kishorbhai Parmar", contactPhone: "+91 98765 43211", totalCount: 290 },
-        { id: "pg-3", name: "16 Pargana", code: "PARGANA_16", description: "Saurashtra Region", leaderName: "Pravinbhai Solanki", contactPhone: "+91 98765 43212", totalCount: 180 },
-        { id: "pg-4", name: "14 Pargana", code: "PARGANA_14", description: "South Gujarat Region", leaderName: "Dineshbhai Vankar", contactPhone: "+91 98765 43213", totalCount: 120 },
-      ];
-    }
+    } catch (error) { throw error; }
   },
 
   async createPargana(data: Partial<ParganaItem>) {
@@ -287,9 +279,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/samaj-services`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   async createSamajService(data: Partial<SamajServiceItem>) {
@@ -327,9 +317,7 @@ export const adminApi = {
       const res = await fetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   async createSamajServicePerson(data: Partial<SamajServicePersonItem>) {
@@ -363,16 +351,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/settings`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return {
-        siteTitle: "All Gujarat Vankar Samaj Matrimony",
-        bannerText: "Welcome to All Gujarat Vankar Samaj Matrimony — Find Your Ideal Life Partner Within Our Community",
-        contactEmail: "support@vankarsamaj.org",
-        contactPhone: "+91 98765 43210",
-        registrationEnabled: true,
-        maintenanceMode: false,
-      };
-    }
+    } catch (error) { throw error; }
   },
 
   async updateSettings(settings: Partial<SiteSettings>) {
@@ -389,9 +368,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/verifications`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   async updateVerificationStatus(id: string, status: string, rejectionReason?: string) {
@@ -408,9 +385,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/reports`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   async getMatches() {
@@ -418,9 +393,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/admin/matches`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
 
   // ==================== LOCATION HIERARCHY API ====================
@@ -430,9 +403,7 @@ export const adminApi = {
       const res = await fetch(`${API_BASE_URL}/locations/admin/states`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
   async createState(data: Partial<StateItem>) {
     const res = await fetch(`${API_BASE_URL}/locations/admin/states`, {
@@ -467,9 +438,7 @@ export const adminApi = {
       const res = await fetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
   async createDistrict(data: Partial<DistrictItem>) {
     const res = await fetch(`${API_BASE_URL}/locations/admin/districts`, {
@@ -504,9 +473,7 @@ export const adminApi = {
       const res = await fetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
   async createTaluka(data: Partial<TalukaItem>) {
     const res = await fetch(`${API_BASE_URL}/locations/admin/talukas`, {
@@ -544,9 +511,7 @@ export const adminApi = {
       const res = await fetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
-    } catch {
-      return [];
-    }
+    } catch (error) { throw error; }
   },
   async createVillage(data: Partial<VillageItem>) {
     const res = await fetch(`${API_BASE_URL}/locations/admin/villages`, {

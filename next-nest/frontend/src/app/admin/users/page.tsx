@@ -19,11 +19,21 @@ export default function AdminUsersPage() {
   const [pargana, setPargana] = useState("35 Pargana");
   const [role, setRole] = useState("USER");
 
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    adminApi.getUsers().then((data) => {
-      setUsers(data);
-      setLoading(false);
-    });
+    adminApi.getUsers()
+      .then((data: any) => {
+        setUsers(data.data || []);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error(err);
+        setError(err.message || "Failed to load users");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
   const formatName = (n: string, e?: string) => {

@@ -256,7 +256,10 @@ async function main() {
 
   for (const s of samajServicesData) {
     await prisma.samajService.create({
-      data: s,
+      data: {
+        ...s,
+        slug: s.title.toLowerCase().replace(/ /g, '-'),
+      },
     });
   }
 

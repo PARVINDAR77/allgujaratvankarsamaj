@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
+import '../../../../shared/constants/app_data.dart';
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
   final String initialLookingFor;
@@ -230,12 +231,12 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                       children: [
                         Expanded(child: _buildDropdown('વ્યવસાય (Occupation)', _occupation, ['Any', 'Job', 'Business'], Icons.work, Colors.orange, (v) => setState(() => _occupation = v!))),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildDropdown('ધર્મ (Religion)', _religion, ['Any', 'Hindu'], Icons.brightness_high, Colors.orange, (v) => setState(() => _religion = v!))),
+                        Expanded(child: _buildDropdown('ધર્મ (Religion)', _religion, ['Any', ...AppData.religionOptions.where((e) => e != 'Select Religion')], Icons.brightness_high, Colors.orange, (v) => setState(() => _religion = v!))),
                       ],
                     ),
                     Row(
                       children: [
-                        Expanded(child: _buildDropdown('વાર્ષિક આવક (Yearly Income)', _income, ['Any', 'Below 1 Lakh'], Icons.monetization_on, Colors.orange, (v) => setState(() => _income = v!))),
+                        Expanded(child: _buildDropdown('વાર્ષિક આવક (Yearly Income)', _income, ['Any', ...AppData.incomeRanges.where((e) => e != 'Select Income')], Icons.monetization_on, Colors.orange, (v) => setState(() => _income = v!))),
                         const SizedBox(width: 12),
                         Expanded(child: _buildDropdown('માતૃભાષા (Mother Tongue)', _motherTongue, ['Any', 'Gujarati'], Icons.chat_bubble, const Color(0xFF0056D2), (v) => setState(() => _motherTongue = v!))),
                       ],

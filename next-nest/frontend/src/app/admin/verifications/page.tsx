@@ -1,28 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-
-const mockVerifications = [
-  { id: "v-1", name: "Hemantkumar Vankar", type: "Govt ID & Passport Photo", pargana: "16 Pargana", date: "2026-09-09", status: "VERIFIED" },
-  { id: "v-2", name: "Hiralben Parmar", type: "Family Address & Mosal Proof", pargana: "27 Pargana", date: "2026-09-09", status: "VERIFIED" },
-  { id: "v-3", name: "Mehul Vankar", type: "Higher Education Degree", pargana: "35 Pargana", date: "2026-09-10", status: "PENDING" },
-  { id: "v-4", name: "Aarti Vankar", type: "Profile Photo Verification", pargana: "14 Pargana", date: "2026-09-10", status: "PENDING" },
-  { id: "v-5", name: "Sanjay Solanki", type: "Income & Salary Slip", pargana: "35 Pargana", date: "2026-09-08", status: "REJECTED" },
-];
+import { adminApi } from "@/lib/admin-api";
 
 export default function AdminVerificationsPage() {
-  const [items, setItems] = useState(mockVerifications);
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
 
-  const updateStatus = (id: string, status: string) => {
-    setItems((prev) => prev.map((item) => (item.id === id ? { ...item, status } : item)));
+  const fetchVerifications = async () => {
+    try {
+      setLoading(true);
+      const data = await adminApi.getVerifications();
+      setItems(data.data || []);
+      setError(null);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Failed to fetch verifications");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVerifications();
+  }, []);
+
+  const updateStatus = async (id: string, action: string) => {
+    try {
+      await adminApi.updateVerificationStatus(id, action);
+      await fetchVerifications();
+    } catch (err: any) {
+      alert("Failed to update status: " + (err.message || "Unknown error"));
+    }
   };
 
   const filteredItems = items.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase()) || item.type.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = item.profile?.name?.toLowerCase().includes(search.toLowerCase()) || item.documentType?.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === "ALL" || item.status === filter;
     return matchesSearch && matchesFilter;
   });
@@ -135,17 +153,17 @@ export default function AdminVerificationsPage() {
               <tbody style={{ backgroundColor: "#0D1B32" }}>
                 {filteredItems.map((item) => (
                   <tr key={item.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }} className="hover:bg-[#041026]/70 transition-colors">
-                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>{item.name}</td>
-                    <td style={{ padding: "14px 18px", color: "#8E9BAE", fontWeight: 500 }}>{item.type}</td>
-                    <td style={{ padding: "14px 18px", color: "#FFFFFF", fontWeight: 600 }}>{item.pargana}</td>
-                    <td style={{ padding: "14px 18px", color: "#CBD5E1", fontFamily: "monospace", fontSize: "11px" }}>{item.date}</td>
+                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>{item.profile?.name || "Unknown"}</td>
+                    <td style={{ padding: "14px 18px", color: "#8E9BAE", fontWeight: 500 }}>{item.documentType || "Unknown"}</td>
+                    <td style={{ padding: "14px 18px", color: "#FFFFFF", fontWeight: 600 }}>{item.profile?.pargana?.name || "N/A"}</td>
+                    <td style={{ padding: "14px 18px", color: "#CBD5E1", fontFamily: "monospace", fontSize: "11px" }}>{new Date(item.createdAt).toLocaleDateString()}</td>
                     <td style={{ padding: "14px 18px" }}>
                       <StatusBadge status={item.status} />
                     </td>
                     <td style={{ padding: "14px 18px", textAlign: "right" }}>
                       <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
                         <button
-                          onClick={() => updateStatus(item.id, "VERIFIED")}
+                          onClick={() => updateStatus(item.id, "APPROVE")}
                           style={{
                             padding: "6px 14px",
                             borderRadius: "8px",
@@ -161,7 +179,7 @@ export default function AdminVerificationsPage() {
                           Approve
                         </button>
                         <button
-                          onClick={() => updateStatus(item.id, "REJECTED")}
+                          onClick={() => updateStatus(item.id, "REJECT")}
                           style={{
                             padding: "6px 14px",
                             borderRadius: "8px",

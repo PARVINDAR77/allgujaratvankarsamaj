@@ -50,6 +50,38 @@ class AppData {
     'Other (અન્ય)'
   ];
 
+  static const List<String> incomeRanges = [
+    'Select Income',
+    '₹0–1 લાખ',
+    '₹1–2 લાખ',
+    '₹2–3 લાખ',
+    '₹3–4 લાખ',
+    '₹4–5 લાખ',
+    '₹5–7 લાખ',
+    '₹7–10 લાખ',
+    '₹10–15 લાખ',
+    '₹15–20 લાખ',
+    '₹20–30 લાખ',
+    '₹30–50 લાખ',
+    '₹50 લાખ–₹1 કરોડ',
+    '₹1 કરોડથી વધુ',
+  ];
+
+  static const List<String> religionOptions = [
+    'Select Religion',
+    'હિન્દુ ધર્મ (Hinduism)',
+    'ઇસ્લામ ધર્મ (Islam)',
+    'ખ્રિસ્તી ધર્મ (Christianity)',
+    'શીખ ધર્મ (Sikhism)',
+    'બૌદ્ધ ધર્મ (Buddhism)',
+    'જૈન ધર્મ (Jainism)',
+    'યહૂદી ધર્મ (Judaism)',
+    'પારસી / ઝોરાષ્ટ્રિયન ધર્મ (Zoroastrianism)',
+    'બહાઈ ધર્મ (Baháʼí Faith)',
+    'અન્ય ધર્મો / આદિવાસી પરંપરાઓ',
+    'કોઈ ધર્મ નહીં / ધર્મ જાહેર નથી (No religion / Not stated)',
+  ];
+
   static const Map<String, List<String>> gujaratDistricts = {
     'Select District': ['Select Taluka'],
     'Ahmedabad': [

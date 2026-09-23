@@ -20,7 +20,10 @@ model SystemHealth {
 
 enum Role {
   USER
+  SUPER_ADMIN
   ADMIN
+  VERIFICATION_ADMIN
+  CONTENT_ADMIN
 }
 
 enum Status {
@@ -83,25 +86,27 @@ enum ReportStatus {
 }
 
 model MatrimonialProfile {
-  id            String        @id @default(uuid())
-  userId        String        @unique @map("user_id")
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName     String        @map("first_name")
-  lastName      String        @map("last_name")
-  dateOfBirth   DateTime      @map("date_of_birth")
-  gender        Gender
-  maritalStatus MaritalStatus @map("marital_status")
-  religion      String?
-  caste         String?
-  subcaste      String?
-  nativePlace   String?       @map("native_place")
-  city          String?
-  state         String?
-  country       String?
-  education     String?
-  occupation    String?
-  about         String?
-  photoUrl      String?       @map("photo_url")
+  id               String        @id @default(uuid())
+  userId           String        @unique @map("user_id")
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName        String        @map("first_name")
+  lastName         String        @map("last_name")
+  dateOfBirth      DateTime      @map("date_of_birth")
+  gender           Gender
+  maritalStatus    MaritalStatus @map("marital_status")
+  religion         String?
+  caste            String?
+  subcaste         String?
+  nativePlace      String?       @map("native_place")
+  city             String?
+  state            String?
+  country          String?
+  education        String?
+  occupation       String?
+  organizationName String?       @map("organization_name")
+  designation      String?
+  about            String?
+  photoUrl         String?       @map("photo_url")
 
   stateId    String?   @map("state_id")
   districtId String?   @map("district_id")
@@ -120,9 +125,21 @@ model MatrimonialProfile {
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
   governmentEmployment GovernmentEmployment?
+  verificationRequests VerificationRequest[]
 
   @@map("matrimonial_profiles")
 }
+
+model Shortlist {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  targetProfileId String   @map("target_profile_id")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, targetProfileId])
+  @@map("shortlists")
+}
+
 
 model SiteSetting {
   key       String   @id
@@ -147,37 +164,37 @@ model State {
 }
 
 model District {
-  id           String               @id @default(uuid())
-  stateId      String               @map("state_id")
-  state        State                @relation(fields: [stateId], references: [id], onDelete: Restrict)
-  name         String
-  gujaratiName String?              @map("gujarati_name")
-  code         String?
-  isActive     Boolean              @default(true) @map("is_active")
-  createdAt    DateTime             @default(now()) @map("created_at")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
-  talukas      Taluka[]
-  profiles             MatrimonialProfile[]
-  samajServicePersons  SamajServicePerson[]
+  id                  String               @id @default(uuid())
+  stateId             String               @map("state_id")
+  state               State                @relation(fields: [stateId], references: [id], onDelete: Restrict)
+  name                String
+  gujaratiName        String?              @map("gujarati_name")
+  code                String?
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  talukas             Taluka[]
+  profiles            MatrimonialProfile[]
+  samajServicePersons SamajServicePerson[]
 
   @@index([stateId])
   @@map("districts")
 }
 
 model Taluka {
-  id           String               @id @default(uuid())
-  districtId   String               @map("district_id")
-  district     District             @relation(fields: [districtId], references: [id], onDelete: Restrict)
-  name         String
-  gujaratiName String?              @map("gujarati_name")
-  code         String?
-  isActive     Boolean              @default(true) @map("is_active")
-  createdAt    DateTime             @default(now()) @map("created_at")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
-  parganas     ParganaTaluka[]
-  villages     Village[]
-  profiles     MatrimonialProfile[]
-  samajServicePersons  SamajServicePerson[]
+  id                  String               @id @default(uuid())
+  districtId          String               @map("district_id")
+  district            District             @relation(fields: [districtId], references: [id], onDelete: Restrict)
+  name                String
+  gujaratiName        String?              @map("gujarati_name")
+  code                String?
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  parganas            ParganaTaluka[]
+  villages            Village[]
+  profiles            MatrimonialProfile[]
+  samajServicePersons SamajServicePerson[]
 
   @@index([districtId])
   @@map("talukas")
@@ -216,20 +233,20 @@ model ParganaTaluka {
 }
 
 model Village {
-  id           String               @id @default(uuid())
-  parganaId    String?              @map("pargana_id")
-  pargana      Pargana?             @relation(fields: [parganaId], references: [id], onDelete: SetNull)
-  talukaId     String?              @map("taluka_id")
-  taluka       Taluka?              @relation(fields: [talukaId], references: [id], onDelete: SetNull)
-  name         String
-  gujaratiName String?              @map("gujarati_name")
-  code         String?
-  pincode      String?
-  isActive     Boolean              @default(true) @map("is_active")
-  createdAt    DateTime             @default(now()) @map("created_at")
-  updatedAt    DateTime             @updatedAt @map("updated_at")
-  profiles     MatrimonialProfile[]
-  samajServicePersons  SamajServicePerson[]
+  id                  String               @id @default(uuid())
+  parganaId           String?              @map("pargana_id")
+  pargana             Pargana?             @relation(fields: [parganaId], references: [id], onDelete: SetNull)
+  talukaId            String?              @map("taluka_id")
+  taluka              Taluka?              @relation(fields: [talukaId], references: [id], onDelete: SetNull)
+  name                String
+  gujaratiName        String?              @map("gujarati_name")
+  code                String?
+  pincode             String?
+  isActive            Boolean              @default(true) @map("is_active")
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  profiles            MatrimonialProfile[]
+  samajServicePersons SamajServicePerson[]
 
   @@index([parganaId])
   @@index([talukaId])
@@ -239,6 +256,7 @@ model Village {
 model VerificationRequest {
   id              String             @id @default(uuid())
   profileId       String             @map("profile_id")
+  profile         MatrimonialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   documentType    String             @map("document_type")
   documentUrl     String             @map("document_url")
   status          VerificationStatus @default(PENDING)
@@ -345,13 +363,13 @@ enum GovtVerificationStatus {
 }
 
 model GovtDepartment {
-  id           String             @id @default(uuid())
+  id           String                 @id @default(uuid())
   name         String
-  gujaratiName String?            @map("gujarati_name")
-  code         String?            @unique
-  isActive     Boolean            @default(true) @map("is_active")
-  createdAt    DateTime           @default(now()) @map("created_at")
-  updatedAt    DateTime           @updatedAt @map("updated_at")
+  gujaratiName String?                @map("gujarati_name")
+  code         String?                @unique
+  isActive     Boolean                @default(true) @map("is_active")
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
   designations GovtDesignation[]
   employments  GovernmentEmployment[]
 
@@ -359,15 +377,15 @@ model GovtDepartment {
 }
 
 model GovtDesignation {
-  id           String             @id @default(uuid())
-  departmentId String             @map("department_id")
-  department   GovtDepartment     @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  id           String                 @id @default(uuid())
+  departmentId String                 @map("department_id")
+  department   GovtDepartment         @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   name         String
-  gujaratiName String?            @map("gujarati_name")
+  gujaratiName String?                @map("gujarati_name")
   code         String?
-  isActive     Boolean            @default(true) @map("is_active")
-  createdAt    DateTime           @default(now()) @map("created_at")
-  updatedAt    DateTime           @updatedAt @map("updated_at")
+  isActive     Boolean                @default(true) @map("is_active")
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
   employments  GovernmentEmployment[]
 
   @@index([departmentId])
@@ -375,25 +393,25 @@ model GovtDesignation {
 }
 
 model GovernmentEmployment {
-  id                      String                            @id @default(uuid())
-  profileId               String                            @unique @map("profile_id")
-  profile                 MatrimonialProfile                @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  employmentType          GovtEmploymentType                @default(STATE_GOVT) @map("employment_type")
-  departmentId            String?                           @map("department_id")
-  department              GovtDepartment?                   @relation(fields: [departmentId], references: [id], onDelete: SetNull)
-  designationId           String?                           @map("designation_id")
-  designation             GovtDesignation?                  @relation(fields: [designationId], references: [id], onDelete: SetNull)
-  officeLocation          String?                           @map("office_location")
-  joiningYear             Int?                              @map("joining_year")
-  verificationStatus      GovtVerificationStatus            @default(PENDING) @map("verification_status")
-  verificationSubmittedAt DateTime?                         @map("verification_submitted_at")
-  verifiedAt              DateTime?                         @map("verified_at")
-  verifiedBy              String?                           @map("verified_by")
-  rejectionReason         String?                           @map("rejection_reason")
-  isFeatured              Boolean                           @default(false) @map("is_featured")
-  isActive                Boolean                           @default(true) @map("is_active")
-  createdAt               DateTime                          @default(now()) @map("created_at")
-  updatedAt               DateTime                          @updatedAt @map("updated_at")
+  id                      String                             @id @default(uuid())
+  profileId               String                             @unique @map("profile_id")
+  profile                 MatrimonialProfile                 @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  employmentType          GovtEmploymentType                 @default(STATE_GOVT) @map("employment_type")
+  departmentId            String?                            @map("department_id")
+  department              GovtDepartment?                    @relation(fields: [departmentId], references: [id], onDelete: SetNull)
+  designationId           String?                            @map("designation_id")
+  designation             GovtDesignation?                   @relation(fields: [designationId], references: [id], onDelete: SetNull)
+  officeLocation          String?                            @map("office_location")
+  joiningYear             Int?                               @map("joining_year")
+  verificationStatus      GovtVerificationStatus             @default(PENDING) @map("verification_status")
+  verificationSubmittedAt DateTime?                          @map("verification_submitted_at")
+  verifiedAt              DateTime?                          @map("verified_at")
+  verifiedBy              String?                            @map("verified_by")
+  rejectionReason         String?                            @map("rejection_reason")
+  isFeatured              Boolean                            @default(false) @map("is_featured")
+  isActive                Boolean                            @default(true) @map("is_active")
+  createdAt               DateTime                           @default(now()) @map("created_at")
+  updatedAt               DateTime                           @updatedAt @map("updated_at")
   verifications           GovernmentEmploymentVerification[]
 
   @@index([departmentId])
@@ -431,3 +449,25 @@ model AdminAuditLog {
   @@map("admin_audit_logs")
 }
 
+enum AdPlacement {
+  HOME_BANNER
+  DIRECTORY_BANNER
+  POPUP
+}
+
+model Advertisement {
+  id        String      @id @default(uuid())
+  title     String
+  imageUrl  String      @map("image_url")
+  targetUrl String?     @map("target_url")
+  placement AdPlacement @default(HOME_BANNER)
+  isActive  Boolean     @default(true) @map("is_active")
+  startAt   DateTime?   @map("start_at")
+  endAt     DateTime?   @map("end_at")
+  sortOrder Int         @default(0) @map("sort_order")
+  createdBy String?     @map("created_by")
+  createdAt DateTime    @default(now()) @map("created_at")
+  updatedAt DateTime    @updatedAt @map("updated_at")
+
+  @@map("advertisements")
+}

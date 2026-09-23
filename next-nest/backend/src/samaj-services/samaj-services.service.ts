@@ -349,6 +349,7 @@ export class SamajServicesService {
     return this.prisma.samajService.create({
       data: {
         title: data.title,
+        slug: data.title.toLowerCase().replace(/ /g, '-'),
         category: data.category || 'General',
         icon: data.icon || '🤝',
         contactPhone: data.contactPhone || null,

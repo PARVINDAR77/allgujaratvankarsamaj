@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from "@nestjs/common";
@@ -20,20 +21,21 @@ import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { Public } from "../auth/decorators/public.decorator";
 import { CreateProfileDto } from "./dto/create-profile.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
+import { BaseProfileQueryDto } from "./dto/profile-query.dto";
 import { ProfilesService } from "./profiles.service";
 
 @ApiTags("Matrimonial Profile")
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller("profile")
+@Controller("profiles")
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
   @Public()
-  @Post("search-query")
-  @ApiOperation({ summary: "Search matrimonial candidate profiles" })
-  async searchProfiles(@Body() body: any) {
-    return this.profilesService.searchProfiles(body);
+  @Get()
+  @ApiOperation({ summary: "List and search matrimonial candidate profiles" })
+  async getProfiles(@Query() query: BaseProfileQueryDto) {
+    return this.profilesService.getProfiles(query);
   }
 
   @Get("reference-data")
@@ -127,5 +129,17 @@ export class ProfilesController {
   @ApiResponse({ status: 404, description: "Profile not found" })
   async deleteMyProfile(@Request() req: any) {
     return this.profilesService.deleteProfileByUserId(req.user.id);
+  }
+
+  @Public()
+  @Get(":id")
+  @ApiOperation({ summary: "Get public details of a matrimonial profile by ID" })
+  @ApiResponse({
+    status: 200,
+    description: "Profile details",
+  })
+  @ApiResponse({ status: 404, description: "Profile not found" })
+  async getProfileById(@Request() req: any) {
+    return this.profilesService.getProfileById(req.params.id);
   }
 }

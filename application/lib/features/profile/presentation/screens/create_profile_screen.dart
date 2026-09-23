@@ -30,6 +30,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String _govCategory = 'Select Category';
   String _customGovCategory = '';
   String _designation = '';
+  String _yearlyIncome = 'Select Income';
   String _district = '';
   String _taluka = '';
   String _pargana = 'Select Pargana';
@@ -39,6 +40,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String? _isVankar;
   String? _casteCategory;
   String? _dob;
+  String _religion = 'Select Religion';
 
   Future<void> _pickImage() async {
     try {
@@ -286,7 +288,14 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'], value: _maritalStatus, onChanged: (v) => setState(() => _maritalStatus = v)),
               _buildDropdownField('Blood Group (બ્લડ ગ્રુપ)', 'Select Blood Group', Icons.water_drop_outlined, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)'], value: _bloodGroup, onChanged: (v) => setState(() => _bloodGroup = v)),
               _buildDropdownField('Are you Vankar? (તમે વણકર છો?) *', 'Yes (હા)', Icons.verified_user_outlined, ['Yes (હા)', 'No (ના)'], value: _isVankar, onChanged: (v) => setState(() => _isVankar = v)),
-              _buildTextField('Religion (ધર્મ) *', 'Enter Religion (ધર્મ)', Icons.settings_brightness),
+              _buildDropdownField(
+                'Religion (ધર્મ) *',
+                'Select Religion (ધર્મ પસંદ કરો)',
+                Icons.settings_brightness,
+                AppData.religionOptions,
+                value: AppData.religionOptions.contains(_religion) ? _religion : 'Select Religion',
+                onChanged: (v) => setState(() => _religion = v ?? 'Select Religion'),
+              ),
               _buildDropdownField('Caste Category (જ્ઞાતિ પસંદ કરો) *', 'Hindu-vankar (હિન્દુ-વણકર)', Icons.groups_outlined, ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)'], value: _casteCategory, onChanged: (v) => setState(() => _casteCategory = v)),
 
               const SizedBox(height: 24),
@@ -414,7 +423,14 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 ),
               ],
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, onChanged: (v) => setState(() => _designation = v)),
-              _buildTextField('Yearly Income (વાર્ષિક આવક - રૂ.)', 'Enter Yearly Income (વાર્ષિક આવક - રૂ.)', Icons.payments_outlined),
+              _buildDropdownField(
+                'Yearly Income (વાર્ષિક આવક - રૂ.)',
+                'Select Income (વાર્ષિક આવક પસંદ કરો)',
+                Icons.payments_outlined,
+                AppData.incomeRanges,
+                value: AppData.incomeRanges.contains(_yearlyIncome) ? _yearlyIncome : 'Select Income',
+                onChanged: (v) => setState(() => _yearlyIncome = v ?? 'Select Income'),
+              ),
 
               const SizedBox(height: 24),
               // Family Details Section

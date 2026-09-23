@@ -18,19 +18,19 @@ export default function AdminLoginPage() {
 
     try {
       if (email.trim() && password.trim()) {
+        const { adminApi } = await import("../../../lib/admin-api");
+        const data = await adminApi.login(email, password);
+        
         if (typeof window !== "undefined") {
-          localStorage.setItem("adminToken", "demo-admin-jwt-token");
-          localStorage.setItem(
-            "adminUser",
-            JSON.stringify({ name: "Admin Officer", role: "SUPER_ADMIN" })
-          );
+          localStorage.setItem("adminToken", data.accessToken);
+          localStorage.setItem("adminUser", JSON.stringify(data.user));
         }
         router.push("/admin/dashboard");
       } else {
         setError("Please enter valid administrator credentials.");
       }
-    } catch {
-      setError("Unable to connect to authentication services.");
+    } catch (err: any) {
+      setError(err.message || "Unable to connect to authentication services.");
     } finally {
       setLoading(false);
     }
