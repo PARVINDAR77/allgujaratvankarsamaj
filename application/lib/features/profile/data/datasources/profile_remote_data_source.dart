@@ -90,7 +90,8 @@ class ProfileRemoteDataSource {
     }
     final statusCode = e.response?.statusCode;
     if (statusCode != null) {
-      final serverMessage = e.response?.data?['message'];
+      final data = e.response?.data;
+      final serverMessage = (data is Map<String, dynamic>) ? data['message'] : null;
       final messageString = serverMessage is List ? serverMessage.first : serverMessage?.toString();
       return ApiFailure.fromStatusCode(statusCode, messageString);
     }

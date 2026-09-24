@@ -74,7 +74,8 @@ class GovtEmployeeRemoteDatasource {
     }
     final statusCode = e.response?.statusCode;
     if (statusCode != null) {
-      final serverMessage = e.response?.data?['message'] as String?;
+      final data = e.response?.data;
+      final serverMessage = (data is Map<String, dynamic>) ? data['message'] as String? : null;
       return ApiFailure.fromStatusCode(statusCode, serverMessage);
     }
     return ApiFailure(

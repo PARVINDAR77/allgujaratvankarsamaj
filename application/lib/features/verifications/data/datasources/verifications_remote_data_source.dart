@@ -34,7 +34,8 @@ class VerificationsRemoteDataSource {
     }
     final code = e.response?.statusCode;
     if (code != null) {
-      final msg = e.response?.data?['message'];
+      final data = e.response?.data;
+      final msg = (data is Map<String, dynamic>) ? data['message'] : null;
       final msgStr = msg is List ? msg.first : msg?.toString();
       return ApiFailure.fromStatusCode(code, msgStr);
     }
