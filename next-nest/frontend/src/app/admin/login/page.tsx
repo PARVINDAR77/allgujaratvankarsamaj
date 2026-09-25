@@ -22,7 +22,6 @@ export default function AdminLoginPage() {
         const data = await adminApi.login(email, password);
         
         if (typeof window !== "undefined") {
-          localStorage.setItem("adminToken", data.accessToken);
           localStorage.setItem("adminUser", JSON.stringify(data.user));
         }
         router.push("/admin/dashboard");
@@ -38,117 +37,39 @@ export default function AdminLoginPage() {
 
   return (
     <div
-      style={{
-        minHeight: "100vh",
-        width: "100%",
-        backgroundColor: "#061224",
-        color: "#ffffff",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-        fontFamily: "'Inter', system-ui, sans-serif",
-        position: "relative",
-        boxSizing: "border-box",
-      }}
+       style={{ minHeight: "100vh", backgroundColor: "#061224", color: "#ffffff", fontFamily: "'Inter', system-ui, sans-serif", boxSizing: "border-box" }} className="flex justify-center items-center w-full relative p-6"
     >
       {/* Background Radial Glow */}
       <div
-        style={{
-          position: "absolute",
-          top: "-100px",
-          left: "-100px",
-          width: "400px",
-          height: "400px",
-          background: "radial-gradient(circle, rgba(212,175,55,0.15) 0%, rgba(0,0,0,0) 70%)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-        }}
+         style={{ top: "-100px", left: "-100px", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, rgba(0, 0, 0, 0) 70%)", pointerEvents: "none" }} className="absolute rounded-full"
       />
       <div
-        style={{
-          position: "absolute",
-          bottom: "-100px",
-          right: "-100px",
-          width: "400px",
-          height: "400px",
-          background: "radial-gradient(circle, rgba(153,125,32,0.2) 0%, rgba(0,0,0,0) 70%)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-        }}
+         style={{ bottom: "-100px", right: "-100px", width: "400px", height: "400px", background: "radial-gradient(circle, rgba(153, 125, 32, 0.2) 0%, rgba(0, 0, 0, 0) 70%)", pointerEvents: "none" }} className="absolute rounded-full"
       />
 
       {/* Main Login Card */}
       <div
-        style={{
-          width: "100%",
-          maxWidth: "460px",
-          backgroundColor: "#0F2243",
-          border: "1.5px solid rgba(212, 175, 55, 0.4)",
-          borderRadius: "24px",
-          padding: "40px 32px",
-          boxShadow: "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(212, 175, 55, 0.1)",
-          position: "relative",
-          zIndex: 10,
-          boxSizing: "border-box",
-        }}
+         style={{ maxWidth: "460px", backgroundColor: "#0F2243", border: "1.5px solid rgba(212, 175, 55, 0.4)", borderRadius: "24px", padding: "40px 32px", boxShadow: "0 20px 50px rgba(0, 0, 0, 0.7), 0 0 30px rgba(212, 175, 55, 0.1)", zIndex: 10, boxSizing: "border-box" }} className="w-full relative"
       >
         {/* Top Gold Accent Bar */}
         <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "6px",
-            background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
-            borderTopLeftRadius: "24px",
-            borderTopRightRadius: "24px",
-          }}
+           style={{ height: "6px", background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)", borderTopLeftRadius: "24px", borderTopRightRadius: "24px" }} className="absolute top-0 left-0 right-0"
         />
 
         {/* Brand Icon Header */}
-        <div style={{ textAlign: "center", marginBottom: "28px", marginTop: "8px" }}>
+        <div  style={{ marginBottom: "28px", marginTop: "8px" }} className="text-center">
           <div
-            style={{
-              width: "72px",
-              height: "72px",
-              borderRadius: "50%",
-              background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
-              color: "#000000",
-              fontWeight: 900,
-              fontSize: "36px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 16px auto",
-              boxShadow: "0 0 25px rgba(212, 175, 55, 0.5)",
-              border: "2px solid #FFE899",
-            }}
+              style={{ width: "72px", height: "72px", color: "#000000", fontWeight: 900, fontSize: "36px", margin: "0 auto 16px auto", boxShadow: "0 0 25px rgba(212, 175, 55, 0.5)", border: "2px solid #FFE899" }} className="flex justify-center items-center rounded-full bg-gradient-to-br from-admin-gold via-admin-gold-light to-admin-gold-border" 
           >
             V
           </div>
           <h1
-            style={{
-              fontSize: "22px",
-              fontWeight: 900,
-              color: "#D4AF37",
-              letterSpacing: "2px",
-              textTransform: "uppercase",
-              margin: "0 0 4px 0",
-            }}
+             style={{ fontSize: "22px", fontWeight: 900, letterSpacing: "2px", margin: "0 0 4px 0" }} className="uppercase text-admin-gold"
           >
             VANKAR SAMAJ
           </h1>
           <p
-            style={{
-              fontSize: "12px",
-              fontWeight: 700,
-              color: "rgba(243, 229, 171, 0.9)",
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              margin: 0,
-            }}
+             style={{ color: "rgba(243, 229, 171, 0.9)", letterSpacing: "1.5px", margin: 0 }} className="font-bold uppercase text-xs"
           >
             Matrimony Admin Control Center
           </p>
@@ -156,47 +77,23 @@ export default function AdminLoginPage() {
 
         {error && (
           <div
-            style={{
-              marginBottom: "20px",
-              padding: "12px 16px",
-              borderRadius: "12px",
-              backgroundColor: "rgba(136, 19, 55, 0.8)",
-              border: "1px solid rgba(244, 63, 94, 0.5)",
-              color: "#fecdd3",
-              fontSize: "13px",
-              fontWeight: 700,
-              textAlign: "center",
-            }}
+             style={{ marginBottom: "20px", padding: "12px 16px", backgroundColor: "rgba(136, 19, 55, 0.8)", border: "1px solid rgba(244, 63, 94, 0.5)", color: "#fecdd3" }} className="text-center font-bold text-[13px] rounded-xl"
           >
             ⚠️ {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        <form onSubmit={handleLogin}  style={{ gap: "20px" }} className="flex flex-col">
           {/* Email Field */}
           <div>
             <label
-              style={{
-                display: "block",
-                fontSize: "12px",
-                fontWeight: 800,
-                color: "#D4AF37",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-                marginBottom: "8px",
-              }}
+                style={{ display: "block", marginBottom: "8px" }} className="font-extrabold uppercase text-admin-gold text-xs tracking-[1px]" 
             >
               Admin Email / Username *
             </label>
-            <div style={{ position: "relative" }}>
+            <div  className="relative">
               <span
-                style={{
-                  position: "absolute",
-                  left: "14px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: "16px",
-                }}
+                 style={{ left: "14px", top: "50%", transform: "translateY(-50%)" }} className="absolute text-base"
               >
                 ✉️
               </span>
@@ -225,27 +122,13 @@ export default function AdminLoginPage() {
           {/* Password Field */}
           <div>
             <label
-              style={{
-                display: "block",
-                fontSize: "12px",
-                fontWeight: 800,
-                color: "#D4AF37",
-                textTransform: "uppercase",
-                letterSpacing: "1px",
-                marginBottom: "8px",
-              }}
+                style={{ display: "block", marginBottom: "8px" }} className="font-extrabold uppercase text-admin-gold text-xs tracking-[1px]" 
             >
               Password *
             </label>
-            <div style={{ position: "relative" }}>
+            <div  className="relative">
               <span
-                style={{
-                  position: "absolute",
-                  left: "14px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: "16px",
-                }}
+                 style={{ left: "14px", top: "50%", transform: "translateY(-50%)" }} className="absolute text-base"
               >
                 🔒
               </span>
@@ -291,24 +174,17 @@ export default function AdminLoginPage() {
 
           {/* Remember Session & Forgot Password */}
           <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              fontSize: "12px",
-              color: "#AAB7C8",
-              marginTop: "2px",
-            }}
+             style={{ color: "#AAB7C8", marginTop: "2px" }} className="flex justify-between items-center text-xs"
           >
-            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none" }}>
+            <label  style={{ userSelect: "none" }} className="flex items-center cursor-pointer gap-2">
               <input
                 type="checkbox"
                 defaultChecked
-                style={{ accentColor: "#D4AF37", width: "16px", height: "16px", cursor: "pointer" }}
+                 style={{ accentColor: "#D4AF37", width: "16px", height: "16px" }} className="cursor-pointer"
               />
-              <span style={{ fontWeight: 600, color: "#d1d5db" }}>Remember session</span>
+              <span  style={{ color: "#d1d5db" }} className="font-semibold">Remember session</span>
             </label>
-            <a href="#" style={{ color: "#D4AF37", fontWeight: 700, textDecoration: "none" }}>
+            <a href="#"  style={{ textDecoration: "none" }} className="font-bold text-admin-gold">
               Forgot password?
             </a>
           </div>
@@ -317,29 +193,15 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={loading}
-            style={{
-              width: "100%",
-              padding: "16px 24px",
-              borderRadius: "14px",
-              background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
-              color: "#000000",
-              fontWeight: 900,
-              fontSize: "14px",
-              letterSpacing: "1.5px",
-              textTransform: "uppercase",
-              border: "none",
-              cursor: "pointer",
-              boxShadow: "0 0 20px rgba(212, 175, 55, 0.4)",
-              marginTop: "8px",
-            }}
+              style={{ padding: "16px 24px", borderRadius: "14px", background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)", color: "#000000", fontWeight: 900, letterSpacing: "1.5px", boxShadow: "0 0 20px rgba(212, 175, 55, 0.4)", marginTop: "8px" }} className="w-full uppercase cursor-pointer text-sm border-none" 
           >
             {loading ? "Authenticating..." : "🔑 Sign In to Admin Control Center"}
           </button>
         </form>
 
         {/* Footer */}
-        <div style={{ marginTop: "28px", textAlign: "center", borderTop: "1px solid rgba(153, 125, 32, 0.2)", paddingTop: "16px" }}>
-          <p style={{ fontSize: "11px", color: "rgba(170, 183, 200, 0.7)", fontWeight: 600, margin: 0 }}>
+        <div  style={{ marginTop: "28px", borderTop: "1px solid rgba(153, 125, 32, 0.2)", paddingTop: "16px" }} className="text-center">
+          <p  style={{ color: "rgba(170, 183, 200, 0.7)", margin: 0 }} className="font-semibold text-[11px]">
             Protected Matrimonial Control Center © 2026 All Gujarat Vankar Samaj
           </p>
         </div>

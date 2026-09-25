@@ -1,78 +1,31 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/profile_model.dart';
+import '../data/profile_repository.dart';
 
+class ProfileNotifier extends StateNotifier<AsyncValue<List<ProfileModel>>> {
+  final ProfileRepository repository;
 
-class ProfileNotifier extends StateNotifier<List<ProfileModel>> {
-  ProfileNotifier() : super(_initialData);
+  ProfileNotifier(this.repository) : super(const AsyncValue.loading()) {
+    fetchProfiles();
+  }
 
-  static final List<ProfileModel> _initialData = [
-    const ProfileModel(
-      id: '1',
-      firstName: 'Dipak',
-      lastName: 'Vankar',
-      gender: 'Male (પુરુષ)',
-      maritalStatus: 'Never Married (અપરિણીત)',
-      dateOfBirth: '1990-01-01',
-      education: 'B.A.',
-      employmentType: 'Government Sector (સરકારી નોકરી / સેકટર)',
-      department: 'IAS',
-      designation: 'IAS Officer',
-      district: 'Gandhinagar',
-      taluka: 'Gandhinagar',
-      pargana: '24 Pargana / Chovisey (ચોવીસી)',
-    ),
-    const ProfileModel(
-      id: '2',
-      firstName: 'Riddhi',
-      lastName: 'Vankar',
-      gender: 'Female (સ્ત્રી)',
-      maritalStatus: 'Never Married (અપરિણીત)',
-      dateOfBirth: '1992-05-12',
-      education: 'B.Ed.',
-      employmentType: 'Government Sector (સરકારી નોકરી / સેકટર)',
-      department: 'Education',
-      designation: 'Teacher',
-      district: 'Ahmedabad',
-      taluka: 'Ahmedabad City',
-      pargana: '7 Pargana (૭ પરગણા)',
-    ),
-    const ProfileModel(
-      id: '3',
-      firstName: 'Hardik',
-      lastName: 'Vankar',
-      gender: 'Male (પુરુષ)',
-      maritalStatus: 'Never Married (અપરિણીત)',
-      dateOfBirth: '1988-11-20',
-      education: 'B.Com.',
-      employmentType: 'Government Sector (સરકારી નોકરી / સેકટર)',
-      department: 'Police',
-      designation: 'Police Inspector',
-      district: 'Surat',
-      taluka: 'Choryasi',
-      pargana: '22 Pargana (૨૨ પરગણા)',
-    ),
-    const ProfileModel(
-      id: '4',
-      firstName: 'Rahul',
-      lastName: 'Vankar',
-      gender: 'Male (પુરુષ)',
-      maritalStatus: 'Never Married (અપરિણીત)',
-      dateOfBirth: '1995-08-15',
-      education: 'B.E.',
-      employmentType: 'Private Sector (ખાનગી નોકરી / સેકટર)',
-      department: 'IT',
-      designation: 'Software Engineer',
-      district: 'Ahmedabad',
-      taluka: 'Ahmedabad City',
-      pargana: '42 Pargana (૪૨ પરગણા)',
-    ),
-  ];
+  Future<void> fetchProfiles() async {
+    state = const AsyncValue.loading();
+    try {
+      final result = await repository.fetchProfiles();
+      state = AsyncValue.data(result.items);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
 
   void addProfile(ProfileModel profile) {
-    state = [profile, ...state];
+    if (state.hasValue) {
+      state = AsyncValue.data([profile, ...state.value!]);
+    }
   }
 }
 
-final profileNotifierProvider = StateNotifierProvider<ProfileNotifier, List<ProfileModel>>((ref) {
-  return ProfileNotifier();
+final profileNotifierProvider = StateNotifierProvider<ProfileNotifier, AsyncValue<List<ProfileModel>>>((ref) {
+  return ProfileNotifier(ref.watch(profileRepositoryProvider));
 });

@@ -30,6 +30,7 @@ export class VerificationsService {
     requestId: string,
     adminId: string,
     dto: UpdateVerificationStatusDto,
+    ipAddress?: string,
   ) {
     const request = await this.prisma.verificationRequest.findUnique({
       where: { id: requestId },
@@ -76,6 +77,7 @@ export class VerificationsService {
           entityId: requestId,
           oldValue: oldStatus,
           newValue: newStatus,
+          ipAddress: ipAddress || null,
         },
       });
 

@@ -17,6 +17,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
+    "prisma:push": "echo 'WARNING: prisma db push is for prototyping only. Use prisma:migrate for dev and prisma:deploy for prod.' && prisma db push",
+    "prestart:prod": "npm run prisma:deploy && npm run prisma:generate",
     "seed": "ts-node prisma/seed.ts"
   },
   "prisma": {
@@ -38,6 +40,7 @@
     "bcrypt": "^6.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cookie-parser": "^1.4.7",
     "helmet": "^8.3.0",
     "morgan": "^1.12.0",
     "passport": "^0.7.0",
@@ -51,6 +54,7 @@
     "@nestjs/cli": "^10.4.9",
     "@nestjs/schematics": "^10.2.3",
     "@nestjs/testing": "^10.4.22",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^4.17.21",
     "@types/jest": "^30.0.0",
     "@types/node": "^20.17.10",

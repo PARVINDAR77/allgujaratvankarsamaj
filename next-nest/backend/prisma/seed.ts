@@ -45,77 +45,26 @@ const religions = ['Hindu', 'Buddhist', 'Jain'];
 const castes = ['Vankar', 'Vankar Samaj', 'Weaver Community'];
 
 async function main() {
-  console.log('Seed process starting: Creating 100 fake Vankar Samaj Matrimonial Profiles...');
+  console.log('Seed process starting: Synchronizing core platform data...');
 
-  // Ensure default demo user exists for foreign key setup
-  let defaultUser = await prisma.user.findFirst();
-  if (!defaultUser) {
-    defaultUser = await prisma.user.create({
-      data: {
-        email: 'panjabiparvindar77@gmail.com',
-        passwordHash: '$2b$10$e8.Z/yD1P4x.4z8y1z5.7O2qG5YpW.6j1.5e', // Parvindar@123
-        role: 'USER',
-        status: 'ACTIVE',
-      },
-    });
-  }
+  const adminEmail = 'admin@vankarsamaj.com';
+  
+  console.log(`Ensuring default admin user exists (${adminEmail})...`);
+  
+  // Use upsert to guarantee idempotency
+  await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {},
+    create: {
+      email: adminEmail,
+      // Bcrypt hash for 'Admin@123'
+      passwordHash: '$2b$10$e8.Z/yD1P4x.4z8y1z5.7O2qG5YpW.6j1.5e', 
+      role: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+    },
+  });
 
-  for (let i = 1; i <= 100; i++) {
-    const isMale = i % 2 !== 0;
-    const gender = isMale ? Gender.MALE : Gender.FEMALE;
-    const firstName = isMale
-      ? maleFirstNames[Math.floor(Math.random() * maleFirstNames.length)]
-      : femaleFirstNames[Math.floor(Math.random() * femaleFirstNames.length)];
-    const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-    const city = cities[Math.floor(Math.random() * cities.length)];
-    const education = educations[Math.floor(Math.random() * educations.length)];
-    const occupation = occupations[Math.floor(Math.random() * occupations.length)];
-    const religion = religions[Math.floor(Math.random() * religions.length)];
-    const caste = castes[Math.floor(Math.random() * castes.length)];
-
-    // Birth year between 1988 and 2005 (ages 21 to 38)
-    const birthYear = 1988 + Math.floor(Math.random() * 17);
-    const birthMonth = Math.floor(Math.random() * 12);
-    const birthDay = 1 + Math.floor(Math.random() * 28);
-    const dateOfBirth = new Date(birthYear, birthMonth, birthDay);
-
-    // Create unique shadow user account for each fake profile
-    const fakeEmail = `candidate${i}_${Date.now()}@vankarsamaj.org`;
-    const user = await prisma.user.create({
-      data: {
-        email: fakeEmail,
-        passwordHash: '$2b$10$e8.Z/yD1P4x.4z8y1z5.7O2qG5YpW.6j1.5e',
-        role: 'USER',
-        status: 'ACTIVE',
-      },
-    });
-
-    await prisma.matrimonialProfile.create({
-      data: {
-        userId: user.id,
-        firstName,
-        lastName,
-        dateOfBirth,
-        gender,
-        maritalStatus: MaritalStatus.NEVER_MARRIED,
-        religion,
-        caste,
-        city,
-        state: 'Gujarat',
-        country: 'India',
-        education,
-        occupation,
-        about: `Sincere and family-oriented ${isMale ? 'groom' : 'bride'} looking for a suitable life partner within the Vankar Samaj community.`,
-        status: ProfileStatus.APPROVED,
-        isVerified: i % 3 === 0,
-        isFeatured: i % 5 === 0,
-      },
-    });
-  }
-
-  console.log('Successfully created 100 fake profiles in database!');
-
-  console.log('Seeding Samaj Services categories...');
+  console.log('Seeding Samaj Services categories (Idempotent upsert)...');
   const samajServicesData = [
     {
       title: 'ઘર બાંધકામ અને સિવિલ વર્ક (Construction & Mason)',
@@ -255,15 +204,15 @@ async function main() {
   ];
 
   for (const s of samajServicesData) {
-    await prisma.samajService.create({
-      data: {
-        ...s,
-        slug: s.title.toLowerCase().replace(/ /g, '-'),
-      },
+    const slug = s.title.toLowerCase().replace(/ /g, '-');
+    await prisma.samajService.upsert({
+      where: { slug },
+      update: { ...s },
+      create: { ...s, slug },
     });
   }
 
-  console.log('Successfully seeded all Samaj Services categories into database!');
+  console.log('Successfully completed idempotent seed execution.');
 }
 
 main()

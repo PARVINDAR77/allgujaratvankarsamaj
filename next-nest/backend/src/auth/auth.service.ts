@@ -88,8 +88,11 @@ export class AuthService {
     const expiresIn = this.configService.get<string>("JWT_EXPIRES_IN", "1d");
     const accessToken = this.jwtService.sign(payload);
 
+    const { passwordHash: _, ...safeUser } = user;
+
     return {
       accessToken,
+      user: safeUser,
       tokenType: "Bearer",
       expiresIn,
     };

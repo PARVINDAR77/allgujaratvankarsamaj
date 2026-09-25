@@ -63,13 +63,13 @@ export default function AdminSettingsPage() {
     >
       <div className="max-w-4xl space-y-6">
         {/* Navigation Tabs */}
-        <div className="flex border-b border-[#997D20]/30 gap-2 overflow-x-auto pb-1">
+        <div className="flex border-b border-admin-gold-dark/30 gap-2 overflow-x-auto pb-1">
           <button
             onClick={() => setActiveTab("general")}
             className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
               activeTab === "general"
-                ? "bg-[#0F2040] text-[#D4AF37] border-[#997D20]/50 shadow-md"
-                : "text-[#AAB7C8] border-transparent hover:text-white hover:bg-[#0F2040]/40"
+                ? "bg-admin-border text-admin-gold border-admin-gold-dark/50 shadow-md"
+                : "text-admin-muted-light border-transparent hover:text-white hover:bg-admin-border/40"
             }`}
           >
             ⚙️ General Portal Settings
@@ -78,8 +78,8 @@ export default function AdminSettingsPage() {
             onClick={() => setActiveTab("verification")}
             className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
               activeTab === "verification"
-                ? "bg-[#0F2040] text-[#D4AF37] border-[#997D20]/50 shadow-md"
-                : "text-[#AAB7C8] border-transparent hover:text-white hover:bg-[#0F2040]/40"
+                ? "bg-admin-border text-admin-gold border-admin-gold-dark/50 shadow-md"
+                : "text-admin-muted-light border-transparent hover:text-white hover:bg-admin-border/40"
             }`}
           >
             🛡️ Verification Rules
@@ -88,8 +88,8 @@ export default function AdminSettingsPage() {
             onClick={() => setActiveTab("privacy")}
             className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
               activeTab === "privacy"
-                ? "bg-[#0F2040] text-[#D4AF37] border-[#997D20]/50 shadow-md"
-                : "text-[#AAB7C8] border-transparent hover:text-white hover:bg-[#0F2040]/40"
+                ? "bg-admin-border text-admin-gold border-admin-gold-dark/50 shadow-md"
+                : "text-admin-muted-light border-transparent hover:text-white hover:bg-admin-border/40"
             }`}
           >
             🔒 Privacy & Security
@@ -97,7 +97,7 @@ export default function AdminSettingsPage() {
         </div>
 
         {/* Main Settings Card */}
-        <div className="bg-[#0F2040] border border-[#997D20]/40 rounded-b-3xl rounded-tr-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative">
+        <div className="bg-admin-border border border-admin-gold-dark/40 rounded-b-3xl rounded-tr-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative">
           {saved && (
             <div className="p-4 rounded-2xl bg-emerald-950/90 border border-emerald-500/50 text-emerald-400 text-xs font-extrabold flex items-center gap-3 shadow-lg animate-fade-in">
               <span className="text-lg">✓</span>
@@ -110,57 +110,57 @@ export default function AdminSettingsPage() {
             {activeTab === "general" && (
               <div className="space-y-5">
                 <div>
-                  <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
                     Platform Title & Branding Name
                   </label>
                   <input
                     type="text"
                     value={platformName}
                     onChange={(e) => setPlatformName(e.target.value)}
-                    className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                    className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
                   />
-                  <p className="text-[11px] text-[#AAB7C8]/70 mt-1.5">
+                  <p className="text-[11px] text-admin-muted-light/70 mt-1.5">
                     Main organization name displayed across mobile app and web portal headers.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
                     Homepage Announcement Banner Text
                   </label>
                   <textarea
                     rows={2}
                     value={bannerText}
                     onChange={(e) => setBannerText(e.target.value)}
-                    className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                    className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
                   />
-                  <p className="text-[11px] text-[#AAB7C8]/70 mt-1.5">
+                  <p className="text-[11px] text-admin-muted-light/70 mt-1.5">
                     Dynamic text displayed inside the Flutter APK home screen header.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
                       Support Email Address
                     </label>
                     <input
                       type="email"
                       value={supportEmail}
                       onChange={(e) => setSupportEmail(e.target.value)}
-                      className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                      className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
                       Support Helpline Phone
                     </label>
                     <input
                       type="text"
                       value={supportPhone}
                       onChange={(e) => setSupportPhone(e.target.value)}
-                      className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                      className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
                     />
                   </div>
                 </div>
@@ -172,30 +172,30 @@ export default function AdminSettingsPage() {
               <div className="space-y-4">
                 <div
                   onClick={() => setRequireVerification(!requireVerification)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
                 >
                   <div className="space-y-0.5">
                     <p className="font-bold text-white text-sm">Require Manual Profile Verification</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
+                    <p className="text-[11px] text-admin-muted-light">
                       Newly registered profiles must be reviewed by an administrator before appearing in public searches.
                     </p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${requireVerification ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${requireVerification ? "bg-admin-gold" : "bg-gray-700"}`}>
                     <div className={`w-4 h-4 rounded-full bg-black transition-transform ${requireVerification ? "translate-x-6" : "translate-x-0"}`} />
                   </div>
                 </div>
 
                 <div
                   onClick={() => setAutoApprovePhotos(!autoApprovePhotos)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
                 >
                   <div className="space-y-0.5">
                     <p className="font-bold text-white text-sm">Auto-Approve Passport Profile Photos</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
+                    <p className="text-[11px] text-admin-muted-light">
                       Automatically publish candidate photos uploaded via Flutter app without manual queue review.
                     </p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${autoApprovePhotos ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${autoApprovePhotos ? "bg-admin-gold" : "bg-gray-700"}`}>
                     <div className={`w-4 h-4 rounded-full bg-black transition-transform ${autoApprovePhotos ? "translate-x-6" : "translate-x-0"}`} />
                   </div>
                 </div>
@@ -207,30 +207,30 @@ export default function AdminSettingsPage() {
               <div className="space-y-4">
                 <div
                   onClick={() => setPrivacyContactMasking(!privacyContactMasking)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
                 >
                   <div className="space-y-0.5">
                     <p className="font-bold text-white text-sm">Strict Contact Number Privacy</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
+                    <p className="text-[11px] text-admin-muted-light">
                       Only profiles with confirmed mutual interest acceptance can view family mobile numbers.
                     </p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${privacyContactMasking ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${privacyContactMasking ? "bg-admin-gold" : "bg-gray-700"}`}>
                     <div className={`w-4 h-4 rounded-full bg-black transition-transform ${privacyContactMasking ? "translate-x-6" : "translate-x-0"}`} />
                   </div>
                 </div>
 
                 <div
                   onClick={() => setAllowPublicSearch(!allowPublicSearch)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
                 >
                   <div className="space-y-0.5">
                     <p className="font-bold text-white text-sm">Allow Guest Search Indexing</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
+                    <p className="text-[11px] text-admin-muted-light">
                       Permit unauthenticated guests to browse candidate previews on the homepage.
                     </p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${allowPublicSearch ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${allowPublicSearch ? "bg-admin-gold" : "bg-gray-700"}`}>
                     <div className={`w-4 h-4 rounded-full bg-black transition-transform ${allowPublicSearch ? "translate-x-6" : "translate-x-0"}`} />
                   </div>
                 </div>
@@ -238,7 +238,7 @@ export default function AdminSettingsPage() {
             )}
 
             {/* Save Button */}
-            <div className="pt-4 border-t border-[#997D20]/20 flex justify-end">
+            <div className="pt-4 border-t border-admin-gold-dark/20 flex justify-end">
               <button
                 type="submit"
                 className="py-3 px-8 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#E8C95A] text-black font-black text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition-all cursor-pointer"

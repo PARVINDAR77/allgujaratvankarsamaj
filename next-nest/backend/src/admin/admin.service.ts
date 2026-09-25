@@ -103,91 +103,7 @@ export class AdminService {
     }
   }
 
-  async getAllUsers() {
-    try {
-      const users = await this.prisma.user.findMany({
-        orderBy: { createdAt: "desc" },
-        include: { profile: true },
-      });
-      return users.map((u) => ({
-        id: u.id,
-        name: (u as any).name || (u.profile?.firstName ? `${u.profile.firstName} ${u.profile.lastName}`.trim() : u.email || "Member"),
-        email: u.email,
-        phone: (u as any).phone || "9876543210",
-        pargana: u.profile?.city || "35 Pargana",
-        status: u.status,
-        role: u.role,
-        createdAt: u.createdAt,
-      }));
-    } catch {
-      return [
-        { id: "u-1", name: "Ramesh Vankar", email: "ramesh@vankar.org", phone: "9876543210", pargana: "35 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-2", name: "Hiralben Parmar", email: "hiral@vankar.org", phone: "9876543211", pargana: "27 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-3", name: "Hemantkumar Vankar", email: "hemant@vankar.org", phone: "9876543212", pargana: "16 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-4", name: "Priyankaben Solanki", email: "priyanka@vankar.org", phone: "9876543213", pargana: "14 Pargana", status: "INACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-5", name: "Admin Manager", email: "admin@vankarsamaj.org", phone: "9998887770", pargana: "35 Pargana", status: "ACTIVE", role: "ADMIN", createdAt: new Date() },
-      ];
-    }
-  }
 
-  async updateUserStatus(userId: string, status: Status) {
-    try {
-      return await this.prisma.user.update({
-        where: { id: userId },
-        data: { status },
-      });
-    } catch {
-      return { id: userId, status };
-    }
-  }
-
-  async getAllProfiles() {
-    try {
-      const profiles = await this.prisma.matrimonialProfile.findMany({
-        orderBy: { createdAt: "desc" },
-        include: { user: true },
-      });
-      return profiles.map((p) => ({
-        id: p.id,
-        userId: p.userId,
-        name: `${p.firstName} ${p.lastName}`.trim(),
-        age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 26,
-        gender: p.gender,
-        pargana: p.city || "35 Pargana",
-        city: p.city || "Ahmedabad",
-        education: p.education || "Graduate",
-        occupation: p.occupation || "Service",
-        status: p.status || "APPROVED",
-        isVerified: p.isVerified,
-        isFeatured: p.isFeatured,
-        createdAt: p.createdAt,
-      }));
-    } catch {
-      return [];
-    }
-  }
-
-  async updateProfileStatus(profileId: string, status: any) {
-    try {
-      return await this.prisma.matrimonialProfile.update({
-        where: { id: profileId },
-        data: { status },
-      });
-    } catch {
-      return { id: profileId, status };
-    }
-  }
-
-  async toggleProfileFeatured(profileId: string, isFeatured: boolean) {
-    try {
-      return await this.prisma.matrimonialProfile.update({
-        where: { id: profileId },
-        data: { isFeatured },
-      });
-    } catch {
-      return { id: profileId, isFeatured };
-    }
-  }
 
   async getVerifications() {
     try {
@@ -252,6 +168,42 @@ export class AdminService {
         auth: "active",
       },
     };
+  }
+
+  async getPendingPhotos() {
+    try {
+      return await this.prisma.matrimonialProfile.findMany({
+        where: {
+          photoUrl: { not: null },
+          // You can add a photoVerified flag to the schema later if needed.
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          photoUrl: true,
+          userId: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  async getShortlists() {
+    try {
+      return await this.prisma.shortlist.findMany({
+        include: {
+          user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } },
+          profile: { select: { firstName: true, lastName: true, city: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch {
+      return [];
+    }
   }
 }
 

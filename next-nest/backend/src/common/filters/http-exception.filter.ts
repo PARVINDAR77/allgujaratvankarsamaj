@@ -32,6 +32,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
       typeof errorResponse === "string"
         ? errorResponse
         : (errorResponse as any).message || "Internal server error";
+        
+    const errorString = 
+      typeof errorResponse === "string"
+        ? undefined
+        : (errorResponse as any).error || (status === 500 ? "Internal Server Error" : undefined);
+
+    const isValidationError = Array.isArray((errorResponse as any)?.message);
+    const code = isValidationError ? "VALIDATION_ERROR" : (errorString ? errorString.toUpperCase().replace(/\s+/g, '_') : "INTERNAL_ERROR");
+
+    const responseMessage = isValidationError ? "Invalid request" : message;
+    const errorsArray = isValidationError ? (errorResponse as any).message : [];
 
     // Log the exception
     if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
@@ -47,11 +58,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Standardized API error response
     response.status(status).json({
+      success: false,
       statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
+      code,
+      message: responseMessage,
+      errors: errorsArray,
       requestId,
-      message,
+      path: request.url,
+      timestamp: new Date().toISOString(),
     });
   }
 }

@@ -30,9 +30,9 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <AdminLayout title="Admin Dashboard" subtitle="Loading All Gujarat Vankar Samaj metrics...">
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px", color: "#D4AF37" }}>
-          <div className="animate-spin" style={{ fontSize: "28px" }}>⚙️</div>
-          <span style={{ marginLeft: "12px", fontSize: "14px", fontWeight: 700 }}>
+        <div   className="flex justify-center items-center text-admin-gold h-[300px]" >
+          <div className="animate-spin text-[28px]" >⚙️</div>
+          <span  style={{ marginLeft: "12px" }} className="font-bold text-sm">
             Loading Admin Dashboard...
           </span>
         </div>
@@ -43,9 +43,9 @@ export default function AdminDashboardPage() {
   if (error || !stats) {
     return (
       <AdminLayout title="Admin Dashboard" subtitle="Overview">
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px", color: "#F43F5E", flexDirection: "column" }}>
+        <div   className="flex flex-col justify-center items-center text-rose-500 h-[300px]" >
           <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
-          <span style={{ fontSize: "16px", fontWeight: 700 }}>{error || "No data available."}</span>
+          <span  className="font-bold text-base">{error || "No data available."}</span>
         </div>
       </AdminLayout>
     );
@@ -73,7 +73,7 @@ export default function AdminDashboardPage() {
       title="Admin Dashboard"
       subtitle="Welcome to All Gujarat Vankar Samaj Admin Panel"
     >
-      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+      <div   className="flex flex-col gap-7" >
         {/* ─── 1. TOP STAT CARDS ────────────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <StatCard
@@ -86,7 +86,7 @@ export default function AdminDashboardPage() {
           />
           <StatCard
             title="Total Profiles"
-            value={stats.totalProfiles}
+            value={stats.activeProfiles}
             change="8%"
             isPositive={true}
             comparisonText="vs last month"
@@ -101,12 +101,12 @@ export default function AdminDashboardPage() {
             icon="💖"
           />
           <StatCard
-            title="Total Messages"
-            value={stats.totalMessages}
-            change="24%"
+            title="Pending Verifications"
+            value={stats.pendingVerifications}
+            change="-2"
             isPositive={true}
             comparisonText="vs last month"
-            icon="💬"
+            icon="🛡️"
           />
         </div>
 
@@ -114,35 +114,20 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* User Growth Chart (2 Cols) */}
           <div
-            style={{
-              backgroundColor: "rgba(13, 27, 50, 0.85)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(212, 175, 55, 0.25)",
-              borderRadius: "16px",
-              padding: "24px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
-            }}
-            className="lg:col-span-2"
+              className="lg:col-span-2 border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass"
+            
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <div  style={{ marginBottom: "20px" }} className="flex justify-between items-center">
               <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                <h3  style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
                   <span>📈</span> User Growth Overview
                 </h3>
-                <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 0 0" }}>
+                <p  style={{ margin: "4px 0 0 0" }} className="font-medium text-admin-muted text-xs">
                   Monthly candidate registration & profile trend
                 </p>
               </div>
               <span
-                style={{
-                  fontSize: "11px",
-                  color: "#D4AF37",
-                  fontWeight: 800,
-                  backgroundColor: "#041026",
-                  padding: "4px 12px",
-                  borderRadius: "20px",
-                  border: "1px solid rgba(212, 175, 55, 0.35)",
-                }}
+                  style={{ padding: "4px 12px", borderRadius: "20px" }} className="font-extrabold bg-admin-card text-admin-gold text-[11px] border border-admin-gold/35" 
               >
                 Year 2026
               </span>
@@ -150,18 +135,7 @@ export default function AdminDashboardPage() {
 
             {/* Scaled Dynamic Growth Chart */}
             <div
-              style={{
-                height: "240px",
-                width: "100%",
-                display: "flex",
-                alignItems: "flex-end",
-                justifyContent: "space-between",
-                gap: "10px",
-                padding: "20px 16px 12px 16px",
-                backgroundColor: "rgba(4, 16, 38, 0.7)",
-                borderRadius: "14px",
-                border: "1px solid rgba(212, 175, 55, 0.18)",
-              }}
+               style={{ height: "240px", padding: "20px 16px 12px 16px", backgroundColor: "rgba(4, 16, 38, 0.7)", borderRadius: "14px", border: "1px solid rgba(212, 175, 55, 0.18)" }} className="flex justify-between items-end w-full gap-[10px]"
             >
               {stats.monthlyGrowth.map((g, i) => {
                 // Scale height between 15% and 80% so bar numbers render cleanly above bars
@@ -169,48 +143,21 @@ export default function AdminDashboardPage() {
                 return (
                   <div
                     key={i}
-                    style={{
-                      flex: 1,
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: "6px",
-                      height: "100%",
-                      justifyContent: "flex-end",
-                    }}
-                    className="group"
+                     style={{ gap: "6px" }}
+                    className="group flex flex-col justify-end items-center flex-1 h-full"
                   >
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#F3E5AB" }}>
+                    <div  style={{ color: "#F3E5AB" }} className="font-bold text-[11px]">
                       {g.users}
                     </div>
                     <div
-                      style={{
-                        width: "100%",
-                        backgroundColor: "#08152B",
-                        borderRadius: "8px 8px 0 0",
-                        height: "160px",
-                        display: "flex",
-                        alignItems: "flex-end",
-                        padding: "2px",
-                        position: "relative",
-                        borderTop: "1px solid rgba(212, 175, 55, 0.25)",
-                        borderLeft: "1px solid rgba(212, 175, 55, 0.15)",
-                        borderRight: "1px solid rgba(212, 175, 55, 0.15)",
-                      }}
+                       style={{ backgroundColor: "#08152B", borderRadius: "8px 8px 0 0", height: "160px", padding: "2px", borderTop: "1px solid rgba(212, 175, 55, 0.25)", borderLeft: "1px solid rgba(212, 175, 55, 0.15)", borderRight: "1px solid rgba(212, 175, 55, 0.15)" }} className="flex items-end w-full relative"
                     >
                       <div
-                        style={{
-                          height: `${heightPercent}%`,
-                          width: "100%",
-                          background: "linear-gradient(180deg, #F3E5AB 0%, #D4AF37 50%, #8A6D1C 100%)",
-                          borderRadius: "6px 6px 0 0",
-                          transition: "all 0.5s ease",
-                          boxShadow: "0 0 12px rgba(212, 175, 55, 0.35)",
-                        }}
-                        className="group-hover:brightness-125"
+                         style={{ height: `${heightPercent}%`, background: "linear-gradient(180deg, #F3E5AB 0%, #D4AF37 50%, #8A6D1C 100%)", borderRadius: "6px 6px 0 0", transition: "all 0.5s ease", boxShadow: "0 0 12px rgba(212, 175, 55, 0.35)" }} className="group-hover:brightness-125 w-full"
+                        
                       />
                     </div>
-                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#8E9BAE" }} className="group-hover:text-[#D4AF37] transition-colors">
+                    <span  className="group-hover:text-admin-gold transition-colors font-bold text-admin-muted text-[11px]">
                       {g.month}
                     </span>
                   </div>
@@ -221,27 +168,17 @@ export default function AdminDashboardPage() {
 
           {/* Profiles by Pargana (1 Col) */}
           <div
-            style={{
-              backgroundColor: "rgba(13, 27, 50, 0.85)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(212, 175, 55, 0.25)",
-              borderRadius: "16px",
-              padding: "24px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-            }}
+              className="flex flex-col justify-between border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass" 
           >
             <div>
-              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+              <h3  style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
                 <span>🏛️</span> Profiles by Pargana
               </h3>
-              <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 18px 0" }}>
+              <p  style={{ margin: "4px 0 18px 0" }} className="font-medium text-admin-muted text-xs">
                 Distribution across Samaj regions
               </p>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div  className="flex flex-col gap-4">
                 {stats.parganaBreakdown.map((p, idx) => {
                   const colors = [
                     "linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)",
@@ -254,21 +191,13 @@ export default function AdminDashboardPage() {
                   const relativeFillPercent = Math.max(12, Math.round((p.count / maxParganaCount) * 95));
 
                   return (
-                    <div key={idx} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
-                        <span style={{ color: "#FFFFFF", fontWeight: 700 }}>{p.name}</span>
-                        <span style={{ color: "#D4AF37", fontWeight: 800 }}>{p.count} ({p.percentage}%)</span>
+                    <div key={idx}  style={{ gap: "6px" }} className="flex flex-col">
+                      <div  className="flex justify-between text-xs">
+                        <span  className="font-bold text-white">{p.name}</span>
+                        <span  className="font-extrabold text-admin-gold">{p.count} ({p.percentage}%)</span>
                       </div>
                       <div
-                        style={{
-                          width: "100%",
-                          height: "8px",
-                          backgroundColor: "#041026",
-                          borderRadius: "4px",
-                          overflow: "hidden",
-                          border: "1px solid rgba(212, 175, 55, 0.2)",
-                          padding: "1px",
-                        }}
+                         style={{ height: "8px", borderRadius: "4px", padding: "1px" }} className="w-full overflow-hidden bg-admin-card border border-admin-gold/20"
                       >
                         <div
                           style={{
@@ -286,11 +215,11 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            <div style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid rgba(212, 175, 55, 0.15)", textAlign: "center" }}>
+            <div  style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid rgba(212, 175, 55, 0.15)" }} className="text-center">
               <a
                 href="/admin/parganas"
-                style={{ fontSize: "12px", color: "#D4AF37", fontWeight: 800, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "4px" }}
-                className="hover:underline"
+                 style={{ textDecoration: "none", display: "inline-flex", gap: "4px" }}
+                className="hover:underline items-center font-extrabold text-admin-gold text-xs"
               >
                 <span>View Detailed Pargana Directory</span>
                 <span>→</span>
@@ -301,7 +230,7 @@ export default function AdminDashboardPage() {
 
         {/* ─── 3. QUICK ACTIONS GRID ───────────────────────────────────── */}
         <div>
-          <h3 style={{ fontSize: "11px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1.2px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "6px" }}>
+          <h3  style={{ letterSpacing: "1.2px", marginBottom: "14px", gap: "6px" }} className="flex items-center font-extrabold uppercase text-admin-gold text-[11px]">
             <span>⚡</span> Quick Management Actions
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -348,96 +277,67 @@ export default function AdminDashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Recent Users Table (2 Cols) */}
           <div
-            style={{
-              backgroundColor: "rgba(13, 27, 50, 0.85)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(212, 175, 55, 0.25)",
-              borderRadius: "16px",
-              padding: "24px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
-            }}
-            className="lg:col-span-2"
+              className="lg:col-span-2 border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass"
+            
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+            <div  style={{ marginBottom: "18px" }} className="flex justify-between items-center">
               <div>
-                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+                <h3  style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
                   <span>👥</span> Recent Candidate Registrations
                 </h3>
-                <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 0 0" }}>
+                <p  style={{ margin: "4px 0 0 0" }} className="font-medium text-admin-muted text-xs">
                   Newly registered matrimonial candidates
                 </p>
               </div>
               <a
                 href="/admin/users"
-                style={{ fontSize: "12px", fontWeight: 800, color: "#D4AF37", textDecoration: "none" }}
-                className="hover:underline"
+                 style={{ textDecoration: "none" }}
+                className="hover:underline font-extrabold text-admin-gold text-xs"
               >
                 View All Candidates →
               </a>
             </div>
 
-            <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(212, 175, 55, 0.2)" }}>
-              <table style={{ width: "100%", textAlign: "left", fontSize: "12px", color: "#FFFFFF", borderCollapse: "collapse" }}>
+            <div  className="overflow-hidden border border-admin-gold/20 rounded-xl">
+              <table  className="w-full text-left border-collapse text-white text-xs">
                 <thead>
-                  <tr style={{ backgroundColor: "#041026", borderBottom: "1px solid rgba(212, 175, 55, 0.3)" }}>
-                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>User Candidate</th>
-                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Contact Info</th>
-                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Pargana</th>
-                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Status</th>
-                    <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Actions</th>
+                  <tr  className="bg-admin-card border-b border-admin-gold/30">
+                    <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >User Candidate</th>
+                    <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Contact Info</th>
+                    <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Pargana</th>
+                    <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Status</th>
+                    <th   className="text-right font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Actions</th>
                   </tr>
                 </thead>
-                <tbody style={{ backgroundColor: "#0D1B32" }}>
+                <tbody  className="bg-admin-card">
                   {stats.recentUsers.map((u) => {
                     const displayName = formatName(u.name, u.email);
                     return (
-                      <tr key={u.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }} className="hover:bg-[#041026]/80 transition-colors">
-                        <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <tr key={u.id}  className="hover:bg-admin-card/80 transition-colors border-b border-admin-gold/10">
+                        <td  className="font-bold text-white py-[14px] px-[18px]">
+                          <div  className="flex items-center gap-[10px]">
                             <div
-                              style={{
-                                width: "32px",
-                                height: "32px",
-                                borderRadius: "50%",
-                                background: "linear-gradient(135deg, rgba(212,175,55,0.3) 0%, rgba(243,229,171,0.1) 100%)",
-                                color: "#D4AF37",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                fontWeight: 800,
-                                fontSize: "12px",
-                                border: "1px solid rgba(212, 175, 55, 0.4)",
-                                flexShrink: 0,
-                              }}
+                                style={{ background: "linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(243, 229, 171, 0.1) 100%)" }} className="flex justify-center items-center font-extrabold shrink-0 rounded-full text-admin-gold text-xs border border-admin-gold/40 w-8 h-8" 
                             >
                               {displayName.charAt(0).toUpperCase()}
                             </div>
-                            <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "140px" }}>
+                            <span  style={{ maxWidth: "140px" }} className="overflow-hidden whitespace-nowrap text-ellipsis">
                               {displayName}
                             </span>
                           </div>
                         </td>
-                        <td style={{ padding: "14px 18px", color: "#8E9BAE", fontFamily: "monospace", fontSize: "11px" }}>
+                        <td   className="text-admin-muted text-[11px] py-[14px] px-[18px] font-mono" >
                           {u.email || u.phone || "N/A"}
                         </td>
-                        <td style={{ padding: "14px 18px", color: "#FFFFFF", fontWeight: 600 }}>{u.pargana}</td>
-                        <td style={{ padding: "14px 18px" }}>
+                        <td  className="font-semibold text-white py-[14px] px-[18px]">{u.pargana}</td>
+                        <td  className="py-[14px] px-[18px]">
                           <StatusBadge status={u.status} />
                         </td>
-                        <td style={{ padding: "14px 18px", textAlign: "right" }}>
+                        <td  className="text-right py-[14px] px-[18px]">
                           <a
                             href="/admin/users"
-                            style={{
-                              color: "#D4AF37",
-                              fontWeight: 700,
-                              fontSize: "11px",
-                              padding: "6px 12px",
-                              borderRadius: "8px",
-                              backgroundColor: "#041026",
-                              border: "1px solid rgba(212, 175, 55, 0.35)",
-                              textDecoration: "none",
-                            }}
-                            className="hover:bg-[#D4AF37] hover:text-black transition-all"
+                              style={{ padding: "6px 12px", textDecoration: "none" }} className="hover:bg-admin-gold hover:text-black transition-all font-bold bg-admin-card text-admin-gold text-[11px] rounded-lg border border-admin-gold/35"
+                            
                           >
                             Manage
                           </a>
@@ -452,60 +352,36 @@ export default function AdminDashboardPage() {
 
           {/* Recent Activities (1 Col) */}
           <div
-            style={{
-              backgroundColor: "rgba(13, 27, 50, 0.85)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(212, 175, 55, 0.25)",
-              borderRadius: "16px",
-              padding: "24px",
-              boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
-            }}
+              className="border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass" 
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
-              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+            <div  style={{ marginBottom: "18px" }} className="flex justify-between items-center">
+              <h3  style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
                 <span>⚡</span> System Activity Log
               </h3>
-              <span style={{ fontSize: "12px", color: "#D4AF37", fontWeight: 700, cursor: "pointer" }} className="hover:underline">
+              <span  className="hover:underline font-bold cursor-pointer text-admin-gold text-xs">
                 View Log
               </span>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <div  className="flex flex-col gap-[14px]">
               {stats.recentActivities.map((act) => (
                 <div
                   key={act.id}
-                  style={{
-                    display: "flex",
-                    gap: "12px",
-                    alignItems: "flex-start",
-                    paddingBottom: "12px",
-                    borderBottom: "1px solid rgba(212, 175, 55, 0.12)",
-                  }}
+                   style={{ gap: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(212, 175, 55, 0.12)" }} className="flex items-start"
                 >
                   <div
-                    style={{
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "8px",
-                      backgroundColor: "#041026",
-                      border: "1px solid rgba(212, 175, 55, 0.3)",
-                      fontSize: "14px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
+                      className="flex justify-center items-center shrink-0 bg-admin-card border border-admin-gold/30 text-sm rounded-lg w-8 h-8" 
                   >
                     ✨
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <h4 style={{ fontSize: "12px", fontWeight: 700, color: "#FFFFFF", margin: 0 }} className="truncate">
+                  <div  style={{ minWidth: 0 }} className="flex-1">
+                    <h4  style={{ margin: 0 }} className="truncate font-bold text-white text-xs">
                       {act.title}
                     </h4>
-                    <p style={{ fontSize: "11px", color: "#8E9BAE", margin: "2px 0 2px 0" }} className="truncate">
+                    <p  style={{ margin: "2px 0 2px 0" }} className="truncate text-admin-muted text-[11px]">
                       {act.user}
                     </p>
-                    <span style={{ fontSize: "10px", color: "#D4AF37", fontWeight: 600 }}>{act.time}</span>
+                    <span  className="font-semibold text-admin-gold text-[10px]">{act.time}</span>
                   </div>
                 </div>
               ))}
@@ -515,82 +391,57 @@ export default function AdminDashboardPage() {
 
         {/* ─── 5. RECENT VERIFICATIONS QUEUE ──────────────────────────── */}
         <div
-          style={{
-            backgroundColor: "rgba(13, 27, 50, 0.85)",
-            backdropFilter: "blur(16px)",
-            border: "1px solid rgba(212, 175, 55, 0.25)",
-            borderRadius: "16px",
-            padding: "24px",
-            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
-          }}
+            className="border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass" 
         >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+          <div  style={{ marginBottom: "18px" }} className="flex justify-between items-center">
             <div>
-              <h3 style={{ fontSize: "16px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
+              <h3  style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
                 <span>🛡️</span> Verification Review Queue
               </h3>
-              <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 500, margin: "4px 0 0 0" }}>
+              <p  style={{ margin: "4px 0 0 0" }} className="font-medium text-admin-muted text-xs">
                 Pending member document & profile verification requests
               </p>
             </div>
             <a
               href="/admin/verifications"
-              style={{ fontSize: "12px", fontWeight: 800, color: "#D4AF37", textDecoration: "none" }}
-              className="hover:underline"
+               style={{ textDecoration: "none" }}
+              className="hover:underline font-extrabold text-admin-gold text-xs"
             >
               All Verifications →
             </a>
           </div>
 
-          <div style={{ borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(212, 175, 55, 0.2)" }}>
-            <table style={{ width: "100%", textAlign: "left", fontSize: "12px", color: "#FFFFFF", borderCollapse: "collapse" }}>
+          <div  className="overflow-hidden border border-admin-gold/20 rounded-xl">
+            <table  className="w-full text-left border-collapse text-white text-xs">
               <thead>
-                <tr style={{ backgroundColor: "#041026", borderBottom: "1px solid rgba(212, 175, 55, 0.3)" }}>
-                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Member Name</th>
-                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Verification Type</th>
-                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Submission Date</th>
-                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px" }}>Status</th>
-                  <th style={{ padding: "14px 18px", fontSize: "10px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", textAlign: "right" }}>Actions</th>
+                <tr  className="bg-admin-card border-b border-admin-gold/30">
+                  <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Member Name</th>
+                  <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Verification Type</th>
+                  <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Submission Date</th>
+                  <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Status</th>
+                  <th   className="text-right font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Actions</th>
                 </tr>
               </thead>
-              <tbody style={{ backgroundColor: "#0D1B32" }}>
+              <tbody  className="bg-admin-card">
                 {stats.recentVerifications.map((v) => (
-                  <tr key={v.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }} className="hover:bg-[#041026]/80 transition-colors">
-                    <td style={{ padding: "14px 18px", fontWeight: 700, color: "#FFFFFF" }}>{v.name}</td>
-                    <td style={{ padding: "14px 18px", color: "#8E9BAE", fontWeight: 500 }}>{v.type}</td>
-                    <td style={{ padding: "14px 18px", color: "#CBD5E1", fontFamily: "monospace", fontSize: "11px" }}>{v.date}</td>
-                    <td style={{ padding: "14px 18px" }}>
+                  <tr key={v.id}  className="hover:bg-admin-card/80 transition-colors border-b border-admin-gold/10">
+                    <td  className="font-bold text-white py-[14px] px-[18px]">{v.name}</td>
+                    <td  className="font-medium text-admin-muted py-[14px] px-[18px]">{v.type}</td>
+                    <td   className="text-admin-muted-lighter text-[11px] py-[14px] px-[18px] font-mono" >{v.date}</td>
+                    <td  className="py-[14px] px-[18px]">
                       <StatusBadge status={v.status} />
                     </td>
-                    <td style={{ padding: "14px 18px", textAlign: "right" }}>
-                      <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                    <td  className="text-right py-[14px] px-[18px]">
+                      <div  className="flex justify-end gap-2">
                         <button
-                          style={{
-                            padding: "6px 14px",
-                            borderRadius: "8px",
-                            backgroundColor: "rgba(6, 78, 59, 0.6)",
-                            color: "#6EE7B7",
-                            border: "1px solid rgba(16, 185, 129, 0.4)",
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                          className="hover:bg-emerald-800 transition-colors"
+                            className="hover:bg-emerald-800 transition-colors font-extrabold cursor-pointer text-[11px] rounded-lg bg-emerald-900/60 text-emerald-300 border border-emerald-500/40 py-1.5 px-3.5"
+                          
                         >
                           Approve
                         </button>
                         <button
-                          style={{
-                            padding: "6px 14px",
-                            borderRadius: "8px",
-                            backgroundColor: "rgba(136, 19, 55, 0.6)",
-                            color: "#FDA4AF",
-                            border: "1px solid rgba(244, 63, 94, 0.4)",
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                          className="hover:bg-rose-800 transition-colors"
+                            className="hover:bg-rose-800 transition-colors font-extrabold cursor-pointer text-[11px] rounded-lg bg-rose-900/60 text-rose-300 border border-rose-500/40 py-1.5 px-3.5"
+                          
                         >
                           Reject
                         </button>

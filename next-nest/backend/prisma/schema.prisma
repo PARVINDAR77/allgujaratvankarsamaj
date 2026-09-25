@@ -444,6 +444,7 @@ model AdminAuditLog {
   entityId   String   @map("entity_id")
   oldValue   String?  @map("old_value")
   newValue   String?  @map("new_value")
+  ipAddress  String?  @map("ip_address")
   createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("admin_audit_logs")

@@ -52,10 +52,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("adminToken");
       localStorage.removeItem("adminUser");
+      const { adminApi } = await import("../../lib/admin-api");
+      try {
+        await adminApi.logout();
+      } catch (e) {
+        console.error("Logout error", e);
+      }
     }
     router.push("/admin/login");
   };
@@ -66,90 +71,37 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
       {isOpen && (
         <div
           onClick={onClose}
-          style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.75)",
-            zIndex: 40,
-          }}
+           style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.75)", zIndex: 40 }} className="fixed"
         />
       )}
 
       {/* Sidebar Navigation Drawer */}
       <aside
-        style={{
-          position: "sticky",
-          top: 0,
-          left: 0,
-          height: "100vh",
-          width: "270px",
-          minWidth: "270px",
-          backgroundColor: "#061224",
-          borderRight: "1.5px solid rgba(153, 125, 32, 0.4)",
-          display: "flex",
-          flexDirection: "column",
-          zIndex: 50,
-          boxSizing: "border-box",
-          boxShadow: "5px 0 25px rgba(0, 0, 0, 0.5)",
-          fontFamily: "'Inter', system-ui, sans-serif",
-        }}
+         style={{ position: "sticky", height: "100vh", width: "270px", minWidth: "270px", backgroundColor: "#061224", borderRight: "1.5px solid rgba(153, 125, 32, 0.4)", zIndex: 50, boxSizing: "border-box", boxShadow: "5px 0 25px rgba(0, 0, 0, 0.5)", fontFamily: "'Inter', system-ui, sans-serif" }} className="flex flex-col top-0 left-0"
       >
         {/* Brand Header */}
         <div
-          style={{
-            padding: "22px 20px",
-            borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)",
-            display: "flex",
-            alignItems: "center",
-            gap: "14px",
-            flexShrink: 0,
-          }}
+           style={{ padding: "22px 20px", borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)" }} className="flex items-center shrink-0 gap-[14px]"
         >
           {/* Logo Image */}
           <div
-            style={{
-              width: "48px",
-              height: "48px",
-              borderRadius: "50%",
-              overflow: "hidden",
-              border: "2px solid #D4AF37",
-              boxShadow: "0 0 15px rgba(212, 175, 55, 0.4)",
-              flexShrink: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "#041026",
-            }}
+             style={{ width: "48px", height: "48px", border: "2px solid #D4AF37", boxShadow: "0 0 15px rgba(212, 175, 55, 0.4)" }} className="flex justify-center items-center overflow-hidden shrink-0 rounded-full bg-admin-card"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
               alt="Vankar Samaj Logo"
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+               style={{ objectFit: "cover" }} className="w-full h-full"
             />
           </div>
           <div>
             <h1
-              style={{
-                fontSize: "15px",
-                fontWeight: 900,
-                color: "#D4AF37",
-                letterSpacing: "1.2px",
-                margin: 0,
-                lineHeight: "1.2",
-              }}
+               style={{ fontSize: "15px", fontWeight: 900, letterSpacing: "1.2px", margin: 0, lineHeight: "1.2" }} className="text-admin-gold"
             >
               ALL GUJARAT
             </h1>
             <p
-              style={{
-                fontSize: "11px",
-                fontWeight: 700,
-                color: "rgba(243, 229, 171, 0.9)",
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                margin: 0,
-              }}
+                style={{ color: "rgba(243, 229, 171, 0.9)", margin: 0 }} className="font-bold uppercase text-[11px] tracking-[1px]" 
             >
               Vankar Samaj Admin
             </p>
@@ -158,31 +110,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
 
         {/* Scrollable Navigation Menu */}
         <div
-          style={{
-            flex: 1,
-            overflowY: "auto",
-            padding: "20px 14px",
-            display: "flex",
-            flexDirection: "column",
-            gap: "22px",
-          }}
+           style={{ overflowY: "auto", padding: "20px 14px", gap: "22px" }} className="flex flex-col flex-1"
         >
           {menuSections.map((section, idx) => (
-            <div key={idx} style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div key={idx}  style={{ gap: "6px" }} className="flex flex-col">
               <h2
-                style={{
-                  fontSize: "11px",
-                  fontWeight: 800,
-                  color: "rgba(212, 175, 55, 0.75)",
-                  letterSpacing: "1.5px",
-                  textTransform: "uppercase",
-                  padding: "0 10px",
-                  margin: "0 0 4px 0",
-                }}
+                 style={{ color: "rgba(212, 175, 55, 0.75)", letterSpacing: "1.5px", padding: "0 10px", margin: "0 0 4px 0" }} className="font-extrabold uppercase text-[11px]"
               >
                 {section.title}
               </h2>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+              <div  style={{ gap: "4px" }} className="flex flex-col">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href;
                   return (
@@ -212,7 +149,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                             }),
                       }}
                     >
-                      <span style={{ fontSize: "16px", flexShrink: 0 }}>{item.icon}</span>
+                      <span  className="shrink-0 text-base">{item.icon}</span>
                       <span>{item.name}</span>
                     </Link>
                   );
@@ -224,30 +161,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
 
         {/* Footer Logout Section */}
         <div
-          style={{
-            padding: "16px",
-            borderTop: "1.5px solid rgba(153, 125, 32, 0.3)",
-            flexShrink: 0,
-          }}
+            style={{ borderTop: "1.5px solid rgba(153, 125, 32, 0.3)" }} className="shrink-0 p-4" 
         >
           <button
             onClick={handleLogout}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              padding: "12px 16px",
-              borderRadius: "14px",
-              backgroundColor: "rgba(136, 19, 55, 0.3)",
-              border: "1.5px solid rgba(244, 63, 94, 0.4)",
-              color: "#fecdd3",
-              fontSize: "13px",
-              fontWeight: 800,
-              cursor: "pointer",
-              transition: "all 0.2s ease-in-out",
-            }}
+             style={{ padding: "12px 16px", borderRadius: "14px", backgroundColor: "rgba(136, 19, 55, 0.3)", border: "1.5px solid rgba(244, 63, 94, 0.4)", color: "#fecdd3", transition: "all 0.2s ease-in-out" }} className="flex justify-center items-center w-full font-extrabold cursor-pointer text-[13px] gap-2"
           >
             <span>🚪</span>
             <span>Logout Session</span>

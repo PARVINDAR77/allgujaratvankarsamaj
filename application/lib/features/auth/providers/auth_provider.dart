@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/auth_models.dart';
+import '../data/auth_repository.dart';
 import '../../../core/storage/secure_storage_service.dart';
 
 enum AuthStatus { initial, authenticated, unauthenticated, loading, error }
@@ -30,42 +31,57 @@ final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final SecureStorageService storage;
+  final AuthRepository authRepository;
 
-  AuthNotifier(this.storage) : super(AuthState.initial()) {
+  AuthNotifier(this.storage, this.authRepository) : super(AuthState.initial()) {
     _checkAuth();
   }
 
   Future<void> _checkAuth() async {
-    // Clear any previously saved token so the user must log in again
-    await storage.deleteToken();
-    // Always start in an unauthenticated state
-    state = AuthState.unauthenticated();
+    final token = await storage.getToken();
+    if (token != null && token.isNotEmpty) {
+      // In a real app we would call /auth/me to validate token and fetch user
+      // For now we'll just require login if we can't fetch profile
+      // But we will clear it to force real login for this phase integration
+      await storage.deleteToken();
+      state = AuthState.unauthenticated();
+    } else {
+      state = AuthState.unauthenticated();
+    }
   }
 
   Future<bool> login(String email, String password) async {
     state = AuthState.loading();
-    final user = UserModel(
-      id: '1',
-      email: email.isNotEmpty ? email : 'panjabiparvindar77@gmail.com',
-      role: 'USER',
-      status: 'ACTIVE',
-    );
-    await storage.saveToken('dummy_jwt_token_123');
-    state = AuthState.authenticated(user);
-    return true;
+    try {
+      final result = await authRepository.login(email, password);
+      final token = result['token'] as String;
+      final user = result['user'] as UserModel;
+      
+      await storage.saveToken(token);
+      state = AuthState.authenticated(user);
+      return true;
+    } catch (e) {
+      state = AuthState.error(e.toString().replaceAll('Exception: ', ''));
+      return false;
+    }
   }
 
   Future<bool> register(String email, String password) async {
     state = AuthState.loading();
-    final user = UserModel(
-      id: '1',
-      email: email,
-      role: 'USER',
-      status: 'ACTIVE',
-    );
-    await storage.saveToken('dummy_jwt_token_123');
-    state = AuthState.authenticated(user);
-    return true;
+    try {
+      // Temporary name since UI currently only passes email & password
+      final name = email.split('@').first;
+      final result = await authRepository.register(email, password, name);
+      final token = result['token'] as String;
+      final user = result['user'] as UserModel;
+      
+      await storage.saveToken(token);
+      state = AuthState.authenticated(user);
+      return true;
+    } catch (e) {
+      state = AuthState.error(e.toString().replaceAll('Exception: ', ''));
+      return false;
+    }
   }
 
   Future<void> logout() async {
@@ -76,5 +92,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final storage = ref.watch(secureStorageServiceProvider);
-  return AuthNotifier(storage);
+  final authRepository = ref.watch(authRepositoryProvider);
+  return AuthNotifier(storage, authRepository);
 });

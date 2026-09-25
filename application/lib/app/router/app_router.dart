@@ -9,8 +9,8 @@ import '../../features/community/presentation/screens/pavan_prernadata_screen.da
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_poster_screen.dart';
-import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
-import '../../features/government_employees/presentation/screens/private_employees_screen.dart';
+import '../../features/matrimonial_listing/presentation/screens/universal_listing_screen.dart';
+import '../../shared/models/profile_query_model.dart';
 import '../../features/family/presentation/screens/family_details_screen.dart';
 import '../../features/family/presentation/screens/family_directory_poster_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
@@ -23,8 +23,8 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
-import '../../features/search/presentation/screens/search_results_screen.dart';
-import '../../features/matrimonial_listing/presentation/screens/matrimonial_listing_screen.dart';
+
+
 import '../../shared/presentation/screens/main_navigation_screen.dart';
 import '../../features/home/presentation/screens/main_poster_screen.dart';
 import '../../features/home/presentation/screens/live_statistics_screen.dart';
@@ -144,18 +144,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/government-employees',
         name: 'government-employees',
-        builder: (context, state) => const GovtEmployeesScreen(),
+        builder: (context, state) => const UniversalListingScreen(
+          title: 'Government Employees (સરકારી નોકરી)',
+          initialQuery: ProfileQueryModel(occupationCategory: 'GOVERNMENT'),
+        ),
       ),
       GoRoute(
         path: '/private-employees',
         name: 'private-employees',
-        builder: (context, state) => const PrivateEmployeesScreen(),
+        builder: (context, state) => const UniversalListingScreen(
+          title: 'Private Employees (પ્રાઇવેટ નોકરી)',
+          initialQuery: ProfileQueryModel(occupationCategory: 'PRIVATE'),
+        ),
       ),
-      GoRoute(
-        path: '/search-results',
-        name: 'search-results',
-        builder: (context, state) => const SearchResultsScreen(),
-      ),
+
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainNavigationScreen(navigationShell: navigationShell);
@@ -184,7 +186,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/advanced-search',
                 name: 'advanced-search',
                 builder: (context, state) {
-                  return const MatrimonialListingScreen();
+                  return const UniversalListingScreen(
+                    title: 'Matrimonial Profiles',
+                    initialQuery: ProfileQueryModel(),
+                  );
                 },
               ),
             ],

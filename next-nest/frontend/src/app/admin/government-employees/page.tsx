@@ -145,21 +145,21 @@ export default function GovernmentEmployeesAdminPage() {
 
   return (
     <AdminLayout title="Government Employees">
-      <div style={{ padding: "24px", color: "#F3F4F6", fontFamily: "'Inter', sans-serif" }}>
+      <div  style={{ color: "#F3F4F6", fontFamily: "'Inter', sans-serif" }} className="p-6">
         {/* Title Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
+        <div  style={{ marginBottom: "24px" }} className="flex justify-between items-center">
           <div>
-            <h1 style={{ fontSize: "28px", fontWeight: "700", color: "#FFD700", margin: 0 }}>
+            <h1  style={{ fontWeight: "700", color: "#FFD700", margin: 0 }} className="text-[28px]">
               💼 Government Employees Control Center
             </h1>
-            <p style={{ color: "#9CA3AF", fontSize: "14px", marginTop: "4px" }}>
+            <p  style={{ color: "#9CA3AF", marginTop: "4px" }} className="text-sm">
               Verify employment proofs, manage status, and feature verified profiles for All Gujarat Vankar Samaj Matrimony
             </p>
           </div>
         </div>
 
         {/* Dynamic KPI Cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "16px", marginBottom: "28px" }}>
+        <div  style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", marginBottom: "28px" }} className="gap-4">
           <StatCard title="Total Govt Profiles" value={stats.total} icon="💼" change="Registered" isPositive />
           <StatCard title="Pending Approvals" value={stats.pending} icon="⏳" change="Action Needed" isPositive={false} />
           <StatCard title="Verified Profiles" value={stats.verified} icon="🛡️" change="Active Live" isPositive />
@@ -168,8 +168,8 @@ export default function GovernmentEmployeesAdminPage() {
         </div>
 
         {/* Filter Controls Bar */}
-        <div style={{ backgroundColor: "#0B1E36", padding: "16px", borderRadius: "10px", border: "1px solid rgba(153, 125, 32, 0.3)", marginBottom: "20px", display: "flex", gap: "16px", alignItems: "center" }}>
-          <span style={{ color: "#D1D5DB", fontWeight: "600", fontSize: "14px" }}>Filter Status:</span>
+        <div   style={{ backgroundColor: "#0B1E36", borderRadius: "10px", border: "1px solid rgba(153, 125, 32, 0.3)", marginBottom: "20px" }} className="flex items-center gap-4 p-4" >
+          <span  style={{ color: "#D1D5DB", fontWeight: "600" }} className="text-sm">Filter Status:</span>
           {["ALL", "PENDING", "VERIFIED", "REJECTED"].map((st) => (
             <button
               key={st}
@@ -192,27 +192,27 @@ export default function GovernmentEmployeesAdminPage() {
         </div>
 
         {/* Data Table */}
-        <div style={{ backgroundColor: "#0B1E36", borderRadius: "12px", border: "1.5px solid rgba(153, 125, 32, 0.4)", overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+        <div  style={{ backgroundColor: "#0B1E36", border: "1.5px solid rgba(153, 125, 32, 0.4)" }} className="overflow-hidden rounded-xl">
+          <table  className="w-full text-left border-collapse">
             <thead>
-              <tr style={{ backgroundColor: "#061224", borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)", color: "#FFD700", fontSize: "13px" }}>
+              <tr  style={{ backgroundColor: "#061224", borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)", color: "#FFD700" }} className="text-[13px]">
                 <th style={{ padding: "14px 16px" }}>MEMBER PROFILE</th>
                 <th style={{ padding: "14px 16px" }}>DEPARTMENT & DESIGNATION</th>
                 <th style={{ padding: "14px 16px" }}>LOCATION</th>
                 <th style={{ padding: "14px 16px" }}>VERIFICATION</th>
                 <th style={{ padding: "14px 16px" }}>FEATURED</th>
                 <th style={{ padding: "14px 16px" }}>STATUS</th>
-                <th style={{ padding: "14px 16px", textAlign: "right" }}>ACTIONS</th>
+                <th  style={{ padding: "14px 16px" }} className="text-right">ACTIONS</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: "30px", textAlign: "center", color: "#9CA3AF" }}>Loading Government Employees...</td>
+                  <td colSpan={7}  style={{ padding: "30px", color: "#9CA3AF" }} className="text-center">Loading Government Employees...</td>
                 </tr>
               ) : profiles.length === 0 ? (
                 <tr>
-                  <td colSpan={7} style={{ padding: "30px", textAlign: "center", color: "#9CA3AF" }}>No government employee profiles matching criteria.</td>
+                  <td colSpan={7}  style={{ padding: "30px", color: "#9CA3AF" }} className="text-center">No government employee profiles matching criteria.</td>
                 </tr>
               ) : (
                 profiles.map((p) => {
@@ -220,28 +220,20 @@ export default function GovernmentEmployeesAdminPage() {
                   return (
                     <tr key={p.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
                       <td style={{ padding: "14px 16px" }}>
-                        <div style={{ fontWeight: "700", color: "#FFFFFF" }}>
+                        <div  style={{ fontWeight: "700" }} className="text-white">
                           {p.profile ? `${p.profile.firstName} ${p.profile.lastName}` : "Member Profile"}
                         </div>
-                        <div style={{ fontSize: "12px", color: "#9CA3AF" }}>{p.profile?.user?.phone || p.profile?.user?.email || "No phone"}</div>
+                        <div  style={{ color: "#9CA3AF" }} className="text-xs">{p.profile?.user?.phone || p.profile?.user?.email || "No phone"}</div>
                       </td>
                       <td style={{ padding: "14px 16px" }}>
                         <div style={{ color: "#E5E7EB", fontWeight: "600" }}>{p.department?.name || "Dept Unspecified"}</div>
-                        <div style={{ fontSize: "12px", color: "#6B7280" }}>{p.designation?.name || p.employmentType}</div>
+                        <div  style={{ color: "#6B7280" }} className="text-xs">{p.designation?.name || p.employmentType}</div>
                       </td>
-                      <td style={{ padding: "14px 16px", fontSize: "13px", color: "#D1D5DB" }}>
+                      <td  style={{ padding: "14px 16px", color: "#D1D5DB" }} className="text-[13px]">
                         {p.officeLocation || p.profile?.district?.name || "Gujarat"}
                       </td>
                       <td style={{ padding: "14px 16px" }}>
-                        <span style={{
-                          display: "inline-block",
-                          padding: "4px 10px",
-                          borderRadius: "12px",
-                          fontSize: "12px",
-                          fontWeight: "700",
-                          backgroundColor: p.verificationStatus === "VERIFIED" ? "rgba(16, 185, 129, 0.2)" : p.verificationStatus === "REJECTED" ? "rgba(239, 68, 68, 0.2)" : "rgba(245, 158, 11, 0.2)",
-                          color: p.verificationStatus === "VERIFIED" ? "#10B981" : p.verificationStatus === "REJECTED" ? "#EF4444" : "#F59E0B",
-                        }}>
+                        <span  style={{ display: "inline-block", padding: "4px 10px", fontWeight: "700", backgroundColor: p.verificationStatus === "VERIFIED" ? "rgba(16, 185, 129, 0.2)" : p.verificationStatus === "REJECTED" ? "rgba(239, 68, 68, 0.2)" : "rgba(245, 158, 11, 0.2)", color: p.verificationStatus === "VERIFIED" ? "#10B981" : p.verificationStatus === "REJECTED" ? "#EF4444" : "#F59E0B" }} className="text-xs rounded-xl">
                           {p.verificationStatus}
                         </span>
                       </td>
@@ -277,7 +269,7 @@ export default function GovernmentEmployeesAdminPage() {
                           {p.isActive ? "Active" : "Inactive"}
                         </button>
                       </td>
-                      <td style={{ padding: "14px 16px", textAlign: "right" }}>
+                      <td  style={{ padding: "14px 16px" }} className="text-right">
                         <button
                           onClick={() => setSelectedProof(p)}
                           style={{
@@ -302,9 +294,9 @@ export default function GovernmentEmployeesAdminPage() {
           </table>
 
           {/* Pagination Controls */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 16px", borderTop: "1px solid rgba(255, 255, 255, 0.05)" }}>
-            <span style={{ fontSize: "13px", color: "#9CA3AF" }}>Page {page} of {totalPages}</span>
-            <div style={{ display: "flex", gap: "8px" }}>
+          <div  style={{ padding: "14px 16px", borderTop: "1px solid rgba(255, 255, 255, 0.05)" }} className="flex justify-between items-center">
+            <span  style={{ color: "#9CA3AF" }} className="text-[13px]">Page {page} of {totalPages}</span>
+            <div  className="flex gap-2">
               <button
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -325,28 +317,28 @@ export default function GovernmentEmployeesAdminPage() {
 
         {/* Verification Modal */}
         {selectedProof && (
-          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100 }}>
-            <div style={{ backgroundColor: "#061224", border: "2px solid #FFD700", borderRadius: "12px", padding: "24px", maxWidth: "550px", width: "90%", color: "#F3F4F6" }}>
+          <div  style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.8)", zIndex: 100 }} className="flex justify-center items-center fixed">
+            <div  style={{ backgroundColor: "#061224", border: "2px solid #FFD700", maxWidth: "550px", width: "90%", color: "#F3F4F6" }} className="p-6 rounded-xl">
               <h3 style={{ fontSize: "20px", color: "#FFD700", marginTop: 0 }}>Review Employment Proof</h3>
-              <p style={{ fontSize: "14px", color: "#D1D5DB" }}>
+              <p  style={{ color: "#D1D5DB" }} className="text-sm">
                 Member: <strong>{selectedProof.profile?.firstName} {selectedProof.profile?.lastName}</strong> ({selectedProof.department?.name})
               </p>
 
               {selectedProof.verifications && selectedProof.verifications.length > 0 ? (
-                <div style={{ margin: "16px 0", padding: "12px", backgroundColor: "#0B1E36", borderRadius: "8px" }}>
-                  <div style={{ fontSize: "13px", color: "#9CA3AF", marginBottom: "6px" }}>Document Type: {selectedProof.verifications[0].documentType}</div>
-                  <a href={selectedProof.verifications[0].documentUrl} target="_blank" rel="noreferrer" style={{ color: "#60A5FA", textDecoration: "underline", fontSize: "14px" }}>
+                <div  style={{ margin: "16px 0", padding: "12px", backgroundColor: "#0B1E36" }} className="rounded-lg">
+                  <div  style={{ color: "#9CA3AF", marginBottom: "6px" }} className="text-[13px]">Document Type: {selectedProof.verifications[0].documentType}</div>
+                  <a href={selectedProof.verifications[0].documentUrl} target="_blank" rel="noreferrer"  style={{ color: "#60A5FA", textDecoration: "underline" }} className="text-sm">
                     📄 Open Submitted Proof Document / ID Card
                   </a>
                 </div>
               ) : (
-                <div style={{ padding: "12px", backgroundColor: "#1F2937", color: "#F59E0B", borderRadius: "8px", margin: "16px 0", fontSize: "13px" }}>
+                <div  style={{ padding: "12px", backgroundColor: "#1F2937", color: "#F59E0B", margin: "16px 0" }} className="text-[13px] rounded-lg">
                   No physical document URL uploaded yet. Member filled department details.
                 </div>
               )}
 
               <div style={{ marginBottom: "16px" }}>
-                <label style={{ display: "block", fontSize: "13px", color: "#9CA3AF", marginBottom: "4px" }}>Rejection Reason (If rejecting):</label>
+                <label  style={{ display: "block", color: "#9CA3AF", marginBottom: "4px" }} className="text-[13px]">Rejection Reason (If rejecting):</label>
                 <input
                   type="text"
                   value={rejectionReason}
@@ -356,7 +348,7 @@ export default function GovernmentEmployeesAdminPage() {
                 />
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+              <div  style={{ gap: "12px" }} className="flex justify-end">
                 <button
                   onClick={() => setSelectedProof(null)}
                   style={{ padding: "8px 16px", borderRadius: "6px", backgroundColor: "#374151", color: "#FFFFFF", border: "none", cursor: "pointer" }}

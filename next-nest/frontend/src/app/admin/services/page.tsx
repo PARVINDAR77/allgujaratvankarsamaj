@@ -271,37 +271,24 @@ export default function AdminServicesPage() {
 
   return (
     <AdminLayout title="Samaj Services" subtitle="Manage Vankar Samaj service categories & contact persons">
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <div  className="flex flex-col gap-6">
         
         {/* Page Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
+        <div  className="flex justify-between items-center flex-wrap gap-4">
           <div>
-            <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#D4AF37", margin: 0 }}>
+            <h1  style={{ margin: 0 }} className="font-extrabold text-admin-gold text-2xl">
               🤝 Samaj Services & Persons Directory (સમાજ સેવાઓ)
             </h1>
-            <p style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.7)", margin: "4px 0 0 0" }}>
+            <p  style={{ color: "rgba(255, 255, 255, 0.7)", margin: "4px 0 0 0" }} className="text-sm">
               Manage relational Samaj Services (Categories) and associated Service Persons.
             </p>
           </div>
 
-          <div style={{ display: "flex", gap: "12px" }}>
+          <div  style={{ gap: "12px" }} className="flex">
             {activeTab === "services" ? (
               <button
                 onClick={openCreateService}
-                style={{
-                  padding: "12px 22px",
-                  background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
-                  border: "none",
-                  borderRadius: "12px",
-                  color: "#000",
-                  fontWeight: 800,
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  boxShadow: "0 0 15px rgba(212, 175, 55, 0.3)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
+                  style={{ padding: "12px 22px", background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)", color: "#000", boxShadow: "0 0 15px rgba(212, 175, 55, 0.3)" }} className="flex items-center font-extrabold cursor-pointer text-sm gap-2 rounded-xl border-none" 
               >
                 <span>✨</span>
                 <span>Add Service Category</span>
@@ -309,20 +296,7 @@ export default function AdminServicesPage() {
             ) : (
               <button
                 onClick={openCreatePerson}
-                style={{
-                  padding: "12px 22px",
-                  background: "linear-gradient(90deg, #10B981 0%, #A7F3D0 100%)",
-                  border: "none",
-                  borderRadius: "12px",
-                  color: "#000",
-                  fontWeight: 800,
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  boxShadow: "0 0 15px rgba(16, 185, 129, 0.3)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
+                  style={{ padding: "12px 22px", background: "linear-gradient(90deg, #10B981 0%, #A7F3D0 100%)", color: "#000", boxShadow: "0 0 15px rgba(16, 185, 129, 0.3)" }} className="flex items-center font-extrabold cursor-pointer text-sm gap-2 rounded-xl border-none" 
               >
                 <span>👤</span>
                 <span>Add Service Person</span>
@@ -332,7 +306,7 @@ export default function AdminServicesPage() {
         </div>
 
         {/* Tab Navigation */}
-        <div style={{ display: "flex", gap: "12px", borderBottom: "1.5px solid rgba(212, 175, 55, 0.3)", paddingBottom: "12px" }}>
+        <div  style={{ gap: "12px", borderBottom: "1.5px solid rgba(212, 175, 55, 0.3)", paddingBottom: "12px" }} className="flex">
           <button
             onClick={() => setActiveTab("services")}
             style={{
@@ -350,7 +324,7 @@ export default function AdminServicesPage() {
             }}
           >
             <span>🛠️ Section 1: Samaj Services</span>
-            <span style={{ padding: "2px 8px", borderRadius: "10px", backgroundColor: "#D4AF37", color: "#000", fontSize: "11px", fontWeight: 900 }}>
+            <span  style={{ padding: "2px 8px", borderRadius: "10px", backgroundColor: "#D4AF37", color: "#000", fontWeight: 900 }} className="text-[11px]">
               {services.length}
             </span>
           </button>
@@ -372,7 +346,7 @@ export default function AdminServicesPage() {
             }}
           >
             <span>👥 Section 2: Service Persons</span>
-            <span style={{ padding: "2px 8px", borderRadius: "10px", backgroundColor: "#10B981", color: "#000", fontSize: "11px", fontWeight: 900 }}>
+            <span  style={{ padding: "2px 8px", borderRadius: "10px", backgroundColor: "#10B981", color: "#000", fontWeight: 900 }} className="text-[11px]">
               {persons.length}
             </span>
           </button>
@@ -380,8 +354,8 @@ export default function AdminServicesPage() {
 
         {/* SECTION 1: SERVICES TAB */}
         {activeTab === "services" && (
-          <div style={{ backgroundColor: "#061224", borderRadius: "16px", border: "1.5px solid rgba(212, 175, 55, 0.3)", padding: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div  style={{ backgroundColor: "#061224", border: "1.5px solid rgba(212, 175, 55, 0.3)", padding: "20px" }} className="rounded-2xl">
+            <div  style={{ marginBottom: "16px" }} className="flex justify-between items-center">
               <input
                 type="text"
                 placeholder="Search services by title or category..."
@@ -402,35 +376,35 @@ export default function AdminServicesPage() {
             </div>
 
             {loadingServices ? (
-              <div style={{ padding: "40px", textAlign: "center", color: "#D4AF37" }}>Loading Samaj Services...</div>
+              <div  style={{ padding: "40px" }} className="text-center text-admin-gold">Loading Samaj Services...</div>
             ) : filteredServices.length === 0 ? (
-              <div style={{ padding: "40px", textAlign: "center", color: "rgba(255, 255, 255, 0.6)" }}>No services found. Click "Add Service Category" to add one.</div>
+              <div  style={{ padding: "40px", color: "rgba(255, 255, 255, 0.6)" }} className="text-center">No services found. Click "Add Service Category" to add one.</div>
             ) : (
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", color: "#FFF", fontSize: "14px" }}>
+                <table  style={{ color: "#FFF" }} className="w-full border-collapse text-sm">
                   <thead>
-                    <tr style={{ borderBottom: "1.5px solid rgba(212, 175, 55, 0.3)", textAlign: "left" }}>
-                      <th style={{ padding: "12px", color: "#D4AF37" }}>Service Title</th>
-                      <th style={{ padding: "12px", color: "#D4AF37" }}>Category</th>
-                      <th style={{ padding: "12px", color: "#D4AF37" }}>Associated Persons</th>
-                      <th style={{ padding: "12px", color: "#D4AF37" }}>Status</th>
-                      <th style={{ padding: "12px", color: "#D4AF37", textAlign: "right" }}>Actions</th>
+                    <tr  style={{ borderBottom: "1.5px solid rgba(212, 175, 55, 0.3)" }} className="text-left">
+                      <th  style={{ padding: "12px" }} className="text-admin-gold">Service Title</th>
+                      <th  style={{ padding: "12px" }} className="text-admin-gold">Category</th>
+                      <th  style={{ padding: "12px" }} className="text-admin-gold">Associated Persons</th>
+                      <th  style={{ padding: "12px" }} className="text-admin-gold">Status</th>
+                      <th  style={{ padding: "12px" }} className="text-right text-admin-gold">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredServices.map((svc) => (
                       <tr key={svc.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
-                        <td style={{ padding: "14px 12px", fontWeight: 700 }}>
+                        <td  style={{ padding: "14px 12px" }} className="font-bold">
                           <span style={{ marginRight: "10px", fontSize: "18px" }}>{svc.icon || "🤝"}</span>
                           <span>{svc.title}</span>
                         </td>
                         <td style={{ padding: "14px 12px" }}>
-                          <span style={{ padding: "4px 10px", borderRadius: "12px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB", fontSize: "12px", fontWeight: 600 }}>
+                          <span  style={{ padding: "4px 10px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB" }} className="font-semibold text-xs rounded-xl">
                             {svc.category || "General"}
                           </span>
                         </td>
                         <td style={{ padding: "14px 12px" }}>
-                          <span style={{ padding: "4px 10px", borderRadius: "12px", backgroundColor: "rgba(16, 185, 129, 0.15)", color: "#A7F3D0", fontSize: "12px", fontWeight: 700 }}>
+                          <span  style={{ padding: "4px 10px", backgroundColor: "rgba(16, 185, 129, 0.15)", color: "#A7F3D0" }} className="font-bold text-xs rounded-xl">
                             👤 {svc._count?.persons || 0} Persons
                           </span>
                         </td>
@@ -451,7 +425,7 @@ export default function AdminServicesPage() {
                             {svc.isActive ? "Active" : "Disabled"}
                           </button>
                         </td>
-                        <td style={{ padding: "14px 12px", textAlign: "right" }}>
+                        <td  style={{ padding: "14px 12px" }} className="text-right">
                           <button
                             onClick={() => openEditService(svc)}
                             style={{
@@ -495,8 +469,8 @@ export default function AdminServicesPage() {
 
         {/* SECTION 2: SERVICE PERSONS TAB */}
         {activeTab === "persons" && (
-          <div style={{ backgroundColor: "#061224", borderRadius: "16px", border: "1.5px solid rgba(16, 185, 129, 0.3)", padding: "20px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+          <div  style={{ backgroundColor: "#061224", border: "1.5px solid rgba(16, 185, 129, 0.3)", padding: "20px" }} className="rounded-2xl">
+            <div  style={{ marginBottom: "16px" }} className="flex justify-between items-center">
               <input
                 type="text"
                 placeholder="Search persons by name, Gujarati name, phone, or service..."
@@ -517,39 +491,39 @@ export default function AdminServicesPage() {
             </div>
 
             {loadingPersons ? (
-              <div style={{ padding: "40px", textAlign: "center", color: "#10B981" }}>Loading Service Persons...</div>
+              <div  style={{ padding: "40px", color: "#10B981" }} className="text-center">Loading Service Persons...</div>
             ) : filteredPersons.length === 0 ? (
-              <div style={{ padding: "40px", textAlign: "center", color: "rgba(255, 255, 255, 0.6)" }}>No service persons registered yet. Click "Add Service Person" above to add one.</div>
+              <div  style={{ padding: "40px", color: "rgba(255, 255, 255, 0.6)" }} className="text-center">No service persons registered yet. Click "Add Service Person" above to add one.</div>
             ) : (
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", color: "#FFF", fontSize: "14px" }}>
+                <table  style={{ color: "#FFF" }} className="w-full border-collapse text-sm">
                   <thead>
-                    <tr style={{ borderBottom: "1.5px solid rgba(16, 185, 129, 0.3)", textAlign: "left" }}>
+                    <tr  style={{ borderBottom: "1.5px solid rgba(16, 185, 129, 0.3)" }} className="text-left">
                       <th style={{ padding: "12px", color: "#A7F3D0" }}>Person Name</th>
                       <th style={{ padding: "12px", color: "#A7F3D0" }}>Gujarati Name</th>
                       <th style={{ padding: "12px", color: "#A7F3D0" }}>Assigned Service</th>
                       <th style={{ padding: "12px", color: "#A7F3D0" }}>Phone</th>
                       <th style={{ padding: "12px", color: "#A7F3D0" }}>City / Locality</th>
                       <th style={{ padding: "12px", color: "#A7F3D0" }}>Status</th>
-                      <th style={{ padding: "12px", color: "#A7F3D0", textAlign: "right" }}>Actions</th>
+                      <th  style={{ padding: "12px", color: "#A7F3D0" }} className="text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredPersons.map((person) => (
                       <tr key={person.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
-                        <td style={{ padding: "14px 12px", fontWeight: 700 }}>
-                          <span style={{ marginRight: "10px", fontSize: "16px" }}>👤</span>
+                        <td  style={{ padding: "14px 12px" }} className="font-bold">
+                          <span  style={{ marginRight: "10px" }} className="text-base">👤</span>
                           <span>{person.name}</span>
                         </td>
                         <td style={{ padding: "14px 12px", color: "rgba(255, 255, 255, 0.85)", fontFamily: "sans-serif" }}>
                           {person.gujaratiName || "-"}
                         </td>
                         <td style={{ padding: "14px 12px" }}>
-                          <span style={{ padding: "4px 10px", borderRadius: "12px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB", fontSize: "12px", fontWeight: 700 }}>
+                          <span  style={{ padding: "4px 10px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB" }} className="font-bold text-xs rounded-xl">
                             {person.service?.icon || "🤝"} {person.service?.title || "Service"}
                           </span>
                         </td>
-                        <td style={{ padding: "14px 12px", color: "#10B981", fontWeight: 700 }}>{person.phone}</td>
+                        <td  style={{ padding: "14px 12px", color: "#10B981" }} className="font-bold">{person.phone}</td>
                         <td style={{ padding: "14px 12px", color: "rgba(255, 255, 255, 0.8)" }}>{person.city || "Ahmedabad"}</td>
                         <td style={{ padding: "14px 12px" }}>
                           <button
@@ -568,7 +542,7 @@ export default function AdminServicesPage() {
                             {person.isActive ? "Active" : "Disabled"}
                           </button>
                         </td>
-                        <td style={{ padding: "14px 12px", textAlign: "right" }}>
+                        <td  style={{ padding: "14px 12px" }} className="text-right">
                           <button
                             onClick={() => openEditPerson(person)}
                             style={{
@@ -612,15 +586,15 @@ export default function AdminServicesPage() {
 
         {/* MODAL: ADD / EDIT SAMAJ SERVICE */}
         {showServiceModal && (
-          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}>
-            <div style={{ backgroundColor: "#061224", border: "2px solid #D4AF37", borderRadius: "16px", padding: "24px", maxWidth: "520px", width: "100%", color: "#FFF", boxShadow: "0 0 30px rgba(212, 175, 55, 0.3)" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#D4AF37", margin: "0 0 16px 0" }}>
+          <div  style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.85)", zIndex: 100, padding: "20px" }} className="flex justify-center items-center fixed">
+            <div  style={{ backgroundColor: "#061224", border: "2px solid #D4AF37", maxWidth: "520px", color: "#FFF", boxShadow: "0 0 30px rgba(212, 175, 55, 0.3)" }} className="w-full p-6 rounded-2xl">
+              <h2  style={{ fontSize: "18px", margin: "0 0 16px 0" }} className="font-extrabold text-admin-gold">
                 {editingService ? "Edit Samaj Service Category" : "Add New Samaj Service Category"}
               </h2>
 
-              <form onSubmit={handleServiceSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <form onSubmit={handleServiceSubmit}  className="flex flex-col gap-[14px]">
                 <div>
-                  <label style={{ fontSize: "12px", fontWeight: 700, color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }}>
+                  <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                     Service Title (e.g. Electrician / મંડપ ડેકોરેશન) *
                   </label>
                   <input
@@ -635,7 +609,7 @@ export default function AdminServicesPage() {
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       Category Mapping
                     </label>
                     <select
@@ -767,7 +741,7 @@ export default function AdminServicesPage() {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       Icon / Emoji
                     </label>
                     <input
@@ -781,7 +755,7 @@ export default function AdminServicesPage() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: "12px", fontWeight: 700, color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }}>
+                  <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                     Service Description
                   </label>
                   <textarea
@@ -793,19 +767,19 @@ export default function AdminServicesPage() {
                   />
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div  className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="svcActiveCheck"
                     checked={svcActive}
                     onChange={(e) => setSvcActive(e.target.checked)}
                   />
-                  <label htmlFor="svcActiveCheck" style={{ fontSize: "13px", color: "#FFF" }}>
+                  <label htmlFor="svcActiveCheck"  style={{ color: "#FFF" }} className="text-[13px]">
                     Make Active in Flutter Mobile App
                   </label>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "12px" }}>
+                <div  style={{ marginTop: "12px" }} className="flex justify-end gap-[10px]">
                   <button
                     type="button"
                     onClick={() => setShowServiceModal(false)}
@@ -815,7 +789,7 @@ export default function AdminServicesPage() {
                   </button>
                   <button
                     type="submit"
-                    style={{ padding: "10px 22px", borderRadius: "8px", backgroundColor: "#D4AF37", border: "none", color: "#000", fontWeight: 800, cursor: "pointer" }}
+                      style={{ backgroundColor: "#D4AF37", color: "#000" }} className="font-extrabold cursor-pointer rounded-lg border-none py-2.5 px-[22px]" 
                   >
                     {editingService ? "Save Changes" : "Create Service"}
                   </button>
@@ -827,15 +801,15 @@ export default function AdminServicesPage() {
 
         {/* MODAL: ADD / EDIT SERVICE PERSON */}
         {showPersonModal && (
-          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "20px" }}>
-            <div style={{ backgroundColor: "#061224", border: "2px solid #10B981", borderRadius: "16px", padding: "24px", maxWidth: "560px", width: "100%", color: "#FFF", boxShadow: "0 0 30px rgba(16, 185, 129, 0.3)" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#10B981", margin: "0 0 16px 0" }}>
+          <div  style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.85)", zIndex: 100, padding: "20px" }} className="flex justify-center items-center fixed">
+            <div  style={{ backgroundColor: "#061224", border: "2px solid #10B981", maxWidth: "560px", color: "#FFF", boxShadow: "0 0 30px rgba(16, 185, 129, 0.3)" }} className="w-full p-6 rounded-2xl">
+              <h2  style={{ fontSize: "18px", color: "#10B981", margin: "0 0 16px 0" }} className="font-extrabold">
                 {editingPerson ? "Edit Service Person Details" : "Add Service Person under Category"}
               </h2>
 
-              <form onSubmit={handlePersonSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <form onSubmit={handlePersonSubmit}  className="flex flex-col gap-[14px]">
                 <div>
-                  <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                  <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                     Select Associated Samaj Service Category *
                   </label>
                   <select
@@ -854,7 +828,7 @@ export default function AdminServicesPage() {
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       Person Full Name (English) *
                     </label>
                     <input
@@ -868,7 +842,7 @@ export default function AdminServicesPage() {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       Gujarati Name (ગુજરાતી નામ)
                     </label>
                     <input
@@ -883,7 +857,7 @@ export default function AdminServicesPage() {
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       Phone Number *
                     </label>
                     <input
@@ -897,7 +871,7 @@ export default function AdminServicesPage() {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       City / Area Location
                     </label>
                     <input
@@ -912,7 +886,7 @@ export default function AdminServicesPage() {
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       Experience
                     </label>
                     <input
@@ -925,7 +899,7 @@ export default function AdminServicesPage() {
                   </div>
 
                   <div>
-                    <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                    <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                       Photo URL (Optional)
                     </label>
                     <input
@@ -939,7 +913,7 @@ export default function AdminServicesPage() {
                 </div>
 
                 <div>
-                  <label style={{ fontSize: "12px", fontWeight: 700, color: "#A7F3D0", display: "block", marginBottom: "4px" }}>
+                  <label  style={{ color: "#A7F3D0", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
                     Address / Workplace Details
                   </label>
                   <textarea
@@ -951,19 +925,19 @@ export default function AdminServicesPage() {
                   />
                 </div>
 
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <div  className="flex items-center gap-2">
                   <input
                     type="checkbox"
                     id="personActiveCheck"
                     checked={personActive}
                     onChange={(e) => setPersonActive(e.target.checked)}
                   />
-                  <label htmlFor="personActiveCheck" style={{ fontSize: "13px", color: "#FFF" }}>
+                  <label htmlFor="personActiveCheck"  style={{ color: "#FFF" }} className="text-[13px]">
                     Publish person profile actively in mobile app
                   </label>
                 </div>
 
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "12px" }}>
+                <div  style={{ marginTop: "12px" }} className="flex justify-end gap-[10px]">
                   <button
                     type="button"
                     onClick={() => setShowPersonModal(false)}
@@ -973,7 +947,7 @@ export default function AdminServicesPage() {
                   </button>
                   <button
                     type="submit"
-                    style={{ padding: "10px 22px", borderRadius: "8px", backgroundColor: "#10B981", border: "none", color: "#000", fontWeight: 800, cursor: "pointer" }}
+                      style={{ backgroundColor: "#10B981", color: "#000" }} className="font-extrabold cursor-pointer rounded-lg border-none py-2.5 px-[22px]" 
                   >
                     {editingPerson ? "Save Changes" : "Create Person"}
                   </button>
@@ -985,19 +959,19 @@ export default function AdminServicesPage() {
 
         {/* CASCADING DELETE CONFIRMATION MODAL FOR SERVICE */}
         {serviceToDelete && (
-          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "20px" }}>
-            <div style={{ backgroundColor: "#061224", border: "2px solid #EF4444", borderRadius: "16px", padding: "24px", maxWidth: "480px", width: "100%", color: "#FFF", boxShadow: "0 0 30px rgba(239, 68, 68, 0.4)" }}>
+          <div  style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.85)", zIndex: 110, padding: "20px" }} className="flex justify-center items-center fixed">
+            <div  style={{ backgroundColor: "#061224", border: "2px solid #EF4444", maxWidth: "480px", color: "#FFF", boxShadow: "0 0 30px rgba(239, 68, 68, 0.4)" }} className="w-full p-6 rounded-2xl">
               <div style={{ fontSize: "36px", marginBottom: "8px" }}>⚠️</div>
-              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#EF4444", margin: "0 0 8px 0" }}>
+              <h2  style={{ fontSize: "18px", color: "#EF4444", margin: "0 0 8px 0" }} className="font-extrabold">
                 Confirm Service Deletion
               </h2>
-              <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", lineHeight: 1.5, margin: "0 0 16px 0" }}>
+              <p  style={{ color: "rgba(255, 255, 255, 0.9)", lineHeight: 1.5, margin: "0 0 16px 0" }} className="text-sm">
                 Deleting this service (<strong>{serviceToDelete.title}</strong>) will also automatically remove all service persons associated with this service!
               </p>
-              <div style={{ padding: "12px", borderRadius: "8px", backgroundColor: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", fontSize: "12px", color: "#FCA5A5", marginBottom: "20px" }}>
+              <div   style={{ padding: "12px", backgroundColor: "rgba(239, 68, 68, 0.15)", border: "1px solid rgba(239, 68, 68, 0.3)", marginBottom: "20px" }} className="text-xs rounded-lg text-red-300" >
                 💡 <strong>Recommended:</strong> Instead of deleting, you can click "Disable / Deactivate" in the table to hide this service from the Flutter app without deleting historical data.
               </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <div  className="flex justify-end gap-[10px]">
                 <button
                   onClick={() => setServiceToDelete(null)}
                   style={{ padding: "10px 18px", borderRadius: "8px", backgroundColor: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#FFF", cursor: "pointer" }}
@@ -1006,7 +980,7 @@ export default function AdminServicesPage() {
                 </button>
                 <button
                   onClick={confirmDeleteService}
-                  style={{ padding: "10px 22px", borderRadius: "8px", backgroundColor: "#EF4444", border: "none", color: "#FFF", fontWeight: 800, cursor: "pointer" }}
+                    style={{ backgroundColor: "#EF4444", color: "#FFF" }} className="font-extrabold cursor-pointer rounded-lg border-none py-2.5 px-[22px]" 
                 >
                   Yes, Delete Service & Persons
                 </button>
@@ -1017,15 +991,15 @@ export default function AdminServicesPage() {
 
         {/* DELETE CONFIRMATION MODAL FOR PERSON */}
         {personToDelete && (
-          <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 110, padding: "20px" }}>
-            <div style={{ backgroundColor: "#061224", border: "2px solid #EF4444", borderRadius: "16px", padding: "24px", maxWidth: "440px", width: "100%", color: "#FFF", boxShadow: "0 0 30px rgba(239, 68, 68, 0.4)" }}>
-              <h2 style={{ fontSize: "18px", fontWeight: 800, color: "#EF4444", margin: "0 0 8px 0" }}>
+          <div  style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.85)", zIndex: 110, padding: "20px" }} className="flex justify-center items-center fixed">
+            <div  style={{ backgroundColor: "#061224", border: "2px solid #EF4444", maxWidth: "440px", color: "#FFF", boxShadow: "0 0 30px rgba(239, 68, 68, 0.4)" }} className="w-full p-6 rounded-2xl">
+              <h2  style={{ fontSize: "18px", color: "#EF4444", margin: "0 0 8px 0" }} className="font-extrabold">
                 Delete Service Person
               </h2>
-              <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", margin: "0 0 20px 0" }}>
+              <p  style={{ color: "rgba(255, 255, 255, 0.9)", margin: "0 0 20px 0" }} className="text-sm">
                 Are you sure you want to remove <strong>{personToDelete.name}</strong> from the service directory?
               </p>
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+              <div  className="flex justify-end gap-[10px]">
                 <button
                   onClick={() => setPersonToDelete(null)}
                   style={{ padding: "10px 18px", borderRadius: "8px", backgroundColor: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#FFF", cursor: "pointer" }}
@@ -1034,7 +1008,7 @@ export default function AdminServicesPage() {
                 </button>
                 <button
                   onClick={confirmDeletePerson}
-                  style={{ padding: "10px 22px", borderRadius: "8px", backgroundColor: "#EF4444", border: "none", color: "#FFF", fontWeight: 800, cursor: "pointer" }}
+                    style={{ backgroundColor: "#EF4444", color: "#FFF" }} className="font-extrabold cursor-pointer rounded-lg border-none py-2.5 px-[22px]" 
                 >
                   Delete Person
                 </button>

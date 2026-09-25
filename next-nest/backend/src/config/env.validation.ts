@@ -27,6 +27,14 @@ class EnvironmentVariables {
   @IsOptional()
   @IsString()
   JWT_REFRESH_SECRET?: string;
+
+  @IsOptional()
+  @IsString()
+  NODE_ENV: string = "development";
+
+  @IsOptional()
+  @IsString()
+  ALLOWED_ORIGINS?: string;
 }
 
 export function validate(config: Record<string, unknown>) {

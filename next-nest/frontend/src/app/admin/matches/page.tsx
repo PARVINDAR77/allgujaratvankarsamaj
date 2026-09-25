@@ -1,23 +1,43 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
-
-const mockMatches = [
-  { id: "m-1", candidateA: "Ramesh Vankar (35 Pargana)", candidateB: "Priyankaben Solanki (14 Pargana)", matchScore: "94%", status: "MUTUAL_INTEREST", date: "2026-09-08" },
-  { id: "m-2", candidateA: "Hemantkumar Vankar (16 Pargana)", candidateB: "Hiralben Parmar (27 Pargana)", matchScore: "89%", status: "ACCEPTED", date: "2026-09-09" },
-  { id: "m-3", candidateA: "Vikram Vankar (35 Pargana)", candidateB: "Aarti Vankar (27 Pargana)", matchScore: "82%", status: "PENDING", date: "2026-09-10" },
-];
+import { adminApi } from "@/lib/admin-api";
 
 export default function AdminMatchesPage() {
+  const [matches, setMatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    adminApi.getMatches()
+      .then((data) => {
+        // Backend returns an array or an object with data property
+        setMatches(Array.isArray(data) ? data : (data as any).items || []);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error("Matches fetch error:", err);
+        setError(err.message || "Failed to load matches");
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <AdminLayout title="Matchmaking Management" subtitle="Monitor mutual interests, shortlists & match connectivity">
-      <div className="bg-[#0F2040] border border-[#997D20]/30 rounded-2xl p-6 shadow-xl space-y-4">
+      <div className="bg-admin-border border border-admin-gold-dark/30 rounded-2xl p-6 shadow-xl space-y-4">
         <h3 className="text-base font-bold text-white">Active Matrimonial Matches</h3>
+        
+        {error && (
+          <div className="rounded-xl bg-red-500/10 text-red-300 border border-red-600 p-4">
+            {error}
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs text-white">
-            <thead className="bg-[#041026] text-[#D4AF37] uppercase text-[10px] tracking-wider border-b border-[#997D20]/30">
+            <thead className="bg-admin-card text-admin-gold uppercase text-[10px] tracking-wider border-b border-admin-gold-dark/30">
               <tr>
                 <th className="py-3 px-4">Candidate A</th>
                 <th className="py-3 px-4">Candidate B</th>
@@ -27,15 +47,38 @@ export default function AdminMatchesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#997D20]/10">
-              {mockMatches.map((m) => (
-                <tr key={m.id} className="hover:bg-[#041026]/50">
-                  <td className="py-3.5 px-4 font-bold text-white">{m.candidateA}</td>
-                  <td className="py-3.5 px-4 font-bold text-white">{m.candidateB}</td>
-                  <td className="py-3.5 px-4 font-extrabold text-[#D4AF37]">{m.matchScore}</td>
-                  <td className="py-3.5 px-4"><StatusBadge status={m.status} /></td>
-                  <td className="py-3.5 px-4 text-gray-300">{m.date}</td>
+              {loading ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-admin-muted font-bold">
+                    <span className="animate-spin inline-block mr-2">⚙️</span>
+                    Loading matches...
+                  </td>
                 </tr>
-              ))}
+              ) : matches.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-8 text-center text-admin-muted">
+                    No matches found in the system.
+                  </td>
+                </tr>
+              ) : (
+                matches.map((m) => (
+                  <tr key={m.id} className="hover:bg-admin-card/50 transition-colors">
+                    <td className="py-3.5 px-4 font-bold text-white">
+                      {m.userA?.profile?.firstName || "Unknown"} {m.userA?.profile?.lastName || ""}
+                    </td>
+                    <td className="py-3.5 px-4 font-bold text-white">
+                      {m.userB?.profile?.firstName || "Unknown"} {m.userB?.profile?.lastName || ""}
+                    </td>
+                    <td className="py-3.5 px-4 font-extrabold text-admin-gold">
+                      {m.matchScore ? `${m.matchScore}%` : "Pending"}
+                    </td>
+                    <td className="py-3.5 px-4"><StatusBadge status={m.status || "PENDING"} /></td>
+                    <td className="py-3.5 px-4 text-gray-300">
+                      {new Date(m.createdAt || m.date).toLocaleDateString()}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

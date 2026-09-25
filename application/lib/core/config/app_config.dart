@@ -10,9 +10,7 @@ class AppConfig {
         return 'https://staging-api.vankarsamaj.com/api/v1';
       case 'development':
       default:
-        // Use 10.0.2.2 for Android Emulator, or localhost for iOS/Web
-        // For physical devices, this needs to be a LAN IP.
-        return 'http://10.0.2.2:3000/api/v1';
+        return 'http://127.0.0.1:3000/api/v1';
     }
   }
 

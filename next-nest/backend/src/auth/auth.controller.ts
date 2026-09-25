@@ -7,6 +7,7 @@ import {
   Post,
   Request,
   UseGuards,
+  Res,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -18,6 +19,8 @@ import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+
+import { Response } from "express";
 
 @ApiTags("Authentication")
 @Controller("auth")
@@ -51,19 +54,36 @@ export class AuthController {
   @ApiOperation({ summary: "User login" })
   @ApiResponse({
     status: 200,
-    description: "Login successful, returns access token",
-    schema: {
-      example: {
-        accessToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-        tokenType: "Bearer",
-        expiresIn: "1d",
-      },
-    },
+    description: "Login successful, sets HTTP-only cookie and returns user data",
   })
   @ApiResponse({ status: 400, description: "Validation failed" })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
+  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+    const authResult = await this.authService.login(dto);
+    
+    res.cookie("admin_token", authResult.accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    return {
+      message: "Login successful",
+      user: authResult.user,
+      accessToken: authResult.accessToken, // Retained for Flutter compatibility
+      tokenType: "Bearer",
+      expiresIn: "1d",
+    };
+  }
+
+  @Post("logout")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "User logout" })
+  @ApiResponse({ status: 200, description: "Logout successful" })
+  async logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie("admin_token");
+    return { message: "Logout successful" };
   }
 
   @Get("me")

@@ -1,6 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+Gujarati:wght@600;700&family=Inter:wght@500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+@theme {
+  --color-admin-bg: #0A1628;
+  --color-admin-bg-glass: rgba(13, 27, 50, 0.85);
+  --color-admin-navy: #0A162D;
+  --color-admin-card: #041026;
+  --color-admin-card-hover: #040C1A;
+  --color-admin-gold: #D4AF37;
+  --color-admin-gold-light: #F3E5AB;
+  --color-admin-gold-dark: #997D20;
+  --color-admin-gold-border: #C59B27;
+  --color-admin-muted: #8E9BAE;
+  --color-admin-muted-light: #AAB7C8;
+  --color-admin-muted-lighter: #CBD5E1;
+  --color-admin-border: #0F2040;
+  --color-admin-darkest: #061224;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -8,7 +25,7 @@
 }
 
 body {
-  background: #0A1628;
+  background: var(--color-admin-bg);
   color: #FFFFFF;
   font-family: 'Inter', sans-serif;
   overflow-x: hidden;

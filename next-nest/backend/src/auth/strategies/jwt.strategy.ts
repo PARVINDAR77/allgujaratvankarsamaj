@@ -10,6 +10,8 @@ export interface JwtPayload {
   role: string;
 }
 
+import { Request } from "express";
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -17,7 +19,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly usersService: UsersService,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        ExtractJwt.fromAuthHeaderAsBearerToken(),
+        (request: Request) => {
+          return request?.cookies?.["admin_token"] || null;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: configService.get<string>("JWT_SECRET"),
     });
