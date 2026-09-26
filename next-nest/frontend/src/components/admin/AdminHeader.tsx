@@ -174,6 +174,39 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
           )}
         </div>
 
+        {/* Theme Toggle */}
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => {
+              const html = document.documentElement;
+              if (html.classList.contains('light-mode')) {
+                html.classList.remove('light-mode');
+                localStorage.setItem('adminTheme', 'dark');
+              } else {
+                html.classList.add('light-mode');
+                localStorage.setItem('adminTheme', 'light');
+              }
+            }}
+            style={{
+              width: "38px",
+              height: "38px",
+              borderRadius: "50%",
+              backgroundColor: "#0F2040",
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+              color: "#FFFFFF",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "14px",
+            }}
+            className="hover:border-[#D4AF37] transition-all"
+            aria-label="Toggle Theme"
+          >
+            🌓
+          </button>
+        </div>
+
         {/* Notifications Bell */}
         <div style={{ position: "relative" }}>
           <button

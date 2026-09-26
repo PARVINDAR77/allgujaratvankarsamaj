@@ -34,3 +34,13 @@ nextjs-portal, #next-dev-overlay {
 ::-webkit-scrollbar-thumb:hover {
   background: #D4AF37;
 }
+
+/* Light mode support using CSS filters */
+html.light-mode {
+  filter: invert(1) hue-rotate(180deg);
+}
+html.light-mode img,
+html.light-mode video,
+html.light-mode .preserve-colors {
+  filter: invert(1) hue-rotate(180deg);
+}

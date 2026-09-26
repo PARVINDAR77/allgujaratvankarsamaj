@@ -1,18 +1,20 @@
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: vankar_matrimony_postgres
+  mysql:
+    image: mysql:8.0
+    container_name: vankar_matrimony_mysql
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-vankar_matrimony}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-vankar_root_pass}
+      MYSQL_USER: ${MYSQL_USER:-vankar_app}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-vankar_secure_pass}
+      MYSQL_DATABASE: ${MYSQL_DB:-vankar_matrimony}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-vankar_matrimony}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -26,12 +28,12 @@ services:
     ports:
       - "${PORT:-3000}:3000"
     environment:
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-vankar_matrimony}?schema=public
+      - DATABASE_URL=mysql://${MYSQL_USER:-vankar_app}:${MYSQL_PASSWORD:-vankar_secure_pass}@mysql:3306/${MYSQL_DB:-vankar_matrimony}
       - JWT_SECRET=${JWT_SECRET}
       - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
       - PORT=${PORT:-3000}
     depends_on:
-      postgres:
+      mysql:
         condition: service_healthy
     volumes:
       - ./next-nest/backend:/usr/src/app
@@ -51,4 +53,4 @@ services:
       - backend
 
 volumes:
-  postgres_data:
+  mysql_data:

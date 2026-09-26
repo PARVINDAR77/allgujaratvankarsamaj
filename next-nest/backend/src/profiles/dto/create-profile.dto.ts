@@ -161,9 +161,69 @@ export class CreateProfileDto {
   about?: string;
 
   @ApiPropertyOptional({
+    description: "Native place / Pargana",
+    example: "22 Pargana",
+    maxLength: 100,
+  })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  nativePlace?: string;
+
+  @ApiPropertyOptional({
+    description: "Organization / Department Name",
+    example: "State Government",
+    maxLength: 200,
+  })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  organizationName?: string;
+
+  @ApiPropertyOptional({
+    description: "Designation",
+    example: "Manager",
+    maxLength: 200,
+  })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  designation?: string;
+
+  @ApiPropertyOptional({
     description: "Profile photo URL or base64 data URI",
   })
   @IsOptional()
   @IsString()
   photoUrl?: string;
+
+  @ApiPropertyOptional({
+    description: "Whether the candidate is physically disabled",
+    example: true,
+  })
+  @IsOptional()
+  isPhysicallyDisabled?: boolean;
+
+  @ApiPropertyOptional({
+    description: "PwBD Category (if physically disabled)",
+    example: "VI - Visual Impairment",
+  })
+  @IsOptional()
+  @IsString()
+  pwbdCategory?: string;
+
+  @ApiPropertyOptional({
+    description: "Whether the candidate is living or studying abroad",
+    example: true,
+  })
+  @IsOptional()
+  isAbroad?: boolean;
+
+  @ApiPropertyOptional({
+    description: "Abroad country name",
+    example: "Canada — કેનેડા",
+  })
+  @IsOptional()
+  @IsString()
+  abroadCountry?: string;
 }

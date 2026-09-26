@@ -128,8 +128,15 @@ export class ProfilesService {
           country: dto.country ? dto.country.trim() : null,
           education: dto.education ? dto.education.trim() : null,
           occupation: dto.occupation ? dto.occupation.trim() : null,
+          organizationName: dto.organizationName ? dto.organizationName.trim() : null,
+          designation: dto.designation ? dto.designation.trim() : null,
+          nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
           about: dto.about ? dto.about.trim() : null,
           photoUrl: dto.photoUrl ?? null,
+          isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
+          pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
+          isAbroad: dto.isAbroad ?? false,
+          abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
         },
       });
     } catch (err: any) {
@@ -149,16 +156,20 @@ export class ProfilesService {
         religion: dto.religion ? dto.religion.trim() : null,
         caste: dto.caste ? dto.caste.trim() : null,
         subcaste: null,
-        nativePlace: null,
         city: dto.city ? dto.city.trim() : null,
         state: dto.state ? dto.state.trim() : null,
         country: dto.country ? dto.country.trim() : null,
         education: dto.education ? dto.education.trim() : null,
         occupation: dto.occupation ? dto.occupation.trim() : null,
-        organizationName: null,
-        designation: null,
+        organizationName: dto.organizationName ? dto.organizationName.trim() : null,
+        designation: dto.designation ? dto.designation.trim() : null,
+        nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
         about: dto.about ? dto.about.trim() : null,
         photoUrl: dto.photoUrl ?? null,
+        isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
+        pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
+        isAbroad: dto.isAbroad ?? false,
+        abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
         stateId: null,
         districtId: null,
         talukaId: null,
@@ -240,8 +251,16 @@ export class ProfilesService {
       if (dto.country !== undefined) updateData.country = dto.country ? dto.country.trim() : null;
       if (dto.education !== undefined) updateData.education = dto.education ? dto.education.trim() : null;
       if (dto.occupation !== undefined) updateData.occupation = dto.occupation ? dto.occupation.trim() : null;
+      if (dto.organizationName !== undefined) updateData.organizationName = dto.organizationName ? dto.organizationName.trim() : null;
+      if (dto.designation !== undefined) updateData.designation = dto.designation ? dto.designation.trim() : null;
+      if (dto.nativePlace !== undefined) updateData.nativePlace = dto.nativePlace ? dto.nativePlace.trim() : null;
       if (dto.about !== undefined) updateData.about = dto.about ? dto.about.trim() : null;
       if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
+      
+      if (dto.isPhysicallyDisabled !== undefined) updateData.isPhysicallyDisabled = dto.isPhysicallyDisabled;
+      if (dto.pwbdCategory !== undefined) updateData.pwbdCategory = dto.pwbdCategory ? dto.pwbdCategory.trim() : null;
+      if (dto.isAbroad !== undefined) updateData.isAbroad = dto.isAbroad;
+      if (dto.abroadCountry !== undefined) updateData.abroadCountry = dto.abroadCountry ? dto.abroadCountry.trim() : null;
 
       return await this.prisma.matrimonialProfile.update({
         where: { userId },
@@ -267,8 +286,15 @@ export class ProfilesService {
         country: dto.country !== undefined ? (dto.country ? dto.country.trim() : null) : existing.country,
         education: dto.education !== undefined ? (dto.education ? dto.education.trim() : null) : existing.education,
         occupation: dto.occupation !== undefined ? (dto.occupation ? dto.occupation.trim() : null) : existing.occupation,
+        organizationName: dto.organizationName !== undefined ? (dto.organizationName ? dto.organizationName.trim() : null) : existing.organizationName,
+        designation: dto.designation !== undefined ? (dto.designation ? dto.designation.trim() : null) : existing.designation,
+        nativePlace: dto.nativePlace !== undefined ? (dto.nativePlace ? dto.nativePlace.trim() : null) : existing.nativePlace,
         about: dto.about !== undefined ? (dto.about ? dto.about.trim() : null) : existing.about,
         photoUrl: dto.photoUrl !== undefined ? dto.photoUrl : existing.photoUrl,
+        isPhysicallyDisabled: dto.isPhysicallyDisabled !== undefined ? dto.isPhysicallyDisabled : existing.isPhysicallyDisabled,
+        pwbdCategory: dto.pwbdCategory !== undefined ? (dto.pwbdCategory ? dto.pwbdCategory.trim() : null) : existing.pwbdCategory,
+        isAbroad: dto.isAbroad !== undefined ? dto.isAbroad : existing.isAbroad,
+        abroadCountry: dto.abroadCountry !== undefined ? (dto.abroadCountry ? dto.abroadCountry.trim() : null) : existing.abroadCountry,
         updatedAt: new Date(),
       };
       this.memoryProfiles.set(userId, updated);

@@ -7,6 +7,7 @@ import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../providers/master_data_provider.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -71,7 +72,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dob = "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
+        _dob = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -79,6 +80,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final myProfileAsync = ref.watch(myProfileProvider);
+    final masterData = ref.watch(masterDataProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Light Background
@@ -201,8 +203,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Religion (ધર્મ) *',
                 'Select Religion (ધર્મ પસંદ કરો)',
                 Icons.settings_brightness,
-                AppData.religionOptions,
-                value: AppData.religionOptions.contains(_religion) ? _religion : 'Select Religion',
+                masterData.religionOptions,
+                value: masterData.religionOptions.contains(_religion) ? _religion : 'Select Religion',
                 onChanged: (v) => setState(() => _religion = v ?? 'Select Religion'),
               ),
               _buildDropdownField('Caste Category (જ્ઞાતિ પસંદ કરો) *', 'Hindu-vankar (હિન્દુ-વણકર)', Icons.groups_outlined, ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)']),
@@ -234,8 +236,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Education / Degree (અભ્યાસ / ડિગ્રી) *',
                 'Select Degree',
                 Icons.school_outlined,
-                AppData.educationDegrees,
-                value: AppData.educationDegrees.contains(_education) ? _education : 'Select Degree',
+                masterData.educationDegrees,
+                value: masterData.educationDegrees.contains(_education) ? _education : 'Select Degree',
                 onChanged: (v) => setState(() => _education = v ?? 'Select Degree'),
               ),
               if (_education == 'Other Qualification (અન્ય)')
@@ -296,8 +298,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   'Private Sector Industry / Category (ખાનગી નોકરીનો પ્રકાર)',
                   'Select Industry',
                   Icons.business_center_outlined,
-                  AppData.privateSectors,
-                  value: AppData.privateSectors.contains(_govCategory) ? _govCategory : 'Select Category',
+                  masterData.privateSectors,
+                  value: masterData.privateSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -312,8 +314,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
                   'Select Business Type',
                   Icons.storefront_outlined,
-                  AppData.businessSectors,
-                  value: AppData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
+                  masterData.businessSectors,
+                  value: masterData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -328,8 +330,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Yearly Income (વાર્ષિક આવક - રૂ.)',
                 'Select Income (વાર્ષિક આવક પસંદ કરો)',
                 Icons.payments_outlined,
-                AppData.incomeRanges,
-                value: AppData.incomeRanges.contains(_yearlyIncome) ? _yearlyIncome : 'Select Income',
+                masterData.incomeRanges,
+                value: masterData.incomeRanges.contains(_yearlyIncome) ? _yearlyIncome : 'Select Income',
                 onChanged: (v) => setState(() => _yearlyIncome = v ?? 'Select Income'),
               ),
 
@@ -358,21 +360,17 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ElevatedButton(
                 onPressed: () async {
                   try {
-                    final updateData = {
-                      if (_gender != null) 'gender': _gender,
-                      if (_maritalStatus != null) 'maritalStatus': _maritalStatus,
-                      if (_bloodGroup != null) 'bloodGroup': _bloodGroup,
-                      if (_isVankar != null) 'isVankar': _isVankar == 'Yes (હા)',
-                      if (_casteCategory != null) 'casteCategory': _casteCategory,
-                      if (_dob != null) 'dateOfBirth': _dob,
-                      if (_religion != 'Select Religion') 'religion': _religion,
-                      if (_education != 'Select Degree') 'education': _education,
-                      if (_employmentType != 'Select Sector') 'employmentType': _employmentType,
-                      if (_department != 'Select Department') 'department': _department,
-                      if (_yearlyIncome != 'Select Income') 'yearlyIncome': _yearlyIncome,
-                      if (_pargana != 'Select Pargana') 'pargana': _pargana,
-                      // We can add other fields as they are implemented
-                    };
+                    final updateData = <String, dynamic>{};
+                    if (_gender != null) updateData['gender'] = _gender!.contains('Male') ? 'MALE' : 'FEMALE';
+                    if (_maritalStatus != null) updateData['maritalStatus'] = _maritalStatus!.contains('Divorced') ? 'DIVORCED' : (_maritalStatus!.contains('Widow') ? 'WIDOWED' : (_maritalStatus!.contains('Awaiting') ? 'SEPARATED' : 'NEVER_MARRIED'));
+                    if (_casteCategory != null) updateData['caste'] = _casteCategory;
+                    if (_dob != null) updateData['dateOfBirth'] = _dob;
+                    if (_religion != 'Select Religion') updateData['religion'] = _religion;
+                    if (_education != 'Select Degree') updateData['education'] = _education;
+                    if (_employmentType != 'Select Sector') updateData['occupation'] = _employmentType;
+                    if (_department != 'Select Department') updateData['organizationName'] = _department;
+                    if (_pargana != 'Select Pargana') updateData['nativePlace'] = _pargana;
+                    // Note: updateData['city'], updateData['state'], etc., can be added here if we collect them properly
                     
                     if (updateData.isNotEmpty) {
                       await ref.read(profileRepositoryProvider).updateMyProfile(updateData);

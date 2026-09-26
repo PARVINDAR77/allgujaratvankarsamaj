@@ -30,22 +30,130 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <AdminLayout title="Admin Dashboard" subtitle="Loading All Gujarat Vankar Samaj metrics...">
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px", color: "#D4AF37" }}>
-          <div className="animate-spin" style={{ fontSize: "28px" }}>⚙️</div>
-          <span style={{ marginLeft: "12px", fontSize: "14px", fontWeight: 700 }}>
-            Loading Admin Dashboard...
-          </span>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
+          <div style={{ 
+            backgroundColor: "rgba(13, 27, 50, 0.85)", 
+            backdropFilter: "blur(16px)", 
+            border: "1px solid rgba(212, 175, 55, 0.25)", 
+            borderRadius: "20px", 
+            padding: "40px", 
+            boxShadow: "0 10px 40px rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "20px"
+          }}>
+            <div className="animate-spin" style={{ 
+              width: "50px", height: "50px", 
+              borderRadius: "50%", 
+              border: "3px solid rgba(212, 175, 55, 0.2)", 
+              borderTopColor: "#D4AF37",
+              boxShadow: "0 0 15px rgba(212, 175, 55, 0.4)"
+            }}></div>
+            <span style={{ fontSize: "16px", fontWeight: 700, color: "#D4AF37", letterSpacing: "1px", textTransform: "uppercase" }}>
+              Initializing Dashboard
+            </span>
+          </div>
         </div>
       </AdminLayout>
     );
   }
 
   if (error || !stats) {
+    const isUnauthorized = error && error.includes("401");
+    
     return (
       <AdminLayout title="Admin Dashboard" subtitle="Overview">
-        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "300px", color: "#F43F5E", flexDirection: "column" }}>
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
-          <span style={{ fontSize: "16px", fontWeight: 700 }}>{error || "No data available."}</span>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "500px" }}>
+          <div style={{ 
+            backgroundColor: "rgba(13, 27, 50, 0.85)", 
+            backdropFilter: "blur(16px)", 
+            border: `1px solid ${isUnauthorized ? "rgba(245, 158, 11, 0.4)" : "rgba(244, 63, 94, 0.4)"}`, 
+            borderRadius: "24px", 
+            padding: "40px", 
+            boxShadow: `0 15px 50px ${isUnauthorized ? "rgba(245, 158, 11, 0.15)" : "rgba(244, 63, 94, 0.15)"}`,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            maxWidth: "480px",
+            textAlign: "center"
+          }}>
+            <div style={{ 
+              fontSize: "64px", 
+              marginBottom: "20px",
+              filter: `drop-shadow(0 0 20px ${isUnauthorized ? "rgba(245, 158, 11, 0.4)" : "rgba(244, 63, 94, 0.4)"})`
+            }}>
+              {isUnauthorized ? "🔐" : "⚠️"}
+            </div>
+            
+            <h2 style={{ 
+              fontSize: "22px", 
+              fontWeight: 800, 
+              color: "#FFFFFF", 
+              marginBottom: "12px",
+              lineHeight: 1.2
+            }}>
+              {isUnauthorized ? "Session Expired" : "Unable to Load Data"}
+            </h2>
+            
+            <p style={{ 
+              fontSize: "14px", 
+              color: "#8E9BAE", 
+              fontWeight: 500, 
+              marginBottom: "28px",
+              lineHeight: 1.5
+            }}>
+              {isUnauthorized 
+                ? "Your administrative session has expired or is invalid. Please log in again to access the dashboard and continue managing the portal."
+                : (error || "An unexpected error occurred while fetching dashboard statistics. Please try again later.")}
+            </p>
+
+            {isUnauthorized ? (
+              <a
+                href="/admin/login"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 24px",
+                  borderRadius: "12px",
+                  background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+                  color: "#041026",
+                  fontWeight: 800,
+                  fontSize: "14px",
+                  textDecoration: "none",
+                  boxShadow: "0 8px 25px rgba(212, 175, 55, 0.4)",
+                  transition: "all 0.3s ease",
+                }}
+                className="hover:scale-105 hover:shadow-[0_12px_30px_rgba(212,175,55,0.6)]"
+              >
+                <span>Re-Authenticate Session</span>
+                <span>→</span>
+              </a>
+            ) : (
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  padding: "12px 24px",
+                  borderRadius: "12px",
+                  backgroundColor: "rgba(244, 63, 94, 0.1)",
+                  border: "1px solid rgba(244, 63, 94, 0.4)",
+                  color: "#FDA4AF",
+                  fontWeight: 800,
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                }}
+                className="hover:bg-rose-950/60 hover:text-white"
+              >
+                <span>↻</span>
+                <span>Retry Connection</span>
+              </button>
+            )}
+          </div>
         </div>
       </AdminLayout>
     );

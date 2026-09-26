@@ -101,7 +101,14 @@ export class UsersService {
 
   async findByPhone(phone?: string): Promise<User | null> {
     if (!phone) return null;
-    return null;
+    try {
+      return await this.prisma.user.findUnique({
+        where: { phone },
+      });
+    } catch (err: any) {
+      this.logger.warn(`PostgreSQL offline, using in-memory user store for findByPhone(${phone})`);
+      return Array.from(this.memoryUsers.values()).find(u => u.phone === phone) ?? null;
+    }
   }
 
   async findById(id: string): Promise<User | null> {
@@ -131,6 +138,9 @@ export class UsersService {
       const user = await this.prisma.user.create({
         data: {
           email: normalizedEmail,
+          phone: data.phone,
+          name: data.name,
+          gender: data.gender ? data.gender as Gender : null,
           passwordHash: data.passwordHash,
           role: data.role || Role.USER,
           status: data.status || Status.ACTIVE,

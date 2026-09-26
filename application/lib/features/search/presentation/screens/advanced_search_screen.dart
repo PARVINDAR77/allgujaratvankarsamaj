@@ -5,6 +5,7 @@ import '../../../profile/providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../../profile/providers/master_data_provider.dart';
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
   final String initialLookingFor;
@@ -31,6 +32,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   String _religion = 'Any';
   String _income = 'Any';
   String _motherTongue = 'Any';
+  String _pwbdCategory = 'Any';
   
   final TextEditingController _idSearchController = TextEditingController();
 
@@ -48,6 +50,8 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final masterData = ref.watch(masterDataProvider);
+    
     return Scaffold(
       backgroundColor: const Color(0xFFF0F8FF), // Very light blue background
       body: Stack(
@@ -231,14 +235,37 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                       children: [
                         Expanded(child: _buildDropdown('વ્યવસાય (Occupation)', _occupation, ['Any', 'Job', 'Business'], Icons.work, Colors.orange, (v) => setState(() => _occupation = v!))),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildDropdown('ધર્મ (Religion)', _religion, ['Any', ...AppData.religionOptions.where((e) => e != 'Select Religion')], Icons.brightness_high, Colors.orange, (v) => setState(() => _religion = v!))),
+                        Expanded(child: _buildDropdown('ધર્મ (Religion)', _religion, ['Any', ...masterData.religionOptions.where((e) => e != 'Select Religion')], Icons.brightness_high, Colors.orange, (v) => setState(() => _religion = v!))),
                       ],
                     ),
                     Row(
                       children: [
-                        Expanded(child: _buildDropdown('વાર્ષિક આવક (Yearly Income)', _income, ['Any', ...AppData.incomeRanges.where((e) => e != 'Select Income')], Icons.monetization_on, Colors.orange, (v) => setState(() => _income = v!))),
+                        Expanded(child: _buildDropdown('વાર્ષિક આવક (Yearly Income)', _income, ['Any', ...masterData.incomeRanges.where((e) => e != 'Select Income')], Icons.monetization_on, Colors.orange, (v) => setState(() => _income = v!))),
                         const SizedBox(width: 12),
                         Expanded(child: _buildDropdown('માતૃભાષા (Mother Tongue)', _motherTongue, ['Any', 'Gujarati'], Icons.chat_bubble, const Color(0xFF0056D2), (v) => setState(() => _motherTongue = v!))),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Expanded(child: _buildDropdown('દિવ્યાંગતા (PwBD Category)', _pwbdCategory, [
+                          'Any',
+                          'VI - Visual Impairment (દૃષ્ટિ દિવ્યાંગતા)',
+                          'HI - Hearing Impairment (શ્રવણ દિવ્યાંગતા)',
+                          'LD - Locomotor Disability (હલનચલન સંબંધિત દિવ્યાંગતા)',
+                          'MD - Multiple Disabilities (બહુવિધ દિવ્યાંગતા)',
+                          'B - Blindness (અંધત્વ)',
+                          'LV - Low Vision (ઓછી દૃષ્ટિ)',
+                          'D - Deaf (બહેરાશ)',
+                          'HH - Hard of Hearing (સાંભળવામાં તકલીફ)',
+                          'OA - One Arm Affected (એક હાથથી દિવ્યાંગતા)',
+                          'OL - One Leg Affected (એક પગથી દિવ્યાંગતા)',
+                          'BA - Both Arms Affected (બંને હાથથી દિવ્યાંગતા)',
+                          'BL - Both Legs Affected (બંને પગથી દિવ્યાંગતા)',
+                          'OAL - One Arm and One Leg Affected (એક હાથ અને એક પગથી દિવ્યાંગતા)',
+                          'CP - Cerebral Palsy (સેરેબ્રલ પાલ્સી)'
+                        ], Icons.wheelchair_pickup, Colors.orange, (v) => setState(() => _pwbdCategory = v!))),
+                        const SizedBox(width: 12),
+                        const Spacer(),
                       ],
                     ),
                     
@@ -265,14 +292,43 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                       ),
                       child: ElevatedButton(
                         onPressed: () {
+                          // Parse Age Range
+                          int? minAge;
+                          int? maxAge;
+                          if (_ageRange != 'Any') {
+                            final matches = RegExp(r'(\d+) to (\d+)').firstMatch(_ageRange);
+                            if (matches != null) {
+                              minAge = int.tryParse(matches.group(1)!);
+                              maxAge = int.tryParse(matches.group(2)!);
+                            }
+                          }
+                          
+                          // Parse Gender
+                          String gender = _lookingFor == 'Groom' ? 'MALE' : 'FEMALE';
+                          
+                          // Parse Occupation Category
+                          String? occCat;
+                          if (_occupation != 'Any') {
+                            occCat = _occupation.toUpperCase();
+                          }
+
                           // Simulate search and navigate to matches
                           showDialog(
                             context: context,
                             barrierDismissible: false,
                             builder: (ctx) {
-                              Future.delayed(const Duration(seconds: 2), () {
+                              // Perform the search
+                              ref.read(profileNotifierProvider.notifier).updateFilters(
+                                gender: gender,
+                                minAge: minAge,
+                                maxAge: maxAge,
+                                occupationCategory: occCat,
+                                // districtId, etc. can be added if we map them
+                              );
+
+                              Future.delayed(const Duration(seconds: 1), () {
                                 if (ctx.mounted) {
-                                  Navigator.of(ctx).pop(); // Safely close the dialog using its own context
+                                  Navigator.of(ctx).pop(); // Safely close the dialog
                                 }
                                 if (context.mounted) {
                                   context.push('/search-results');

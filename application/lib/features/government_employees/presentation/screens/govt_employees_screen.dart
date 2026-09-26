@@ -6,6 +6,7 @@ import '../../data/models/govt_employee_query.dart';
 import '../../providers/govt_employees_provider.dart';
 import '../../../../core/network/api_failure.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../../profile/providers/master_data_provider.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
   const GovtEmployeesScreen({super.key});
@@ -283,9 +284,10 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       }
     }
 
+    final masterData = ref.watch(masterDataProvider);
     final List<DropdownMenuItem<String?>> districtItems = [
       const DropdownMenuItem<String?>(value: null, child: Text('All Districts (બધા જિલ્લા)')),
-      ...AppData.gujaratDistricts.keys.where((d) => d != 'Select District').map((d) => DropdownMenuItem<String?>(value: d, child: Text(d))),
+      ...masterData.gujaratDistricts.keys.where((d) => d != 'Select District').map((d) => DropdownMenuItem<String?>(value: d, child: Text(d))),
     ];
 
     final List<DropdownMenuItem<String?>> genderItems = [

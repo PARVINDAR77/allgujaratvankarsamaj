@@ -54,24 +54,26 @@ export default function AdminProfilesPage() {
 
   return (
     <AdminLayout title="Profiles Management" subtitle="Review, approve & feature matrimonial candidate profiles">
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "28px", paddingBottom: "48px" }}>
+        
         {/* Search Header */}
         <div
           style={{
-            backgroundColor: "rgba(13, 27, 50, 0.85)",
-            backdropFilter: "blur(16px)",
-            border: "1px solid rgba(212, 175, 55, 0.25)",
-            borderRadius: "16px",
-            padding: "18px 24px",
+            background: "linear-gradient(145deg, rgba(13, 27, 50, 0.9) 0%, rgba(4, 12, 26, 0.95) 100%)",
+            backdropFilter: "blur(20px)",
+            border: "1px solid rgba(212, 175, 55, 0.3)",
+            borderRadius: "20px",
+            padding: "24px",
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "space-between",
             alignItems: "center",
-            gap: "16px",
-            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+            gap: "20px",
+            boxShadow: "0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
           }}
         >
-          <div style={{ position: "relative", minWidth: "300px" }}>
+          <div style={{ position: "relative", flex: "1 1 300px" }}>
+            <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", opacity: 0.7 }}>🔍</span>
             <input
               type="text"
               placeholder="Search profiles by name, city, pargana..."
@@ -79,89 +81,110 @@ export default function AdminProfilesPage() {
               onChange={(e) => setSearch(e.target.value)}
               style={{
                 width: "100%",
-                backgroundColor: "#041026",
-                border: "1px solid rgba(212, 175, 55, 0.35)",
+                backgroundColor: "rgba(4, 16, 38, 0.6)",
+                border: "1px solid rgba(212, 175, 55, 0.3)",
                 borderRadius: "12px",
-                padding: "10px 14px 10px 38px",
-                fontSize: "12px",
+                padding: "14px 16px 14px 48px",
+                fontSize: "14px",
                 color: "#FFFFFF",
+                fontWeight: 600,
                 outline: "none",
+                transition: "all 0.3s ease",
+                boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)"
               }}
+              className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
             />
-            <span style={{ position: "absolute", left: "12px", top: "11px", fontSize: "13px", color: "#8E9BAE" }}>🔍</span>
           </div>
           <div
             style={{
-              fontSize: "12px",
-              color: "#D4AF37",
-              fontWeight: 800,
-              backgroundColor: "#041026",
-              padding: "8px 16px",
+              fontSize: "14px",
+              color: "#041026",
+              fontWeight: 900,
+              background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+              padding: "12px 24px",
               borderRadius: "12px",
-              border: "1px solid rgba(212, 175, 55, 0.3)",
+              boxShadow: "0 8px 20px rgba(212, 175, 55, 0.3)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              textTransform: "uppercase",
+              letterSpacing: "1px"
             }}
           >
-            Total Profiles: {profiles.length}
+            <span>Total Profiles:</span>
+            <span style={{ fontSize: "18px" }}>{profiles.length}</span>
           </div>
         </div>
 
         {/* Profile Cards Grid */}
         {loading ? (
-          <div style={{ padding: "48px 0", textAlign: "center", color: "#D4AF37", fontSize: "14px", fontWeight: 700 }}>
-            Loading profiles from NestJS API...
+          <div style={{ padding: "64px", textAlign: "center", backgroundColor: "rgba(13, 27, 50, 0.6)", borderRadius: "20px", border: "1px solid rgba(212, 175, 55, 0.15)" }}>
+            <div style={{ width: "40px", height: "40px", border: "3px solid #D4AF37", borderTopColor: "transparent", borderRadius: "50%", margin: "0 auto 16px" }} className="animate-spin"></div>
+            <p style={{ color: "#D4AF37", fontSize: "14px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px" }}>Loading profiles...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: "48px 0", textAlign: "center", color: "#8E9BAE", fontSize: "13px", fontWeight: 600 }}>
-            No matrimonial profiles match your search filter.
+          <div style={{ padding: "64px", textAlign: "center", backgroundColor: "rgba(13, 27, 50, 0.6)", borderRadius: "20px", border: "1px solid rgba(212, 175, 55, 0.15)" }}>
+            <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔍</div>
+            <p style={{ color: "#FFFFFF", fontSize: "16px", fontWeight: 800, marginBottom: "8px" }}>No Profiles Found</p>
+            <p style={{ color: "#8E9BAE", fontSize: "14px" }}>Try adjusting your search criteria.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {filtered.map((p) => (
               <div
                 key={p.id}
                 style={{
-                  backgroundColor: "rgba(13, 27, 50, 0.85)",
-                  backdropFilter: "blur(16px)",
-                  border: "1px solid rgba(212, 175, 55, 0.25)",
-                  borderRadius: "16px",
-                  padding: "20px",
-                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.4)",
+                  background: "linear-gradient(145deg, rgba(13, 27, 50, 0.9) 0%, rgba(4, 12, 26, 0.95) 100%)",
+                  backdropFilter: "blur(20px)",
+                  border: p.isFeatured ? "1px solid rgba(212, 175, 55, 0.6)" : "1px solid rgba(212, 175, 55, 0.2)",
+                  borderRadius: "20px",
+                  padding: "24px",
+                  boxShadow: p.isFeatured ? "0 15px 40px rgba(212, 175, 55, 0.15)" : "0 15px 35px rgba(0, 0, 0, 0.4)",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
                 }}
-                className="group hover:border-[#D4AF37] transition-all"
+                className="group hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(212,175,55,0.25)] hover:border-[#D4AF37]"
               >
+                {/* Decorative Accent */}
+                <div style={{ position: "absolute", top: 0, right: 0, width: "100px", height: "100px", background: p.isFeatured ? "radial-gradient(circle, rgba(212,175,55,0.3) 0%, rgba(0,0,0,0) 70%)" : "radial-gradient(circle, rgba(212,175,55,0.1) 0%, rgba(0,0,0,0) 70%)", transform: "translate(30%, -30%)" }}></div>
+
                 <div>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px", marginBottom: "14px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                       <div
                         style={{
-                          width: "44px",
-                          height: "44px",
-                          borderRadius: "50%",
-                          background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
-                          color: "#041026",
-                          fontWeight: 800,
-                          fontSize: "18px",
+                          width: "56px",
+                          height: "56px",
+                          borderRadius: "16px",
+                          background: p.isFeatured ? "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)" : "linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(4, 16, 38, 0.9) 100%)",
+                          color: p.isFeatured ? "#041026" : "#D4AF37",
+                          border: p.isFeatured ? "none" : "1px solid rgba(212, 175, 55, 0.5)",
+                          fontWeight: 900,
+                          fontSize: "24px",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          boxShadow: "0 4px 12px rgba(212, 175, 55, 0.3)",
+                          boxShadow: p.isFeatured ? "0 8px 20px rgba(212, 175, 55, 0.4)" : "inset 0 2px 10px rgba(255,255,255,0.1)",
                           flexShrink: 0,
+                          transition: "all 0.3s ease"
                         }}
+                        className="group-hover:scale-110 group-hover:rotate-3"
                       >
                         {p.name.charAt(0)}
                       </div>
                       <div style={{ minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <h3 style={{ fontSize: "14px", fontWeight: 700, color: "#FFFFFF", margin: 0 }} className="group-hover:text-[#D4AF37] transition-colors truncate">
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <h3 style={{ fontSize: "18px", fontWeight: 900, color: "#FFFFFF", margin: 0, lineHeight: 1.2 }} className="group-hover:text-[#F3E5AB] transition-colors truncate">
                             {p.name}
                           </h3>
-                          {p.isFeatured && <span style={{ fontSize: "12px" }} title="Featured Candidate">⭐</span>}
+                          {p.isFeatured && <span style={{ fontSize: "16px", filter: "drop-shadow(0 0 5px rgba(212,175,55,0.8))" }} title="Featured Candidate">⭐</span>}
                         </div>
-                        <p style={{ fontSize: "11px", color: "#8E9BAE", margin: "3px 0 0 0" }} className="truncate">
-                          {p.age} yrs • {p.gender} • {p.city}
+                        <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 600, margin: "4px 0 0 0", textTransform: "uppercase", letterSpacing: "0.5px" }} className="truncate">
+                          {p.age} yrs • <span style={{ color: p.gender.toLowerCase() === 'male' ? '#60A5FA' : '#F472B6' }}>{p.gender}</span> • {p.city}
                         </p>
                       </div>
                     </div>
@@ -174,76 +197,86 @@ export default function AdminProfilesPage() {
                     style={{
                       display: "flex",
                       flexDirection: "column",
-                      gap: "6px",
-                      fontSize: "12px",
-                      padding: "12px 0",
+                      gap: "10px",
+                      padding: "16px 0",
                       borderTop: "1px solid rgba(212, 175, 55, 0.15)",
                       borderBottom: "1px solid rgba(212, 175, 55, 0.15)",
-                      margin: "12px 0",
+                      marginBottom: "20px",
                     }}
                   >
-                    <p style={{ display: "flex", justifyContent: "space-between", margin: 0 }}>
-                      <span style={{ color: "#8E9BAE" }}>Pargana:</span>
-                      <strong style={{ color: "#FFFFFF" }}>{p.pargana}</strong>
-                    </p>
-                    <p style={{ display: "flex", justifyContent: "space-between", margin: 0 }}>
-                      <span style={{ color: "#8E9BAE" }}>Education:</span>
-                      <span style={{ color: "#E2E8F0" }}>{p.education}</span>
-                    </p>
-                    <p style={{ display: "flex", justifyContent: "space-between", margin: 0 }}>
-                      <span style={{ color: "#8E9BAE" }}>Occupation:</span>
-                      <span style={{ color: "#E2E8F0" }}>{p.occupation}</span>
-                    </p>
+                    {[
+                      { label: "Pargana", value: p.pargana },
+                      { label: "Education", value: p.education },
+                      { label: "Occupation", value: p.occupation }
+                    ].map((item, idx) => (
+                      <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderRadius: "10px", backgroundColor: "rgba(4, 16, 38, 0.4)", border: "1px solid rgba(212, 175, 55, 0.05)" }}>
+                        <span style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 700 }}>{item.label}:</span>
+                        <span style={{ fontSize: "13px", color: "#FFFFFF", fontWeight: 800, textAlign: "right", maxWidth: "65%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "8px", paddingTop: "4px" }}>
+                <div style={{ display: "flex", gap: "10px" }}>
                   <button
                     onClick={() => setSelectedProfile(p)}
                     style={{
                       flex: 1,
-                      padding: "8px 12px",
-                      borderRadius: "10px",
-                      backgroundColor: "#041026",
-                      border: "1px solid rgba(212, 175, 55, 0.35)",
+                      padding: "12px",
+                      borderRadius: "12px",
+                      backgroundColor: "rgba(4, 16, 38, 0.8)",
+                      border: "1px solid rgba(212, 175, 55, 0.4)",
                       color: "#D4AF37",
-                      fontSize: "11px",
-                      fontWeight: 700,
+                      fontSize: "12px",
+                      fontWeight: 800,
                       cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
                     }}
-                    className="hover:bg-[#D4AF37] hover:text-black transition-all"
+                    className="hover:bg-[#D4AF37] hover:text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]"
                   >
                     View Details
                   </button>
                   <button
                     onClick={() => handleToggleFeatured(p.id, p.isFeatured)}
                     style={{
-                      padding: "8px 12px",
-                      borderRadius: "10px",
-                      fontSize: "11px",
-                      fontWeight: 700,
+                      padding: "12px 16px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: 800,
                       cursor: "pointer",
-                      backgroundColor: p.isFeatured ? "rgba(120, 53, 15, 0.6)" : "#041026",
-                      color: p.isFeatured ? "#FDE68A" : "#94A3B8",
-                      border: p.isFeatured ? "1px solid rgba(245, 158, 11, 0.4)" : "1px solid rgba(212, 175, 55, 0.2)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      backgroundColor: p.isFeatured ? "rgba(212, 175, 55, 0.15)" : "rgba(4, 16, 38, 0.6)",
+                      color: p.isFeatured ? "#F3E5AB" : "#8E9BAE",
+                      border: p.isFeatured ? "1px solid rgba(212, 175, 55, 0.5)" : "1px solid rgba(212, 175, 55, 0.2)",
+                      transition: "all 0.3s ease",
                     }}
-                    className="transition-colors"
+                    className="hover:bg-[rgba(212,175,55,0.2)] hover:border-[#D4AF37] hover:text-[#D4AF37]"
                   >
                     {p.isFeatured ? "⭐ Featured" : "Feature"}
                   </button>
                   <button
                     onClick={() => handleStatusChange(p.id, p.status)}
                     style={{
-                      padding: "8px 12px",
-                      borderRadius: "10px",
-                      fontSize: "11px",
-                      fontWeight: 700,
+                      padding: "12px 16px",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      fontWeight: 800,
                       cursor: "pointer",
-                      backgroundColor: p.status === "APPROVED" ? "rgba(136, 19, 55, 0.6)" : "rgba(6, 78, 59, 0.6)",
-                      color: p.status === "APPROVED" ? "#FDA4AF" : "#6EE7B7",
-                      border: p.status === "APPROVED" ? "1px solid rgba(244, 63, 94, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: p.status === "APPROVED" ? "rgba(225, 29, 72, 0.1)" : "rgba(16, 185, 129, 0.1)",
+                      color: p.status === "APPROVED" ? "#E11D48" : "#10B981",
+                      border: p.status === "APPROVED" ? "1px solid rgba(225, 29, 72, 0.3)" : "1px solid rgba(16, 185, 129, 0.3)",
+                      transition: "all 0.3s ease",
                     }}
-                    className="transition-colors"
+                    className={p.status === "APPROVED" ? "hover:bg-[#E11D48] hover:text-white" : "hover:bg-[#10B981] hover:text-white"}
                   >
                     {p.status === "APPROVED" ? "Reject" : "Approve"}
                   </button>
@@ -262,28 +295,28 @@ export default function AdminProfilesPage() {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: "rgba(0, 0, 0, 0.8)",
-              backdropFilter: "blur(8px)",
+              backgroundColor: "rgba(0, 0, 0, 0.85)",
+              backdropFilter: "blur(12px)",
               zIndex: 1000,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "20px",
+              padding: "24px",
             }}
             onClick={() => setSelectedProfile(null)}
           >
             <div
               style={{
-                backgroundColor: "#0D1B32",
-                border: "2px solid #D4AF37",
+                background: "linear-gradient(145deg, rgba(13, 27, 50, 0.95) 0%, rgba(4, 12, 26, 0.98) 100%)",
+                border: "1px solid rgba(212, 175, 55, 0.4)",
                 borderRadius: "24px",
-                padding: "28px",
+                padding: "32px",
                 width: "100%",
-                maxWidth: "460px",
-                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.8)",
+                maxWidth: "500px",
+                boxShadow: "0 25px 60px rgba(0, 0, 0, 0.8)",
                 display: "flex",
                 flexDirection: "column",
-                gap: "18px",
+                gap: "24px",
                 position: "relative",
               }}
               onClick={(e) => e.stopPropagation()}
@@ -292,42 +325,42 @@ export default function AdminProfilesPage() {
                 onClick={() => setSelectedProfile(null)}
                 style={{
                   position: "absolute",
-                  top: "18px",
-                  right: "20px",
+                  top: "24px",
+                  right: "24px",
                   background: "transparent",
                   border: "none",
                   color: "#8E9BAE",
-                  fontSize: "20px",
-                  fontWeight: 700,
+                  fontSize: "24px",
                   cursor: "pointer",
+                  transition: "color 0.3s ease",
                 }}
                 className="hover:text-white"
               >
                 ✕
               </button>
 
-              <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                 <div
                   style={{
-                    width: "52px",
-                    height: "52px",
-                    borderRadius: "50%",
+                    width: "70px",
+                    height: "70px",
+                    borderRadius: "20px",
                     background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
                     color: "#041026",
-                    fontWeight: 800,
-                    fontSize: "22px",
+                    fontWeight: 900,
+                    fontSize: "32px",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    boxShadow: "0 4px 14px rgba(212, 175, 55, 0.35)",
+                    boxShadow: "0 10px 25px rgba(212, 175, 55, 0.4)",
                     flexShrink: 0,
                   }}
                 >
                   {selectedProfile.name.charAt(0)}
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "18px", fontWeight: 800, color: "#FFFFFF", margin: 0 }}>{selectedProfile.name}</h3>
-                  <p style={{ fontSize: "12px", color: "#D4AF37", fontWeight: 700, margin: "3px 0 0 0" }}>
+                  <h3 style={{ fontSize: "24px", fontWeight: 900, color: "#FFFFFF", margin: "0 0 6px 0", letterSpacing: "-0.5px" }}>{selectedProfile.name}</h3>
+                  <p style={{ fontSize: "14px", color: "#D4AF37", fontWeight: 800, margin: 0, textTransform: "uppercase", letterSpacing: "1px" }}>
                     {selectedProfile.pargana} Candidate
                   </p>
                 </div>
@@ -337,46 +370,48 @@ export default function AdminProfilesPage() {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  gap: "10px",
-                  fontSize: "12px",
-                  color: "#E2E8F0",
+                  gap: "12px",
                   borderTop: "1px solid rgba(212, 175, 55, 0.2)",
-                  paddingTop: "16px",
+                  paddingTop: "24px",
                 }}
               >
-                <p style={{ margin: 0 }}>
-                  <strong style={{ color: "#8E9BAE" }}>Age / Gender:</strong> {selectedProfile.age} years • {selectedProfile.gender}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong style={{ color: "#8E9BAE" }}>City of Residence:</strong> {selectedProfile.city}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong style={{ color: "#8E9BAE" }}>Education:</strong> {selectedProfile.education}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong style={{ color: "#8E9BAE" }}>Occupation:</strong> {selectedProfile.occupation}
-                </p>
-                <p style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0 }}>
-                  <strong style={{ color: "#8E9BAE" }}>Verification Status:</strong> <StatusBadge status={selectedProfile.status} />
-                </p>
+                {[
+                  { label: "Age / Gender", value: `${selectedProfile.age} years • ${selectedProfile.gender}` },
+                  { label: "City of Residence", value: selectedProfile.city },
+                  { label: "Education", value: selectedProfile.education },
+                  { label: "Occupation", value: selectedProfile.occupation }
+                ].map((item, idx) => (
+                  <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderRadius: "12px", backgroundColor: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.1)" }}>
+                    <span style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 700 }}>{item.label}:</span>
+                    <span style={{ fontSize: "14px", color: "#FFFFFF", fontWeight: 800, textAlign: "right", maxWidth: "60%" }}>{item.value}</span>
+                  </div>
+                ))}
+                
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderRadius: "12px", backgroundColor: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.1)" }}>
+                  <span style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 700 }}>Verification Status:</span>
+                  <StatusBadge status={selectedProfile.status} />
+                </div>
               </div>
 
-              <div style={{ paddingTop: "8px" }}>
+              <div style={{ paddingTop: "16px", borderTop: "1px solid rgba(212, 175, 55, 0.2)", marginTop: "8px" }}>
                 <button
                   onClick={() => setSelectedProfile(null)}
                   style={{
                     width: "100%",
-                    padding: "12px",
-                    borderRadius: "12px",
+                    padding: "16px",
+                    borderRadius: "14px",
                     background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
                     color: "#041026",
-                    fontWeight: 800,
-                    fontSize: "12px",
+                    fontWeight: 900,
+                    fontSize: "14px",
                     textTransform: "uppercase",
-                    letterSpacing: "0.8px",
+                    letterSpacing: "1px",
                     border: "none",
                     cursor: "pointer",
+                    boxShadow: "0 10px 25px rgba(212, 175, 55, 0.4)",
+                    transition: "all 0.3s ease",
                   }}
+                  className="hover:scale-[1.03] hover:shadow-[0_15px_35px_rgba(212,175,55,0.6)] active:scale-[0.98]"
                 >
                   Close Window
                 </button>

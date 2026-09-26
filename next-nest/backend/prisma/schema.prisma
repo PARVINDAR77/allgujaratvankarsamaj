@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -107,6 +107,10 @@ model MatrimonialProfile {
   designation      String?
   about            String?
   photoUrl         String?       @map("photo_url")
+  isPhysicallyDisabled Boolean   @default(false) @map("is_physically_disabled")
+  pwbdCategory     String?       @map("pwbd_category")
+  isAbroad         Boolean       @default(false) @map("is_abroad")
+  abroadCountry    String?       @map("abroad_country")
 
   stateId    String?   @map("state_id")
   districtId String?   @map("district_id")

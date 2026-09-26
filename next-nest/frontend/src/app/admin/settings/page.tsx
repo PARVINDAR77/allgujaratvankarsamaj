@@ -56,147 +56,202 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const inputStyle = {
+    width: "100%",
+    backgroundColor: "rgba(4, 16, 38, 0.6)",
+    border: "1px solid rgba(212, 175, 55, 0.3)",
+    borderRadius: "12px",
+    padding: "16px",
+    color: "#FFFFFF",
+    fontSize: "14px",
+    fontWeight: 600,
+    outline: "none",
+    transition: "all 0.3s ease",
+    boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)"
+  };
+
   return (
     <AdminLayout
       title="Portal Settings"
       subtitle="Configure system rules, verification constraints, and access policies"
     >
-      <div className="max-w-4xl space-y-6">
+      <div style={{ maxWidth: "1000px", display: "flex", flexDirection: "column", gap: "24px" }}>
+        
         {/* Navigation Tabs */}
-        <div className="flex border-b border-[#997D20]/30 gap-2 overflow-x-auto pb-1">
-          <button
-            onClick={() => setActiveTab("general")}
-            className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
-              activeTab === "general"
-                ? "bg-[#0F2040] text-[#D4AF37] border-[#997D20]/50 shadow-md"
-                : "text-[#AAB7C8] border-transparent hover:text-white hover:bg-[#0F2040]/40"
-            }`}
-          >
-            ⚙️ General Portal Settings
-          </button>
-          <button
-            onClick={() => setActiveTab("verification")}
-            className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
-              activeTab === "verification"
-                ? "bg-[#0F2040] text-[#D4AF37] border-[#997D20]/50 shadow-md"
-                : "text-[#AAB7C8] border-transparent hover:text-white hover:bg-[#0F2040]/40"
-            }`}
-          >
-            🛡️ Verification Rules
-          </button>
-          <button
-            onClick={() => setActiveTab("privacy")}
-            className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
-              activeTab === "privacy"
-                ? "bg-[#0F2040] text-[#D4AF37] border-[#997D20]/50 shadow-md"
-                : "text-[#AAB7C8] border-transparent hover:text-white hover:bg-[#0F2040]/40"
-            }`}
-          >
-            🔒 Privacy & Security
-          </button>
+        <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid rgba(212, 175, 55, 0.2)", paddingBottom: "16px" }}>
+          {[
+            { id: "general", label: "General Portal Settings", icon: "⚙️" },
+            { id: "verification", label: "Verification Rules", icon: "🛡️" },
+            { id: "privacy", label: "Privacy & Security", icon: "🔒" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "12px 24px",
+                borderRadius: "12px",
+                border: activeTab === tab.id ? "1px solid rgba(212, 175, 55, 0.5)" : "1px solid transparent",
+                backgroundColor: activeTab === tab.id ? "rgba(212, 175, 55, 0.15)" : "transparent",
+                color: activeTab === tab.id ? "#D4AF37" : "#8E9BAE",
+                fontWeight: 700,
+                fontSize: "14px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+              }}
+              className="hover:bg-[#041026] hover:text-white"
+            >
+              <span>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Main Settings Card */}
-        <div className="bg-[#0F2040] border border-[#997D20]/40 rounded-b-3xl rounded-tr-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative">
+        <div style={{
+          backgroundColor: "rgba(13, 27, 50, 0.85)",
+          backdropFilter: "blur(16px)",
+          border: "1px solid rgba(212, 175, 55, 0.25)",
+          borderRadius: "20px",
+          padding: "32px",
+          boxShadow: "0 15px 40px rgba(0, 0, 0, 0.4)",
+          position: "relative"
+        }}>
           {saved && (
-            <div className="p-4 rounded-2xl bg-emerald-950/90 border border-emerald-500/50 text-emerald-400 text-xs font-extrabold flex items-center gap-3 shadow-lg animate-fade-in">
-              <span className="text-lg">✓</span>
+            <div style={{
+              padding: "16px 24px",
+              borderRadius: "14px",
+              backgroundColor: "rgba(6, 78, 59, 0.8)",
+              border: "1px solid rgba(16, 185, 129, 0.5)",
+              color: "#6EE7B7",
+              fontWeight: 800,
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              marginBottom: "24px",
+              boxShadow: "0 8px 25px rgba(16, 185, 129, 0.2)"
+            }}>
+              <span style={{ fontSize: "20px" }}>✓</span>
               <span>Portal settings updated and synchronized with backend NestJS services & PostgreSQL!</span>
             </div>
           )}
 
-          <form onSubmit={handleSave} className="space-y-6 text-xs">
+          <form onSubmit={handleSave} style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+            
             {/* ─── 1. GENERAL SETTINGS TAB ──────────────────────────────── */}
             {activeTab === "general" && (
-              <div className="space-y-5">
+              <>
                 <div>
-                  <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
                     Platform Title & Branding Name
                   </label>
                   <input
                     type="text"
                     value={platformName}
                     onChange={(e) => setPlatformName(e.target.value)}
-                    className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                    style={inputStyle}
+                    className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
                   />
-                  <p className="text-[11px] text-[#AAB7C8]/70 mt-1.5">
+                  <p style={{ fontSize: "12px", color: "#8E9BAE", marginTop: "8px" }}>
                     Main organization name displayed across mobile app and web portal headers.
                   </p>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                  <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
                     Homepage Announcement Banner Text
                   </label>
                   <textarea
                     rows={2}
                     value={bannerText}
                     onChange={(e) => setBannerText(e.target.value)}
-                    className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                    style={{ ...inputStyle, resize: "vertical" }}
+                    className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
                   />
-                  <p className="text-[11px] text-[#AAB7C8]/70 mt-1.5">
+                  <p style={{ fontSize: "12px", color: "#8E9BAE", marginTop: "8px" }}>
                     Dynamic text displayed inside the Flutter APK home screen header.
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                   <div>
-                    <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
                       Support Email Address
                     </label>
                     <input
                       type="email"
                       value={supportEmail}
                       onChange={(e) => setSupportEmail(e.target.value)}
-                      className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                      style={inputStyle}
+                      className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
                     />
                   </div>
-
                   <div>
-                    <label className="block text-xs font-bold text-[#D4AF37] uppercase tracking-wider mb-2">
+                    <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
                       Support Helpline Phone
                     </label>
                     <input
                       type="text"
                       value={supportPhone}
                       onChange={(e) => setSupportPhone(e.target.value)}
-                      className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                      style={inputStyle}
+                      className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
                     />
                   </div>
                 </div>
-              </div>
+              </>
             )}
 
             {/* ─── 2. VERIFICATION RULES TAB ────────────────────────────── */}
             {activeTab === "verification" && (
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div
                   onClick={() => setRequireVerification(!requireVerification)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "20px",
+                    borderRadius: "16px",
+                    backgroundColor: "rgba(4, 16, 38, 0.6)",
+                    border: "1px solid rgba(212, 175, 55, 0.2)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  className="hover:border-[#D4AF37] hover:bg-[rgba(212,175,55,0.05)]"
                 >
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-white text-sm">Require Manual Profile Verification</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
-                      Newly registered profiles must be reviewed by an administrator before appearing in public searches.
-                    </p>
+                  <div>
+                    <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#FFFFFF", marginBottom: "4px" }}>Require Manual Profile Verification</h4>
+                    <p style={{ fontSize: "13px", color: "#8E9BAE" }}>Newly registered profiles must be reviewed by an administrator before appearing in public searches.</p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${requireVerification ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
-                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${requireVerification ? "translate-x-6" : "translate-x-0"}`} />
+                  <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: requireVerification ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
+                    <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: requireVerification ? "26px" : "2px", transition: "all 0.3s ease" }} />
                   </div>
                 </div>
 
                 <div
                   onClick={() => setAutoApprovePhotos(!autoApprovePhotos)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "20px",
+                    borderRadius: "16px",
+                    backgroundColor: "rgba(4, 16, 38, 0.6)",
+                    border: "1px solid rgba(212, 175, 55, 0.2)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  className="hover:border-[#D4AF37] hover:bg-[rgba(212,175,55,0.05)]"
                 >
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-white text-sm">Auto-Approve Passport Profile Photos</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
-                      Automatically publish candidate photos uploaded via Flutter app without manual queue review.
-                    </p>
+                  <div>
+                    <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#FFFFFF", marginBottom: "4px" }}>Auto-Approve Passport Profile Photos</h4>
+                    <p style={{ fontSize: "13px", color: "#8E9BAE" }}>Automatically publish candidate photos uploaded via Flutter app without manual queue review.</p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${autoApprovePhotos ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
-                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${autoApprovePhotos ? "translate-x-6" : "translate-x-0"}`} />
+                  <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: autoApprovePhotos ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
+                    <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: autoApprovePhotos ? "26px" : "2px", transition: "all 0.3s ease" }} />
                   </div>
                 </div>
               </div>
@@ -204,46 +259,82 @@ export default function AdminSettingsPage() {
 
             {/* ─── 3. PRIVACY & SECURITY TAB ────────────────────────────── */}
             {activeTab === "privacy" && (
-              <div className="space-y-4">
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div
                   onClick={() => setPrivacyContactMasking(!privacyContactMasking)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "20px",
+                    borderRadius: "16px",
+                    backgroundColor: "rgba(4, 16, 38, 0.6)",
+                    border: "1px solid rgba(212, 175, 55, 0.2)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  className="hover:border-[#D4AF37] hover:bg-[rgba(212,175,55,0.05)]"
                 >
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-white text-sm">Strict Contact Number Privacy</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
-                      Only profiles with confirmed mutual interest acceptance can view family mobile numbers.
-                    </p>
+                  <div>
+                    <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#FFFFFF", marginBottom: "4px" }}>Strict Contact Number Privacy</h4>
+                    <p style={{ fontSize: "13px", color: "#8E9BAE" }}>Only profiles with confirmed mutual interest acceptance can view family mobile numbers.</p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${privacyContactMasking ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
-                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${privacyContactMasking ? "translate-x-6" : "translate-x-0"}`} />
+                  <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: privacyContactMasking ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
+                    <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: privacyContactMasking ? "26px" : "2px", transition: "all 0.3s ease" }} />
                   </div>
                 </div>
 
                 <div
                   onClick={() => setAllowPublicSearch(!allowPublicSearch)}
-                  className="flex items-center justify-between p-4 rounded-2xl bg-[#041026] border border-[#997D20]/30 hover:border-[#D4AF37] transition-all cursor-pointer"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    padding: "20px",
+                    borderRadius: "16px",
+                    backgroundColor: "rgba(4, 16, 38, 0.6)",
+                    border: "1px solid rgba(212, 175, 55, 0.2)",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                  }}
+                  className="hover:border-[#D4AF37] hover:bg-[rgba(212,175,55,0.05)]"
                 >
-                  <div className="space-y-0.5">
-                    <p className="font-bold text-white text-sm">Allow Guest Search Indexing</p>
-                    <p className="text-[11px] text-[#AAB7C8]">
-                      Permit unauthenticated guests to browse candidate previews on the homepage.
-                    </p>
+                  <div>
+                    <h4 style={{ fontSize: "15px", fontWeight: 800, color: "#FFFFFF", marginBottom: "4px" }}>Allow Guest Search Indexing</h4>
+                    <p style={{ fontSize: "13px", color: "#8E9BAE" }}>Permit unauthenticated guests to browse candidate previews on the homepage.</p>
                   </div>
-                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${allowPublicSearch ? "bg-[#D4AF37]" : "bg-gray-700"}`}>
-                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${allowPublicSearch ? "translate-x-6" : "translate-x-0"}`} />
+                  <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: allowPublicSearch ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
+                    <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: allowPublicSearch ? "26px" : "2px", transition: "all 0.3s ease" }} />
                   </div>
                 </div>
               </div>
             )}
 
             {/* Save Button */}
-            <div className="pt-4 border-t border-[#997D20]/20 flex justify-end">
+            <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: "24px", borderTop: "1px solid rgba(212, 175, 55, 0.2)" }}>
               <button
                 type="submit"
-                className="py-3 px-8 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#E8C95A] text-black font-black text-xs tracking-wider uppercase shadow-[0_0_20px_rgba(212,175,55,0.3)] hover:scale-105 transition-all cursor-pointer"
+                style={{
+                  padding: "16px 32px",
+                  borderRadius: "12px",
+                  background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+                  color: "#041026",
+                  fontWeight: 900,
+                  fontSize: "14px",
+                  textTransform: "uppercase",
+                  letterSpacing: "1px",
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 10px 25px rgba(212, 175, 55, 0.4)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  transition: "all 0.3s ease",
+                }}
+                className="hover:scale-[1.05] hover:shadow-[0_15px_35px_rgba(212,175,55,0.6)] active:scale-95"
               >
-                💾 Save Settings
+                <span style={{ fontSize: "18px" }}>💾</span>
+                Save Settings
               </button>
             </div>
           </form>

@@ -9,6 +9,7 @@ import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../providers/master_data_provider.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
@@ -41,6 +42,10 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String? _casteCategory;
   String? _dob;
   String _religion = 'Select Religion';
+  bool _isPhysicallyDisabled = false;
+  String? _pwbdCategory;
+  bool _isAbroad = false;
+  String? _abroadCountry;
 
   Future<void> _pickImage() async {
     try {
@@ -78,7 +83,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     );
     if (picked != null) {
       setState(() {
-        _dob = "${picked.day.toString().padLeft(2, '0')}-${picked.month.toString().padLeft(2, '0')}-${picked.year}";
+        _dob = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
       });
     }
   }
@@ -103,6 +108,10 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       district: _district.isNotEmpty ? _district : 'Ahmedabad',
       taluka: _taluka.isNotEmpty ? _taluka : 'Ahmedabad City',
       pargana: _pargana != 'Select Pargana' ? _pargana : 'Not Specified',
+      isPhysicallyDisabled: _isPhysicallyDisabled,
+      pwbdCategory: _pwbdCategory,
+      isAbroad: _isAbroad,
+      abroadCountry: _abroadCountry,
     );
 
     try {
@@ -205,6 +214,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final masterData = ref.watch(masterDataProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Soft Light Grey Background
       appBar: AppBar(
@@ -299,12 +310,41 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'], value: _maritalStatus, onChanged: (v) => setState(() => _maritalStatus = v)),
               _buildDropdownField('Blood Group (બ્લડ ગ્રુપ)', 'Select Blood Group', Icons.water_drop_outlined, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)'], value: _bloodGroup, onChanged: (v) => setState(() => _bloodGroup = v)),
               _buildDropdownField('Are you Vankar? (તમે વણકર છો?) *', 'Yes (હા)', Icons.verified_user_outlined, ['Yes (હા)', 'No (ના)'], value: _isVankar, onChanged: (v) => setState(() => _isVankar = v)),
+              
+              _buildDropdownField('Physically Disabled? (શું તમે શારીરિક રીતે દિવ્યાંગ છો?) *', 'No (ના)', Icons.accessible_outlined, ['Yes (હા)', 'No (ના)'], value: _isPhysicallyDisabled ? 'Yes (હા)' : 'No (ના)', onChanged: (v) => setState(() {
+                _isPhysicallyDisabled = v == 'Yes (હા)';
+                if (!_isPhysicallyDisabled) _pwbdCategory = null;
+              })),
+              if (_isPhysicallyDisabled)
+                _buildDropdownField(
+                  'PwBD Category (દિવ્યાંગતાનો પ્રકાર) *',
+                  'Select Category',
+                  Icons.wheelchair_pickup_outlined,
+                  [
+                    'VI - Visual Impairment (દૃષ્ટિ દિવ્યાંગતા)',
+                    'HI - Hearing Impairment (શ્રવણ દિવ્યાંગતા)',
+                    'LD - Locomotor Disability (હલનચલન સંબંધિત દિવ્યાંગતા)',
+                    'MD - Multiple Disabilities (બહુવિધ દિવ્યાંગતા)',
+                    'B - Blindness (અંધત્વ)',
+                    'LV - Low Vision (ઓછી દૃષ્ટિ)',
+                    'D - Deaf (બહેરાશ)',
+                    'HH - Hard of Hearing (સાંભળવામાં તકલીફ)',
+                    'OA - One Arm Affected (એક હાથથી દિવ્યાંગતા)',
+                    'OL - One Leg Affected (એક પગથી દિવ્યાંગતા)',
+                    'BA - Both Arms Affected (બંને હાથથી દિવ્યાંગતા)',
+                    'BL - Both Legs Affected (બંને પગથી દિવ્યાંગતા)',
+                    'OAL - One Arm and One Leg Affected (એક હાથ અને એક પગથી દિવ્યાંગતા)',
+                    'CP - Cerebral Palsy (સેરેબ્રલ પાલ્સી)',
+                  ],
+                  value: _pwbdCategory,
+                  onChanged: (v) => setState(() => _pwbdCategory = v),
+                ),
               _buildDropdownField(
                 'Religion (ધર્મ) *',
                 'Select Religion (ધર્મ પસંદ કરો)',
                 Icons.settings_brightness,
-                AppData.religionOptions,
-                value: AppData.religionOptions.contains(_religion) ? _religion : 'Select Religion',
+                masterData.religionOptions,
+                value: masterData.religionOptions.contains(_religion) ? _religion : 'Select Religion',
                 onChanged: (v) => setState(() => _religion = v ?? 'Select Religion'),
               ),
               _buildDropdownField('Caste Category (જ્ઞાતિ પસંદ કરો) *', 'Hindu-vankar (હિન્દુ-વણકર)', Icons.groups_outlined, ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)'], value: _casteCategory, onChanged: (v) => setState(() => _casteCategory = v)),
@@ -333,6 +373,19 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 value: _pargana,
                 onChanged: (v) => setState(() => _pargana = v ?? _pargana),
               ),
+              _buildDropdownField('Are you studying or living abroad? (શું તમે વિદેશમાં અભ્યાસ કરો છો કે રહો છો?) *', 'No (ના)', Icons.flight_takeoff, ['Yes (હા)', 'No (ના)'], value: _isAbroad ? 'Yes (હા)' : 'No (ના)', onChanged: (v) => setState(() {
+                _isAbroad = v == 'Yes (હા)';
+                if (!_isAbroad) _abroadCountry = null;
+              })),
+              if (_isAbroad)
+                _buildDropdownField(
+                  'In which country? (કયા દેશમાં?) *',
+                  'Select Country (દેશ પસંદ કરો)',
+                  Icons.public,
+                  masterData.abroadCountries,
+                  value: masterData.abroadCountries.contains(_abroadCountry) ? _abroadCountry : 'Select Country (દેશ પસંદ કરો)',
+                  onChanged: (v) => setState(() => _abroadCountry = v),
+                ),
               _buildTextField('Country (દેશ) *', 'Enter Country (દેશ)', Icons.public),
               _buildTextField('Pincode / Zip Code (પીનકોડ)', 'Enter Pincode / Zip Code (પીનકોડ)', Icons.markunread_mailbox_outlined),
 
@@ -344,8 +397,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 'Education / Degree (અભ્યાસ / ડિગ્રી) *',
                 'Select Degree',
                 Icons.school_outlined,
-                AppData.educationDegrees,
-                value: AppData.educationDegrees.contains(_education) ? _education : 'Select Degree',
+                masterData.educationDegrees,
+                value: masterData.educationDegrees.contains(_education) ? _education : 'Select Degree',
                 onChanged: (v) => setState(() => _education = v ?? 'Select Degree'),
               ),
               if (_education == 'Other Qualification (અન્ય)')
@@ -406,8 +459,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   'Private Sector Industry / Category (ખાનગી નોકરીનો પ્રકાર)',
                   'Select Industry',
                   Icons.business_center_outlined,
-                  AppData.privateSectors,
-                  value: AppData.privateSectors.contains(_govCategory) ? _govCategory : 'Select Category',
+                  masterData.privateSectors,
+                  value: masterData.privateSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -422,8 +475,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
                   'Select Business Type',
                   Icons.storefront_outlined,
-                  AppData.businessSectors,
-                  value: AppData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
+                  masterData.businessSectors,
+                  value: masterData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
                   onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
                 ),
                 _buildTextField(
@@ -438,8 +491,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 'Yearly Income (વાર્ષિક આવક - રૂ.)',
                 'Select Income (વાર્ષિક આવક પસંદ કરો)',
                 Icons.payments_outlined,
-                AppData.incomeRanges,
-                value: AppData.incomeRanges.contains(_yearlyIncome) ? _yearlyIncome : 'Select Income',
+                masterData.incomeRanges,
+                value: masterData.incomeRanges.contains(_yearlyIncome) ? _yearlyIncome : 'Select Income',
                 onChanged: (v) => setState(() => _yearlyIncome = v ?? 'Select Income'),
               ),
 

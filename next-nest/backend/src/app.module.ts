@@ -21,6 +21,7 @@ import { StorageModule } from './storage/storage.module';
 import { VerificationsModule } from './verifications/verifications.module';
 import { AdvertisementsModule } from './advertisements/advertisements.module';
 import { SuccessStoriesModule } from './success-stories/success-stories.module';
+import { MasterDataModule } from './master-data/master-data.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { SuccessStoriesModule } from './success-stories/success-stories.module';
     VerificationsModule,
     AdvertisementsModule,
     SuccessStoriesModule,
+    MasterDataModule,
   ],
 })
 export class AppModule implements NestModule {

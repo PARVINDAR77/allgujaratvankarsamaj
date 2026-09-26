@@ -17,6 +17,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  React.useEffect(() => {
+    const savedTheme = localStorage.getItem('adminTheme');
+    if (savedTheme === 'light') {
+      document.documentElement.classList.add('light-mode');
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#0A1628] text-white flex flex-col md:flex-row overflow-x-hidden">
       {/* Sidebar */}

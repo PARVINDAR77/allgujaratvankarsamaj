@@ -28,8 +28,8 @@ class AppConfig {
         );
       case 'development':
       default:
-        // Pointing to the live server for APK distribution
-        return 'https://allgujaratvankarsamaj.com/api/v1';
+        // Pointing to local backend
+        return 'http://127.0.0.1:3000/api/v1';
     }
   }
 

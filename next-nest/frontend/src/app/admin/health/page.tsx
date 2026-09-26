@@ -6,8 +6,10 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 
 export default function AdminHealthPage() {
   const [health, setHealth] = useState<any>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchHealth = () => {
+    setRefreshing(true);
     fetch("http://localhost:3000/api/v1/admin/health")
       .then((res) => res.json())
       .then((data) => setHealth(data))
@@ -18,47 +20,169 @@ export default function AdminHealthPage() {
           environment: "development",
           services: { database: "connected", api: "healthy", auth: "active" },
         })
-      );
+      )
+      .finally(() => {
+        setTimeout(() => setRefreshing(false), 800);
+      });
+  };
+
+  useEffect(() => {
+    fetchHealth();
   }, []);
 
   return (
     <AdminLayout title="System Health & Infrastructure" subtitle="Monitor NestJS backend, PostgreSQL database & active APIs">
-      <div className="space-y-6">
+      <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+        
+        {/* Action Header */}
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "-8px" }}>
+          <button 
+            onClick={fetchHealth}
+            style={{
+              padding: "10px 20px",
+              borderRadius: "10px",
+              backgroundColor: "rgba(212, 175, 55, 0.15)",
+              border: "1px solid rgba(212, 175, 55, 0.4)",
+              color: "#D4AF37",
+              fontWeight: 800,
+              fontSize: "13px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              transition: "all 0.3s ease",
+            }}
+            className="hover:bg-[#D4AF37] hover:text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]"
+          >
+            <span className={refreshing ? "animate-spin" : ""}>🔄</span> 
+            {refreshing ? "Pinging Servers..." : "Refresh Diagnostics"}
+          </button>
+        </div>
+
+        {/* Infrastructure Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-[#0F2040] border border-[#997D20]/30 rounded-2xl p-6 shadow-xl space-y-2">
-            <h4 className="text-xs font-bold text-[#AAB7C8] uppercase">Backend Status</h4>
-            <div className="flex items-center justify-between">
-              <span className="text-xl font-extrabold text-white">NestJS API</span>
+          {/* Card 1: Backend */}
+          <div style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "20px",
+            padding: "24px",
+            boxShadow: "0 15px 40px rgba(0, 0, 0, 0.4)",
+            position: "relative",
+            overflow: "hidden"
+          }}>
+            <div style={{ position: "absolute", top: "-20px", right: "-20px", fontSize: "100px", opacity: 0.05, filter: "blur(4px)" }}>⚙️</div>
+            <h4 style={{ fontSize: "11px", fontWeight: 900, color: "#8E9BAE", textTransform: "uppercase", letterSpacing: "2px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981", boxShadow: "0 0 10px #10B981" }}></span>
+              Backend Status
+            </h4>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+              <span style={{ fontSize: "24px", fontWeight: 900, color: "#FFFFFF", letterSpacing: "0.5px" }}>NestJS API</span>
               <StatusBadge status="ACTIVE" />
             </div>
-            <p className="text-[11px] text-[#AAB7C8]">Port 3000 • Operational</p>
+            <p style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>🔌</span> Port 3000 • <span style={{ color: "#10B981" }}>Operational</span>
+            </p>
           </div>
 
-          <div className="bg-[#0F2040] border border-[#997D20]/30 rounded-2xl p-6 shadow-xl space-y-2">
-            <h4 className="text-xs font-bold text-[#AAB7C8] uppercase">Database Connectivity</h4>
-            <div className="flex items-center justify-between">
-              <span className="text-xl font-extrabold text-white">PostgreSQL</span>
+          {/* Card 2: Database */}
+          <div style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "20px",
+            padding: "24px",
+            boxShadow: "0 15px 40px rgba(0, 0, 0, 0.4)",
+            position: "relative",
+            overflow: "hidden"
+          }}>
+            <div style={{ position: "absolute", top: "-20px", right: "-20px", fontSize: "100px", opacity: 0.05, filter: "blur(4px)" }}>🗄️</div>
+            <h4 style={{ fontSize: "11px", fontWeight: 900, color: "#8E9BAE", textTransform: "uppercase", letterSpacing: "2px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981", boxShadow: "0 0 10px #10B981" }}></span>
+              Database Connectivity
+            </h4>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+              <span style={{ fontSize: "24px", fontWeight: 900, color: "#FFFFFF", letterSpacing: "0.5px" }}>PostgreSQL</span>
               <StatusBadge status="VERIFIED" />
             </div>
-            <p className="text-[11px] text-[#AAB7C8]">Prisma ORM • Connected</p>
+            <p style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>🗃️</span> Prisma ORM • <span style={{ color: "#10B981" }}>Connected</span>
+            </p>
           </div>
 
-          <div className="bg-[#0F2040] border border-[#997D20]/30 rounded-2xl p-6 shadow-xl space-y-2">
-            <h4 className="text-xs font-bold text-[#AAB7C8] uppercase">Frontend App</h4>
-            <div className="flex items-center justify-between">
-              <span className="text-xl font-extrabold text-white">Next.js App</span>
+          {/* Card 3: Frontend */}
+          <div style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "20px",
+            padding: "24px",
+            boxShadow: "0 15px 40px rgba(0, 0, 0, 0.4)",
+            position: "relative",
+            overflow: "hidden"
+          }}>
+            <div style={{ position: "absolute", top: "-20px", right: "-20px", fontSize: "100px", opacity: 0.05, filter: "blur(4px)" }}>💻</div>
+            <h4 style={{ fontSize: "11px", fontWeight: 900, color: "#8E9BAE", textTransform: "uppercase", letterSpacing: "2px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#10B981", boxShadow: "0 0 10px #10B981" }}></span>
+              Frontend App
+            </h4>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+              <span style={{ fontSize: "24px", fontWeight: 900, color: "#FFFFFF", letterSpacing: "0.5px" }}>Next.js App</span>
               <StatusBadge status="ACTIVE" />
             </div>
-            <p className="text-[11px] text-[#AAB7C8]">Port 3001 • Turbo Server</p>
+            <p style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+              <span>🚀</span> Port 3001 • <span style={{ color: "#10B981" }}>Turbo Server</span>
+            </p>
           </div>
         </div>
 
+        {/* Diagnostics Terminal */}
         {health && (
-          <div className="bg-[#0F2040] border border-[#997D20]/30 rounded-2xl p-6 shadow-xl space-y-3 text-xs">
-            <h3 className="text-sm font-bold text-white">Health Payload Metadata</h3>
-            <pre className="bg-[#041026] p-4 rounded-xl text-[#D4AF37] font-mono overflow-x-auto border border-[#997D20]/20">
-              {JSON.stringify(health, null, 2)}
-            </pre>
+          <div style={{
+            backgroundColor: "rgba(13, 27, 50, 0.85)",
+            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(212, 175, 55, 0.25)",
+            borderRadius: "20px",
+            overflow: "hidden",
+            boxShadow: "0 20px 50px rgba(0, 0, 0, 0.5)",
+          }}>
+            {/* Terminal Header */}
+            <div style={{
+              backgroundColor: "rgba(4, 16, 38, 0.9)",
+              borderBottom: "1px solid rgba(212, 175, 55, 0.2)",
+              padding: "16px 24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between"
+            }}>
+              <h3 style={{ fontSize: "14px", fontWeight: 800, color: "#FFFFFF", display: "flex", alignItems: "center", gap: "10px", margin: 0 }}>
+                <span>📡</span> Raw Diagnostic Payload (JSON)
+              </h3>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#EF4444" }}></div>
+                <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#F59E0B" }}></div>
+                <div style={{ width: "12px", height: "12px", borderRadius: "50%", backgroundColor: "#10B981" }}></div>
+              </div>
+            </div>
+            
+            {/* Terminal Body */}
+            <div style={{ padding: "24px", backgroundColor: "#020813" }}>
+              <pre style={{
+                fontFamily: "'Fira Code', 'Courier New', Courier, monospace",
+                fontSize: "13px",
+                lineHeight: "1.6",
+                color: "#6EE7B7",
+                margin: 0,
+                overflowX: "auto"
+              }}>
+                <code dangerouslySetInnerHTML={{
+                  __html: JSON.stringify(health, null, 2)
+                    .replace(/"(.*?)":/g, '<span style="color: #93C5FD">"$1"</span>:')
+                    .replace(/:\s"(.*?)"/g, ': <span style="color: #FCD34D">"$1"</span>')
+                }} />
+              </pre>
+            </div>
           </div>
         )}
       </div>

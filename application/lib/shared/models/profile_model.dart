@@ -23,6 +23,14 @@ class ProfileModel {
   // Verification (Prisma: is_verified Boolean @default(false))
   final bool? isVerified;
 
+  // Disability
+  final bool? isPhysicallyDisabled;
+  final String? pwbdCategory;
+
+  // Abroad
+  final bool? isAbroad;
+  final String? abroadCountry;
+
   const ProfileModel({
     required this.id,
     required this.firstName,
@@ -39,6 +47,10 @@ class ProfileModel {
     required this.taluka,
     required this.pargana,
     this.isVerified,
+    this.isPhysicallyDisabled,
+    this.pwbdCategory,
+    this.isAbroad,
+    this.abroadCountry,
   });
 
   String get fullName => '$firstName $lastName';
@@ -60,6 +72,10 @@ class ProfileModel {
       taluka: json['taluka'] as String? ?? '',
       pargana: json['pargana'] as String? ?? '',
       isVerified: json['isVerified'] as bool?,
+      isPhysicallyDisabled: json['isPhysicallyDisabled'] as bool?,
+      pwbdCategory: json['pwbdCategory'] as String?,
+      isAbroad: json['isAbroad'] as bool?,
+      abroadCountry: json['abroadCountry'] as String?,
     );
   }
 
@@ -69,17 +85,22 @@ class ProfileModel {
       'firstName': firstName,
       'lastName': lastName,
       'photoUrl': photoUrl,
-      'gender': gender,
-      'maritalStatus': maritalStatus,
-      'dateOfBirth': dateOfBirth,
+      'gender': gender.contains('Male') ? 'MALE' : 'FEMALE',
+      'maritalStatus': maritalStatus.contains('Divorced') ? 'DIVORCED' : (maritalStatus.contains('Widow') ? 'WIDOWED' : (maritalStatus.contains('Awaiting') ? 'SEPARATED' : 'NEVER_MARRIED')),
+      'dateOfBirth': dateOfBirth, // backend expects YYYY-MM-DD or valid date string. In create profile it's formatted as DD-MM-YYYY, so we might need to parse it if backend is strict, but nestjs can parse ISO
       'education': education,
-      'employmentType': employmentType,
-      'department': department,
+      'occupation': employmentType,
+      'organizationName': department,
       'designation': designation,
-      'district': district,
-      'taluka': taluka,
-      'pargana': pargana,
+      'nativePlace': pargana,
+      'city': taluka,
+      'state': district,
+      'country': 'India',
       'isVerified': isVerified,
+      'isPhysicallyDisabled': isPhysicallyDisabled,
+      'pwbdCategory': pwbdCategory,
+      'isAbroad': isAbroad,
+      'abroadCountry': abroadCountry,
     };
   }
 }

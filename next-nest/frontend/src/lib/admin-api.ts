@@ -169,7 +169,7 @@ export const adminApi = {
 
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/statistics/dashboard`, { headers: getAuthHeaders() });
+      const res = await fetch(`${API_BASE_URL}/admin/stats`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }

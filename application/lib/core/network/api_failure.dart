@@ -46,13 +46,13 @@ class ApiFailure {
 
   static String _defaultMessageFor(ApiFailureType type) {
     return switch (type) {
-      ApiFailureType.unauthorized => 'Session expired. Please log in again.',
-      ApiFailureType.forbidden => 'You do not have permission to perform this action.',
-      ApiFailureType.notFound => 'The requested resource was not found.',
-      ApiFailureType.serverError => 'A server error occurred. Please try again later.',
-      ApiFailureType.networkTimeout => 'Connection timed out. Please check your internet.',
-      ApiFailureType.noConnection => 'No internet connection. Please check your network.',
-      _ => 'An unexpected error occurred. Please try again.',
+      ApiFailureType.unauthorized => 'Session expired. Please log in again. (સેશન પૂરું થયું છે. કૃપા કરીને ફરીથી લોગિન કરો.)',
+      ApiFailureType.forbidden => 'You do not have permission to perform this action. (તમને આ કાર્ય કરવા માટે પરવાનગી નથી.)',
+      ApiFailureType.notFound => 'The requested resource was not found. (માહિતી મળી નથી.)',
+      ApiFailureType.serverError => 'A server error occurred. Please try again later. (સર્વર ભૂલ. કૃપા કરીને થોડા સમય પછી ફરી પ્રયાસ કરો.)',
+      ApiFailureType.networkTimeout => 'Connection timed out. Please check your internet. (કનેક્શન સમય સમાપ્ત થયો. કૃપા કરીને તમારું ઇન્ટરનેટ તપાસો.)',
+      ApiFailureType.noConnection => 'No internet connection. Please check your network. (ઇન્ટરનેટ કનેક્શન નથી. કૃપા કરીને તમારું નેટવર્ક તપાસો.)',
+      _ => 'An unexpected error occurred. Please try again. (કોઈ અણધારી ભૂલ આવી. કૃપા કરીને ફરીથી પ્રયાસ કરો.)',
     };
   }
 
