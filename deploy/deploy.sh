@@ -126,14 +126,18 @@ npm run build
 cd "$PROJECT_ROOT"
 
 # ---------------------------------------------------------
-# Build: Next.js Admin
+# Next.js Admin (Pre-built)
 # ---------------------------------------------------------
-echo "🖥️ Building Next.js Admin Panel..."
-cd "$PROJECT_ROOT/next-nest/frontend"
-# On shared hosting, Next.js build might exceed memory limits.
-# If this fails, build locally and push the /out directory to Git instead.
-npm ci
-npm run build
+echo "🖥️ Using pre-built Next.js Admin Panel (built locally)..."
+# Hostinger shared hosting kills the Next.js build worker due to process limits.
+# Build Next.js locally with 'npm run build' and push the 'out/' folder to Git.
+if [ ! -d "$PROJECT_ROOT/next-nest/frontend/out" ]; then
+    echo "❌ ERROR: next-nest/frontend/out/ not found!"
+    echo "⚠️ Build Next.js locally and push the 'out/' folder to Git first:"
+    echo "   cd next-nest/frontend && npm run build && git add out && git commit && git push"
+    exit 1
+fi
+echo "✅ Found pre-built Next.js output."
 cd "$PROJECT_ROOT"
 
 # ---------------------------------------------------------
