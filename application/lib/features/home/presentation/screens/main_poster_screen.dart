@@ -1,9 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-class MainPosterScreen extends ConsumerWidget {
+import '../../../../features/advertisements/providers/advertisements_provider.dart';
+class MainPosterScreen extends ConsumerStatefulWidget {
   const MainPosterScreen({super.key});
+
+  @override
+  ConsumerState<MainPosterScreen> createState() => _MainPosterScreenState();
+}
+
+class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with WidgetsBindingObserver {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Invalidate the provider on resume so it fetches fresh data
+      ref.invalidate(advertisementsProvider);
+    }
+  }
 
   void _showNotificationDialog(BuildContext context) {
     showDialog(
@@ -127,7 +153,7 @@ class MainPosterScreen extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final padding = MediaQuery.paddingOf(context);
     final availableHeight = size.height - padding.top - padding.bottom;
@@ -336,7 +362,7 @@ class MainPosterScreen extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => _showImageModal(context, 'assets/images/1.jpeg'), // Placeholder for Admin Ad 1
+                                onTap: () => context.push('/advertisement'),
                               ),
                             ),
                           ),
@@ -381,7 +407,7 @@ class MainPosterScreen extends ConsumerWidget {
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => _showImageModal(context, 'assets/images/4.jpeg'), // Placeholder for Admin Ad 2
+                                onTap: () => context.push('/advertisement'),
                               ),
                             ),
                           ),

@@ -33,16 +33,16 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     super.dispose();
   }
 
-  void _showServiceProviders(BuildContext context, String serviceName) {
+  void _showServiceProviders(BuildContext context, String serviceId, String serviceName) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => _buildProvidersBottomSheet(ctx, serviceName),
+      builder: (ctx) => _buildProvidersBottomSheet(ctx, serviceId, serviceName),
     );
   }
 
-  Widget _buildProvidersBottomSheet(BuildContext context, String serviceName) {
+  Widget _buildProvidersBottomSheet(BuildContext context, String serviceId, String serviceName) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
@@ -65,12 +65,31 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: 3, // Dummy providers
-              padding: const EdgeInsets.all(16),
-              itemBuilder: (context, index) {
-                return _buildProviderCard(context, index);
+            child: RefreshIndicator(
+              onRefresh: () async {
+                ref.invalidate(samajServicePersonsProvider(serviceId));
               },
+              child: ref.watch(samajServicePersonsProvider(serviceId)).when(
+                data: (persons) {
+                  if (persons.isEmpty) {
+                    return ListView(
+                      children: const [
+                        SizedBox(height: 50),
+                        Center(child: Text('No professionals found for this service.')),
+                      ],
+                    );
+                  }
+                  return ListView.builder(
+                    itemCount: persons.length,
+                    padding: const EdgeInsets.all(16),
+                    itemBuilder: (context, index) {
+                      return _buildProviderCard(context, persons[index]);
+                    },
+                  );
+                },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, stack) => Center(child: Text('Error loading providers: $err')),
+              ),
             ),
           ),
         ],
@@ -78,7 +97,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
-  Widget _buildProviderCard(BuildContext context, int index) {
+  Widget _buildProviderCard(BuildContext context, dynamic provider) {
     int currentRating = 0;
     return StatefulBuilder(
       builder: (context, setLocalState) {
@@ -104,30 +123,43 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Service Provider ${index + 1}', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          Text(provider.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          if (provider.gujaratiName != null)
+                            Text(provider.gujaratiName, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 4),
-                          const Text('10+ years experience', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                          if (provider.experience != null)
+                            Text(provider.experience, style: const TextStyle(color: Colors.grey, fontSize: 13)),
                           const SizedBox(height: 4),
-                          const Row(
-                            children: [
-                              Icon(Icons.star, color: Colors.amber, size: 16),
-                              SizedBox(width: 4),
-                              Text('4.8 (120 reviews)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
-                            ],
-                          ),
+                          if (provider.city != null)
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                                const SizedBox(width: 4),
+                                Text(provider.city, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
+                              ],
+                            ),
                         ],
                       ),
                     ),
                   ],
                 ),
+                if (provider.description != null) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    provider.description,
+                    style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4, fontWeight: FontWeight.bold),
+                  ),
+                ],
                 const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.message, size: 18),
-                        label: const Text('Message'),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Calling ${provider.phone}...')));
+                        },
+                        icon: const Icon(Icons.call, size: 18),
+                        label: const Text('Call Now'),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -135,8 +167,8 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                       child: ElevatedButton.icon(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37), foregroundColor: Colors.white),
-                        icon: const Icon(Icons.call, size: 18),
-                        label: const Text('Contact'),
+                        icon: const Icon(Icons.message, size: 18),
+                        label: const Text('Message'),
                       ),
                     ),
                   ],
@@ -401,21 +433,30 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
 
                     // Services List
                     Expanded(
-                      child: ref.watch(samajServicesProvider).when(
-                        data: (services) {
-                          if (services.isEmpty) {
-                            return const Center(child: Text('No Samaj Services Found', style: TextStyle(fontWeight: FontWeight.bold)));
-                          }
-                          
-                          // Group services by category
-                          final Map<String, List<SamajService>> groupedServices = {};
-                          for (final service in services) {
-                            groupedServices.putIfAbsent(service.category, () => []).add(service);
-                          }
-                          
-                          final categories = groupedServices.keys.toList()..sort();
-                          
-                          return ListView.builder(
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          ref.invalidate(samajServicesProvider);
+                        },
+                        child: ref.watch(samajServicesProvider).when(
+                          data: (services) {
+                            if (services.isEmpty) {
+                              return ListView(
+                                children: const [
+                                  SizedBox(height: 100),
+                                  Center(child: Text('No Samaj Services Found', style: TextStyle(fontWeight: FontWeight.bold))),
+                                ],
+                              );
+                            }
+                            
+                            // Group services by category
+                            final Map<String, List<SamajService>> groupedServices = {};
+                            for (final service in services) {
+                              groupedServices.putIfAbsent(service.category, () => []).add(service);
+                            }
+                            
+                            final categories = groupedServices.keys.toList()..sort();
+                            
+                            return ListView.builder(
                             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                             physics: const BouncingScrollPhysics(),
                             itemCount: categories.length,
@@ -474,7 +515,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                         
                                         return InkWell(
                                           onTap: () {
-                                            _showServiceProviders(context, text);
+                                            _showServiceProviders(context, service.id, text);
                                           },
                                           borderRadius: BorderRadius.circular(12),
                                           child: Container(
@@ -532,6 +573,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                         loading: () => const Center(child: CircularProgressIndicator()),
                         error: (err, stack) => Center(child: Text('Error loading services: $err')),
                       ),
+                      ), // Close RefreshIndicator
                     ),
                   ],
                 ),

@@ -42,6 +42,7 @@ const menuSections = [
   {
     title: "CONTENT & SETTINGS",
     items: [
+      { name: "Home Screen", href: "/admin/home-screen", icon: "📱" },
       { name: "Reports", href: "/admin/reports", icon: "📈" },
       { name: "Settings", href: "/admin/settings", icon: "⚙️" },
     ],

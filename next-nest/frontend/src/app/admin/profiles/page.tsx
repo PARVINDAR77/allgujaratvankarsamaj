@@ -11,9 +11,11 @@ export default function AdminProfilesPage() {
   const [search, setSearch] = useState("");
   const [selectedProfile, setSelectedProfile] = useState<AdminProfileItem | null>(null);
 
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+
   const loadProfiles = async () => {
     try {
-      const data = await adminApi.getProfiles();
+      const data = await adminApi.getProfiles(selectedCategory);
       setProfiles(data);
     } catch (e) {
       console.error(e);
@@ -24,7 +26,7 @@ export default function AdminProfilesPage() {
 
   useEffect(() => {
     loadProfiles();
-  }, []);
+  }, [selectedCategory]);
 
   const handleStatusChange = async (profileId: string, currentStatus: string) => {
     const newStatus = currentStatus === "APPROVED" ? "REJECTED" : "APPROVED";
@@ -72,28 +74,61 @@ export default function AdminProfilesPage() {
             boxShadow: "0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05)",
           }}
         >
-          <div style={{ position: "relative", flex: "1 1 300px" }}>
-            <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", opacity: 0.7 }}>🔍</span>
-            <input
-              type="text"
-              placeholder="Search profiles by name, city, pargana..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                backgroundColor: "rgba(4, 16, 38, 0.6)",
-                border: "1px solid rgba(212, 175, 55, 0.3)",
-                borderRadius: "12px",
-                padding: "14px 16px 14px 48px",
-                fontSize: "14px",
-                color: "#FFFFFF",
-                fontWeight: 600,
-                outline: "none",
-                transition: "all 0.3s ease",
-                boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)"
-              }}
-              className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
-            />
+          <div style={{ display: "flex", flex: "1 1 auto", gap: "16px", flexWrap: "wrap" }}>
+            <div style={{ position: "relative", flex: "1 1 300px" }}>
+              <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", opacity: 0.7 }}>🔍</span>
+              <input
+                type="text"
+                placeholder="Search profiles by name, city, pargana..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                style={{
+                  width: "100%",
+                  backgroundColor: "rgba(4, 16, 38, 0.6)",
+                  border: "1px solid rgba(212, 175, 55, 0.3)",
+                  borderRadius: "12px",
+                  padding: "14px 16px 14px 48px",
+                  fontSize: "14px",
+                  color: "#FFFFFF",
+                  fontWeight: 600,
+                  outline: "none",
+                  transition: "all 0.3s ease",
+                  boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)"
+                }}
+                className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+              />
+            </div>
+            
+            <div style={{ position: "relative", minWidth: "220px" }}>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                style={{
+                  width: "100%",
+                  backgroundColor: "rgba(4, 16, 38, 0.6)",
+                  border: "1px solid rgba(212, 175, 55, 0.3)",
+                  borderRadius: "12px",
+                  padding: "14px 16px",
+                  fontSize: "14px",
+                  color: "#FFFFFF",
+                  fontWeight: 600,
+                  outline: "none",
+                  appearance: "none",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                  boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)"
+                }}
+                className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+              >
+                <option value="" style={{ background: "#0a1526" }}>All Categories</option>
+                <option value="government" style={{ background: "#0a1526" }}>Government Profile</option>
+                <option value="private" style={{ background: "#0a1526" }}>Private Job Profile</option>
+                <option value="business" style={{ background: "#0a1526" }}>Business Person Profile</option>
+              </select>
+              <span style={{ position: "absolute", right: "16px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none", opacity: 0.7 }}>
+                ▼
+              </span>
+            </div>
           </div>
           <div
             style={{

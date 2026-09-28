@@ -47,18 +47,34 @@ const castes = ['Vankar', 'Vankar Samaj', 'Weaver Community'];
 async function main() {
   console.log('Seed process starting: Creating 100 fake Vankar Samaj Matrimonial Profiles...');
 
-  // Ensure default demo user exists for foreign key setup
-  let defaultUser = await prisma.user.findFirst();
-  if (!defaultUser) {
-    defaultUser = await prisma.user.create({
-      data: {
-        email: 'panjabiparvindar77@gmail.com',
-        passwordHash: '$2b$10$e8.Z/yD1P4x.4z8y1z5.7O2qG5YpW.6j1.5e', // Parvindar@123
-        role: 'USER',
-        status: 'ACTIVE',
-      },
-    });
-  }
+  // Ensure default demo users exist so the user never gets locked out!
+  const bcrypt = require('bcrypt');
+  const hash = await bcrypt.hash('Password123', 10);
+  
+  await prisma.user.upsert({
+    where: { email: 'panjabiparvindar77@gmail.com' },
+    update: { passwordHash: hash },
+    create: {
+      email: 'panjabiparvindar77@gmail.com',
+      passwordHash: hash,
+      role: 'USER',
+      status: 'ACTIVE',
+    },
+  });
+
+  await prisma.user.upsert({
+    where: { email: 'admin@vankarsamaj.org' },
+    update: { passwordHash: hash },
+    create: {
+      email: 'admin@vankarsamaj.org',
+      passwordHash: hash,
+      role: 'SUPER_ADMIN',
+      status: 'ACTIVE',
+    },
+  });
+
+  let defaultUser = await prisma.user.findFirst({ where: { email: 'panjabiparvindar77@gmail.com' }});
+
 
   for (let i = 1; i <= 100; i++) {
     const isMale = i % 2 !== 0;

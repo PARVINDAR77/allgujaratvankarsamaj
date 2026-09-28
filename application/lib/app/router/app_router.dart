@@ -23,6 +23,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
+import '../../features/community/presentation/screens/samaj_ratna_screen.dart';
 import '../../features/search/presentation/screens/search_results_screen.dart';
 import '../../features/matrimonial_listing/presentation/screens/matrimonial_listing_screen.dart';
 import '../../shared/presentation/screens/main_navigation_screen.dart';
@@ -30,6 +31,7 @@ import '../../features/home/presentation/screens/main_poster_screen.dart';
 import '../../features/home/presentation/screens/live_statistics_screen.dart';
 import '../../features/home/presentation/screens/birthdays_screen.dart';
 import '../../features/success_stories/presentation/screens/success_stories_screen.dart';
+import '../../features/advertisements/presentation/screens/advertisements_screen.dart';
 
 class AuthRouterListenable extends ChangeNotifier {
   AuthRouterListenable(Ref ref) {
@@ -146,6 +148,19 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/government-employees',
         name: 'government-employees',
         builder: (context, state) => const GovtEmployeesScreen(),
+      ),
+      GoRoute(
+        path: '/samaj-ratna',
+        name: 'samaj-ratna',
+        builder: (context, state) => const SamajRatnaScreen(),
+      ),
+      GoRoute(
+        path: '/advertisement',
+        name: 'advertisement',
+        builder: (context, state) {
+          final placement = state.uri.queryParameters['placement'];
+          return AdvertisementsScreen(placement: placement);
+        },
       ),
       GoRoute(
         path: '/private-employees',

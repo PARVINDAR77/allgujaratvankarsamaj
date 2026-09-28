@@ -27,7 +27,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   String _pargana = 'Any';
   String _livingIn = 'Any';
   String _education = 'Any';
-  String _diet = 'Any';
+  String _studyingAbroad = 'Any';
   String _occupation = 'Any';
   String _religion = 'Any';
   String _income = 'Any';
@@ -228,7 +228,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                       children: [
                         Expanded(child: _buildDropdown('શિક્ષણ (Education)', _education, ['Any', 'Graduate'], Icons.school, Colors.orange, (v) => setState(() => _education = v!))),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildDropdown('આહાર (Diet)', _diet, ['Any', 'Vegetarian'], Icons.restaurant, Colors.orange, (v) => setState(() => _diet = v!))),
+                        Expanded(child: _buildDropdown('વિદેશમાં અભ્યાસ? (Studying Abroad)', _studyingAbroad, ['Any', 'Yes', 'No'], Icons.flight_takeoff, Colors.orange, (v) => setState(() => _studyingAbroad = v!))),
                       ],
                     ),
                     Row(

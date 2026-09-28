@@ -64,6 +64,27 @@ export class UsersService {
       this.memoryUsers.set(demoUser.id, demoUser);
     }
 
+    const adminUser: User = {
+      id: "demo-user-id-admin",
+      email: "admin@vankarsamaj.org",
+      phone: null,
+      name: "Admin User",
+      gender: null,
+      passwordHash,
+      role: Role.ADMIN,
+      status: Status.ACTIVE,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    if (!this.memoryUsers.has(adminUser.email!)) {
+      this.memoryUsers.set(adminUser.email!, adminUser);
+      this.memoryUsers.set(adminUser.id, adminUser);
+    }
+    if (!this.memoryUsers.has(demoUser.email!)) {
+      this.memoryUsers.set(demoUser.email!, demoUser);
+      this.memoryUsers.set(demoUser.id, demoUser);
+    }
+
     const parvindarUser: User = {
       id: "demo-user-id-002",
       email: "panjabiparvindar77@gmail.com",

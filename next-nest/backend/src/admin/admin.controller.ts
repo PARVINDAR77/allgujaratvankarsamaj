@@ -4,7 +4,9 @@ import {
   Get,
   Param,
   Patch,
+  Delete,
   UseGuards,
+  Query,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { AdminService } from "./admin.service";
@@ -37,10 +39,16 @@ export class AdminController {
     return this.adminService.updateUserStatus(id, status);
   }
 
+  @Delete("users/:id")
+  @ApiOperation({ summary: "Delete a user" })
+  async deleteUser(@Param("id") id: string) {
+    return this.adminService.deleteUser(id);
+  }
+
   @Get("profiles")
   @ApiOperation({ summary: "Get list of all matrimonial profiles for moderation" })
-  async getProfiles() {
-    return this.adminService.getAllProfiles();
+  async getProfiles(@Query("category") category?: string) {
+    return this.adminService.getAllProfiles(category);
   }
 
   @Patch("profiles/:id/status")

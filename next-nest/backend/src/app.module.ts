@@ -22,6 +22,7 @@ import { VerificationsModule } from './verifications/verifications.module';
 import { AdvertisementsModule } from './advertisements/advertisements.module';
 import { SuccessStoriesModule } from './success-stories/success-stories.module';
 import { MasterDataModule } from './master-data/master-data.module';
+import { SamajRatnaModule } from './samaj-ratna/samaj-ratna.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { MasterDataModule } from './master-data/master-data.module';
     AdvertisementsModule,
     SuccessStoriesModule,
     MasterDataModule,
+    SamajRatnaModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -1,26 +1,29 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
+  private readonly uploadDir = path.join(process.cwd(), 'uploads');
 
-  /**
-   * Mock implementation of file upload.
-   * In production, this would upload to AWS S3, Google Cloud Storage, or a local disk.
-   */
   async uploadFile(fileBuffer: Buffer, mimetype: string, originalName: string): Promise<string> {
     this.logger.log(`Uploading file ${originalName} of type ${mimetype}`);
     
-    // Simulate upload delay
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Ensure the uploads directory exists
+    await fs.mkdir(this.uploadDir, { recursive: true });
     
-    // Generate a unique filename and return a mock URL
-    const ext = originalName.split('.').pop();
+    // Generate a unique filename and return a local URL
+    const ext = originalName.split('.').pop() || '';
     const uniqueFilename = `${uuidv4()}.${ext}`;
+    const filePath = path.join(this.uploadDir, uniqueFilename);
     
-    // For now, return a placeholder URL.
-    return `https://storage.vankarsamaj.com/uploads/${uniqueFilename}`;
+    // Write file to disk
+    await fs.writeFile(filePath, fileBuffer);
+    
+    // Return the local URL
+    return `http://localhost:3000/uploads/${uniqueFilename}`;
   }
 
   async deleteFile(fileUrl: string): Promise<void> {

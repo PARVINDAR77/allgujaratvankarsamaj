@@ -186,9 +186,9 @@ export default function AdminLocationsPage() {
         {/* Dynamic KPI Cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px" }}>
           <StatCard title="Total States" value={states.length} icon="📌" change="Active" isPositive />
-          <StatCard title="Total Districts" value={activeTab === 'districts' ? districts.length : 33} icon="📍" change="Gujarat" isPositive />
-          <StatCard title="Total Talukas" value={activeTab === 'talukas' ? talukas.length : 252} icon="🏢" change="Mapped" isPositive />
-          <StatCard title="Samaj Parganas" value={activeTab === 'parganas' ? parganas.length : 14} icon="🏛️" change="Verified" isPositive />
+          <StatCard title="Total Districts" value={districts.length} icon="📍" change="Gujarat" isPositive />
+          <StatCard title="Total Talukas" value={talukas.length} icon="🏢" change="Mapped" isPositive />
+          <StatCard title="Samaj Parganas" value={parganas.length} icon="🏛️" change="Verified" isPositive />
         </div>
 
         {/* Navigation Tabs */}

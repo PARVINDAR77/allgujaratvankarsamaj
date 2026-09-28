@@ -7,6 +7,9 @@ import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 import helmet from "helmet";
 import * as morgan from "morgan";
 
+import * as express from 'express';
+import { join } from 'path';
+
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
@@ -52,6 +55,15 @@ async function bootstrap() {
     origin: true,
     credentials: true,
   });
+
+  // Serve static files from the 'uploads' directory with robust CORS and security headers
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads'), {
+    setHeaders: (res) => {
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+    }
+  }));
 
   // Global API Prefix /api/v1
   app.setGlobalPrefix("api/v1");

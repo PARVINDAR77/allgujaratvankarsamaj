@@ -60,7 +60,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
       if (_selectedPargana != 'All' && p.pargana != _selectedPargana) return false;
       if (_selectedDistrict != 'All' && p.district != _selectedDistrict) return false;
       if (_selectedTaluka != 'All' && p.taluka != _selectedTaluka) return false;
-      if (_searchQuery.isNotEmpty && !p.fullName.toLowerCase().contains(_searchQuery.toLowerCase())) return false;
+      if (_searchQuery.isNotEmpty && !p.pargana.toLowerCase().contains(_searchQuery.toLowerCase())) return false;
       return true;
     }).toList();
 
@@ -95,12 +95,28 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                           if (profileState.isLoading)
                             const Center(child: Padding(padding: EdgeInsets.all(32), child: CircularProgressIndicator()))
                           else ...[
-                            Text(
-                              '${filteredProfiles.length} પ્રોફાઈલ મળ્યા (profiles found)',
-                              style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                            Builder(
+                              builder: (context) {
+                                final parganaGroups = <String, List<ProfileModel>>{};
+                                for (var p in filteredProfiles) {
+                                  final key = p.pargana.isNotEmpty ? p.pargana : 'અન્ય (Other)';
+                                  parganaGroups.putIfAbsent(key, () => []).add(p);
+                                }
+                                final sortedParganas = parganaGroups.keys.toList()..sort();
+
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      '${sortedParganas.length} પરગણા મળ્યા (Parganas found)',
+                                      style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    _buildParganaList(parganaGroups, sortedParganas),
+                                  ],
+                                );
+                              },
                             ),
-                            const SizedBox(height: 12),
-                            _buildProfileList(filteredProfiles),
                           ],
                         ],
                       ),
@@ -196,12 +212,12 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Samaj Family Directory',
+                  'Pargana Overview',
                   style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'વણકર સમાજ - પરગણા પ્રમાણે સૂચિ',
+                  'વણકર સમાજ - પરગણાં (વિશેષ)',
                   style: TextStyle(color: _goldColor, fontSize: 13, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -217,7 +233,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
       children: [
         Row(
           children: [
-            Expanded(child: _buildDropdown(_selectedPargana, parganas, (v) {
+            Expanded(child: _buildDropdown('પરગણા (Pargana)', _selectedPargana, parganas, (v) {
               setState(() {
                 _selectedPargana = v ?? 'All';
                 _selectedDistrict = 'All';
@@ -225,7 +241,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
               });
             })),
             const SizedBox(width: 12),
-            Expanded(child: _buildDropdown(_selectedDistrict, districts, (v) {
+            Expanded(child: _buildDropdown('જિલ્લો (District)', _selectedDistrict, districts, (v) {
               setState(() {
                 _selectedDistrict = v ?? 'All';
                 _selectedTaluka = 'All';
@@ -236,40 +252,47 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _buildDropdown(_selectedTaluka, talukas, (v) => setState(() => _selectedTaluka = v ?? 'All'))),
+            Expanded(child: _buildDropdown('તાલુકો (Taluka)', _selectedTaluka, talukas, (v) => setState(() => _selectedTaluka = v ?? 'All'))),
             const SizedBox(width: 12),
-            Expanded(child: _buildDropdown(_selectedVillage, villages, (v) => setState(() => _selectedVillage = v ?? 'All'))),
+            Expanded(child: _buildDropdown('ગામ (Village)', _selectedVillage, villages, (v) => setState(() => _selectedVillage = v ?? 'All'))),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildDropdown(String value, List<String> options, void Function(String?) onChanged) {
-    return Container(
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        color: _cardColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: _goldColor),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: options.contains(value) ? value : 'All',
-          isExpanded: true,
-          dropdownColor: _cardColor,
-          icon: Icon(Icons.keyboard_arrow_down, color: _goldColor),
-          style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
-          onChanged: onChanged,
-          items: options.map((String val) {
-            return DropdownMenuItem<String>(
-              value: val,
-              child: Text(val, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-            );
-          }).toList(),
+  Widget _buildDropdown(String label, String value, List<String> options, void Function(String?) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: _cardColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: _goldColor),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: options.contains(value) ? value : (options.isNotEmpty ? options.first : null),
+              isExpanded: true,
+              dropdownColor: _cardColor,
+              icon: Icon(Icons.keyboard_arrow_down, color: _goldColor),
+              style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
+              onChanged: onChanged,
+              items: options.map((String val) {
+                return DropdownMenuItem<String>(
+                  value: val,
+                  child: Text(val, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                );
+              }).toList(),
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -291,7 +314,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
               controller: _searchController,
               style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
               decoration: const InputDecoration(
-                hintText: 'નામ શોધો... (Search by Name)',
+                hintText: 'પરગણા શોધો... (Search by Pargana)',
                 hintStyle: TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.bold),
                 border: InputBorder.none,
               ),
@@ -303,8 +326,8 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
     );
   }
 
-  Widget _buildProfileList(List<ProfileModel> profiles) {
-    if (profiles.isEmpty) {
+  Widget _buildParganaList(Map<String, List<ProfileModel>> parganaGroups, List<String> sortedParganas) {
+    if (sortedParganas.isEmpty) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.all(32),
@@ -316,7 +339,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
           children: [
             Icon(Icons.search_off, color: Colors.black38, size: 48),
             SizedBox(height: 16),
-            Text('કોઈ પ્રોફાઇલ મળી નથી', style: TextStyle(color: Colors.black54, fontSize: 16, fontWeight: FontWeight.bold)),
+            Text('કોઈ પરગણાં મળી નથી', style: TextStyle(color: Colors.black54, fontSize: 16, fontWeight: FontWeight.bold)),
           ],
         ),
       );
@@ -325,9 +348,11 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
     return ListView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      itemCount: profiles.length,
+      itemCount: sortedParganas.length,
       itemBuilder: (context, index) {
-        final profile = profiles[index];
+        final parganaName = sortedParganas[index];
+        final parganaProfiles = parganaGroups[parganaName]!;
+        
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(12),
@@ -358,43 +383,26 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      profile.fullName,
+                      parganaName,
                       style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        Icon(Icons.location_on, color: _goldColor, size: 12),
+                        Icon(Icons.family_restroom, color: _goldColor, size: 14),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
-                            '${profile.pargana} / ${profile.taluka}',
-                            style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.business, color: Colors.black38, size: 12),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            profile.district,
-                            style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
+                            '${parganaProfiles.length} પરિવારો (Families)',
+                            style: const TextStyle(color: Colors.black54, fontSize: 14, fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      profile.designation.isNotEmpty ? profile.designation : 'N/A',
-                      style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
-              Icon(Icons.chevron_right, color: _goldColor),
             ],
           ),
         );

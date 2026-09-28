@@ -1,10 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/widgets/ad_banner_carousel.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../../features/advertisements/providers/advertisements_provider.dart';
 
-class HomeScreen extends ConsumerWidget {
+final homeButtonsProvider = FutureProvider<List<dynamic>>((ref) async {
+  try {
+    final dio = ref.watch(apiClientProvider);
+    final response = await dio.get('/home-buttons');
+    if (response.data != null && response.data['data'] != null) {
+      return response.data['data'] as List<dynamic>;
+    }
+    return [];
+  } catch (e) {
+    return [];
+  }
+});
+
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObserver {
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Invalidate the providers on resume so they fetch fresh data
+      ref.invalidate(advertisementsProvider);
+      ref.invalidate(homeButtonsProvider);
+    }
+  }
 
   void _showNotificationDialog(BuildContext context) {
     showDialog(
@@ -196,8 +237,34 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
+  void _handleDynamicButtonTap(BuildContext context, int buttonId, String fallbackTitle, String fallbackDetails, IconData fallbackIcon, Color fallbackColor) {
+    final buttonsAsync = ref.read(homeButtonsProvider);
+    
+    buttonsAsync.when(
+      data: (buttons) {
+        if (buttons.isEmpty) {
+          _showCategoryModal(context, fallbackTitle, fallbackDetails, fallbackIcon, fallbackColor);
+          return;
+        }
+        
+        final config = buttons.firstWhere(
+          (b) => b['buttonId'] == buttonId,
+          orElse: () => null,
+        );
+
+        if (config != null && config['isActive'] == true && config['route'] != null && config['route'].toString().isNotEmpty) {
+          context.push(config['route']);
+        } else {
+          _showCategoryModal(context, fallbackTitle, fallbackDetails, fallbackIcon, fallbackColor);
+        }
+      },
+      loading: () => _showCategoryModal(context, fallbackTitle, fallbackDetails, fallbackIcon, fallbackColor),
+      error: (_, __) => _showCategoryModal(context, fallbackTitle, fallbackDetails, fallbackIcon, fallbackColor),
+    );
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: LayoutBuilder(
@@ -366,6 +433,50 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
 
+                // --- Golden Buttons (Middle section above Join Now) ---
+                // 1. Pavan Prernadata
+                Positioned(
+                  left: sx(20),
+                  top: sy(1415),
+                  width: sw(330),
+                  height: sh(130),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/advertisement?placement=PAVAN_PRERNADATA'),
+                    ),
+                  ),
+                ),
+                // 2. Samaj Super Stars
+                Positioned(
+                  left: sx(370),
+                  top: sy(1415),
+                  width: sw(340),
+                  height: sh(130),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/advertisement?placement=SAMAJ_SUPER_STARS'),
+                    ),
+                  ),
+                ),
+                // 3. Family Directory
+                Positioned(
+                  left: sx(730),
+                  top: sy(1415),
+                  width: sw(330),
+                  height: sh(130),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(20),
+                      onTap: () => context.push('/family-details'),
+                    ),
+                  ),
+                ),
+
                 // --- Center Bottom ---
                 // 7. Join Now
                 Positioned(
@@ -383,7 +494,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
 
                 // --- Bottom Icons ---
-                // 8. Education
+                // 8. Education (Button 1)
                 Positioned(
                   left: sx(0),
                   top: sy(1670),
@@ -392,11 +503,11 @@ class HomeScreen extends ConsumerWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _showCategoryModal(context, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0)),
+                      onTap: () => _handleDynamicButtonTap(context, 1, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0)),
                     ),
                   ),
                 ),
-                // 9. Unity
+                // 9. Unity (Button 2)
                 Positioned(
                   left: sx(216),
                   top: sy(1670),
@@ -405,11 +516,11 @@ class HomeScreen extends ConsumerWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _showCategoryModal(context, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315)),
+                      onTap: () => _handleDynamicButtonTap(context, 2, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315)),
                     ),
                   ),
                 ),
-                // 10. Progress
+                // 10. Progress (Button 3)
                 Positioned(
                   left: sx(432),
                   top: sy(1670),
@@ -418,11 +529,11 @@ class HomeScreen extends ConsumerWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _showCategoryModal(context, 'Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32)),
+                      onTap: () => _handleDynamicButtonTap(context, 3, 'Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32)),
                     ),
                   ),
                 ),
-                // 11. Service
+                // 11. Service (Button 4)
                 Positioned(
                   left: sx(648),
                   top: sy(1670),
@@ -431,11 +542,11 @@ class HomeScreen extends ConsumerWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _showCategoryModal(context, 'Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828)),
+                      onTap: () => _handleDynamicButtonTap(context, 4, 'Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828)),
                     ),
                   ),
                 ),
-                // 12. Strong Roots
+                // 12. Strong Roots (Button 5)
                 Positioned(
                   left: sx(864),
                   top: sy(1670),
@@ -444,17 +555,9 @@ class HomeScreen extends ConsumerWidget {
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _showCategoryModal(context, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0)),
+                      onTap: () => _handleDynamicButtonTap(context, 5, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0)),
                     ),
                   ),
-                ),
-                // ── Ad Banner Carousel overlay ─────────────────────────────
-                // Silently hidden if no active ads exist.
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: sh(200),
-                  child: const AdBannerCarousel(),
                 ),
                 // ── Success Stories quick-access button ────────────────────
                 Positioned(
@@ -487,6 +590,32 @@ class HomeScreen extends ConsumerWidget {
                                   fontSize: 13)),
                         ],
                       ),
+                    ),
+                  ),
+                ),
+                
+                // Refresh Button (Top Right corner)
+                Positioned(
+                  top: 50,
+                  right: 20,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF041126).withValues(alpha: 0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.refresh, color: Color(0xFFD4AF37), size: 28),
+                      onPressed: () {
+                        ref.invalidate(homeButtonsProvider);
+                        ref.invalidate(advertisementsProvider);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('માહિતી અપડેટ થઈ ગઈ છે (Content Refreshed)', style: TextStyle(color: Colors.white)),
+                            backgroundColor: Color(0xFF041126),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),

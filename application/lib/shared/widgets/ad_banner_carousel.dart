@@ -42,14 +42,32 @@ class _AdBannerCarouselState extends ConsumerState<AdBannerCarousel> {
         height: 140,
         child: Center(child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4AF37))),
       ),
-      // Error — silent: don't block the home screen for a banner fetch failure
-      error: (_, __) => const SizedBox.shrink(),
+      // Error — show text and a manual retry button
+      error: (e, __) => SizedBox(
+        height: 140,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Error loading ads: $e', style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: () => ref.invalidate(advertisementsProvider),
+                icon: const Icon(Icons.refresh, size: 18, color: Color(0xFFD4AF37)),
+                label: const Text('Retry', style: TextStyle(color: Color(0xFFD4AF37))),
+                style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFFD4AF37))),
+              ),
+            ],
+          ),
+        ),
+      ),
       data: (ads) {
         // Filter to HOME_BANNER placement only
         final banners = ads.where((a) => a.placement == 'HOME_BANNER').toList();
         if (banners.isEmpty) return const SizedBox.shrink();
 
         return Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
               height: 150,

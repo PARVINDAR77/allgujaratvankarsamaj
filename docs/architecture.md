@@ -39,6 +39,13 @@ docker compose up -d
   - Swagger/OpenAPI documentation: `/api/docs`
   - Health check endpoint: `/api/v1/health` verifying backend runtime and Prisma database query capability (`SELECT 1`).
 
+## Core Architectural Rules
+
+### 1. Home Screen Dynamic Content Routing (CRITICAL RULE)
+**Home Screen button destinations are application-controlled and are not editable through Admin configuration. Admin manages the content belonging to each destination module.**
+- The Flutter application maintains a strict, hard-coded mapping of Home Screen buttons to GoRouter destinations (e.g., Button 1 -> `/samaj-ratna`).
+- The Admin Panel must NEVER attempt to change or provide `targetRoute`. It only configures the visual presentation (Title, Subtitle, Icon) of the button.
+- The NestJS backend enforces this by strictly ignoring `route` payload fields on update and defaulting to predefined fixed routes during initial configuration creation.
 
 ## Responsibilities
 

@@ -194,9 +194,18 @@ export const adminApi = {
     return res.json();
   },
 
-  async getProfiles(): Promise<AdminProfileItem[]> {
+  async deleteUser(userId: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    return res.json();
+  },
+
+  async getProfiles(category?: string): Promise<AdminProfileItem[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/profiles`, { headers: getAuthHeaders() });
+      const query = category ? `?category=${encodeURIComponent(category)}` : '';
+      const res = await fetch(`${API_BASE_URL}/admin/profiles${query}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
@@ -512,6 +521,40 @@ export const adminApi = {
   },
   async deleteVillage(id: string) {
     const res = await fetch(`${API_BASE_URL}/locations/admin/villages/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    return res.json();
+  },
+
+  // ----------------------------------------------------
+  // ADVERTISEMENTS (ADMIN)
+  // ----------------------------------------------------
+  async getAdvertisements() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/advertisements`, { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (error) { throw error; }
+  },
+  async createAdvertisement(data: any) {
+    const res = await fetch(`${API_BASE_URL}/admin/advertisements`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  async updateAdvertisement(id: string, data: any) {
+    const res = await fetch(`${API_BASE_URL}/admin/advertisements/${id}`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+  async deleteAdvertisement(id: string) {
+    const res = await fetch(`${API_BASE_URL}/admin/advertisements/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });

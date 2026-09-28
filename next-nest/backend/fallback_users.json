@@ -22,5 +22,17 @@
     "status": "ACTIVE",
     "createdAt": "2026-09-23T10:00:59.676Z",
     "updatedAt": "2026-09-23T10:00:59.676Z"
+  },
+  {
+    "id": "demo-user-id-admin",
+    "email": "admin@vankarsamaj.org",
+    "phone": null,
+    "name": "Admin User",
+    "gender": null,
+    "passwordHash": "$2b$10$44n5feg34ut4E4CAoFuVduc7Kpv2D17UI.spIxnWGXnm/b404wiZu",
+    "role": "ADMIN",
+    "status": "ACTIVE",
+    "createdAt": "2026-09-26T09:18:20.045Z",
+    "updatedAt": "2026-09-26T09:18:20.045Z"
   }
 ]

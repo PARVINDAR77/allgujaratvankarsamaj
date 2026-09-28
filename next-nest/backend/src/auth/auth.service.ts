@@ -49,6 +49,7 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
+    console.log("LOGIN ATTEMPT RECEIVED:", { email: dto.email, phone: dto.phone, pwd: dto.password });
     let user = dto.phone ? await this.usersService.findByPhone(dto.phone) : null;
     if (!user && dto.email) {
       user = await this.usersService.findByEmail(dto.email);

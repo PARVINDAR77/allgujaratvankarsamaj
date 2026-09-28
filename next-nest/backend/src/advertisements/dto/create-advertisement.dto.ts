@@ -10,12 +10,12 @@ export class CreateAdvertisementDto {
 
   @ApiProperty({ description: 'Image URL for the ad' })
   @IsNotEmpty()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   imageUrl: string;
 
   @ApiPropertyOptional({ description: 'Target URL on click' })
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   targetUrl?: string;
 
   @ApiPropertyOptional({ enum: AdPlacement, default: AdPlacement.HOME_BANNER })

@@ -141,9 +141,31 @@ export class AdminService {
     }
   }
 
-  async getAllProfiles() {
+  async deleteUser(userId: string) {
     try {
+      return await this.prisma.user.delete({
+        where: { id: userId },
+      });
+    } catch (e) {
+      this.logger.error(`Error deleting user ${userId}`, e);
+      return { success: false, message: "Could not delete user" };
+    }
+  }
+
+  async getAllProfiles(category?: string) {
+    try {
+      let whereCondition: any = {};
+      
+      if (category === 'government') {
+        whereCondition = { OR: [{ occupation: { contains: 'government' } }, { governmentEmployment: { isNot: null } }] };
+      } else if (category === 'private') {
+        whereCondition = { occupation: { contains: 'private' } };
+      } else if (category === 'business') {
+        whereCondition = { occupation: { contains: 'business' } };
+      }
+
       const profiles = await this.prisma.matrimonialProfile.findMany({
+        where: Object.keys(whereCondition).length > 0 ? whereCondition : undefined,
         orderBy: { createdAt: "desc" },
         include: { user: true },
       });
@@ -162,7 +184,8 @@ export class AdminService {
         isFeatured: p.isFeatured,
         createdAt: p.createdAt,
       }));
-    } catch {
+    } catch (e) {
+      console.error(e);
       return [];
     }
   }

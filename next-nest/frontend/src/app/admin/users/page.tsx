@@ -63,6 +63,17 @@ export default function AdminUsersPage() {
     );
   };
 
+  const handleDeleteUser = async (id: string, name: string) => {
+    if (confirm(`Are you sure you want to permanently delete user "${name}"?`)) {
+      try {
+        await adminApi.deleteUser(id);
+        setUsers(users.filter((u) => u.id !== id));
+      } catch (err) {
+        alert("Failed to delete user.");
+      }
+    }
+  };
+
   const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
@@ -246,22 +257,40 @@ export default function AdminUsersPage() {
                           <StatusBadge status={u.status} />
                         </td>
                         <td style={{ padding: "14px 18px", textAlign: "right" }}>
-                          <button
-                            onClick={() => toggleUserStatus(u.id)}
-                            style={{
-                              padding: "6px 14px",
-                              borderRadius: "8px",
-                              fontSize: "11px",
-                              fontWeight: 800,
-                              cursor: "pointer",
-                              backgroundColor: u.status === "ACTIVE" ? "rgba(136, 19, 55, 0.6)" : "rgba(6, 78, 59, 0.6)",
-                              color: u.status === "ACTIVE" ? "#FDA4AF" : "#6EE7B7",
-                              border: u.status === "ACTIVE" ? "1px solid rgba(244, 63, 94, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
-                            }}
-                            className="transition-all"
-                          >
-                            {u.status === "ACTIVE" ? "Suspend" : "Activate"}
-                          </button>
+                          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+                            <button
+                              onClick={() => toggleUserStatus(u.id)}
+                              style={{
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                cursor: "pointer",
+                                backgroundColor: u.status === "ACTIVE" ? "rgba(136, 19, 55, 0.6)" : "rgba(6, 78, 59, 0.6)",
+                                color: u.status === "ACTIVE" ? "#FDA4AF" : "#6EE7B7",
+                                border: u.status === "ACTIVE" ? "1px solid rgba(244, 63, 94, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
+                              }}
+                              className="transition-all"
+                            >
+                              {u.status === "ACTIVE" ? "Suspend" : "Activate"}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteUser(u.id, displayName)}
+                              style={{
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                cursor: "pointer",
+                                backgroundColor: "rgba(220, 38, 38, 0.15)",
+                                color: "#EF4444",
+                                border: "1px solid rgba(220, 38, 38, 0.3)",
+                              }}
+                              className="hover:bg-red-500/30 transition-all"
+                            >
+                              Delete
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );

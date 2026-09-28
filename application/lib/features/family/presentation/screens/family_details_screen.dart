@@ -1,13 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-class FamilyDetailsScreen extends StatelessWidget {
+class FamilyDetailsScreen extends StatefulWidget {
   const FamilyDetailsScreen({super.key});
 
   @override
+  State<FamilyDetailsScreen> createState() => _FamilyDetailsScreenState();
+}
+
+class _FamilyDetailsScreenState extends State<FamilyDetailsScreen> {
+  String _searchQuery = '';
+
+  final List<Map<String, dynamic>> _families = [
+    {
+      'nameGuj': 'કપડીયા પરિવાર',
+      'nameEng': 'Kapadiya Family',
+      'cityGuj': 'હિંમતનગર',
+      'cityEng': 'Himatnagar',
+      'details': 'મોસાળ: ઈડર | Masal: Idar',
+      'icon': Icons.home,
+    },
+    {
+      'nameGuj': 'વાંકર પરિવાર',
+      'nameEng': 'Vankar Family',
+      'cityGuj': 'અમદાવાદ',
+      'cityEng': 'Ahmedabad',
+      'details': 'મોસાળ: મહેસાણા | Masal: Mehsana',
+      'icon': Icons.location_city,
+    },
+    {
+      'nameGuj': 'સોલંકી પરિવાર',
+      'nameEng': 'Solanki Family',
+      'cityGuj': 'પાટણ',
+      'cityEng': 'Patan',
+      'details': 'મોસાળ: ઊંઝા | Masal: Unjha',
+      'icon': Icons.people,
+    },
+    {
+      'nameGuj': 'ચૌહાણ પરિવાર',
+      'nameEng': 'Chauhan Family',
+      'cityGuj': 'સુરત',
+      'cityEng': 'Surat',
+      'details': 'મોસાળ: નવસારી | Masal: Navsari',
+      'icon': Icons.group,
+    },
+    {
+      'nameGuj': 'પટેલ પરિવાર',
+      'nameEng': 'Patel Family',
+      'cityGuj': 'રાજકોટ',
+      'cityEng': 'Rajkot',
+      'details': 'મોસાળ: ભાવનગર | Masal: Bhavnagar',
+      'icon': Icons.person,
+    },
+  ];
+
+  @override
   Widget build(BuildContext context) {
+    final filteredFamilies = _families.where((f) {
+      if (_searchQuery.isEmpty) return true;
+      final query = _searchQuery.toLowerCase();
+      return f['nameGuj'].toLowerCase().contains(query) ||
+             f['nameEng'].toLowerCase().contains(query) ||
+             f['cityGuj'].toLowerCase().contains(query) ||
+             f['cityEng'].toLowerCase().contains(query);
+    }).toList();
+
     return Scaffold(
-      backgroundColor: const Color(0xFF060C1A),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
@@ -15,7 +74,7 @@ class FamilyDetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: const BoxDecoration(
-                color: Color(0xFF041126),
+                color: Color(0xFFF8FAFC),
                 border: Border(bottom: BorderSide(color: Color(0xFFD4AF37), width: 1)),
               ),
               child: Row(
@@ -36,7 +95,7 @@ class FamilyDetailsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('VANKAR SAMAJ', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
-                      Text('Family Details (પરિવાર વિગત)', style: TextStyle(color: Colors.white60, fontSize: 12)),
+                      Text('Family Details (પરિવાર વિગત)', style: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const Spacer(),
@@ -58,54 +117,53 @@ class FamilyDetailsScreen extends StatelessWidget {
                     ),
                     const Text(
                       'Family Database | Vankar Samaj Gujarat',
-                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                      style: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 16),
-                    _buildFamilyCard(
-                      'કપડીયા પરિવાર',
-                      'Kapadiya Family',
-                      'હિંમતનગર',
-                      'Himatnagar',
-                      'મોસાળ: ઈડર | Masal: Idar',
-                      Icons.home,
-                      const Color(0xFF1A3A2A),
+                    // Search Bar
+                    Container(
+                      height: 52,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFD4AF37)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.search, color: Color(0xFFD4AF37)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+                              decoration: const InputDecoration(
+                                hintText: 'પરિવાર શોધો... (Search Family)',
+                                hintStyle: TextStyle(color: Colors.black38, fontSize: 14, fontWeight: FontWeight.bold),
+                                border: InputBorder.none,
+                              ),
+                              onChanged: (v) => setState(() => _searchQuery = v),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    _buildFamilyCard(
-                      'વાંકર પરિવાર',
-                      'Vankar Family',
-                      'અમદાવાદ',
-                      'Ahmedabad',
-                      'મોસાળ: મહેસાણા | Masal: Mehsana',
-                      Icons.location_city,
-                      const Color(0xFF1A2A3A),
-                    ),
-                    _buildFamilyCard(
-                      'સોલંકી પરિવાર',
-                      'Solanki Family',
-                      'પાટણ',
-                      'Patan',
-                      'મોસાળ: ઊંઝા | Masal: Unjha',
-                      Icons.people,
-                      const Color(0xFF2A1A3A),
-                    ),
-                    _buildFamilyCard(
-                      'ચૌહાણ પરિવાર',
-                      'Chauhan Family',
-                      'સુરત',
-                      'Surat',
-                      'મોસાળ: નવસારી | Masal: Navsari',
-                      Icons.group,
-                      const Color(0xFF3A1A1A),
-                    ),
-                    _buildFamilyCard(
-                      'પટેલ પરિવાર',
-                      'Patel Family',
-                      'રાજકોટ',
-                      'Rajkot',
-                      'મોસાળ: ભાવનગર | Masal: Bhavnagar',
-                      Icons.person,
-                      const Color(0xFF1A3A3A),
-                    ),
+                    const SizedBox(height: 16),
+                    if (filteredFamilies.isEmpty)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32.0),
+                          child: Text('કોઈ પરિવાર મળ્યો નથી (No family found)', style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold)),
+                        ),
+                      )
+                    else
+                      ...filteredFamilies.map((f) => _buildFamilyCard(
+                            f['nameGuj'],
+                            f['nameEng'],
+                            f['cityGuj'],
+                            f['cityEng'],
+                            f['details'],
+                            f['icon'],
+                          )),
                   ],
                 ),
               ),
@@ -116,15 +174,22 @@ class FamilyDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFamilyCard(String nameGuj, String nameEng, String cityGuj, String cityEng, String details, IconData icon, Color bgColor) {
+  Widget _buildFamilyCard(String nameGuj, String nameEng, String cityGuj, String cityEng, String details, IconData icon) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: bgColor,
+        color: const Color(0xFFF8FAFC),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.4)),
+        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -132,7 +197,7 @@ class FamilyDetailsScreen extends StatelessWidget {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: const Color(0xFFD4AF37).withValues(alpha: 0.15),
+              color: Colors.white,
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5)),
             ),
@@ -143,11 +208,11 @@ class FamilyDetailsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('$nameGuj ($nameEng)', style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 15, fontWeight: FontWeight.bold)),
+                Text('$nameGuj ($nameEng)', style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                Text('$cityGuj ($cityEng)', style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600)),
                 const SizedBox(height: 2),
-                Text('$cityGuj ($cityEng)', style: const TextStyle(color: Colors.white, fontSize: 13)),
-                const SizedBox(height: 2),
-                Text(details, style: const TextStyle(color: Colors.white60, fontSize: 11)),
+                Text(details, style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -157,4 +222,3 @@ class FamilyDetailsScreen extends StatelessWidget {
     );
   }
 }
-
