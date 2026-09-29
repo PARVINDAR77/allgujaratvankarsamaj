@@ -101,7 +101,7 @@ async function bootstrap() {
   SwaggerModule.setup("api/docs", app, document);
 
   // Read port from ConfigService (default 3000)
-  const port = configService.get<number>("PORT", 3000);
+  const port = process.env.PORT || configService.get<number>("PORT", 3000);
 
   // Listen on 0.0.0.0 for Docker container networking
   await app.listen(port);
