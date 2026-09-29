@@ -208,7 +208,7 @@ sleep 5
 
 check_health() {
     local url=$1
-    local retries=5
+    local retries=15
     local wait=3
     while [ $retries -gt 0 ]; do
         HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url")
@@ -226,7 +226,7 @@ HEALTH_FAIL=0
 # Hostinger apps are exposed on public URLs. Update this to your actual API domain!
 API_DOMAIN="https://allgujaratvankarsamaj.com/api/v1"
 
-if ! check_health "$API_DOMAIN/health"; then
+if ! check_health "$API_DOMAIN/admin/health"; then
     echo "❌ Backend health check failed!"
     HEALTH_FAIL=1
 fi
