@@ -7,12 +7,9 @@ import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 import helmet from "helmet";
 import * as morgan from "morgan";
 
-<<<<<<< HEAD
 import * as express from 'express';
 import { join } from 'path';
-=======
 import * as cookieParser from "cookie-parser";
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");

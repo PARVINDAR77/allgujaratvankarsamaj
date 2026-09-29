@@ -1,15 +1,15 @@
 import { Body, Controller, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CapabilitiesGuard } from '../auth/guards/capabilities.guard';
-import { Capabilities } from '../auth/decorators/capabilities.decorator';
-import { Capability } from '../auth/constants/capabilities';
+import { PermissionsGuard } from '../auth/guards/permissions.guard';
+import { Permissions } from '../auth/decorators/permissions.decorator';
+import { Permission } from '../auth/constants/permissions';
 import { VerificationsService } from './verifications.service';
 import { UpdateVerificationStatusDto } from './dto/update-verification.dto';
 
 @ApiTags('Verifications')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, CapabilitiesGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 @Controller('verifications')
 export class VerificationsController {
   constructor(private readonly verificationsService: VerificationsService) {}
@@ -21,10 +21,6 @@ export class VerificationsController {
     return this.verificationsService.submitVerification(req.user.id, body.documentType, body.documentUrl);
   }
 
-<<<<<<< HEAD
-  @Capabilities(Capability.VERIFICATION_READ)
-  @Get('pending')
-=======
 }
 
 @ApiTags('Admin Verifications')
@@ -36,7 +32,6 @@ export class AdminVerificationsController {
 
   @Permissions(Permission.VERIFICATION_READ)
   @Get()
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   @ApiOperation({ summary: 'Get all pending verification requests (Admin)' })
   @ApiResponse({ status: 200, description: 'List of pending requests' })
   async getPendingVerificationsAdmin() {
@@ -55,13 +50,8 @@ export class AdminVerificationsController {
     }));
   }
 
-<<<<<<< HEAD
-  @Capabilities(Capability.VERIFICATION_APPROVE, Capability.VERIFICATION_REJECT)
-  @Patch(':id/status')
-=======
   @Permissions(Permission.VERIFICATION_REVIEW)
   @Patch(':id/verify')
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   @ApiOperation({ summary: 'Update verification status (Admin)' })
   @ApiResponse({ status: 200, description: 'Status updated' })
   async updateStatusAdmin(

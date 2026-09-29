@@ -47,29 +47,6 @@ const castes = ['Vankar', 'Vankar Samaj', 'Weaver Community'];
 async function main() {
   console.log('Seed process starting: Synchronizing core platform data...');
 
-<<<<<<< HEAD
-  // Ensure default demo users exist so the user never gets locked out!
-  const bcrypt = require('bcrypt');
-  const hash = await bcrypt.hash('Password123', 10);
-  
-  await prisma.user.upsert({
-    where: { email: 'panjabiparvindar77@gmail.com' },
-    update: { passwordHash: hash },
-    create: {
-      email: 'panjabiparvindar77@gmail.com',
-      passwordHash: hash,
-      role: 'USER',
-      status: 'ACTIVE',
-    },
-  });
-
-  await prisma.user.upsert({
-    where: { email: 'admin@vankarsamaj.org' },
-    update: { passwordHash: hash },
-    create: {
-      email: 'admin@vankarsamaj.org',
-      passwordHash: hash,
-=======
   const adminEmail = 'admin@vankarsamaj.com';
   
   console.log(`Ensuring default admin user exists (${adminEmail})...`);
@@ -82,17 +59,10 @@ async function main() {
       email: adminEmail,
       // Bcrypt hash for 'Admin@123'
       passwordHash: '$2b$10$e8.Z/yD1P4x.4z8y1z5.7O2qG5YpW.6j1.5e', 
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       role: 'SUPER_ADMIN',
       status: 'ACTIVE',
     },
   });
-<<<<<<< HEAD
-
-  let defaultUser = await prisma.user.findFirst({ where: { email: 'panjabiparvindar77@gmail.com' }});
-
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
   console.log('Seeding Samaj Services categories (Idempotent upsert)...');
   const samajServicesData = [

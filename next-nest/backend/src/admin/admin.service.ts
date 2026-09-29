@@ -104,90 +104,6 @@ export class AdminService {
   }
 
 
-<<<<<<< HEAD
-  async updateUserStatus(userId: string, status: Status) {
-    try {
-      return await this.prisma.user.update({
-        where: { id: userId },
-        data: { status },
-      });
-    } catch {
-      return { id: userId, status };
-    }
-  }
-
-  async deleteUser(userId: string) {
-    try {
-      return await this.prisma.user.delete({
-        where: { id: userId },
-      });
-    } catch (e) {
-      this.logger.error(`Error deleting user ${userId}`, e);
-      return { success: false, message: "Could not delete user" };
-    }
-  }
-
-  async getAllProfiles(category?: string) {
-    try {
-      let whereCondition: any = {};
-      
-      if (category === 'government') {
-        whereCondition = { OR: [{ occupation: { contains: 'government' } }, { governmentEmployment: { isNot: null } }] };
-      } else if (category === 'private') {
-        whereCondition = { occupation: { contains: 'private' } };
-      } else if (category === 'business') {
-        whereCondition = { occupation: { contains: 'business' } };
-      }
-
-      const profiles = await this.prisma.matrimonialProfile.findMany({
-        where: Object.keys(whereCondition).length > 0 ? whereCondition : undefined,
-        orderBy: { createdAt: "desc" },
-        include: { user: true },
-      });
-      return profiles.map((p) => ({
-        id: p.id,
-        userId: p.userId,
-        name: `${p.firstName} ${p.lastName}`.trim(),
-        age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 26,
-        gender: p.gender,
-        pargana: p.city || "35 Pargana",
-        city: p.city || "Ahmedabad",
-        education: p.education || "Graduate",
-        occupation: p.occupation || "Service",
-        status: p.status || "APPROVED",
-        isVerified: p.isVerified,
-        isFeatured: p.isFeatured,
-        createdAt: p.createdAt,
-      }));
-    } catch (e) {
-      console.error(e);
-      return [];
-    }
-  }
-
-  async updateProfileStatus(profileId: string, status: any) {
-    try {
-      return await this.prisma.matrimonialProfile.update({
-        where: { id: profileId },
-        data: { status },
-      });
-    } catch {
-      return { id: profileId, status };
-    }
-  }
-
-  async toggleProfileFeatured(profileId: string, isFeatured: boolean) {
-    try {
-      return await this.prisma.matrimonialProfile.update({
-        where: { id: profileId },
-        data: { isFeatured },
-      });
-    } catch {
-      return { id: profileId, isFeatured };
-    }
-  }
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
   async getVerifications() {
     try {
@@ -279,10 +195,7 @@ export class AdminService {
   async getShortlists() {
     try {
       return await this.prisma.shortlist.findMany({
-        include: {
-          user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } },
-          profile: { select: { firstName: true, lastName: true, city: true } },
-        },
+        
         orderBy: { createdAt: "desc" },
       });
     } catch {

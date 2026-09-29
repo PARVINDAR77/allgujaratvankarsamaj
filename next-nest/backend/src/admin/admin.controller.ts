@@ -26,20 +26,6 @@ export class AdminController {
 
 
 
-<<<<<<< HEAD
-  @Delete("users/:id")
-  @ApiOperation({ summary: "Delete a user" })
-  async deleteUser(@Param("id") id: string) {
-    return this.adminService.deleteUser(id);
-  }
-
-  @Get("profiles")
-  @ApiOperation({ summary: "Get list of all matrimonial profiles for moderation" })
-  async getProfiles(@Query("category") category?: string) {
-    return this.adminService.getAllProfiles(category);
-  }
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
 
   @Get("reports")
