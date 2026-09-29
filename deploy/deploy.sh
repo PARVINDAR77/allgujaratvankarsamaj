@@ -211,7 +211,7 @@ check_health() {
     local retries=15
     local wait=3
     while [ $retries -gt 0 ]; do
-        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url")
+        BODY=$(curl -s "$url"); HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url"); echo "URL: $url | CODE: $HTTP_CODE | BODY: $BODY"
         if [ "$HTTP_CODE" = "200" ]; then
             return 0
         fi
