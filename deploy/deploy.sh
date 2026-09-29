@@ -11,6 +11,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 cd "$PROJECT_ROOT"
 
+echo "Pulling latest code from Git..."
+git pull origin main
+
 # ---------------------------------------------------------
 # Configuration for Hostinger
 # ---------------------------------------------------------
@@ -125,6 +128,9 @@ npx prisma migrate deploy
 npm run build
 cd "$PROJECT_ROOT"
 
+echo "Pulling latest code from Git..."
+git pull origin main
+
 # ---------------------------------------------------------
 # Next.js Admin (Pre-built)
 # ---------------------------------------------------------
@@ -139,6 +145,9 @@ if [ ! -d "$PROJECT_ROOT/next-nest/frontend/out" ]; then
 fi
 echo "✅ Found pre-built Next.js output."
 cd "$PROJECT_ROOT"
+
+echo "Pulling latest code from Git..."
+git pull origin main
 
 # ---------------------------------------------------------
 # Build: Flutter Web (WARNING)
@@ -260,3 +269,4 @@ echo "✅ DEPLOYMENT SUCCESSFUL!"
 echo "Date: $(date)"
 echo "Target Commit: $CURRENT_COMMIT"
 echo "=========================================="
+
