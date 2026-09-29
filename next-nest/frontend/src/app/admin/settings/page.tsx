@@ -78,6 +78,7 @@ export default function AdminSettingsPage() {
       <div style={{ maxWidth: "1000px", display: "flex", flexDirection: "column", gap: "24px" }}>
         
         {/* Navigation Tabs */}
+<<<<<<< HEAD
         <div style={{ display: "flex", gap: "12px", borderBottom: "1px solid rgba(212, 175, 55, 0.2)", paddingBottom: "16px" }}>
           {[
             { id: "general", label: "General Portal Settings", icon: "⚙️" },
@@ -119,6 +120,43 @@ export default function AdminSettingsPage() {
           boxShadow: "0 15px 40px rgba(0, 0, 0, 0.4)",
           position: "relative"
         }}>
+=======
+        <div className="flex border-b border-admin-gold-dark/30 gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => setActiveTab("general")}
+            className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
+              activeTab === "general"
+                ? "bg-admin-border text-admin-gold border-admin-gold-dark/50 shadow-md"
+                : "text-admin-muted-light border-transparent hover:text-white hover:bg-admin-border/40"
+            }`}
+          >
+            ⚙️ General Portal Settings
+          </button>
+          <button
+            onClick={() => setActiveTab("verification")}
+            className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
+              activeTab === "verification"
+                ? "bg-admin-border text-admin-gold border-admin-gold-dark/50 shadow-md"
+                : "text-admin-muted-light border-transparent hover:text-white hover:bg-admin-border/40"
+            }`}
+          >
+            🛡️ Verification Rules
+          </button>
+          <button
+            onClick={() => setActiveTab("privacy")}
+            className={`px-5 py-3 rounded-t-2xl font-bold text-xs transition-all duration-200 border-t border-x ${
+              activeTab === "privacy"
+                ? "bg-admin-border text-admin-gold border-admin-gold-dark/50 shadow-md"
+                : "text-admin-muted-light border-transparent hover:text-white hover:bg-admin-border/40"
+            }`}
+          >
+            🔒 Privacy & Security
+          </button>
+        </div>
+
+        {/* Main Settings Card */}
+        <div className="bg-admin-border border border-admin-gold-dark/40 rounded-b-3xl rounded-tr-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
           {saved && (
             <div style={{
               padding: "16px 24px",
@@ -144,60 +182,96 @@ export default function AdminSettingsPage() {
             {activeTab === "general" && (
               <>
                 <div>
+<<<<<<< HEAD
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+=======
+                  <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     Platform Title & Branding Name
                   </label>
                   <input
                     type="text"
                     value={platformName}
                     onChange={(e) => setPlatformName(e.target.value)}
+<<<<<<< HEAD
                     style={inputStyle}
                     className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
                   />
                   <p style={{ fontSize: "12px", color: "#8E9BAE", marginTop: "8px" }}>
+=======
+                    className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                  />
+                  <p className="text-[11px] text-admin-muted-light/70 mt-1.5">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     Main organization name displayed across mobile app and web portal headers.
                   </p>
                 </div>
 
                 <div>
+<<<<<<< HEAD
                   <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+=======
+                  <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     Homepage Announcement Banner Text
                   </label>
                   <textarea
                     rows={2}
                     value={bannerText}
                     onChange={(e) => setBannerText(e.target.value)}
+<<<<<<< HEAD
                     style={{ ...inputStyle, resize: "vertical" }}
                     className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
                   />
                   <p style={{ fontSize: "12px", color: "#8E9BAE", marginTop: "8px" }}>
+=======
+                    className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+                  />
+                  <p className="text-[11px] text-admin-muted-light/70 mt-1.5">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     Dynamic text displayed inside the Flutter APK home screen header.
                   </p>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                   <div>
+<<<<<<< HEAD
                     <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+=======
+                    <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                       Support Email Address
                     </label>
                     <input
                       type="email"
                       value={supportEmail}
                       onChange={(e) => setSupportEmail(e.target.value)}
+<<<<<<< HEAD
                       style={inputStyle}
                       className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+=======
+                      className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     />
                   </div>
                   <div>
+<<<<<<< HEAD
                     <label style={{ display: "block", fontSize: "12px", fontWeight: 800, color: "#D4AF37", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>
+=======
+                    <label className="block text-xs font-bold text-admin-gold uppercase tracking-wider mb-2">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                       Support Helpline Phone
                     </label>
                     <input
                       type="text"
                       value={supportPhone}
                       onChange={(e) => setSupportPhone(e.target.value)}
+<<<<<<< HEAD
                       style={inputStyle}
                       className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
+=======
+                      className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-3 text-sm text-white font-semibold focus:outline-none focus:border-admin-gold focus:ring-1 focus:ring-[#D4AF37] transition-all shadow-inner"
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     />
                   </div>
                 </div>
@@ -209,6 +283,7 @@ export default function AdminSettingsPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div
                   onClick={() => setRequireVerification(!requireVerification)}
+<<<<<<< HEAD
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -228,11 +303,24 @@ export default function AdminSettingsPage() {
                   </div>
                   <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: requireVerification ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
                     <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: requireVerification ? "26px" : "2px", transition: "all 0.3s ease" }} />
+=======
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
+                >
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-white text-sm">Require Manual Profile Verification</p>
+                    <p className="text-[11px] text-admin-muted-light">
+                      Newly registered profiles must be reviewed by an administrator before appearing in public searches.
+                    </p>
+                  </div>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${requireVerification ? "bg-admin-gold" : "bg-gray-700"}`}>
+                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${requireVerification ? "translate-x-6" : "translate-x-0"}`} />
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                   </div>
                 </div>
 
                 <div
                   onClick={() => setAutoApprovePhotos(!autoApprovePhotos)}
+<<<<<<< HEAD
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -252,6 +340,18 @@ export default function AdminSettingsPage() {
                   </div>
                   <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: autoApprovePhotos ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
                     <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: autoApprovePhotos ? "26px" : "2px", transition: "all 0.3s ease" }} />
+=======
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
+                >
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-white text-sm">Auto-Approve Passport Profile Photos</p>
+                    <p className="text-[11px] text-admin-muted-light">
+                      Automatically publish candidate photos uploaded via Flutter app without manual queue review.
+                    </p>
+                  </div>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${autoApprovePhotos ? "bg-admin-gold" : "bg-gray-700"}`}>
+                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${autoApprovePhotos ? "translate-x-6" : "translate-x-0"}`} />
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                   </div>
                 </div>
               </div>
@@ -262,6 +362,7 @@ export default function AdminSettingsPage() {
               <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div
                   onClick={() => setPrivacyContactMasking(!privacyContactMasking)}
+<<<<<<< HEAD
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -281,11 +382,24 @@ export default function AdminSettingsPage() {
                   </div>
                   <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: privacyContactMasking ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
                     <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: privacyContactMasking ? "26px" : "2px", transition: "all 0.3s ease" }} />
+=======
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
+                >
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-white text-sm">Strict Contact Number Privacy</p>
+                    <p className="text-[11px] text-admin-muted-light">
+                      Only profiles with confirmed mutual interest acceptance can view family mobile numbers.
+                    </p>
+                  </div>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${privacyContactMasking ? "bg-admin-gold" : "bg-gray-700"}`}>
+                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${privacyContactMasking ? "translate-x-6" : "translate-x-0"}`} />
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                   </div>
                 </div>
 
                 <div
                   onClick={() => setAllowPublicSearch(!allowPublicSearch)}
+<<<<<<< HEAD
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -305,13 +419,29 @@ export default function AdminSettingsPage() {
                   </div>
                   <div style={{ width: "48px", height: "24px", borderRadius: "12px", backgroundColor: allowPublicSearch ? "#D4AF37" : "#1E293B", position: "relative", transition: "all 0.3s ease" }}>
                     <div style={{ width: "20px", height: "20px", borderRadius: "50%", backgroundColor: "#041026", position: "absolute", top: "2px", left: allowPublicSearch ? "26px" : "2px", transition: "all 0.3s ease" }} />
+=======
+                  className="flex items-center justify-between p-4 rounded-2xl bg-admin-card border border-admin-gold-dark/30 hover:border-admin-gold transition-all cursor-pointer"
+                >
+                  <div className="space-y-0.5">
+                    <p className="font-bold text-white text-sm">Allow Guest Search Indexing</p>
+                    <p className="text-[11px] text-admin-muted-light">
+                      Permit unauthenticated guests to browse candidate previews on the homepage.
+                    </p>
+                  </div>
+                  <div className={`w-12 h-6 rounded-full transition-colors relative p-1 ${allowPublicSearch ? "bg-admin-gold" : "bg-gray-700"}`}>
+                    <div className={`w-4 h-4 rounded-full bg-black transition-transform ${allowPublicSearch ? "translate-x-6" : "translate-x-0"}`} />
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                   </div>
                 </div>
               </div>
             )}
 
             {/* Save Button */}
+<<<<<<< HEAD
             <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: "24px", borderTop: "1px solid rgba(212, 175, 55, 0.2)" }}>
+=======
+            <div className="pt-4 border-t border-admin-gold-dark/20 flex justify-end">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               <button
                 type="submit"
                 style={{

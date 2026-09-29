@@ -1,18 +1,32 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
 
 function getAuthHeaders() {
-  const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") || localStorage.getItem("token") : null;
   return {
     "Content-Type": "application/json",
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
+}
+
+async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
+  const finalOptions: RequestInit = {
+    ...options,
+    credentials: "include",
+    headers: {
+      ...getAuthHeaders(),
+      ...(options.headers || {}),
+    }
+  };
+  return fetch(url, finalOptions);
 }
 
 export interface DashboardStats {
   totalUsers: number;
-  totalProfiles: number;
+  activeProfiles: number;
   totalMatches: number;
-  totalMessages: number;
+  pendingVerifications: number;
+  openReports: number;
+  totalSuccessStories: number;
+  activeGovtEmployees: number;
+  genderBreakdown: { MALE: number; FEMALE: number; OTHER: number };
   monthlyGrowth: Array<{ month: string; users: number; profiles: number }>;
   parganaBreakdown: Array<{ name: string; count: number; percentage: number }>;
   recentActivities: Array<{ id: string; icon: string; title: string; user: string; time: string; status: string }>;
@@ -152,13 +166,21 @@ export interface SamajServicePersonItem {
 }
 
 export const adminApi = {
-  async login(email: string, password: string): Promise<{ accessToken: string; user: any }> {
-    const res = await fetch(`${API_BASE_URL}/auth/login`, {
+  async login(email: string, password: string): Promise<{ message: string; user: any }> {
+    const res = await adminFetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+    }
+    return await res.json();
+  },
+
+  async logout(): Promise<{ message: string }> {
+    const res = await adminFetch(`${API_BASE_URL}/auth/logout`, {
+      method: "POST",
     });
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
@@ -169,28 +191,72 @@ export const adminApi = {
 
   async getDashboardStats(): Promise<DashboardStats> {
     try {
+<<<<<<< HEAD
       const res = await fetch(`${API_BASE_URL}/admin/stats`, { headers: getAuthHeaders() });
+=======
+      const res = await adminFetch(`${API_BASE_URL}/admin/statistics/dashboard`, { headers: getAuthHeaders() });
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
+<<<<<<< HEAD
 
+=======
+  async getVerifications(): Promise<any[]> {
+    try {
+      const res = await adminFetch(`${API_BASE_URL}/admin/verifications`, { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (error) { throw error; }
+  },
+
+  async updateVerificationStatus(id: string, action: string, reason?: string) {
+    const res = await adminFetch(`${API_BASE_URL}/admin/verifications/${id}/verify`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ status: action, rejectionReason: reason }),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+    }
+    return await res.json();
+  },
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
   async getUsers(): Promise<AdminUserItem[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/users`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/users`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
   async updateUserStatus(userId: string, status: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/users/${userId}/status`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify({ status }),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to update status");
+    }
+    return res.json();
+  },
+
+  async updateUserRole(userId: string, role: string) {
+    const res = await adminFetch(`${API_BASE_URL}/admin/users/${userId}/role`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ role }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to update role");
+    }
     return res.json();
   },
 
@@ -204,15 +270,19 @@ export const adminApi = {
 
   async getProfiles(category?: string): Promise<AdminProfileItem[]> {
     try {
+<<<<<<< HEAD
       const query = category ? `?category=${encodeURIComponent(category)}` : '';
       const res = await fetch(`${API_BASE_URL}/admin/profiles${query}`, { headers: getAuthHeaders() });
+=======
+      const res = await adminFetch(`${API_BASE_URL}/admin/profiles`, { headers: getAuthHeaders() });
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
   async updateProfileStatus(profileId: string, status: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/profiles/${profileId}/status`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/profiles/${profileId}/status`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify({ status }),
@@ -221,7 +291,7 @@ export const adminApi = {
   },
 
   async toggleProfileFeatured(profileId: string, isFeatured: boolean) {
-    const res = await fetch(`${API_BASE_URL}/admin/profiles/${profileId}/feature`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/profiles/${profileId}/feature`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify({ isFeatured }),
@@ -231,14 +301,14 @@ export const adminApi = {
 
   async getParganas(): Promise<ParganaItem[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/parganas`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/parganas`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
   async createPargana(data: Partial<ParganaItem>) {
-    const res = await fetch(`${API_BASE_URL}/admin/parganas`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/parganas`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -247,7 +317,7 @@ export const adminApi = {
   },
 
   async updatePargana(id: string, data: Partial<ParganaItem>) {
-    const res = await fetch(`${API_BASE_URL}/admin/parganas/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/parganas/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -256,7 +326,7 @@ export const adminApi = {
   },
 
   async deletePargana(id: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/parganas/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/parganas/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -266,14 +336,14 @@ export const adminApi = {
   // ==================== SAMAJ SERVICES API ====================
   async getSamajServices(): Promise<SamajServiceItem[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/samaj-services`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
   async createSamajService(data: Partial<SamajServiceItem>) {
-    const res = await fetch(`${API_BASE_URL}/admin/samaj-services`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -282,7 +352,7 @@ export const adminApi = {
   },
 
   async updateSamajService(id: string, data: Partial<SamajServiceItem>) {
-    const res = await fetch(`${API_BASE_URL}/admin/samaj-services/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -291,7 +361,7 @@ export const adminApi = {
   },
 
   async deleteSamajService(id: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/samaj-services/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -304,14 +374,14 @@ export const adminApi = {
       const url = serviceId
         ? `${API_BASE_URL}/admin/samaj-services/persons?serviceId=${encodeURIComponent(serviceId)}`
         : `${API_BASE_URL}/admin/samaj-services/persons`;
-      const res = await fetch(url, { headers: getAuthHeaders() });
+      const res = await adminFetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
   async createSamajServicePerson(data: Partial<SamajServicePersonItem>) {
-    const res = await fetch(`${API_BASE_URL}/admin/samaj-services/persons`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services/persons`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -320,7 +390,7 @@ export const adminApi = {
   },
 
   async updateSamajServicePerson(id: string, data: Partial<SamajServicePersonItem>) {
-    const res = await fetch(`${API_BASE_URL}/admin/samaj-services/persons/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services/persons/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -329,7 +399,7 @@ export const adminApi = {
   },
 
   async deleteSamajServicePerson(id: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/samaj-services/persons/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services/persons/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -338,14 +408,14 @@ export const adminApi = {
 
   async getSettings(): Promise<SiteSettings> {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/settings`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/settings`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
   async updateSettings(settings: Partial<SiteSettings>) {
-    const res = await fetch(`${API_BASE_URL}/admin/settings`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/settings`, {
       method: "PUT",
       headers: getAuthHeaders(),
       body: JSON.stringify(settings),
@@ -353,26 +423,25 @@ export const adminApi = {
     return res.json();
   },
 
-  async getVerifications() {
+  async getPendingPhotos() {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/verifications`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/photos/pending`, { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (error) { throw error; }
+  },
+  
+  async getShortlists() {
+    try {
+      const res = await adminFetch(`${API_BASE_URL}/admin/shortlists`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
-  async updateVerificationStatus(id: string, status: string, rejectionReason?: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/verifications/${id}`, {
-      method: "PATCH",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ status, rejectionReason }),
-    });
-    return res.json();
-  },
-
   async getReports() {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/reports`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/reports`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
@@ -380,7 +449,7 @@ export const adminApi = {
 
   async getMatches() {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/matches`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/matches`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
@@ -390,13 +459,13 @@ export const adminApi = {
   // States
   async getAdminStates(): Promise<StateItem[]> {
     try {
-      const res = await fetch(`${API_BASE_URL}/locations/admin/states`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/locations/admin/states`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
   async createState(data: Partial<StateItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/states`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/states`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -404,7 +473,7 @@ export const adminApi = {
     return res.json();
   },
   async updateState(id: string, data: Partial<StateItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/states/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/states/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -412,7 +481,7 @@ export const adminApi = {
     return res.json();
   },
   async deleteState(id: string) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/states/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/states/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -425,13 +494,13 @@ export const adminApi = {
       const url = stateId
         ? `${API_BASE_URL}/locations/admin/districts?stateId=${encodeURIComponent(stateId)}`
         : `${API_BASE_URL}/locations/admin/districts`;
-      const res = await fetch(url, { headers: getAuthHeaders() });
+      const res = await adminFetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
   async createDistrict(data: Partial<DistrictItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/districts`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/districts`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -439,7 +508,7 @@ export const adminApi = {
     return res.json();
   },
   async updateDistrict(id: string, data: Partial<DistrictItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/districts/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/districts/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -447,7 +516,7 @@ export const adminApi = {
     return res.json();
   },
   async deleteDistrict(id: string) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/districts/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/districts/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -460,13 +529,13 @@ export const adminApi = {
       const url = districtId
         ? `${API_BASE_URL}/locations/admin/talukas?districtId=${encodeURIComponent(districtId)}`
         : `${API_BASE_URL}/locations/admin/talukas`;
-      const res = await fetch(url, { headers: getAuthHeaders() });
+      const res = await adminFetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
   async createTaluka(data: Partial<TalukaItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/talukas`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/talukas`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -474,7 +543,7 @@ export const adminApi = {
     return res.json();
   },
   async updateTaluka(id: string, data: Partial<TalukaItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/talukas/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/talukas/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -482,7 +551,7 @@ export const adminApi = {
     return res.json();
   },
   async deleteTaluka(id: string) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/talukas/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/talukas/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
@@ -498,13 +567,13 @@ export const adminApi = {
       if (params?.search) searchParams.append("search", params.search);
 
       const url = `${API_BASE_URL}/locations/admin/villages?${searchParams.toString()}`;
-      const res = await fetch(url, { headers: getAuthHeaders() });
+      const res = await adminFetch(url, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
   async createVillage(data: Partial<VillageItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/villages`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/villages`, {
       method: "POST",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -512,7 +581,7 @@ export const adminApi = {
     return res.json();
   },
   async updateVillage(id: string, data: Partial<VillageItem>) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/villages/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/villages/${id}`, {
       method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -520,7 +589,7 @@ export const adminApi = {
     return res.json();
   },
   async deleteVillage(id: string) {
-    const res = await fetch(`${API_BASE_URL}/locations/admin/villages/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/locations/admin/villages/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });

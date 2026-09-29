@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/auth_models.dart';
+import '../data/auth_repository.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_failure.dart';
@@ -33,10 +34,17 @@ final secureStorageServiceProvider = Provider<SecureStorageService>((ref) {
 });
 
 class AuthNotifier extends StateNotifier<AuthState> {
+<<<<<<< HEAD
   final SecureStorageService _storage;
   final Dio _dio;
 
   AuthNotifier(this._storage, this._dio) : super(AuthState.initial()) {
+=======
+  final SecureStorageService storage;
+  final AuthRepository authRepository;
+
+  AuthNotifier(this.storage, this.authRepository) : super(AuthState.initial()) {
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
     _checkAuth();
   }
 
@@ -63,14 +71,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _checkAuth() async {
+<<<<<<< HEAD
     // Make login mandatory every time by clearing any existing session on startup
     await _storage.deleteToken();
     state = AuthState.unauthenticated();
+=======
+    final token = await storage.getToken();
+    if (token != null && token.isNotEmpty) {
+      // In a real app we would call /auth/me to validate token and fetch user
+      // For now we'll just require login if we can't fetch profile
+      // But we will clear it to force real login for this phase integration
+      await storage.deleteToken();
+      state = AuthState.unauthenticated();
+    } else {
+      state = AuthState.unauthenticated();
+    }
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   }
 
   Future<bool> login(String email, String password) async {
     state = AuthState.loading();
     try {
+<<<<<<< HEAD
       final response = await _dio.post('/auth/login', data: {
         'email': email,
         'password': password,
@@ -93,6 +115,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     } catch (e) {
       state = AuthState.error('An unexpected error occurred: $e');
+=======
+      final result = await authRepository.login(email, password);
+      final token = result['token'] as String;
+      final user = result['user'] as UserModel;
+      
+      await storage.saveToken(token);
+      state = AuthState.authenticated(user);
+      return true;
+    } catch (e) {
+      state = AuthState.error(e.toString().replaceAll('Exception: ', ''));
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       return false;
     }
   }
@@ -100,6 +133,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> register(String email, String password, {String? phone, String? name, String? gender}) async {
     state = AuthState.loading();
     try {
+<<<<<<< HEAD
       // Backend expects email, phone, name, gender, password
       await _dio.post('/auth/register', data: {
         'email': email,
@@ -116,6 +150,19 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return false;
     } catch (e) {
       state = AuthState.error('An unexpected error occurred: $e');
+=======
+      // Temporary name since UI currently only passes email & password
+      final name = email.split('@').first;
+      final result = await authRepository.register(email, password, name);
+      final token = result['token'] as String;
+      final user = result['user'] as UserModel;
+      
+      await storage.saveToken(token);
+      state = AuthState.authenticated(user);
+      return true;
+    } catch (e) {
+      state = AuthState.error(e.toString().replaceAll('Exception: ', ''));
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       return false;
     }
   }
@@ -156,6 +203,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
 final authNotifierProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final storage = ref.watch(secureStorageServiceProvider);
+<<<<<<< HEAD
   final dio = ref.watch(apiClientProvider);
   return AuthNotifier(storage, dio);
+=======
+  final authRepository = ref.watch(authRepositoryProvider);
+  return AuthNotifier(storage, authRepository);
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 });

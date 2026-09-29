@@ -14,6 +14,7 @@ export default function AdminContentPage() {
 
   return (
     <AdminLayout title="Pages & CMS Content" subtitle="Manage static pages, FAQs, Terms, and Samaj Announcements">
+<<<<<<< HEAD
       <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
         
         {/* Header Intro */}
@@ -90,6 +91,17 @@ export default function AdminContentPage() {
                     }}
                     className="hover:bg-[#D4AF37] hover:text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]"
                   >
+=======
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-admin-border border border-admin-gold-dark/30 rounded-2xl p-6 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-white">Public Application Pages</h3>
+            <div className="space-y-2">
+              {["Terms & Conditions", "Privacy Policy", "Samaj Rules & Guidelines", "Frequently Asked Questions (FAQs)", "About Vankar Samaj Matrimony"].map((p, idx) => (
+                <div key={idx} className="flex justify-between items-center p-3 rounded-xl bg-admin-card border border-admin-gold-dark/20 text-xs">
+                  <span className="font-semibold text-white">{p}</span>
+                  <button className="px-3 py-1 rounded bg-admin-border border border-admin-gold-dark/40 text-admin-gold font-bold hover:bg-admin-gold hover:text-black">
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     Edit Page
                   </button>
                 </div>
@@ -97,6 +109,7 @@ export default function AdminContentPage() {
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* Right Column: Announcements */}
           <div style={{
             backgroundColor: "rgba(13, 27, 50, 0.85)",
@@ -150,6 +163,15 @@ export default function AdminContentPage() {
                     LIVE
                   </span>
                 </div>
+=======
+          <div className="bg-admin-border border border-admin-gold-dark/30 rounded-2xl p-6 shadow-xl space-y-4">
+            <h3 className="text-base font-bold text-white">Homepage Announcements</h3>
+            <div className="space-y-3 text-xs text-admin-muted-light">
+              <div className="p-3 rounded-xl bg-admin-card border border-admin-gold-dark/20 space-y-1">
+                <h4 className="font-bold text-admin-gold">Upcoming Vankar Samaj Matrimonial Sammelan 2026</h4>
+                <p>Annual youth introduction fair scheduled in Ahmedabad next month.</p>
+                <span className="text-[10px] text-gray-400">Published: 2 days ago</span>
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               </div>
 
               {/* Add New Button */}

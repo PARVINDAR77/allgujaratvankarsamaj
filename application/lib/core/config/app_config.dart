@@ -28,7 +28,10 @@ class AppConfig {
         );
       case 'development':
       default:
+<<<<<<< HEAD
         // Pointing to local backend
+=======
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
         return 'http://127.0.0.1:3000/api/v1';
     }
   }

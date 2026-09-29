@@ -103,33 +103,8 @@ export class AdminService {
     }
   }
 
-  async getAllUsers() {
-    try {
-      const users = await this.prisma.user.findMany({
-        orderBy: { createdAt: "desc" },
-        include: { profile: true },
-      });
-      return users.map((u) => ({
-        id: u.id,
-        name: (u as any).name || (u.profile?.firstName ? `${u.profile.firstName} ${u.profile.lastName}`.trim() : u.email || "Member"),
-        email: u.email,
-        phone: (u as any).phone || "9876543210",
-        pargana: u.profile?.city || "35 Pargana",
-        status: u.status,
-        role: u.role,
-        createdAt: u.createdAt,
-      }));
-    } catch {
-      return [
-        { id: "u-1", name: "Ramesh Vankar", email: "ramesh@vankar.org", phone: "9876543210", pargana: "35 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-2", name: "Hiralben Parmar", email: "hiral@vankar.org", phone: "9876543211", pargana: "27 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-3", name: "Hemantkumar Vankar", email: "hemant@vankar.org", phone: "9876543212", pargana: "16 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-4", name: "Priyankaben Solanki", email: "priyanka@vankar.org", phone: "9876543213", pargana: "14 Pargana", status: "INACTIVE", role: "USER", createdAt: new Date() },
-        { id: "u-5", name: "Admin Manager", email: "admin@vankarsamaj.org", phone: "9998887770", pargana: "35 Pargana", status: "ACTIVE", role: "ADMIN", createdAt: new Date() },
-      ];
-    }
-  }
 
+<<<<<<< HEAD
   async updateUserStatus(userId: string, status: Status) {
     try {
       return await this.prisma.user.update({
@@ -211,6 +186,8 @@ export class AdminService {
       return { id: profileId, isFeatured };
     }
   }
+=======
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
   async getVerifications() {
     try {
@@ -275,6 +252,42 @@ export class AdminService {
         auth: "active",
       },
     };
+  }
+
+  async getPendingPhotos() {
+    try {
+      return await this.prisma.matrimonialProfile.findMany({
+        where: {
+          photoUrl: { not: null },
+          // You can add a photoVerified flag to the schema later if needed.
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          photoUrl: true,
+          userId: true,
+          createdAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch {
+      return [];
+    }
+  }
+
+  async getShortlists() {
+    try {
+      return await this.prisma.shortlist.findMany({
+        include: {
+          user: { select: { email: true, profile: { select: { firstName: true, lastName: true } } } },
+          profile: { select: { firstName: true, lastName: true, city: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch {
+      return [];
+    }
   }
 }
 

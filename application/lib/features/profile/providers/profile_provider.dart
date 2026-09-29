@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../shared/models/profile_model.dart';
+<<<<<<< HEAD
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_failure.dart';
 import '../../../shared/models/pagination_meta.dart';
@@ -160,4 +161,34 @@ final myProfileProvider = FutureProvider<ProfileModel>((ref) async {
 final profileCompletenessProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   final repository = ref.watch(profileRepositoryProvider);
   return await repository.getProfileCompleteness();
+=======
+import '../data/profile_repository.dart';
+
+class ProfileNotifier extends StateNotifier<AsyncValue<List<ProfileModel>>> {
+  final ProfileRepository repository;
+
+  ProfileNotifier(this.repository) : super(const AsyncValue.loading()) {
+    fetchProfiles();
+  }
+
+  Future<void> fetchProfiles() async {
+    state = const AsyncValue.loading();
+    try {
+      final result = await repository.fetchProfiles();
+      state = AsyncValue.data(result.items);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  void addProfile(ProfileModel profile) {
+    if (state.hasValue) {
+      state = AsyncValue.data([profile, ...state.value!]);
+    }
+  }
+}
+
+final profileNotifierProvider = StateNotifierProvider<ProfileNotifier, AsyncValue<List<ProfileModel>>>((ref) {
+  return ProfileNotifier(ref.watch(profileRepositoryProvider));
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 });

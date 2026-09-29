@@ -21,7 +21,7 @@ export default function AdminNotificationsPage() {
 
   return (
     <AdminLayout title="Notification Manager" subtitle="Broadcast mobile & push notifications to community members">
-      <div className="max-w-2xl bg-[#0F2040] border border-[#997D20]/30 rounded-2xl p-6 shadow-xl space-y-6">
+      <div className="max-w-2xl bg-admin-border border border-admin-gold-dark/30 rounded-2xl p-6 shadow-xl space-y-6">
         <h3 className="text-base font-bold text-white">Create Broadcast Notification</h3>
 
         {sent && (
@@ -32,11 +32,11 @@ export default function AdminNotificationsPage() {
 
         <form onSubmit={handleSend} className="space-y-4 text-xs">
           <div>
-            <label className="block text-[#AAB7C8] font-bold uppercase mb-1">Target Audience</label>
+            <label className="block text-admin-muted-light font-bold uppercase mb-1">Target Audience</label>
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value)}
-              className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+              className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-admin-gold"
             >
               <option value="ALL">All Registered Members</option>
               <option value="35">35 Pargana Members</option>
@@ -48,26 +48,26 @@ export default function AdminNotificationsPage() {
           </div>
 
           <div>
-            <label className="block text-[#AAB7C8] font-bold uppercase mb-1">Notification Title</label>
+            <label className="block text-admin-muted-light font-bold uppercase mb-1">Notification Title</label>
             <input
               type="text"
               required
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. New Profiles Verified in your Pargana"
-              className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+              className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-admin-gold"
             />
           </div>
 
           <div>
-            <label className="block text-[#AAB7C8] font-bold uppercase mb-1">Message Body</label>
+            <label className="block text-admin-muted-light font-bold uppercase mb-1">Message Body</label>
             <textarea
               rows={4}
               required
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Enter message text..."
-              className="w-full bg-[#041026] border border-[#997D20]/40 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#D4AF37]"
+              className="w-full bg-admin-card border border-admin-gold-dark/40 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-admin-gold"
             />
           </div>
 

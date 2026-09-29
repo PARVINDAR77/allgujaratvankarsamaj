@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../../../shared/providers/samaj_services_provider.dart';
+import '../../../../shared/models/samaj_service.dart';
 
+<<<<<<< HEAD
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/samaj_services_provider.dart';
 import '../../../profile/providers/master_data_provider.dart';
 import '../../../../shared/models/samaj_service.dart';
 
+=======
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 class SamajServicesScreen extends ConsumerStatefulWidget {
   const SamajServicesScreen({super.key});
 
@@ -20,11 +26,25 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _villageController = TextEditingController();
 
+<<<<<<< HEAD
   // Colors for dynamic categories
   final List<Color> _categoryColors = [
     Colors.orange, Colors.blue, Colors.purple, Colors.green, 
     Colors.teal, Colors.indigo, Colors.red, Colors.brown, 
     Colors.blueGrey, Colors.pink, const Color(0xFF388E3C)
+=======
+  final List<Color> _categoryColors = [
+    Colors.orange,
+    Colors.blue,
+    Colors.purple,
+    Colors.green,
+    Colors.teal,
+    Colors.indigo,
+    Colors.red,
+    Colors.brown,
+    Colors.blueGrey,
+    Colors.pink,
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   ];
   @override
   void dispose() {
@@ -42,7 +62,12 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
+<<<<<<< HEAD
   Widget _buildProvidersBottomSheet(BuildContext context, String serviceId, String serviceName) {
+=======
+  Widget _buildProvidersBottomSheet(BuildContext context, String serviceName) {
+    // This could also be updated to an API call later. For now, empty state handling.
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
@@ -65,6 +90,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
             ),
           ),
           Expanded(
+<<<<<<< HEAD
             child: RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(samajServicePersonsProvider(serviceId));
@@ -89,6 +115,12 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (err, stack) => Center(child: Text('Error loading providers: $err')),
+=======
+            child: Center(
+              child: Text(
+                'No professionals registered for this service yet.',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               ),
             ),
           ),
@@ -97,6 +129,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
+<<<<<<< HEAD
   Widget _buildProviderCard(BuildContext context, dynamic provider) {
     int currentRating = 0;
     return StatefulBuilder(
@@ -220,6 +253,8 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
+=======
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   @override
   Widget build(BuildContext context) {
     final masterData = ref.watch(masterDataProvider);
@@ -228,6 +263,8 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     final talukasList = selectedDistrict != null && masterData.gujaratDistricts.containsKey(selectedDistrict) 
         ? masterData.gujaratDistricts[selectedDistrict]!.where((t) => t != 'Select Taluka').toList() 
         : <String>[];
+
+    final servicesAsyncValue = ref.watch(samajServicesProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F9FF),
@@ -359,7 +396,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                   items: districtsList.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
                                   onChanged: (val) => setState(() {
                                     selectedDistrict = val;
-                                    selectedTaluka = null; // Reset taluka on district change
+                                    selectedTaluka = null; 
                                   }),
                                 ),
                               ),
@@ -433,6 +470,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
 
                     // Services List
                     Expanded(
+<<<<<<< HEAD
                       child: RefreshIndicator(
                         onRefresh: () async {
                           ref.invalidate(samajServicesProvider);
@@ -457,12 +495,48 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                             final categories = groupedServices.keys.toList()..sort();
                             
                             return ListView.builder(
+=======
+                      child: servicesAsyncValue.when(
+                        data: (services) {
+                          if (services.isEmpty) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.work_off, size: 64, color: Colors.grey.shade400),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'No services available at the moment.',
+                                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+
+                          // Group services by category
+                          final Map<String, List<SamajService>> groupedServices = {};
+                          for (var service in services) {
+                            if (!groupedServices.containsKey(service.category)) {
+                              groupedServices[service.category] = [];
+                            }
+                            groupedServices[service.category]!.add(service);
+                          }
+
+                          final categories = groupedServices.keys.toList();
+
+                          return ListView.builder(
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
                             physics: const BouncingScrollPhysics(),
                             itemCount: categories.length,
                             itemBuilder: (context, index) {
                               final categoryName = categories[index];
+<<<<<<< HEAD
                               final List<SamajService> items = groupedServices[categoryName]!;
+=======
+                              final categoryServices = groupedServices[categoryName]!;
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                               final Color color = _categoryColors[index % _categoryColors.length];
                               
                               return Container(
@@ -507,6 +581,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                         crossAxisSpacing: 10,
                                         mainAxisSpacing: 10,
                                       ),
+<<<<<<< HEAD
                                       itemCount: items.length,
                                       itemBuilder: (context, itemIndex) {
                                         final SamajService service = items[itemIndex];
@@ -516,6 +591,15 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                         return InkWell(
                                           onTap: () {
                                             _showServiceProviders(context, service.id, text);
+=======
+                                      itemCount: categoryServices.length,
+                                      itemBuilder: (context, itemIndex) {
+                                        final service = categoryServices[itemIndex];
+                                        
+                                        return InkWell(
+                                          onTap: () {
+                                            _showServiceProviders(context, service.title);
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                                           },
                                           borderRadius: BorderRadius.circular(12),
                                           child: Container(
@@ -534,9 +618,15 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                             ),
                                             child: Row(
                                               children: [
+<<<<<<< HEAD
                                                 if (emoji.isNotEmpty) ...[
                                                   Text(
                                                     emoji,
+=======
+                                                if (service.icon.isNotEmpty) ...[
+                                                  Text(
+                                                    service.icon,
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                                                     style: const TextStyle(
                                                       fontSize: 20,
                                                       fontFamily: 'Roboto',
@@ -546,7 +636,11 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                                 ],
                                                 Expanded(
                                                   child: Text(
+<<<<<<< HEAD
                                                     text,
+=======
+                                                    service.title,
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                                                     style: const TextStyle(
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.w600,
@@ -571,7 +665,25 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                           );
                         },
                         loading: () => const Center(child: CircularProgressIndicator()),
+<<<<<<< HEAD
                         error: (err, stack) => Center(child: Text('Error loading services: $err')),
+=======
+                        error: (err, stack) => Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.error_outline, color: Colors.red, size: 48),
+                              const SizedBox(height: 16),
+                              Text('Error loading services: $err'),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () => ref.refresh(samajServicesProvider),
+                                child: const Text('Retry'),
+                              )
+                            ],
+                          ),
+                        ),
+>>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                       ),
                       ), // Close RefreshIndicator
                     ),
@@ -585,4 +697,3 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 }
-
