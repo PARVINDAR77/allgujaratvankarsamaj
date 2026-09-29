@@ -104,7 +104,7 @@ async function bootstrap() {
   const port = configService.get<number>("PORT", 3000);
 
   // Listen on 0.0.0.0 for Docker container networking
-  await app.listen(port, "0.0.0.0");
+  await app.listen(port);
 
   logger.log(`Application is running on: http://0.0.0.0:${port}/api/v1`);
   logger.log(
