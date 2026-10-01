@@ -1,10 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
-import '../../../../app/theme/app_colors.dart';
+import '../../../home/presentation/providers/view_badge.dart';
+import '../../../home/presentation/providers/views_provider.dart';
 
-class PavanPrernadataScreen extends StatelessWidget {
+class PavanPrernadataScreen extends ConsumerStatefulWidget {
   const PavanPrernadataScreen({super.key});
+
+  @override
+  ConsumerState<PavanPrernadataScreen> createState() => _PavanPrernadataScreenState();
+}
+
+class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(incrementViewProvider)('pavan_prernadata');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,46 +68,52 @@ class PavanPrernadataScreen extends StatelessWidget {
                           Container(
                             color: const Color(0xFF041126),
                             padding: const EdgeInsets.all(12.0),
-                            child: InkWell(
-                              onTap: () {
-                                if (context.canPop()) {
-                                  context.pop();
-                                } else {
-                                  context.go('/home');
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(25),
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.goldGradient,
+                            child: Column(
+                              children: [
+                                const ViewBadge(sectionName: 'pavan_prernadata'),
+                                const SizedBox(height: 12),
+                                InkWell(
+                                  onTap: () {
+                                    if (context.canPop()) {
+                                      context.pop();
+                                    } else {
+                                      context.go('/home');
+                                    }
+                                  },
                                   borderRadius: BorderRadius.circular(25),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppColors.secondary.withValues(alpha: 0.5),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    decoration: BoxDecoration(
+                                      gradient: AppColors.goldGradient,
+                                      borderRadius: BorderRadius.circular(25),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.secondary.withValues(alpha: 0.5),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.arrow_back_rounded, color: Colors.black87, size: 20),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      'પાછા જાઓ (Back)',
-                                      style: TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1.0,
-                                      ),
+                                    child: const Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.arrow_back_rounded, color: Colors.black87, size: 20),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'પાછા જાઓ (Back)',
+                                          style: TextStyle(
+                                            color: Colors.black87,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1.0,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           ),
                         ],

@@ -10,6 +10,7 @@ import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../../../shared/constants/app_data.dart';
 import '../../providers/master_data_provider.dart';
+import '../../../community/providers/samaj_services_provider.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
@@ -30,6 +31,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String _department = 'State Government (રાજ્ય સરકાર)';
   String _govCategory = 'Select Category';
   String _customGovCategory = '';
+  String _businessIndustry = 'Select Industry';
+  String _businessService = 'Select Service';
   String _designation = '';
   String _yearlyIncome = 'Select Income';
   String _district = '';
@@ -112,6 +115,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       pwbdCategory: _pwbdCategory,
       isAbroad: _isAbroad,
       abroadCountry: _abroadCountry,
+      businessIndustry: _employmentType.contains('Business') ? (_businessIndustry == 'Select Industry' ? null : _businessIndustry) : null,
+      businessService: _employmentType.contains('Business') ? (_businessService == 'Select Service' ? null : _businessService) : null,
     );
 
     try {
@@ -215,6 +220,20 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final masterData = ref.watch(masterDataProvider);
+    final samajServicesAsync = ref.watch(samajServicesProvider);
+    List<String> dynamicBusinessCategories = [];
+    List<String> dynamicBusinessServices = [];
+
+    samajServicesAsync.whenData((services) {
+      dynamicBusinessCategories = services.map((e) => e.category).toSet().toList();
+      if (_businessIndustry != 'Select Industry') {
+        dynamicBusinessServices = services
+            .where((e) => e.category == _businessIndustry)
+            .map((e) => e.title)
+            .toSet()
+            .toList();
+      }
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Soft Light Grey Background
@@ -473,18 +492,29 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               if (_employmentType.contains('Business')) ...[
                 _buildDropdownField(
                   'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
-                  'Select Business Type',
+                  'Select Industry',
                   Icons.storefront_outlined,
-                  masterData.businessSectors,
-                  value: masterData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
-                  onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
+                  ['Select Industry', ...dynamicBusinessCategories],
+                  value: dynamicBusinessCategories.contains(_businessIndustry) ? _businessIndustry : 'Select Industry',
+                  onChanged: (v) => setState(() {
+                    _businessIndustry = v ?? 'Select Industry';
+                    _businessService = 'Select Service';
+                  }),
                 ),
-                _buildTextField(
-                  'Business / Shop Name (દુકાન / વ્યવસાયનું નામ)',
-                  'Enter Business Name',
-                  Icons.store_outlined,
-                  onChanged: (v) => setState(() => _department = v),
-                ),
+                if (_businessIndustry != 'Select Industry' && dynamicBusinessServices.isNotEmpty)
+                  _buildDropdownField(
+                    'Business Service / Title',
+                    'Select Service',
+                    Icons.store_outlined,
+                    ['Select Service', ...dynamicBusinessServices],
+                    value: dynamicBusinessServices.contains(_businessService) ? _businessService : 'Select Service',
+                    onChanged: (v) => setState(() => _businessService = v ?? 'Select Service'),
+                  ),
+                if (_businessIndustry == 'Select Industry')
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Text('Please wait while loading categories...'),
+                  ),
               ],
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, onChanged: (v) => setState(() => _designation = v)),
               _buildDropdownField(

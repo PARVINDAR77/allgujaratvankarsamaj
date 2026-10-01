@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../profile/providers/profile_provider.dart';
 
-class MutualInterestScreen extends StatelessWidget {
+class MutualInterestScreen extends ConsumerWidget {
   const MutualInterestScreen({super.key});
 
   @override
-<<<<<<< HEAD
   Widget build(BuildContext context, WidgetRef ref) {
     final profileState = ref.watch(profileNotifierProvider);
     final profiles = profileState.profiles;
     final bride = profiles.where((p) => p.gender.toLowerCase().contains('female')).toList().firstOrNull;
     final groom = profiles.where((p) => p.gender.toLowerCase().contains('male')).toList().firstOrNull;
 
-=======
-  Widget build(BuildContext context) {
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
     return Scaffold(
       backgroundColor: const Color(0xFF040A18),
       appBar: AppBar(

@@ -145,7 +145,6 @@ export default function GovernmentEmployeesAdminPage() {
 
   return (
     <AdminLayout title="Government Employees">
-<<<<<<< HEAD
       <div style={{ display: "flex", flexDirection: "column", gap: "28px", paddingBottom: "48px" }}>
         {/* Title Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -155,27 +154,13 @@ export default function GovernmentEmployeesAdminPage() {
               Government Employees Control Center
             </h1>
             <p style={{ color: "#8E9BAE", fontSize: "14px", margin: 0, fontWeight: 500 }}>
-=======
-      <div  style={{ color: "#F3F4F6", fontFamily: "'Inter', sans-serif" }} className="p-6">
-        {/* Title Header */}
-        <div  style={{ marginBottom: "24px" }} className="flex justify-between items-center">
-          <div>
-            <h1  style={{ fontWeight: "700", color: "#FFD700", margin: 0 }} className="text-[28px]">
-              💼 Government Employees Control Center
-            </h1>
-            <p  style={{ color: "#9CA3AF", marginTop: "4px" }} className="text-sm">
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               Verify employment proofs, manage status, and feature verified profiles for All Gujarat Vankar Samaj Matrimony
             </p>
           </div>
         </div>
 
         {/* Dynamic KPI Cards */}
-<<<<<<< HEAD
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "20px" }}>
-=======
-        <div  style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", marginBottom: "28px" }} className="gap-4">
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
           <StatCard title="Total Govt Profiles" value={stats.total} icon="💼" change="Registered" isPositive />
           <StatCard title="Pending Approvals" value={stats.pending} icon="⏳" change="Action Needed" isPositive={false} />
           <StatCard title="Verified Profiles" value={stats.verified} icon="🛡️" change="Active Live" isPositive />
@@ -184,7 +169,6 @@ export default function GovernmentEmployeesAdminPage() {
         </div>
 
         {/* Filter Controls Bar */}
-<<<<<<< HEAD
         <div 
           style={{ 
             background: "linear-gradient(145deg, rgba(13, 27, 50, 0.9) 0%, rgba(4, 12, 26, 0.95) 100%)",
@@ -308,116 +292,6 @@ export default function GovernmentEmployeesAdminPage() {
                             display: "inline-flex",
                             alignItems: "center",
                             gap: "6px",
-=======
-        <div   style={{ backgroundColor: "#0B1E36", borderRadius: "10px", border: "1px solid rgba(153, 125, 32, 0.3)", marginBottom: "20px" }} className="flex items-center gap-4 p-4" >
-          <span  style={{ color: "#D1D5DB", fontWeight: "600" }} className="text-sm">Filter Status:</span>
-          {["ALL", "PENDING", "VERIFIED", "REJECTED"].map((st) => (
-            <button
-              key={st}
-              onClick={() => { setStatusFilter(st); setPage(1); }}
-              style={{
-                backgroundColor: statusFilter === st ? "#B8860B" : "#11294D",
-                color: statusFilter === st ? "#FFFFFF" : "#9CA3AF",
-                border: "1px solid rgba(184, 134, 11, 0.4)",
-                padding: "8px 16px",
-                borderRadius: "6px",
-                fontWeight: "600",
-                fontSize: "13px",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-            >
-              {st}
-            </button>
-          ))}
-        </div>
-
-        {/* Data Table */}
-        <div  style={{ backgroundColor: "#0B1E36", border: "1.5px solid rgba(153, 125, 32, 0.4)" }} className="overflow-hidden rounded-xl">
-          <table  className="w-full text-left border-collapse">
-            <thead>
-              <tr  style={{ backgroundColor: "#061224", borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)", color: "#FFD700" }} className="text-[13px]">
-                <th style={{ padding: "14px 16px" }}>MEMBER PROFILE</th>
-                <th style={{ padding: "14px 16px" }}>DEPARTMENT & DESIGNATION</th>
-                <th style={{ padding: "14px 16px" }}>LOCATION</th>
-                <th style={{ padding: "14px 16px" }}>VERIFICATION</th>
-                <th style={{ padding: "14px 16px" }}>FEATURED</th>
-                <th style={{ padding: "14px 16px" }}>STATUS</th>
-                <th  style={{ padding: "14px 16px" }} className="text-right">ACTIONS</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan={7}  style={{ padding: "30px", color: "#9CA3AF" }} className="text-center">Loading Government Employees...</td>
-                </tr>
-              ) : profiles.length === 0 ? (
-                <tr>
-                  <td colSpan={7}  style={{ padding: "30px", color: "#9CA3AF" }} className="text-center">No government employee profiles matching criteria.</td>
-                </tr>
-              ) : (
-                profiles.map((p) => {
-                  const latestProof = p.verifications && p.verifications[0];
-                  return (
-                    <tr key={p.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.05)" }}>
-                      <td style={{ padding: "14px 16px" }}>
-                        <div  style={{ fontWeight: "700" }} className="text-white">
-                          {p.profile ? `${p.profile.firstName} ${p.profile.lastName}` : "Member Profile"}
-                        </div>
-                        <div  style={{ color: "#9CA3AF" }} className="text-xs">{p.profile?.user?.phone || p.profile?.user?.email || "No phone"}</div>
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <div style={{ color: "#E5E7EB", fontWeight: "600" }}>{p.department?.name || "Dept Unspecified"}</div>
-                        <div  style={{ color: "#6B7280" }} className="text-xs">{p.designation?.name || p.employmentType}</div>
-                      </td>
-                      <td  style={{ padding: "14px 16px", color: "#D1D5DB" }} className="text-[13px]">
-                        {p.officeLocation || p.profile?.district?.name || "Gujarat"}
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <span  style={{ display: "inline-block", padding: "4px 10px", fontWeight: "700", backgroundColor: p.verificationStatus === "VERIFIED" ? "rgba(16, 185, 129, 0.2)" : p.verificationStatus === "REJECTED" ? "rgba(239, 68, 68, 0.2)" : "rgba(245, 158, 11, 0.2)", color: p.verificationStatus === "VERIFIED" ? "#10B981" : p.verificationStatus === "REJECTED" ? "#EF4444" : "#F59E0B" }} className="text-xs rounded-xl">
-                          {p.verificationStatus}
-                        </span>
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <button
-                          onClick={() => handleToggleFeature(p.id, p.isFeatured)}
-                          style={{
-                            backgroundColor: p.isFeatured ? "rgba(255, 215, 0, 0.2)" : "#1F2937",
-                            color: p.isFeatured ? "#FFD700" : "#6B7280",
-                            border: "1px solid #B8860B",
-                            padding: "4px 8px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {p.isFeatured ? "⭐ Featured" : "☆ Standard"}
-                        </button>
-                      </td>
-                      <td style={{ padding: "14px 16px" }}>
-                        <button
-                          onClick={() => handleToggleStatus(p.id, p.isActive)}
-                          style={{
-                            backgroundColor: p.isActive ? "rgba(16, 185, 129, 0.2)" : "rgba(107, 114, 128, 0.2)",
-                            color: p.isActive ? "#10B981" : "#9CA3AF",
-                            border: "none",
-                            padding: "4px 10px",
-                            borderRadius: "6px",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                          }}
-                        >
-                          {p.isActive ? "Active" : "Inactive"}
-                        </button>
-                      </td>
-                      <td  style={{ padding: "14px 16px" }} className="text-right">
-                        <button
-                          onClick={() => setSelectedProof(p)}
-                          style={{
-                            backgroundColor: "#1D4ED8",
-                            color: "#FFFFFF",
-                            border: "none",
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                             padding: "6px 12px",
                             borderRadius: "8px",
                             fontSize: "11px",
@@ -500,15 +374,9 @@ export default function GovernmentEmployeesAdminPage() {
           </div>
 
           {/* Pagination Controls */}
-<<<<<<< HEAD
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", backgroundColor: "rgba(4, 16, 38, 0.6)", borderTop: "1px solid rgba(212, 175, 55, 0.2)" }}>
             <span style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 600 }}>Page <strong style={{ color: "#FFFFFF" }}>{page}</strong> of <strong style={{ color: "#FFFFFF" }}>{totalPages}</strong></span>
             <div style={{ display: "flex", gap: "10px" }}>
-=======
-          <div  style={{ padding: "14px 16px", borderTop: "1px solid rgba(255, 255, 255, 0.05)" }} className="flex justify-between items-center">
-            <span  style={{ color: "#9CA3AF" }} className="text-[13px]">Page {page} of {totalPages}</span>
-            <div  className="flex gap-2">
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               <button
                 disabled={page <= 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -531,7 +399,6 @@ export default function GovernmentEmployeesAdminPage() {
 
         {/* Verification Modal */}
         {selectedProof && (
-<<<<<<< HEAD
           <div style={{ position: "fixed", inset: 0, backgroundColor: "rgba(0, 0, 0, 0.85)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: "24px" }}>
             <div 
               style={{ 
@@ -567,30 +434,6 @@ export default function GovernmentEmployeesAdminPage() {
 
               <div style={{ marginBottom: "28px" }}>
                 <label style={{ display: "block", fontSize: "13px", color: "#8E9BAE", fontWeight: 700, marginBottom: "8px" }}>Rejection Reason (Required if rejecting):</label>
-=======
-          <div  style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.8)", zIndex: 100 }} className="flex justify-center items-center fixed">
-            <div  style={{ backgroundColor: "#061224", border: "2px solid #FFD700", maxWidth: "550px", width: "90%", color: "#F3F4F6" }} className="p-6 rounded-xl">
-              <h3 style={{ fontSize: "20px", color: "#FFD700", marginTop: 0 }}>Review Employment Proof</h3>
-              <p  style={{ color: "#D1D5DB" }} className="text-sm">
-                Member: <strong>{selectedProof.profile?.firstName} {selectedProof.profile?.lastName}</strong> ({selectedProof.department?.name})
-              </p>
-
-              {selectedProof.verifications && selectedProof.verifications.length > 0 ? (
-                <div  style={{ margin: "16px 0", padding: "12px", backgroundColor: "#0B1E36" }} className="rounded-lg">
-                  <div  style={{ color: "#9CA3AF", marginBottom: "6px" }} className="text-[13px]">Document Type: {selectedProof.verifications[0].documentType}</div>
-                  <a href={selectedProof.verifications[0].documentUrl} target="_blank" rel="noreferrer"  style={{ color: "#60A5FA", textDecoration: "underline" }} className="text-sm">
-                    📄 Open Submitted Proof Document / ID Card
-                  </a>
-                </div>
-              ) : (
-                <div  style={{ padding: "12px", backgroundColor: "#1F2937", color: "#F59E0B", margin: "16px 0" }} className="text-[13px] rounded-lg">
-                  No physical document URL uploaded yet. Member filled department details.
-                </div>
-              )}
-
-              <div style={{ marginBottom: "16px" }}>
-                <label  style={{ display: "block", color: "#9CA3AF", marginBottom: "4px" }} className="text-[13px]">Rejection Reason (If rejecting):</label>
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                 <input
                   type="text"
                   value={rejectionReason}
@@ -601,11 +444,7 @@ export default function GovernmentEmployeesAdminPage() {
                 />
               </div>
 
-<<<<<<< HEAD
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", paddingTop: "20px", borderTop: "1px solid rgba(212, 175, 55, 0.2)" }}>
-=======
-              <div  style={{ gap: "12px" }} className="flex justify-end">
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                 <button
                   onClick={() => setSelectedProof(null)}
                   style={{ padding: "12px 20px", borderRadius: "10px", backgroundColor: "rgba(4, 16, 38, 0.8)", color: "#8E9BAE", border: "1px solid rgba(142, 155, 174, 0.3)", cursor: "pointer", fontWeight: 800, fontSize: "13px", transition: "all 0.3s ease" }}

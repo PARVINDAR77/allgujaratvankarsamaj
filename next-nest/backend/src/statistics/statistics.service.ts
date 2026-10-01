@@ -74,16 +74,20 @@ export class StatisticsService {
         role: true,
         createdAt: true,
         profile: {
-          select: { pargana: { select: { name: true } } }
+          select: { 
+            firstName: true,
+            lastName: true,
+            pargana: { select: { name: true } } 
+          }
         }
       }
     });
 
     const recentUsers = recentUsersRaw.map(u => ({
       id: u.id,
-      name: u.name || 'Unknown',
-      email: u.email || 'N/A',
-      phone: u.phone || 'N/A',
+      name: (u.profile?.firstName ? `${u.profile.firstName} ${u.profile.lastName || ''}`.trim() : u.name) || '',
+      email: u.email || '',
+      phone: u.phone || '',
       pargana: u.profile?.pargana?.name || 'Not Set',
       status: u.status,
       role: u.role,
@@ -177,4 +181,26 @@ export class StatisticsService {
 
     return birthdayProfiles;
   }
+  async getSectionViews() {
+    return await this.prisma.sectionViewCount.findMany();
+  }
+
+  async incrementSectionView(sectionName: string) {
+    const existing = await this.prisma.sectionViewCount.findUnique({
+      where: { sectionName },
+    });
+    if (existing) {
+      return await this.prisma.sectionViewCount.update({
+        where: { sectionName },
+        data: { viewCount: { increment: 1 } },
+      });
+    } else {
+      return await this.prisma.sectionViewCount.create({
+        data: { sectionName, viewCount: 1 },
+      });
+    }
+  }
+
+
 }
+

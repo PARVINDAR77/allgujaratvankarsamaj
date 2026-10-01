@@ -113,7 +113,7 @@ export class ProfilesService {
         throw new ConflictException("Profile already exists");
       }
 
-      return await this.prisma.matrimonialProfile.create({
+      const newProfile = await this.prisma.matrimonialProfile.create({
         data: {
           userId,
           firstName: (dto.firstName || "User").trim(),
@@ -137,8 +137,12 @@ export class ProfilesService {
           pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
           isAbroad: dto.isAbroad ?? false,
           abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
+          businessIndustry: dto.businessIndustry ? dto.businessIndustry.trim() : null,
+          businessService: dto.businessService ? dto.businessService.trim() : null,
         },
       });
+      await this.syncSamajServicePerson(userId, newProfile);
+      return newProfile;
     } catch (err: any) {
       if (err instanceof ConflictException) throw err;
       this.logger.warn(`PostgreSQL offline or error during DB profile create for user ${userId}: ${err?.message || err}`);
@@ -170,6 +174,8 @@ export class ProfilesService {
         pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
         isAbroad: dto.isAbroad ?? false,
         abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
+        businessIndustry: dto.businessIndustry ? dto.businessIndustry.trim() : null,
+        businessService: dto.businessService ? dto.businessService.trim() : null,
         stateId: null,
         districtId: null,
         talukaId: null,
@@ -261,11 +267,15 @@ export class ProfilesService {
       if (dto.pwbdCategory !== undefined) updateData.pwbdCategory = dto.pwbdCategory ? dto.pwbdCategory.trim() : null;
       if (dto.isAbroad !== undefined) updateData.isAbroad = dto.isAbroad;
       if (dto.abroadCountry !== undefined) updateData.abroadCountry = dto.abroadCountry ? dto.abroadCountry.trim() : null;
+      if (dto.businessIndustry !== undefined) updateData.businessIndustry = dto.businessIndustry ? dto.businessIndustry.trim() : null;
+      if (dto.businessService !== undefined) updateData.businessService = dto.businessService ? dto.businessService.trim() : null;
 
-      return await this.prisma.matrimonialProfile.update({
+      const updatedProfile = await this.prisma.matrimonialProfile.update({
         where: { userId },
         data: updateData,
       });
+      await this.syncSamajServicePerson(userId, updatedProfile);
+      return updatedProfile;
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
       const existing = this.memoryProfiles.get(userId);
@@ -295,6 +305,8 @@ export class ProfilesService {
         pwbdCategory: dto.pwbdCategory !== undefined ? (dto.pwbdCategory ? dto.pwbdCategory.trim() : null) : existing.pwbdCategory,
         isAbroad: dto.isAbroad !== undefined ? dto.isAbroad : existing.isAbroad,
         abroadCountry: dto.abroadCountry !== undefined ? (dto.abroadCountry ? dto.abroadCountry.trim() : null) : existing.abroadCountry,
+        businessIndustry: dto.businessIndustry !== undefined ? (dto.businessIndustry ? dto.businessIndustry.trim() : null) : existing.businessIndustry,
+        businessService: dto.businessService !== undefined ? (dto.businessService ? dto.businessService.trim() : null) : existing.businessService,
         updatedAt: new Date(),
       };
       this.memoryProfiles.set(userId, updated);
@@ -434,5 +446,49 @@ export class ProfilesService {
         totalPages: Math.ceil(total / limit),
       },
     };
+  }
+
+  private async syncSamajServicePerson(userId: string, profile: MatrimonialProfile) {
+    if (profile.occupation?.includes('Business') && profile.businessIndustry && profile.businessService) {
+      const service = await this.prisma.samajService.findFirst({
+        where: {
+          category: profile.businessIndustry,
+          title: profile.businessService,
+        }
+      });
+      if (service) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (user && user.phone) {
+          const existingPerson = await this.prisma.samajServicePerson.findFirst({
+            where: { userId }
+          });
+          const data = {
+            serviceId: service.id,
+            name: `${profile.firstName} ${profile.lastName}`.trim(),
+            phone: user.phone,
+            photoUrl: profile.photoUrl,
+            city: profile.city,
+            address: profile.nativePlace,
+            description: profile.about,
+          };
+          if (existingPerson) {
+            await this.prisma.samajServicePerson.update({
+              where: { id: existingPerson.id },
+              data
+            });
+          } else {
+            await this.prisma.samajServicePerson.create({
+              data: { ...data, userId }
+            });
+          }
+          return;
+        }
+      }
+    }
+    
+    // If not business, remove existing
+    await this.prisma.samajServicePerson.deleteMany({
+      where: { userId }
+    });
   }
 }

@@ -172,15 +172,34 @@ export default function HomeScreenConfigPage() {
                 {/* Destination & Action */}
                 <div style={{ width: "220px", display: "flex", flexDirection: "column", gap: "12px", justifyContent: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    <label style={{ fontSize: "11px", color: "#8E9BAE", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>Fixed Destination</label>
-                    <div style={{ padding: "10px 14px", background: "rgba(0,0,0,0.3)", borderRadius: "8px", border: "1px dashed rgba(255,255,255,0.1)", color: "#8E9BAE", fontSize: "13px", fontWeight: 600 }}>
-                      {routeOptions.find(o => o.value === config.route)?.label || config.route}
-                    </div>
+                    <label style={{ fontSize: "11px", color: "#8E9BAE", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>Destination Route</label>
+                    <input 
+                      type="text" 
+                      value={config.route} 
+                      onChange={(e) => {
+                        const newConfigs = [...configs];
+                        newConfigs[i].route = e.target.value;
+                        setConfigs(newConfigs);
+                      }}
+                      style={{
+                        padding: "10px 14px", 
+                        background: "rgba(0,0,0,0.3)", 
+                        borderRadius: "8px", 
+                        border: "1px solid rgba(255,255,255,0.2)", 
+                        color: "#FFFFFF", 
+                        fontSize: "13px", 
+                        fontWeight: 600,
+                        outline: "none",
+                        transition: "all 0.3s ease"
+                      }}
+                      onFocus={(e) => { e.target.style.borderColor = "#D4AF37"; }}
+                      onBlur={(e) => { e.target.style.borderColor = "rgba(255, 255, 255, 0.2)"; }}
+                    />
                   </div>
                   
-                  {(config.route === "/samaj-ratna" || config.route === "/advertisement") && (
+                  {(config.route.includes("/samaj-ratna") || config.route.includes("/advertisement")) && (
                     <a 
-                      href={config.route === "/samaj-ratna" ? "/admin/samaj-ratna" : "/admin/advertisements"}
+                      href={config.route.includes("/samaj-ratna") ? "/admin/samaj-ratna" : `/admin/advertisements${config.route.includes("?") ? config.route.substring(config.route.indexOf("?")) : ""}`}
                       style={{
                         textAlign: "center",
                         padding: "8px 12px",

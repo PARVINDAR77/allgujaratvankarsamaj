@@ -2,17 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/constants/app_data.dart';
-import '../../../../shared/providers/samaj_services_provider.dart';
 import '../../../../shared/models/samaj_service.dart';
 
-<<<<<<< HEAD
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/samaj_services_provider.dart';
 import '../../../profile/providers/master_data_provider.dart';
-import '../../../../shared/models/samaj_service.dart';
 
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 class SamajServicesScreen extends ConsumerStatefulWidget {
   const SamajServicesScreen({super.key});
 
@@ -26,26 +20,13 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _villageController = TextEditingController();
 
-<<<<<<< HEAD
   // Colors for dynamic categories
   final List<Color> _categoryColors = [
-    Colors.orange, Colors.blue, Colors.purple, Colors.green, 
-    Colors.teal, Colors.indigo, Colors.red, Colors.brown, 
+    Colors.orange, Colors.blue, Colors.purple, Colors.green,
+    Colors.teal, Colors.indigo, Colors.red, Colors.brown,
     Colors.blueGrey, Colors.pink, const Color(0xFF388E3C)
-=======
-  final List<Color> _categoryColors = [
-    Colors.orange,
-    Colors.blue,
-    Colors.purple,
-    Colors.green,
-    Colors.teal,
-    Colors.indigo,
-    Colors.red,
-    Colors.brown,
-    Colors.blueGrey,
-    Colors.pink,
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   ];
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -62,17 +43,15 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
-<<<<<<< HEAD
   Widget _buildProvidersBottomSheet(BuildContext context, String serviceId, String serviceName) {
-=======
-  Widget _buildProvidersBottomSheet(BuildContext context, String serviceName) {
-    // This could also be updated to an API call later. For now, empty state handling.
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
       ),
       child: Column(
         children: [
@@ -80,17 +59,32 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
             margin: const EdgeInsets.only(top: 12, bottom: 8),
             height: 4,
             width: 40,
-            decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              '$serviceName Professionals',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF041126)),
+            decoration: BoxDecoration(
+              color: Colors.grey.shade300,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                const Icon(Icons.people, color: Color(0xFFD4AF37), size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '$serviceName Professionals',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF041126),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
           Expanded(
-<<<<<<< HEAD
             child: RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(samajServicePersonsProvider(serviceId));
@@ -99,28 +93,39 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                 data: (persons) {
                   if (persons.isEmpty) {
                     return ListView(
-                      children: const [
-                        SizedBox(height: 50),
-                        Center(child: Text('No professionals found for this service.')),
+                      children: [
+                        const SizedBox(height: 60),
+                        Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.person_off, size: 60, color: Colors.grey.shade300),
+                              const SizedBox(height: 12),
+                              const Text(
+                                'No professionals found',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     );
                   }
-                  return ListView.builder(
+                  return GridView.builder(
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.75,
+                    ),
                     itemCount: persons.length,
-                    padding: const EdgeInsets.all(16),
                     itemBuilder: (context, index) {
-                      return _buildProviderCard(context, persons[index]);
+                      return _buildProviderGridCard(context, persons[index]);
                     },
                   );
                 },
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
                 error: (err, stack) => Center(child: Text('Error loading providers: $err')),
-=======
-            child: Center(
-              child: Text(
-                'No professionals registered for this service yet.',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               ),
             ),
           ),
@@ -129,139 +134,367 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
-<<<<<<< HEAD
-  Widget _buildProviderCard(BuildContext context, dynamic provider) {
-    int currentRating = 0;
-    return StatefulBuilder(
-      builder: (context, setLocalState) {
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          elevation: 2,
+  Widget _buildProviderGridCard(BuildContext context, dynamic provider) {
+    return GestureDetector(
+      onTap: () => _showProviderDetail(context, provider),
+      child: Container(
+        decoration: BoxDecoration(
           color: Colors.white,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.grey.shade200,
-                      child: const Icon(Icons.person, size: 36, color: Colors.grey),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(provider.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                          if (provider.gujaratiName != null)
-                            Text(provider.gujaratiName, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          if (provider.experience != null)
-                            Text(provider.experience, style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                          const SizedBox(height: 4),
-                          if (provider.city != null)
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on, size: 14, color: Colors.grey),
-                                const SizedBox(width: 4),
-                                Text(provider.city, style: const TextStyle(fontSize: 12, color: Colors.grey, fontWeight: FontWeight.bold)),
-                              ],
-                            ),
-                        ],
-                      ),
-                    ),
-                  ],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.35), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // Photo Box at the top
+            Container(
+              width: double.infinity,
+              height: 115,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF041126), Color(0xFF0A2A5E)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
-                if (provider.description != null) ...[
-                  const SizedBox(height: 12),
-                  Text(
-                    provider.description,
-                    style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4, fontWeight: FontWeight.bold),
-                  ),
-                ],
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Calling ${provider.phone}...')));
-                        },
-                        icon: const Icon(Icons.call, size: 18),
-                        label: const Text('Call Now'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFD4AF37), foregroundColor: Colors.white),
-                        icon: const Icon(Icons.message, size: 18),
-                        label: const Text('Message'),
-                      ),
-                    ),
-                  ],
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Divider(),
-                ),
-                const Text('Rate this Professional:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                const SizedBox(height: 8),
-                Row(
+              ),
+              child: provider.photoUrl != null
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
+                      ),
+                      child: Image.network(
+                        provider.photoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Icon(Icons.person, size: 52, color: Colors.white38),
+                        ),
+                      ),
+                    )
+                  : const Center(
+                      child: Icon(Icons.person, size: 52, color: Colors.white38),
+                    ),
+            ),
+            // Name and Info
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: List.generate(5, (starIndex) {
-                        return IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          icon: Icon(
-                            starIndex < currentRating ? Icons.star : Icons.star_border,
-                            color: Colors.amber,
-                            size: 32,
+                    Column(
+                      children: [
+                        Text(
+                          provider.name,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF041126),
                           ),
-                          onPressed: () {
-                            setLocalState(() {
-                              currentRating = starIndex + 1;
-                            });
-                          },
-                        );
-                      }),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (provider.gujaratiName != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            provider.gujaratiName,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        if (provider.city != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.location_on, size: 11, color: Color(0xFFD4AF37)),
+                              const SizedBox(width: 2),
+                              Flexible(
+                                child: Text(
+                                  provider.city,
+                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
                     ),
-                    if (currentRating > 0)
-                      TextButton(
+                    // Call Button
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
                         onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Review submitted successfully!')));
-                          setLocalState(() {
-                            currentRating = 0;
-                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Calling ${provider.phone}...')),
+                          );
                         },
-                        child: const Text('Submit', style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD4AF37),
+                          foregroundColor: const Color(0xFF041126),
+                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 0,
+                        ),
+                        icon: const Icon(Icons.call, size: 14),
+                        label: const Text(
+                          'Call Now',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
                       ),
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        );
-      }
+          ],
+        ),
+      ),
     );
   }
 
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
+  void _showProviderDetail(BuildContext context, dynamic provider) {
+    int currentRating = 0;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setLocalState) {
+          return Container(
+            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(24),
+                topRight: Radius.circular(24),
+              ),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 4, bottom: 16),
+                    height: 4,
+                    width: 40,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF041126), Color(0xFF0A2A5E)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: const Color(0xFFD4AF37).withValues(alpha: 0.5),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: provider.photoUrl != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.network(
+                                  provider.photoUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.person,
+                                    size: 36,
+                                    color: Colors.white38,
+                                  ),
+                                ),
+                              )
+                            : const Center(
+                                child: Icon(Icons.person, size: 36, color: Colors.white38),
+                              ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              provider.name,
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF041126),
+                              ),
+                            ),
+                            if (provider.gujaratiName != null)
+                              Text(
+                                provider.gujaratiName,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            if (provider.city != null)
+                              Row(
+                                children: [
+                                  const Icon(Icons.location_on, size: 13, color: Color(0xFFD4AF37)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    provider.city,
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                                  ),
+                                ],
+                              ),
+                            if (provider.experience != null)
+                              Text(
+                                provider.experience,
+                                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (provider.description != null) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8FAFC),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.grey.shade200),
+                      ),
+                      child: Text(
+                        provider.description,
+                        style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Calling ${provider.phone}...')),
+                            );
+                          },
+                          icon: const Icon(Icons.call, size: 18),
+                          label: const Text('Call Now'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF041126),
+                            side: const BorderSide(color: Color(0xFFD4AF37)),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFD4AF37),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          ),
+                          icon: const Icon(Icons.message, size: 18),
+                          label: const Text('Message'),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: Divider(),
+                  ),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Rate this Professional:',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: List.generate(5, (starIndex) {
+                          return IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            icon: Icon(
+                              starIndex < currentRating ? Icons.star : Icons.star_border,
+                              color: Colors.amber,
+                              size: 30,
+                            ),
+                            onPressed: () => setLocalState(() => currentRating = starIndex + 1),
+                          );
+                        }),
+                      ),
+                      if (currentRating > 0)
+                        TextButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Review submitted!')),
+                            );
+                            setLocalState(() => currentRating = 0);
+                          },
+                          child: const Text(
+                            'Submit',
+                            style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final masterData = ref.watch(masterDataProvider);
-    
-    final districtsList = masterData.gujaratDistricts.keys.where((d) => d != 'Select District').toList();
-    final talukasList = selectedDistrict != null && masterData.gujaratDistricts.containsKey(selectedDistrict) 
-        ? masterData.gujaratDistricts[selectedDistrict]!.where((t) => t != 'Select Taluka').toList() 
+
+    final districtsList = masterData.gujaratDistricts.keys
+        .where((d) => d != 'Select District')
+        .toList();
+    final talukasList = selectedDistrict != null &&
+            masterData.gujaratDistricts.containsKey(selectedDistrict)
+        ? masterData.gujaratDistricts[selectedDistrict]!
+            .where((t) => t != 'Select Taluka')
+            .toList()
         : <String>[];
 
     final servicesAsyncValue = ref.watch(samajServicesProvider);
@@ -280,7 +513,8 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                     // Custom Header
                     Container(
                       width: double.infinity,
-                      padding: EdgeInsets.symmetric(horizontal: isDesktop ? 32 : 16, vertical: 24),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isDesktop ? 32 : 16, vertical: 24),
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
                           colors: [Color(0xFF041126), Color(0xFF0A2A5E)],
@@ -309,7 +543,8 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                     color: Colors.white.withValues(alpha: 0.1),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(Icons.arrow_back, color: Color(0xFFD4AF37), size: 24),
+                                  child: const Icon(Icons.arrow_back,
+                                      color: Color(0xFFD4AF37), size: 24),
                                 ),
                               ),
                               const SizedBox(width: 16),
@@ -319,22 +554,34 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                   children: [
                                     Text(
                                       'Vankar Samaj Services',
-                                      style: TextStyle(color: const Color(0xFFD4AF37), fontSize: isDesktop ? 28 : 22, fontWeight: FontWeight.bold),
+                                      style: TextStyle(
+                                        color: const Color(0xFFD4AF37),
+                                        fontSize: isDesktop ? 28 : 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                     const Text(
                                       'સમાજ માટે - સમાજ દ્વારા',
-                                      style: TextStyle(color: Colors.white70, fontSize: 14, fontStyle: FontStyle.italic),
+                                      style: TextStyle(
+                                        color: Colors.white70,
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic,
+                                      ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Icon(Icons.handshake, color: const Color(0xFFD4AF37).withValues(alpha: 0.8), size: isDesktop ? 48 : 36),
+                              Icon(
+                                Icons.handshake,
+                                color: const Color(0xFFD4AF37).withValues(alpha: 0.8),
+                                size: isDesktop ? 48 : 36,
+                              ),
                             ],
                           ),
                         ],
                       ),
                     ),
-                    
+
                     // --- SEARCH & FILTER SECTION ---
                     Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -343,9 +590,16 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
-                          BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 4)),
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.08),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
                         ],
-                        border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.6), width: 1.5),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
+                          width: 1.5,
+                        ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -353,21 +607,36 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                           // Search Bar
                           TextField(
                             controller: _searchController,
-                            style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                color: Colors.black, fontWeight: FontWeight.bold),
                             decoration: InputDecoration(
                               hintText: 'Search services, professions...',
                               hintStyle: const TextStyle(color: Colors.black54),
-                              prefixIcon: const Icon(Icons.search, color: Color(0xFFD4AF37)),
+                              prefixIcon:
+                                  const Icon(Icons.search, color: Color(0xFFD4AF37)),
                               filled: true,
                               fillColor: const Color(0xFFF8FAFC),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 1.5)),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFFD4AF37)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide:
+                                    const BorderSide(color: Color(0xFFD4AF37)),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(
+                                    color: Color(0xFFD4AF37), width: 1.5),
+                              ),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 0),
                             ),
                           ),
                           const SizedBox(height: 12),
-                          
+
                           // Location Dropdowns Row
                           Row(
                             children: [
@@ -380,23 +649,55 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                   menuMaxHeight: 300,
                                   iconEnabledColor: const Color(0xFFD4AF37),
                                   iconDisabledColor: Colors.grey,
-                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                                  hint: const Text('District', style: TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold)),
-                                  disabledHint: const Text('District', style: TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold)),
+                                  style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                  hint: const Text('District',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black54,
+                                          fontWeight: FontWeight.bold)),
+                                  disabledHint: const Text('District',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black54,
+                                          fontWeight: FontWeight.bold)),
                                   decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                                    disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.grey)),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 0),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFFD4AF37))),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFFD4AF37))),
+                                    disabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey)),
                                     filled: true,
                                     fillColor: const Color(0xFFF8FAFC),
                                   ),
                                   value: selectedDistrict,
-                                  items: districtsList.map((d) => DropdownMenuItem(value: d, child: Text(d, style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
+                                  items: districtsList
+                                      .map((d) => DropdownMenuItem(
+                                          value: d,
+                                          child: Text(d,
+                                              style: const TextStyle(
+                                                  fontSize: 12,
+                                                  color: Colors.black,
+                                                  fontWeight: FontWeight.bold),
+                                              overflow:
+                                                  TextOverflow.ellipsis)))
+                                      .toList(),
                                   onChanged: (val) => setState(() {
                                     selectedDistrict = val;
-                                    selectedTaluka = null; 
+                                    selectedTaluka = null;
                                   }),
                                 ),
                               ),
@@ -410,35 +711,88 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                   menuMaxHeight: 300,
                                   iconEnabledColor: const Color(0xFFD4AF37),
                                   iconDisabledColor: Colors.grey,
-                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-                                  hint: const Text('Taluka', style: TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold)),
-                                  disabledHint: const Text('Taluka', style: TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold)),
+                                  style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                  hint: const Text('Taluka',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black54,
+                                          fontWeight: FontWeight.bold)),
+                                  disabledHint: const Text('Taluka',
+                                      style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black54,
+                                          fontWeight: FontWeight.bold)),
                                   decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                                    disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Colors.grey)),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 0),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFFD4AF37))),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFFD4AF37))),
+                                    disabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Colors.grey)),
                                     filled: true,
                                     fillColor: const Color(0xFFF8FAFC),
                                   ),
                                   value: selectedTaluka,
-                                  items: talukasList.isEmpty ? null : talukasList.map((t) => DropdownMenuItem(value: t, child: Text(t, style: const TextStyle(fontSize: 12, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis))).toList(),
-                                  onChanged: talukasList.isEmpty ? null : (val) => setState(() => selectedTaluka = val),
+                                  items: talukasList.isEmpty
+                                      ? null
+                                      : talukasList
+                                          .map((t) => DropdownMenuItem(
+                                              value: t,
+                                              child: Text(t,
+                                                  style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color: Colors.black,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                  overflow:
+                                                      TextOverflow.ellipsis)))
+                                          .toList(),
+                                  onChanged: talukasList.isEmpty
+                                      ? null
+                                      : (val) => setState(
+                                          () => selectedTaluka = val),
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: TextField(
                                   controller: _villageController,
-                                  style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
+                                  style: const TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
                                   decoration: InputDecoration(
                                     hintText: 'Village Name',
-                                    hintStyle: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.bold),
-                                    contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
-                                    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFD4AF37))),
+                                    hintStyle: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black54,
+                                        fontWeight: FontWeight.bold),
+                                    contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 0),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFFD4AF37))),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                            color: Color(0xFFD4AF37))),
                                     filled: true,
                                     fillColor: const Color(0xFFF8FAFC),
                                   ),
@@ -446,22 +800,27 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                               ),
                             ],
                           ),
-                          
+
                           const SizedBox(height: 16),
                           ElevatedButton(
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Search backend is temporarily disconnected.')),
+                                const SnackBar(
+                                    content: Text(
+                                        'Search backend is temporarily disconnected.')),
                               );
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFD4AF37),
                               foregroundColor: const Color(0xFF041126),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                               elevation: 0,
                             ),
-                            child: const Text('Search', style: TextStyle(fontWeight: FontWeight.bold)),
+                            child: const Text('Search',
+                                style: TextStyle(fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
@@ -470,7 +829,6 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
 
                     // Services List
                     Expanded(
-<<<<<<< HEAD
                       child: RefreshIndicator(
                         onRefresh: () async {
                           ref.invalidate(samajServicesProvider);
@@ -481,211 +839,176 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                               return ListView(
                                 children: const [
                                   SizedBox(height: 100),
-                                  Center(child: Text('No Samaj Services Found', style: TextStyle(fontWeight: FontWeight.bold))),
+                                  Center(
+                                      child: Text('No Samaj Services Found',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold))),
                                 ],
                               );
                             }
-                            
+
                             // Group services by category
-                            final Map<String, List<SamajService>> groupedServices = {};
+                            final Map<String, List<SamajService>>
+                                groupedServices = {};
                             for (final service in services) {
-                              groupedServices.putIfAbsent(service.category, () => []).add(service);
+                              groupedServices
+                                  .putIfAbsent(service.category, () => [])
+                                  .add(service);
                             }
-                            
-                            final categories = groupedServices.keys.toList()..sort();
-                            
+
+                            final categories =
+                                groupedServices.keys.toList()..sort();
+
                             return ListView.builder(
-=======
-                      child: servicesAsyncValue.when(
-                        data: (services) {
-                          if (services.isEmpty) {
-                            return Center(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.work_off, size: 64, color: Colors.grey.shade400),
-                                  const SizedBox(height: 16),
-                                  const Text(
-                                    'No services available at the moment.',
-                                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 16, horizontal: 8),
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: categories.length,
+                              itemBuilder: (context, index) {
+                                final categoryName = categories[index];
+                                final List<SamajService> items =
+                                    groupedServices[categoryName]!;
+                                final Color color = _categoryColors[
+                                    index % _categoryColors.length];
 
-                          // Group services by category
-                          final Map<String, List<SamajService>> groupedServices = {};
-                          for (var service in services) {
-                            if (!groupedServices.containsKey(service.category)) {
-                              groupedServices[service.category] = [];
-                            }
-                            groupedServices[service.category]!.add(service);
-                          }
-
-                          final categories = groupedServices.keys.toList();
-
-                          return ListView.builder(
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
-                            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-                            physics: const BouncingScrollPhysics(),
-                            itemCount: categories.length,
-                            itemBuilder: (context, index) {
-                              final categoryName = categories[index];
-<<<<<<< HEAD
-                              final List<SamajService> items = groupedServices[categoryName]!;
-=======
-                              final categoryServices = groupedServices[categoryName]!;
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
-                              final Color color = _categoryColors[index % _categoryColors.length];
-                              
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 24, left: 8, right: 8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Category Header
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                      decoration: BoxDecoration(
-                                        color: color.withValues(alpha: 0.1),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: color.withValues(alpha: 0.3)),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.category, color: color, size: 20),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: Text(
-                                              categoryName,
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: color.withValues(alpha: 0.9),
+                                return Container(
+                                  margin: const EdgeInsets.only(
+                                      bottom: 24, left: 8, right: 8),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Category Header
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 12),
+                                        decoration: BoxDecoration(
+                                          color: color.withValues(alpha: 0.1),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                              color: color.withValues(
+                                                  alpha: 0.3)),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Icon(Icons.category,
+                                                color: color, size: 20),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Text(
+                                                categoryName,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: color.withValues(
+                                                      alpha: 0.9),
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    
-                                    // Items Grid
-                                    GridView.builder(
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                                        maxCrossAxisExtent: 280,
-                                        mainAxisExtent: 68,
-                                        crossAxisSpacing: 10,
-                                        mainAxisSpacing: 10,
-                                      ),
-<<<<<<< HEAD
-                                      itemCount: items.length,
-                                      itemBuilder: (context, itemIndex) {
-                                        final SamajService service = items[itemIndex];
-                                        final String emoji = service.icon;
-                                        final String text = service.title;
-                                        
-                                        return InkWell(
-                                          onTap: () {
-                                            _showServiceProviders(context, service.id, text);
-=======
-                                      itemCount: categoryServices.length,
-                                      itemBuilder: (context, itemIndex) {
-                                        final service = categoryServices[itemIndex];
-                                        
-                                        return InkWell(
-                                          onTap: () {
-                                            _showServiceProviders(context, service.title);
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
-                                          },
-                                          borderRadius: BorderRadius.circular(12),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(12),
-                                              border: Border.all(color: Colors.grey.shade200),
-                                              boxShadow: [
-                                                BoxShadow(
-                                                  color: Colors.black.withValues(alpha: 0.03),
-                                                  blurRadius: 4,
-                                                  offset: const Offset(0, 2),
-                                                ),
-                                              ],
-                                            ),
-                                            child: Row(
-                                              children: [
-<<<<<<< HEAD
-                                                if (emoji.isNotEmpty) ...[
-                                                  Text(
-                                                    emoji,
-=======
-                                                if (service.icon.isNotEmpty) ...[
-                                                  Text(
-                                                    service.icon,
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
-                                                    style: const TextStyle(
-                                                      fontSize: 20,
-                                                      fontFamily: 'Roboto',
-                                                    ),
+                                      const SizedBox(height: 16),
+
+                                      // Items Grid
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                                          maxCrossAxisExtent: 280,
+                                          mainAxisExtent: 68,
+                                          crossAxisSpacing: 10,
+                                          mainAxisSpacing: 10,
+                                        ),
+                                        itemCount: items.length,
+                                        itemBuilder: (context, itemIndex) {
+                                          final SamajService service =
+                                              items[itemIndex];
+                                          final String emoji = service.icon;
+                                          final String text = service.title;
+
+                                          return InkWell(
+                                            onTap: () {
+                                              _showServiceProviders(context,
+                                                  service.id, text);
+                                            },
+                                            borderRadius:
+                                                BorderRadius.circular(12),
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 10,
+                                                      vertical: 8),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                    color:
+                                                        Colors.grey.shade200),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withValues(alpha: 0.03),
+                                                    blurRadius: 4,
+                                                    offset:
+                                                        const Offset(0, 2),
                                                   ),
-                                                  const SizedBox(width: 8),
                                                 ],
-                                                Expanded(
-                                                  child: Text(
-<<<<<<< HEAD
-                                                    text,
-=======
-                                                    service.title,
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
-                                                    style: const TextStyle(
-                                                      fontSize: 12,
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Color(0xFF041126),
-                                                      height: 1.2,
+                                              ),
+                                              child: Row(
+                                                children: [
+                                                  if (emoji.isNotEmpty) ...[
+                                                    Text(
+                                                      emoji,
+                                                      style: const TextStyle(
+                                                        fontSize: 20,
+                                                        fontFamily: 'Roboto',
+                                                      ),
                                                     ),
-                                                    maxLines: 2,
-                                                    overflow: TextOverflow.ellipsis,
+                                                    const SizedBox(width: 8),
+                                                  ],
+                                                  Expanded(
+                                                    child: Text(
+                                                      text,
+                                                      style: const TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color:
+                                                            Color(0xFF041126),
+                                                        height: 1.2,
+                                                      ),
+                                                      maxLines: 2,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
                                                   ),
-                                                ),
-                                                Icon(Icons.chevron_right, color: Colors.grey.shade400, size: 14),
-                                              ],
+                                                  Icon(Icons.chevron_right,
+                                                      color:
+                                                          Colors.grey.shade400,
+                                                      size: 14),
+                                                ],
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                        loading: () => const Center(child: CircularProgressIndicator()),
-<<<<<<< HEAD
-                        error: (err, stack) => Center(child: Text('Error loading services: $err')),
-=======
-                        error: (err, stack) => Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                              const SizedBox(height: 16),
-                              Text('Error loading services: $err'),
-                              const SizedBox(height: 16),
-                              ElevatedButton(
-                                onPressed: () => ref.refresh(samajServicesProvider),
-                                child: const Text('Retry'),
-                              )
-                            ],
-                          ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                          loading: () => const Center(
+                              child: CircularProgressIndicator()),
+                          error: (err, stack) =>
+                              Center(child: Text('Error loading services: $err')),
                         ),
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                       ),
-                      ), // Close RefreshIndicator
                     ),
                   ],
                 ),

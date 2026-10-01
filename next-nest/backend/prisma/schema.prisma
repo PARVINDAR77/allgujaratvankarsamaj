@@ -111,6 +111,8 @@ model MatrimonialProfile {
   pwbdCategory     String?       @map("pwbd_category")
   isAbroad         Boolean       @default(false) @map("is_abroad")
   abroadCountry    String?       @map("abroad_country")
+  businessIndustry String?       @map("business_industry")
+  businessService  String?       @map("business_service")
 
   stateId    String?   @map("state_id")
   districtId String?   @map("district_id")
@@ -344,6 +346,7 @@ model SamajServicePerson {
   id           String       @id @default(uuid())
   serviceId    String       @map("service_id")
   service      SamajService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  userId       String?      @map("user_id")
   name         String
   gujaratiName String?      @map("gujarati_name")
   photoUrl     String?      @map("photo_url")
@@ -474,6 +477,11 @@ enum AdPlacement {
   HOME_BANNER
   DIRECTORY_BANNER
   POPUP
+  BUTTON_1
+  BUTTON_2
+  BUTTON_3
+  BUTTON_4
+  BUTTON_5
 }
 
 model Advertisement {
@@ -505,5 +513,16 @@ model HomeButtonConfig {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("home_button_configs")
+}
+
+
+model SectionViewCount {
+  id          String   @id @default(uuid())
+  sectionName String   @unique @map("section_name")
+  viewCount   Int      @default(0) @map("view_count")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("section_view_counts")
 }
 

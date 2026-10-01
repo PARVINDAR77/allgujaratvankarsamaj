@@ -226,4 +226,20 @@ export class CreateProfileDto {
   @IsOptional()
   @IsString()
   abroadCountry?: string;
+
+  @ApiPropertyOptional({
+    description: "Business Industry (Category) from Samaj Services",
+    example: "Healthcare",
+  })
+  @IsOptional()
+  @IsString()
+  businessIndustry?: string;
+
+  @ApiPropertyOptional({
+    description: "Specific Business Service from Samaj Services",
+    example: "Doctor",
+  })
+  @IsOptional()
+  @IsString()
+  businessService?: string;
 }

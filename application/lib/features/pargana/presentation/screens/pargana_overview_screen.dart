@@ -32,11 +32,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileNotifierProvider);
-<<<<<<< HEAD
     final profiles = profileState.profiles;
-=======
-    final profiles = profileState.value ?? [];
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
     List<String> availableParganas = ['All'];
     List<String> availableDistricts = ['All'];

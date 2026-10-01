@@ -192,11 +192,12 @@ export class SamajServicesService {
           },
         },
       });
-      if (res && res.length > 0) return res;
-    } catch {
-      // Return default services fallback
+      // Always return DB data, even if empty — DB is the source of truth
+      return res;
+    } catch (error) {
+      this.logger.warn('DB unavailable, returning hardcoded fallback services');
+      return this.defaultServices;
     }
-    return this.defaultServices;
   }
 
   async getPublicServiceById(id: string) {
@@ -330,11 +331,12 @@ export class SamajServicesService {
           },
         },
       });
-      if (res && res.length > 0) return res;
-    } catch {
-      // Return default services fallback
+      // Always return DB data — DB is the source of truth
+      return res;
+    } catch (error) {
+      this.logger.warn('DB unavailable, returning hardcoded fallback services');
+      return this.defaultServices;
     }
-    return this.defaultServices;
   }
 
   async createService(data: {
@@ -346,10 +348,18 @@ export class SamajServicesService {
     description?: string;
     isActive?: boolean;
   }) {
+    // Generate a URL-safe slug; for Gujarati text, use a random suffix to avoid collisions
+    const baseSlug = data.title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .substring(0, 50);
+    const uniqueSlug = `${baseSlug}-${Date.now()}`.replace(/^-+|-+$/g, '') || `service-${Date.now()}`;
+
     return this.prisma.samajService.create({
       data: {
         title: data.title,
-        slug: data.title.toLowerCase().replace(/ /g, '-'),
+        slug: uniqueSlug,
         category: data.category || 'General',
         icon: data.icon || '🤝',
         contactPhone: data.contactPhone || null,

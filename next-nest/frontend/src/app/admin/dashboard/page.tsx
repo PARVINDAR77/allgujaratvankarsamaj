@@ -30,7 +30,6 @@ export default function AdminDashboardPage() {
   if (loading) {
     return (
       <AdminLayout title="Admin Dashboard" subtitle="Loading All Gujarat Vankar Samaj metrics...">
-<<<<<<< HEAD
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "400px" }}>
           <div style={{ 
             backgroundColor: "rgba(13, 27, 50, 0.85)", 
@@ -55,13 +54,6 @@ export default function AdminDashboardPage() {
               Initializing Dashboard
             </span>
           </div>
-=======
-        <div   className="flex justify-center items-center text-admin-gold h-[300px]" >
-          <div className="animate-spin text-[28px]" >⚙️</div>
-          <span  style={{ marginLeft: "12px" }} className="font-bold text-sm">
-            Loading Admin Dashboard...
-          </span>
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
         </div>
       </AdminLayout>
     );
@@ -72,7 +64,6 @@ export default function AdminDashboardPage() {
     
     return (
       <AdminLayout title="Admin Dashboard" subtitle="Overview">
-<<<<<<< HEAD
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "500px" }}>
           <div style={{ 
             backgroundColor: "rgba(13, 27, 50, 0.85)", 
@@ -163,11 +154,6 @@ export default function AdminDashboardPage() {
               </button>
             )}
           </div>
-=======
-        <div   className="flex flex-col justify-center items-center text-rose-500 h-[300px]" >
-          <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚠️</div>
-          <span  className="font-bold text-base">{error || "No data available."}</span>
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
         </div>
       </AdminLayout>
     );
@@ -301,39 +287,46 @@ export default function AdminDashboardPage() {
               </p>
 
               <div  className="flex flex-col gap-4">
-                {stats.parganaBreakdown.map((p, idx) => {
-                  const colors = [
-                    "linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)",
-                    "linear-gradient(90deg, #10B981 0%, #34D399 100%)",
-                    "linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)",
-                    "linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%)",
-                    "linear-gradient(90deg, #EC4899 0%, #F472B6 100%)",
-                  ];
-                  const barGradient = colors[idx % colors.length];
-                  const relativeFillPercent = Math.max(12, Math.round((p.count / maxParganaCount) * 95));
+                {stats.parganaBreakdown.length > 0 ? (
+                  stats.parganaBreakdown.map((p, idx) => {
+                    const colors = [
+                      "linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)",
+                      "linear-gradient(90deg, #10B981 0%, #34D399 100%)",
+                      "linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%)",
+                      "linear-gradient(90deg, #8B5CF6 0%, #A78BFA 100%)",
+                      "linear-gradient(90deg, #EC4899 0%, #F472B6 100%)",
+                    ];
+                    const barGradient = colors[idx % colors.length];
+                    const relativeFillPercent = Math.max(12, Math.round((p.count / maxParganaCount) * 95));
 
-                  return (
-                    <div key={idx}  style={{ gap: "6px" }} className="flex flex-col">
-                      <div  className="flex justify-between text-xs">
-                        <span  className="font-bold text-white">{p.name}</span>
-                        <span  className="font-extrabold text-admin-gold">{p.count} ({p.percentage}%)</span>
-                      </div>
-                      <div
-                         style={{ height: "8px", borderRadius: "4px", padding: "1px" }} className="w-full overflow-hidden bg-admin-card border border-admin-gold/20"
-                      >
+                    return (
+                      <div key={idx}  style={{ gap: "6px" }} className="flex flex-col">
+                        <div  className="flex justify-between text-xs">
+                          <span  className="font-bold text-white">{p.name}</span>
+                          <span  className="font-extrabold text-admin-gold">{p.count} ({p.percentage}%)</span>
+                        </div>
                         <div
-                          style={{
-                            width: `${relativeFillPercent}%`,
-                            height: "100%",
-                            background: barGradient,
-                            borderRadius: "4px",
-                            transition: "all 0.5s ease",
-                          }}
-                        />
+                           style={{ height: "8px", borderRadius: "4px", padding: "1px" }} className="w-full overflow-hidden bg-admin-card border border-admin-gold/20"
+                        >
+                          <div
+                            style={{
+                              width: `${relativeFillPercent}%`,
+                              height: "100%",
+                              background: barGradient,
+                              borderRadius: "4px",
+                              transition: "all 0.5s ease",
+                            }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  <div className="flex flex-col items-center justify-center p-6 text-center h-[180px]">
+                    <span className="text-3xl mb-2 opacity-40">📍</span>
+                    <p className="text-admin-muted text-xs">No pargana profile data available.</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -486,27 +479,34 @@ export default function AdminDashboardPage() {
             </div>
 
             <div  className="flex flex-col gap-[14px]">
-              {stats.recentActivities.map((act) => (
-                <div
-                  key={act.id}
-                   style={{ gap: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(212, 175, 55, 0.12)" }} className="flex items-start"
-                >
+              {stats.recentActivities.length > 0 ? (
+                stats.recentActivities.map((act) => (
                   <div
-                      className="flex justify-center items-center shrink-0 bg-admin-card border border-admin-gold/30 text-sm rounded-lg w-8 h-8" 
+                    key={act.id}
+                     style={{ gap: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(212, 175, 55, 0.12)" }} className="flex items-start"
                   >
-                    ✨
+                    <div
+                        className="flex justify-center items-center shrink-0 bg-admin-card border border-admin-gold/30 text-sm rounded-lg w-8 h-8" 
+                    >
+                      ✨
+                    </div>
+                    <div  style={{ minWidth: 0 }} className="flex-1">
+                      <h4  style={{ margin: 0 }} className="truncate font-bold text-white text-xs">
+                        {act.title}
+                      </h4>
+                      <p  style={{ margin: "2px 0 2px 0" }} className="truncate text-admin-muted text-[11px]">
+                        {act.user}
+                      </p>
+                      <span  className="font-semibold text-admin-gold text-[10px]">{act.time}</span>
+                    </div>
                   </div>
-                  <div  style={{ minWidth: 0 }} className="flex-1">
-                    <h4  style={{ margin: 0 }} className="truncate font-bold text-white text-xs">
-                      {act.title}
-                    </h4>
-                    <p  style={{ margin: "2px 0 2px 0" }} className="truncate text-admin-muted text-[11px]">
-                      {act.user}
-                    </p>
-                    <span  className="font-semibold text-admin-gold text-[10px]">{act.time}</span>
-                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col items-center justify-center p-6 text-center h-[200px]">
+                  <span className="text-3xl mb-2 opacity-40">📊</span>
+                  <p className="text-admin-muted text-xs">No recent activities recorded.</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>

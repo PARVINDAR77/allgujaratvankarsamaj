@@ -31,6 +31,10 @@ class ProfileModel {
   final bool? isAbroad;
   final String? abroadCountry;
 
+  // Business
+  final String? businessIndustry;
+  final String? businessService;
+
   const ProfileModel({
     required this.id,
     required this.firstName,
@@ -51,6 +55,8 @@ class ProfileModel {
     this.pwbdCategory,
     this.isAbroad,
     this.abroadCountry,
+    this.businessIndustry,
+    this.businessService,
   });
 
   String get fullName => '$firstName $lastName';
@@ -76,6 +82,8 @@ class ProfileModel {
       pwbdCategory: json['pwbdCategory'] as String?,
       isAbroad: json['isAbroad'] as bool?,
       abroadCountry: json['abroadCountry'] as String?,
+      businessIndustry: json['businessIndustry'] as String?,
+      businessService: json['businessService'] as String?,
     );
   }
 
@@ -101,6 +109,8 @@ class ProfileModel {
       'pwbdCategory': pwbdCategory,
       'isAbroad': isAbroad,
       'abroadCountry': abroadCountry,
+      'businessIndustry': businessIndustry,
+      'businessService': businessService,
     };
   }
 }

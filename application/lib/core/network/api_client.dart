@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
@@ -37,6 +38,25 @@ Dio _buildDioClient(SecureStorageService storage) {
           options.headers['Authorization'] = 'Bearer $token';
         }
         return handler.next(options);
+      },
+      onResponse: (response, handler) {
+        if (response.data is String) {
+          final str = response.data as String;
+          try {
+            final start = str.indexOf(RegExp(r'[{[]'));
+            final end = str.lastIndexOf(RegExp(r'[}\]]'));
+            if (start != -1 && end != -1 && end >= start) {
+              final jsonStr = str.substring(start, end + 1);
+              response.data = jsonDecode(jsonStr);
+            } else {
+              response.data = jsonDecode(str);
+            }
+          } catch (e) {
+            print('JSON Decode Error: $e. Raw response: ${response.data}');
+            response.data = <String, dynamic>{};
+          }
+        }
+        return handler.next(response);
       },
       onError: (DioException e, handler) {
         // Do not expose raw DioException to callers; convert to ApiException.

@@ -191,19 +191,12 @@ export const adminApi = {
 
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-<<<<<<< HEAD
-      const res = await fetch(`${API_BASE_URL}/admin/stats`, { headers: getAuthHeaders() });
-=======
       const res = await adminFetch(`${API_BASE_URL}/admin/statistics/dashboard`, { headers: getAuthHeaders() });
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
 
-<<<<<<< HEAD
-
-=======
   async getVerifications(): Promise<any[]> {
     try {
       const res = await adminFetch(`${API_BASE_URL}/admin/verifications`, { headers: getAuthHeaders() });
@@ -224,7 +217,6 @@ export const adminApi = {
     }
     return await res.json();
   },
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
   async getUsers(): Promise<AdminUserItem[]> {
     try {
@@ -270,12 +262,8 @@ export const adminApi = {
 
   async getProfiles(category?: string): Promise<AdminProfileItem[]> {
     try {
-<<<<<<< HEAD
       const query = category ? `?category=${encodeURIComponent(category)}` : '';
-      const res = await fetch(`${API_BASE_URL}/admin/profiles${query}`, { headers: getAuthHeaders() });
-=======
-      const res = await adminFetch(`${API_BASE_URL}/admin/profiles`, { headers: getAuthHeaders() });
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
+      const res = await adminFetch(`${API_BASE_URL}/admin/profiles${query}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }

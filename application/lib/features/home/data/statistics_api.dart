@@ -1,16 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-<<<<<<< HEAD
 import '../../../core/network/api_client.dart';
 
 final statisticsApiProvider = Provider<StatisticsApi>((ref) {
   final dio = ref.watch(apiClientProvider);
-=======
-import '../../../core/network/dio_client.dart';
-
-final statisticsApiProvider = Provider((ref) {
-  final dio = ref.watch(dioProvider);
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   return StatisticsApi(dio);
 });
 

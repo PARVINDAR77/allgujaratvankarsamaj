@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { StatisticsService } from './statistics.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,4 +27,17 @@ export class StatisticsController {
   async getTodaysBirthdays() {
     return this.statisticsService.getTodaysBirthdays();
   }
+  @Get('statistics/views')
+  @ApiOperation({ summary: 'Get all section views' })
+  async getSectionViews() {
+    return this.statisticsService.getSectionViews();
+  }
+
+  @Post('statistics/views/:sectionName/increment')
+  @ApiOperation({ summary: 'Increment a section view' })
+  async incrementSectionView(@Param('sectionName') sectionName: string) {
+    return this.statisticsService.incrementSectionView(sectionName);
+  }
 }
+
+

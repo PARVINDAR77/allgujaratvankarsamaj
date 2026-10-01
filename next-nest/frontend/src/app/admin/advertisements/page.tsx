@@ -17,6 +17,8 @@ export default function AdvertisementsPage() {
   const [formIsActive, setFormIsActive] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  const [urlPlacement, setUrlPlacement] = useState<string | null>(null);
+
   const loadAds = async () => {
     try {
       setLoading(true);
@@ -30,6 +32,12 @@ export default function AdvertisementsPage() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get("placement");
+    if (p) {
+      setUrlPlacement(p);
+      setFormPlacement(p);
+    }
     loadAds();
   }, []);
 
@@ -38,7 +46,7 @@ export default function AdvertisementsPage() {
     setFormTitle("");
     setFormImageUrl("");
     setFormTargetUrl("");
-    setFormPlacement("HOME_BANNER");
+    setFormPlacement(urlPlacement || "HOME_BANNER");
     setFormIsActive(true);
     setIsModalOpen(true);
   };
@@ -117,6 +125,7 @@ export default function AdvertisementsPage() {
       alert("Error saving Advertisement");
     }
   };
+  const filteredAds = urlPlacement ? ads.filter(ad => ad.placement === urlPlacement) : ads;
 
   return (
     <AdminLayout title="Advertisement Management">
@@ -127,7 +136,7 @@ export default function AdvertisementsPage() {
           <div>
             <h1 style={{ fontSize: "28px", fontWeight: "900", color: "#FFFFFF", margin: "0 0 8px 0", display: "flex", alignItems: "center", gap: "12px", letterSpacing: "-0.5px" }}>
               <span style={{ filter: "drop-shadow(0 0 8px rgba(212,175,55,0.8))" }}>📢</span> 
-              Advertisement Management
+              {urlPlacement ? `${urlPlacement.replace('_', ' ')} Management` : "Advertisement Management"}
             </h1>
             <p style={{ color: "#8E9BAE", fontSize: "14px", margin: 0, fontWeight: 500 }}>
               Manage promotional content and advertisements displayed on the Flutter App.
@@ -178,7 +187,7 @@ export default function AdvertisementsPage() {
                   </tr>
                 </thead>
                 <tbody style={{ backgroundColor: "#0D1B32" }}>
-                  {ads.length === 0 ? (
+                  {filteredAds.length === 0 ? (
                     <tr>
                       <td colSpan={5} style={{ padding: "60px", textAlign: "center", color: "#8E9BAE" }}>
                         <div style={{ fontSize: "40px", marginBottom: "16px", opacity: 0.5 }}>🪧</div>
@@ -187,7 +196,7 @@ export default function AdvertisementsPage() {
                       </td>
                     </tr>
                   ) : (
-                    ads.map((ad: any) => (
+                    filteredAds.map((ad: any) => (
                       <tr key={ad.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                         <td style={{ padding: "12px 18px" }}>
                           {ad.imageUrl ? (
@@ -289,10 +298,13 @@ export default function AdvertisementsPage() {
                   <label style={{ display: "block", color: "#8E9BAE", marginBottom: "6px", fontSize: "13px" }}>Placement</label>
                   <select value={formPlacement} onChange={e => setFormPlacement(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.3)", backgroundColor: "rgba(0,0,0,0.2)", color: "#FFF" }}>
                     <option value="HOME_BANNER">Home Banner</option>
-                    <option value="DIRECTORY_TOP">Directory Top</option>
+                    <option value="DIRECTORY_BANNER">Directory Top</option>
                     <option value="POPUP">Popup</option>
-                    <option value="PAVAN_PRERNADATA">1. Pavan Prernadata (Home Button)</option>
-                    <option value="SAMAJ_SUPER_STARS">2. Samaj Super Stars (Home Button)</option>
+                    <option value="BUTTON_1">Button 1 Poster</option>
+                    <option value="BUTTON_2">Button 2 Poster</option>
+                    <option value="BUTTON_3">Button 3 Poster</option>
+                    <option value="BUTTON_4">Button 4 Poster</option>
+                    <option value="BUTTON_5">Button 5 Poster</option>
                   </select>
                 </div>
 

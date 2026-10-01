@@ -16,11 +16,7 @@ export default function AdminVerificationsPage() {
     try {
       setLoading(true);
       const data = await adminApi.getVerifications();
-<<<<<<< HEAD
       setItems(Array.isArray(data) ? data : (data.data || []));
-=======
-      setItems(Array.isArray(data) ? data : (data as any).data || []);
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       setError(null);
     } catch (err: any) {
       console.error(err);

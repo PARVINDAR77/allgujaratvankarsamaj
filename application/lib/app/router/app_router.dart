@@ -23,20 +23,17 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
-<<<<<<< HEAD
 import '../../features/community/presentation/screens/samaj_ratna_screen.dart';
 import '../../features/search/presentation/screens/search_results_screen.dart';
-import '../../features/matrimonial_listing/presentation/screens/matrimonial_listing_screen.dart';
-=======
 
-
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 import '../../shared/presentation/screens/main_navigation_screen.dart';
 import '../../features/home/presentation/screens/main_poster_screen.dart';
 import '../../features/home/presentation/screens/live_statistics_screen.dart';
 import '../../features/home/presentation/screens/birthdays_screen.dart';
 import '../../features/success_stories/presentation/screens/success_stories_screen.dart';
 import '../../features/advertisements/presentation/screens/advertisements_screen.dart';
+import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
+import '../../features/government_employees/presentation/screens/private_employees_screen.dart';
 
 class AuthRouterListenable extends ChangeNotifier {
   AuthRouterListenable(Ref ref) {
@@ -152,10 +149,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/government-employees',
         name: 'government-employees',
-        builder: (context, state) => const UniversalListingScreen(
-          title: 'Government Employees (સરકારી નોકરી)',
-          initialQuery: ProfileQueryModel(occupationCategory: 'GOVERNMENT'),
-        ),
+        builder: (context, state) => const GovtEmployeesScreen(),
       ),
       GoRoute(
         path: '/samaj-ratna',
@@ -173,20 +167,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/private-employees',
         name: 'private-employees',
-        builder: (context, state) => const UniversalListingScreen(
-          title: 'Private Employees (પ્રાઇવેટ નોકરી)',
-          initialQuery: ProfileQueryModel(occupationCategory: 'PRIVATE'),
-        ),
+        builder: (context, state) => const PrivateEmployeesScreen(),
       ),
-<<<<<<< HEAD
       GoRoute(
         path: '/success-stories',
         name: 'success-stories',
         builder: (context, state) => const SuccessStoriesScreen(),
       ),
-=======
-
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainNavigationScreen(navigationShell: navigationShell);

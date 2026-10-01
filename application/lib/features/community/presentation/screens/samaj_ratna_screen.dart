@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/samaj_ratna_provider.dart';
+import '../../../home/presentation/providers/view_badge.dart';
+import '../../../home/presentation/providers/views_provider.dart';
 
-class SamajRatnaScreen extends ConsumerWidget {
+class SamajRatnaScreen extends ConsumerStatefulWidget {
   const SamajRatnaScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SamajRatnaScreen> createState() => _SamajRatnaScreenState();
+}
+
+class _SamajRatnaScreenState extends ConsumerState<SamajRatnaScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(incrementViewProvider)('samaj_ratna');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final ratnasAsync = ref.watch(samajRatnaProvider);
 
     return Scaffold(
@@ -14,6 +29,10 @@ class SamajRatnaScreen extends ConsumerWidget {
         title: const Text('Samaj Ratna', style: TextStyle(color: Color(0xFFD4AF37))),
         backgroundColor: const Color(0xFF041126),
         iconTheme: const IconThemeData(color: Color(0xFFD4AF37)),
+        actions: [
+          const Center(child: ViewBadge(sectionName: 'samaj_ratna')),
+          const SizedBox(width: 16),
+        ],
       ),
       backgroundColor: const Color(0xFF041126),
       body: ratnasAsync.when(

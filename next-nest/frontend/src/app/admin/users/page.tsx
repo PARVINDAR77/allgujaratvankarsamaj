@@ -61,7 +61,6 @@ export default function AdminUsersPage() {
     }
   };
 
-<<<<<<< HEAD
   const handleDeleteUser = async (id: string, name: string) => {
     if (confirm(`Are you sure you want to permanently delete user "${name}"?`)) {
       try {
@@ -93,16 +92,6 @@ export default function AdminUsersPage() {
     setName("");
     setEmail("");
     setPhone("");
-=======
-  const promoteToAdmin = async (id: string, currentRole: string) => {
-    if (currentRole === "ADMIN" || currentRole === "SUPER_ADMIN") return;
-    try {
-      await adminApi.updateUserRole(id, "ADMIN");
-      fetchUsers(); // Re-fetch to get updated role
-    } catch (err: any) {
-      alert("Failed to promote user: " + err.message);
-    }
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   };
 
   return (
@@ -215,35 +204,10 @@ export default function AdminUsersPage() {
                         <td  className="py-[14px] px-[18px]">
                           <StatusBadge status={u.status} />
                         </td>
-<<<<<<< HEAD
                         <td style={{ padding: "14px 18px", textAlign: "right" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
                             <button
                               onClick={() => toggleUserStatus(u.id)}
-=======
-                        <td  className="text-right py-[14px] px-[18px]">
-                          <div  className="flex justify-end gap-2">
-                            {u.role === "USER" && (
-                              <button
-                                onClick={() => promoteToAdmin(u.id, u.role)}
-                                style={{
-                                  padding: "6px 14px",
-                                  borderRadius: "8px",
-                                  fontSize: "11px",
-                                  fontWeight: 800,
-                                  cursor: "pointer",
-                                  backgroundColor: "rgba(212, 175, 55, 0.1)",
-                                  color: "#D4AF37",
-                                  border: "1px solid rgba(212, 175, 55, 0.4)",
-                                }}
-                                className="transition-all"
-                              >
-                                Promote
-                              </button>
-                            )}
-                            <button
-                              onClick={() => toggleUserStatus(u.id, u.status)}
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                               style={{
                                 padding: "6px 14px",
                                 borderRadius: "8px",
@@ -258,7 +222,6 @@ export default function AdminUsersPage() {
                             >
                               {u.status === "ACTIVE" ? "Suspend" : "Activate"}
                             </button>
-<<<<<<< HEAD
                             <button
                               onClick={() => handleDeleteUser(u.id, displayName)}
                               style={{
@@ -275,8 +238,6 @@ export default function AdminUsersPage() {
                             >
                               Delete
                             </button>
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                           </div>
                         </td>
                       </tr>

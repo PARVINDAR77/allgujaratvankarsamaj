@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
@@ -20,6 +21,28 @@ class AuthInterceptor extends Interceptor {
     options.headers['Accept'] = 'application/json';
     options.headers['Content-Type'] = 'application/json';
     super.onRequest(options, handler);
+  }
+
+  @override
+  void onResponse(Response response, ResponseInterceptorHandler handler) {
+    if (response.data is String) {
+      final str = response.data as String;
+      try {
+        final start = str.indexOf(RegExp(r'[{[]'));
+        final end = str.lastIndexOf(RegExp(r'[}\]]'));
+        if (start != -1 && end != -1 && end >= start) {
+          final jsonStr = str.substring(start, end + 1);
+          response.data = jsonDecode(jsonStr);
+        } else {
+          response.data = jsonDecode(str);
+        }
+      } catch (e) {
+        print('JSON Decode Error: $e. Raw response: ${response.data}');
+        // If it completely fails, set data to an empty map to avoid type errors
+        response.data = <String, dynamic>{};
+      }
+    }
+    super.onResponse(response, handler);
   }
 
   @override

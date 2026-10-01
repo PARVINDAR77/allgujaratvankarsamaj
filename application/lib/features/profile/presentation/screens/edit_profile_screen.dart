@@ -8,6 +8,7 @@ import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../../../shared/constants/app_data.dart';
 import '../../providers/master_data_provider.dart';
+import '../../../community/providers/samaj_services_provider.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -26,6 +27,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String _department = 'State Government (રાજ્ય સરકાર)';
   String _govCategory = 'Select Category';
   String _customGovCategory = '';
+  String _businessIndustry = 'Select Industry';
+  String _businessService = 'Select Service';
   String _yearlyIncome = 'Select Income';
   String _pargana = 'Select Pargana';
   String? _gender;
@@ -81,6 +84,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget build(BuildContext context) {
     final myProfileAsync = ref.watch(myProfileProvider);
     final masterData = ref.watch(masterDataProvider);
+    final samajServicesAsync = ref.watch(samajServicesProvider);
+    List<String> dynamicBusinessCategories = [];
+    List<String> dynamicBusinessServices = [];
+
+    samajServicesAsync.whenData((services) {
+      dynamicBusinessCategories = services.map((e) => e.category).toSet().toList();
+      String currentIndustry = _businessIndustry != 'Select Industry' ? _businessIndustry : (myProfileAsync.valueOrNull?.businessIndustry ?? 'Select Industry');
+      if (currentIndustry != 'Select Industry') {
+        dynamicBusinessServices = services
+            .where((e) => e.category == currentIndustry)
+            .map((e) => e.title)
+            .toSet()
+            .toList();
+      }
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Light Background
@@ -312,18 +330,29 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               if (_employmentType.contains('Business')) ...[
                 _buildDropdownField(
                   'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
-                  'Select Business Type',
+                  'Select Industry',
                   Icons.storefront_outlined,
-                  masterData.businessSectors,
-                  value: masterData.businessSectors.contains(_govCategory) ? _govCategory : 'Select Category',
-                  onChanged: (v) => setState(() => _govCategory = v ?? 'Select Category'),
+                  ['Select Industry', ...dynamicBusinessCategories],
+                  value: dynamicBusinessCategories.contains(_businessIndustry) ? _businessIndustry : (profile.businessIndustry != null && dynamicBusinessCategories.contains(profile.businessIndustry) ? profile.businessIndustry : 'Select Industry'),
+                  onChanged: (v) => setState(() {
+                    _businessIndustry = v ?? 'Select Industry';
+                    _businessService = 'Select Service';
+                  }),
                 ),
-                _buildTextField(
-                  'Business / Shop Name (દુકાન / વ્યવસાયનું નામ)',
-                  'Enter Business Name',
-                  Icons.store_outlined,
-                  onChanged: (v) => setState(() => _department = v),
-                ),
+                if ((_businessIndustry != 'Select Industry' || profile.businessIndustry != null) && dynamicBusinessServices.isNotEmpty)
+                  _buildDropdownField(
+                    'Business Service / Title',
+                    'Select Service',
+                    Icons.store_outlined,
+                    ['Select Service', ...dynamicBusinessServices],
+                    value: dynamicBusinessServices.contains(_businessService) ? _businessService : (profile.businessService != null && dynamicBusinessServices.contains(profile.businessService) ? profile.businessService : 'Select Service'),
+                    onChanged: (v) => setState(() => _businessService = v ?? 'Select Service'),
+                  ),
+                if (_businessIndustry == 'Select Industry' && profile.businessIndustry == null)
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 16.0),
+                    child: Text('Please wait while loading categories...'),
+                  ),
               ],
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined),
               _buildDropdownField(
@@ -370,6 +399,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_employmentType != 'Select Sector') updateData['occupation'] = _employmentType;
                     if (_department != 'Select Department') updateData['organizationName'] = _department;
                     if (_pargana != 'Select Pargana') updateData['nativePlace'] = _pargana;
+                    if (_employmentType.contains('Business')) {
+                      updateData['businessIndustry'] = _businessIndustry != 'Select Industry' ? _businessIndustry : profile.businessIndustry;
+                      updateData['businessService'] = _businessService != 'Select Service' ? _businessService : profile.businessService;
+                    }
                     // Note: updateData['city'], updateData['state'], etc., can be added here if we collect them properly
                     
                     if (updateData.isNotEmpty) {

@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-<<<<<<< HEAD
 import '../../../profile/providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/models/profile_query_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../../../shared/constants/app_data.dart';
 import '../../../profile/providers/master_data_provider.dart';
-=======
-import '../../../../shared/models/profile_query_model.dart';
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
   final String initialLookingFor;
@@ -25,8 +22,8 @@ class AdvancedSearchScreen extends ConsumerStatefulWidget {
 
 class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   late String _lookingFor;
+  String _maritalStatus = 'Never Married';
   String _ageRange = '22 to 30 Years';
-<<<<<<< HEAD
   String _height = 'Any';
   String _pargana = 'Any';
   String _livingIn = 'Any';
@@ -37,8 +34,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   String _income = 'Any';
   String _motherTongue = 'Any';
   String _pwbdCategory = 'Any';
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
   
   final TextEditingController _idSearchController = TextEditingController();
 
@@ -134,7 +129,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                 ),
                               ),
                             ),
-<<<<<<< HEAD
                             InkWell(
                               onTap: () {
                                 final id = _idSearchController.text.trim();
@@ -165,8 +159,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                 child: const Text('Find', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               ),
                             ),
-=======
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                           ],
                         ),
                       ),
@@ -215,7 +207,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                       children: [
                         Expanded(child: _buildDropdown('હું શોધી રહ્યો છું (Looking For)', _lookingFor, ['Groom', 'Bride'], Icons.person, Colors.orange, (v) => setState(() => _lookingFor = v!))),
                         const SizedBox(width: 12),
-<<<<<<< HEAD
                         Expanded(child: _buildDropdown('વૈવાહિક સ્થિતિ (Marital Status)', _maritalStatus, ['Never Married', 'Widowed', 'Divorced'], Icons.favorite, Colors.red, (v) => setState(() => _maritalStatus = v!))),
                       ],
                     ),
@@ -252,9 +243,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                         Expanded(child: _buildDropdown('વાર્ષિક આવક (Yearly Income)', _income, ['Any', ...masterData.incomeRanges.where((e) => e != 'Select Income')], Icons.monetization_on, Colors.orange, (v) => setState(() => _income = v!))),
                         const SizedBox(width: 12),
                         Expanded(child: _buildDropdown('માતૃભાષા (Mother Tongue)', _motherTongue, ['Any', 'Gujarati'], Icons.chat_bubble, const Color(0xFF0056D2), (v) => setState(() => _motherTongue = v!))),
-=======
-                        Expanded(child: _buildDropdown('ઉંમર (Age)', _ageRange, ['Any', '18 to 22 Years', '22 to 30 Years', '30 to 40 Years'], Icons.calendar_today, Colors.orange, (v) => setState(() => _ageRange = v!))),
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                       ],
                     ),
                     Row(
@@ -311,7 +299,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                         ],
                       ),
                       child: ElevatedButton(
-<<<<<<< HEAD
                         onPressed: () {
                           // Parse Age Range
                           int? minAge;
@@ -372,9 +359,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                             },
                           );
                         },
-=======
-                        onPressed: _performSearch,
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,

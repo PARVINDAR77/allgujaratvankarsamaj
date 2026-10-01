@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../features/advertisements/providers/advertisements_provider.dart';
+import '../providers/view_badge.dart';
+import '../providers/views_provider.dart';
 
 final homeButtonsProvider = FutureProvider<List<dynamic>>((ref) async {
   try {
@@ -237,7 +239,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     );
   }
 
-  void _handleDynamicButtonTap(BuildContext context, int buttonId, String fallbackTitle, String fallbackDetails, IconData fallbackIcon, Color fallbackColor) {
+  void _handleDynamicButtonTap(BuildContext context, int buttonId, String fallbackTitle, String fallbackDetails, IconData fallbackIcon, Color fallbackColor, String sectionName) {
+    ref.read(incrementViewProvider)(sectionName);
     final buttonsAsync = ref.read(homeButtonsProvider);
     
     buttonsAsync.when(
@@ -433,6 +436,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   ),
                 ),
 
+                // --- Vankar Samaj Ratna (5th Circle) ---
+                Positioned(
+                  left: sx(850),
+                  top: sy(921),
+                  width: sw(194),
+                  height: sh(230),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: () {
+                        ref.read(incrementViewProvider)('samaj_ratna');
+                        context.push('/samaj-super-stars');
+                      },
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: sx(850),
+                  top: sy(1160),
+                  width: sw(216),
+                  child: const Center(child: ViewBadge(sectionName: 'samaj_ratna')),
+                ),
+
                 // --- Golden Buttons (Middle section above Join Now) ---
                 // 1. Pavan Prernadata
                 Positioned(
@@ -503,7 +530,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleDynamicButtonTap(context, 1, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0)),
+                      onTap: () => _handleDynamicButtonTap(context, 1, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0), 'bottom_education'),
                     ),
                   ),
                 ),
@@ -516,7 +543,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleDynamicButtonTap(context, 2, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315)),
+                      onTap: () => _handleDynamicButtonTap(context, 2, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315), 'bottom_unity'),
                     ),
                   ),
                 ),
@@ -529,7 +556,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleDynamicButtonTap(context, 3, 'Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32)),
+                      onTap: () => _handleDynamicButtonTap(context, 3, 'Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32), 'bottom_progress'),
                     ),
                   ),
                 ),
@@ -542,7 +569,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleDynamicButtonTap(context, 4, 'Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828)),
+                      onTap: () => _handleDynamicButtonTap(context, 4, 'Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828), 'bottom_service'),
                     ),
                   ),
                 ),
@@ -555,10 +582,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleDynamicButtonTap(context, 5, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0)),
+                      onTap: () => _handleDynamicButtonTap(context, 5, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0), 'bottom_strong_roots'),
                     ),
                   ),
                 ),
+                // --- View Badges for Bottom Icons ---
+                Positioned(
+                  left: sx(0),
+                  top: sy(1840),
+                  width: sw(216),
+                  child: const Center(child: ViewBadge(sectionName: 'bottom_education')),
+                ),
+                Positioned(
+                  left: sx(216),
+                  top: sy(1840),
+                  width: sw(216),
+                  child: const Center(child: ViewBadge(sectionName: 'bottom_unity')),
+                ),
+                Positioned(
+                  left: sx(432),
+                  top: sy(1840),
+                  width: sw(216),
+                  child: const Center(child: ViewBadge(sectionName: 'bottom_progress')),
+                ),
+                Positioned(
+                  left: sx(648),
+                  top: sy(1840),
+                  width: sw(216),
+                  child: const Center(child: ViewBadge(sectionName: 'bottom_service')),
+                ),
+                Positioned(
+                  left: sx(864),
+                  top: sy(1840),
+                  width: sw(216),
+                  child: const Center(child: ViewBadge(sectionName: 'bottom_strong_roots')),
+                ),
+
                 // ── Success Stories quick-access button ────────────────────
                 Positioned(
                   left: sx(30),

@@ -56,7 +56,6 @@ export default function AdminProfilesPage() {
 
   return (
     <AdminLayout title="Profiles Management" subtitle="Review, approve & feature matrimonial candidate profiles">
-<<<<<<< HEAD
       <div style={{ display: "flex", flexDirection: "column", gap: "28px", paddingBottom: "48px" }}>
         
         {/* Search Header */}
@@ -146,34 +145,6 @@ export default function AdminProfilesPage() {
               textTransform: "uppercase",
               letterSpacing: "1px"
             }}
-=======
-      <div  className="flex flex-col gap-6">
-        {/* Search Header */}
-        <div
-            className="flex justify-between items-center flex-wrap border border-admin-gold/25 gap-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass py-[18px] px-6" 
-        >
-          <div  style={{ minWidth: "300px" }} className="relative">
-            <input
-              type="text"
-              placeholder="Search profiles by name, city, pargana..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{
-                width: "100%",
-                backgroundColor: "#041026",
-                border: "1px solid rgba(212, 175, 55, 0.35)",
-                borderRadius: "12px",
-                padding: "10px 14px 10px 38px",
-                fontSize: "12px",
-                color: "#FFFFFF",
-                outline: "none",
-              }}
-            />
-            <span   className="absolute text-admin-muted text-[13px] left-3 top-[11px]" >🔍</span>
-          </div>
-          <div
-             style={{ padding: "8px 16px" }} className="font-extrabold bg-admin-card text-admin-gold border border-admin-gold/30 text-xs rounded-xl"
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
           >
             <span>Total Profiles:</span>
             <span style={{ fontSize: "18px" }}>{profiles.length}</span>
@@ -182,7 +153,6 @@ export default function AdminProfilesPage() {
 
         {/* Profile Cards Grid */}
         {loading ? (
-<<<<<<< HEAD
           <div style={{ padding: "64px", textAlign: "center", backgroundColor: "rgba(13, 27, 50, 0.6)", borderRadius: "20px", border: "1px solid rgba(212, 175, 55, 0.15)" }}>
             <div style={{ width: "40px", height: "40px", border: "3px solid #D4AF37", borderTopColor: "transparent", borderRadius: "50%", margin: "0 auto 16px" }} className="animate-spin"></div>
             <p style={{ color: "#D4AF37", fontSize: "14px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px" }}>Loading profiles...</p>
@@ -192,21 +162,12 @@ export default function AdminProfilesPage() {
             <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔍</div>
             <p style={{ color: "#FFFFFF", fontSize: "16px", fontWeight: 800, marginBottom: "8px" }}>No Profiles Found</p>
             <p style={{ color: "#8E9BAE", fontSize: "14px" }}>Try adjusting your search criteria.</p>
-=======
-          <div   className="text-center font-bold text-admin-gold text-sm py-12 px-0" >
-            Loading profiles from NestJS API...
-          </div>
-        ) : filtered.length === 0 ? (
-          <div   className="text-center font-semibold text-admin-muted text-[13px] py-12 px-0" >
-            No matrimonial profiles match your search filter.
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
             {filtered.map((p) => (
               <div
                 key={p.id}
-<<<<<<< HEAD
                 style={{
                   background: "linear-gradient(145deg, rgba(13, 27, 50, 0.9) 0%, rgba(4, 12, 26, 0.95) 100%)",
                   backdropFilter: "blur(20px)",
@@ -222,16 +183,11 @@ export default function AdminProfilesPage() {
                   transition: "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
                 }}
                 className="group hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(212,175,55,0.25)] hover:border-[#D4AF37]"
-=======
-                  style={{ padding: "20px" }} className="group hover:border-admin-gold transition-all flex flex-col justify-between border border-admin-gold/25 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass"
-                
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               >
                 {/* Decorative Accent */}
                 <div style={{ position: "absolute", top: 0, right: 0, width: "100px", height: "100px", background: p.isFeatured ? "radial-gradient(circle, rgba(212,175,55,0.3) 0%, rgba(0,0,0,0) 70%)" : "radial-gradient(circle, rgba(212,175,55,0.1) 0%, rgba(0,0,0,0) 70%)", transform: "translate(30%, -30%)" }}></div>
 
                 <div>
-<<<<<<< HEAD
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "20px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                       <div
@@ -252,17 +208,10 @@ export default function AdminProfilesPage() {
                           transition: "all 0.3s ease"
                         }}
                         className="group-hover:scale-110 group-hover:rotate-3"
-=======
-                  <div  style={{ marginBottom: "14px" }} className="flex justify-between items-start gap-[10px]">
-                    <div  style={{ gap: "12px" }} className="flex items-center">
-                      <div
-                          style={{ width: "44px", height: "44px", color: "#041026", fontSize: "18px", boxShadow: "0 4px 12px rgba(212, 175, 55, 0.3)" }} className="flex justify-center items-center font-extrabold shrink-0 rounded-full bg-gradient-to-br from-admin-gold via-admin-gold-light to-admin-gold-border" 
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                       >
                         {p.name.charAt(0)}
                       </div>
                       <div style={{ minWidth: 0 }}>
-<<<<<<< HEAD
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                           <h3 style={{ fontSize: "18px", fontWeight: 900, color: "#FFFFFF", margin: 0, lineHeight: 1.2 }} className="group-hover:text-[#F3E5AB] transition-colors truncate">
                             {p.name}
@@ -271,16 +220,6 @@ export default function AdminProfilesPage() {
                         </div>
                         <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 600, margin: "4px 0 0 0", textTransform: "uppercase", letterSpacing: "0.5px" }} className="truncate">
                           {p.age} yrs • <span style={{ color: p.gender.toLowerCase() === 'male' ? '#60A5FA' : '#F472B6' }}>{p.gender}</span> • {p.city}
-=======
-                        <div  style={{ gap: "6px" }} className="flex items-center">
-                          <h3  style={{ margin: 0 }} className="group-hover:text-admin-gold transition-colors truncate font-bold text-white text-sm">
-                            {p.name}
-                          </h3>
-                          {p.isFeatured && <span  className="text-xs" title="Featured Candidate">⭐</span>}
-                        </div>
-                        <p  style={{ margin: "3px 0 0 0" }} className="truncate text-admin-muted text-[11px]">
-                          {p.age} yrs • {p.gender} • {p.city}
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                         </p>
                       </div>
                     </div>
@@ -290,7 +229,6 @@ export default function AdminProfilesPage() {
                   </div>
 
                   <div
-<<<<<<< HEAD
                     style={{
                       display: "flex",
                       flexDirection: "column",
@@ -315,26 +253,6 @@ export default function AdminProfilesPage() {
                 </div>
 
                 <div style={{ display: "flex", gap: "10px" }}>
-=======
-                     style={{ gap: "6px", padding: "12px 0", borderTop: "1px solid rgba(212, 175, 55, 0.15)", borderBottom: "1px solid rgba(212, 175, 55, 0.15)", margin: "12px 0" }} className="flex flex-col text-xs"
-                  >
-                    <p  style={{ margin: 0 }} className="flex justify-between">
-                      <span  className="text-admin-muted">Pargana:</span>
-                      <strong  className="text-white">{p.pargana}</strong>
-                    </p>
-                    <p  style={{ margin: 0 }} className="flex justify-between">
-                      <span  className="text-admin-muted">Education:</span>
-                      <span style={{ color: "#E2E8F0" }}>{p.education}</span>
-                    </p>
-                    <p  style={{ margin: 0 }} className="flex justify-between">
-                      <span  className="text-admin-muted">Occupation:</span>
-                      <span style={{ color: "#E2E8F0" }}>{p.occupation}</span>
-                    </p>
-                  </div>
-                </div>
-
-                <div  style={{ paddingTop: "4px" }} className="flex gap-2">
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                   <button
                     onClick={() => setSelectedProfile(p)}
                     style={{
@@ -352,11 +270,7 @@ export default function AdminProfilesPage() {
                       justifyContent: "center",
                       alignItems: "center",
                     }}
-<<<<<<< HEAD
                     className="hover:bg-[#D4AF37] hover:text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]"
-=======
-                    className="hover:bg-admin-gold hover:text-black transition-all"
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                   >
                     View Details
                   </button>
@@ -410,7 +324,6 @@ export default function AdminProfilesPage() {
         {/* Profile Detail Modal */}
         {selectedProfile && (
           <div
-<<<<<<< HEAD
             style={{
               position: "fixed",
               top: 0,
@@ -441,13 +354,6 @@ export default function AdminProfilesPage() {
                 gap: "24px",
                 position: "relative",
               }}
-=======
-             style={{ backgroundColor: "rgba(0, 0, 0, 0.8)", backdropFilter: "blur(8px)", padding: "20px" }} className="flex justify-center items-center fixed top-0 left-0 right-0 bottom-0 z-[1000]"
-            onClick={() => setSelectedProfile(null)}
-          >
-            <div
-               style={{ border: "2px solid #D4AF37", borderRadius: "24px", padding: "28px", maxWidth: "460px", boxShadow: "0 20px 50px rgba(0, 0, 0, 0.8)", gap: "18px" }} className="flex flex-col w-full relative bg-admin-card"
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -468,7 +374,6 @@ export default function AdminProfilesPage() {
                 ✕
               </button>
 
-<<<<<<< HEAD
               <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                 <div
                   style={{
@@ -485,29 +390,18 @@ export default function AdminProfilesPage() {
                     boxShadow: "0 10px 25px rgba(212, 175, 55, 0.4)",
                     flexShrink: 0,
                   }}
-=======
-              <div  className="flex items-center gap-4">
-                <div
-                    style={{ width: "52px", height: "52px", color: "#041026", fontSize: "22px", boxShadow: "0 4px 14px rgba(212, 175, 55, 0.35)" }} className="flex justify-center items-center font-extrabold shrink-0 rounded-full bg-gradient-to-br from-admin-gold via-admin-gold-light to-admin-gold-border" 
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                 >
                   {selectedProfile.name.charAt(0)}
                 </div>
                 <div>
-<<<<<<< HEAD
                   <h3 style={{ fontSize: "24px", fontWeight: 900, color: "#FFFFFF", margin: "0 0 6px 0", letterSpacing: "-0.5px" }}>{selectedProfile.name}</h3>
                   <p style={{ fontSize: "14px", color: "#D4AF37", fontWeight: 800, margin: 0, textTransform: "uppercase", letterSpacing: "1px" }}>
-=======
-                  <h3  style={{ fontSize: "18px", margin: 0 }} className="font-extrabold text-white">{selectedProfile.name}</h3>
-                  <p  style={{ margin: "3px 0 0 0" }} className="font-bold text-admin-gold text-xs">
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
                     {selectedProfile.pargana} Candidate
                   </p>
                 </div>
               </div>
 
               <div
-<<<<<<< HEAD
                 style={{
                   display: "flex",
                   flexDirection: "column",
@@ -532,25 +426,6 @@ export default function AdminProfilesPage() {
                   <span style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 700 }}>Verification Status:</span>
                   <StatusBadge status={selectedProfile.status} />
                 </div>
-=======
-                 style={{ color: "#E2E8F0", borderTop: "1px solid rgba(212, 175, 55, 0.2)", paddingTop: "16px" }} className="flex flex-col text-xs gap-[10px]"
-              >
-                <p style={{ margin: 0 }}>
-                  <strong  className="text-admin-muted">Age / Gender:</strong> {selectedProfile.age} years • {selectedProfile.gender}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong  className="text-admin-muted">City of Residence:</strong> {selectedProfile.city}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong  className="text-admin-muted">Education:</strong> {selectedProfile.education}
-                </p>
-                <p style={{ margin: 0 }}>
-                  <strong  className="text-admin-muted">Occupation:</strong> {selectedProfile.occupation}
-                </p>
-                <p  style={{ margin: 0 }} className="flex items-center gap-2">
-                  <strong  className="text-admin-muted">Verification Status:</strong> <StatusBadge status={selectedProfile.status} />
-                </p>
->>>>>>> 93bf45cfc2cb4b74070f9201707de81b6a1b0388
               </div>
 
               <div style={{ paddingTop: "16px", borderTop: "1px solid rgba(212, 175, 55, 0.2)", marginTop: "8px" }}>
