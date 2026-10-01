@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:application/core/config/app_config.dart';
 
 class SamajSuperStar {
   final String id;
@@ -35,7 +36,7 @@ class SamajSuperStar {
 
 final samajSuperStarsProvider = FutureProvider.autoDispose<List<SamajSuperStar>>((ref) async {
   final dio = Dio();
-  final response = await dio.get('http://localhost:3000/api/v1/samaj-super-stars');
+  final response = await dio.get('${AppConfig.baseUrl}/samaj-super-stars');
   
   final List<dynamic> data = response.data;
   return data.map((json) => SamajSuperStar.fromJson(json)).toList();

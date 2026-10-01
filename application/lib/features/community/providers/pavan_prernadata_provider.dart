@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
+import 'package:application/core/config/app_config.dart';
 
 class PavanPrernadata {
   final String id;
@@ -35,7 +36,7 @@ class PavanPrernadata {
 
 final pavanPrernadataProvider = FutureProvider.autoDispose<List<PavanPrernadata>>((ref) async {
   final dio = Dio();
-  final response = await dio.get('http://localhost:3000/api/v1/pavan-prernadata');
+  final response = await dio.get('${AppConfig.baseUrl}/pavan-prernadata');
   
   final List<dynamic> data = response.data;
   return data.map((json) => PavanPrernadata.fromJson(json)).toList();

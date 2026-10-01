@@ -254,21 +254,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           final screenH = constraints.maxHeight > 0
               ? constraints.maxHeight
               : MediaQuery.of(context).size.height;
-          // Scale factors: poster is 1080x1920, scale to fill the screen
+          // Scale factors: poster is 1080x1920, stretch to fill the screen exactly
           final double scaleX = screenW / 1080;
           final double scaleY = screenH / 1920;
-          // Use the larger scale to cover entire screen (cover behavior)
-          final double scale = scaleX > scaleY ? scaleX : scaleY;
-          final double renderedW = 1080 * scale;
-          final double renderedH = 1920 * scale;
-          final double offsetX = (renderedW - screenW) / 2;
-          final double offsetY = (renderedH - screenH) / 2;
+          
+          final double renderedW = screenW;
+          final double renderedH = screenH;
+          final double offsetX = 0;
+          final double offsetY = 0;
 
-          // Helper to convert poster coords to screen coords
-          double sx(double x) => x * scale - offsetX;
-          double sy(double y) => y * scale - offsetY;
-          double sw(double w) => w * scale;
-          double sh(double h) => h * scale;
+          // Helper to convert poster coords to screen coords independently
+          double sx(double x) => x * scaleX;
+          double sy(double y) => y * scaleY;
+          double sw(double w) => w * scaleX;
+          double sh(double h) => h * scaleY;
 
           return SizedBox(
             width: screenW,

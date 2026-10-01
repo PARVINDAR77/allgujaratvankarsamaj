@@ -18,7 +18,7 @@ class AppConfig {
         // Replace with your actual production domain when provisioned.
         return String.fromEnvironment(
           'PROD_API_URL',
-          defaultValue: 'https://api.vankarsamaj.com/api/v1',
+          defaultValue: 'https://allgujaratvankarsamaj.com/api/v1',
         );
       case 'staging':
         // Replace with your actual staging domain when provisioned.
@@ -29,7 +29,7 @@ class AppConfig {
       case 'development':
       default:
         // Pointing to local backend
-        return 'http://localhost:3000/api/v1';
+        return 'https://allgujaratvankarsamaj.com/api/v1';
     }
   }
 

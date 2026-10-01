@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.vankarsamaj.matrimony.application"
     compileSdk = 36
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "28.2.13676358"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -36,6 +36,12 @@ android {
             signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = false
             isShrinkResources = false
+        }
+    }
+
+    packaging {
+        jniLibs {
+            keepDebugSymbols.add("**/*.so")
         }
     }
 }
