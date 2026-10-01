@@ -106,8 +106,8 @@ async function bootstrap() {
   // Read port from ConfigService (default 3000)
   const port = process.env.PORT || configService.get<number>("PORT", 3000);
 
-  // Listen on 0.0.0.0 for Docker container networking
-  await app.listen(port);
+  // Listen explicitly on IPv4 localhost for Hostinger shared hosting
+  await app.listen(port, '127.0.0.1');
 
   logger.log(`Application is running on: http://0.0.0.0:${port}/api/v1`);
   logger.log(
