@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { InterestsController } from './interests.controller';
-import { InterestsService } from './interests.service';
+import { Module } from "@nestjs/common";
+import { InterestsController } from "./interests.controller";
+import { InterestsService } from "./interests.service";
 
-import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaModule } from "../prisma/prisma.module";
 
 @Module({
   imports: [PrismaModule],

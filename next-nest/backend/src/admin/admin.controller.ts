@@ -24,10 +24,6 @@ export class AdminController {
     return this.adminService.getDashboardStats();
   }
 
-
-
-
-
   @Get("reports")
   @ApiOperation({ summary: "Get user reports for moderation" })
   async getReports() {
@@ -38,7 +34,7 @@ export class AdminController {
   @ApiOperation({ summary: "Update report status" })
   async updateReportStatus(
     @Param("id") id: string,
-    @Body("status") status: any
+    @Body("status") status: any,
   ) {
     return this.adminService.updateReportStatus(id, status);
   }
@@ -67,4 +63,3 @@ export class AdminController {
     return this.adminService.getShortlists();
   }
 }
-

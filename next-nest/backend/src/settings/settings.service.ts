@@ -9,7 +9,8 @@ export class SettingsService {
 
   private readonly defaultSettings = {
     siteTitle: "All Gujarat Vankar Samaj Matrimony",
-    bannerText: "Welcome to All Gujarat Vankar Samaj Matrimony — Find Your Ideal Life Partner Within Our Community",
+    bannerText:
+      "Welcome to All Gujarat Vankar Samaj Matrimony — Find Your Ideal Life Partner Within Our Community",
     contactEmail: "support@vankarsamaj.org",
     contactPhone: "+91 98765 43210",
     registrationEnabled: "true",
@@ -34,7 +35,10 @@ export class SettingsService {
         maintenanceMode: settingsMap.maintenanceMode === "true",
       };
     } catch (err: any) {
-      this.logger.warn("Failed to fetch site settings from DB, returning defaults", err?.message);
+      this.logger.warn(
+        "Failed to fetch site settings from DB, returning defaults",
+        err?.message,
+      );
       return {
         siteTitle: this.defaultSettings.siteTitle,
         bannerText: this.defaultSettings.bannerText,
@@ -57,7 +61,7 @@ export class SettingsService {
           where: { key },
           update: { value: String(value) },
           create: { key, value: String(value) },
-        })
+        }),
       );
 
       await this.prisma.$transaction(updates);
@@ -71,17 +75,52 @@ export class SettingsService {
   // --- Home Button Configs ---
 
   private readonly defaultHomeButtons = [
-    { buttonId: 1, title: 'Education', subtitle: 'For Better Tomorrow', icon: 'menu_book', route: '/samaj-ratna', isActive: true },
-    { buttonId: 2, title: 'Unity', subtitle: 'In Diversity', icon: 'groups', route: '/advertisement', isActive: true },
-    { buttonId: 3, title: 'Progress', subtitle: 'Through Support', icon: 'trending_up', route: '/statistics', isActive: true },
-    { buttonId: 4, title: 'Service', subtitle: 'To Society', icon: 'volunteer_activism', route: '/birthdays', isActive: true },
-    { buttonId: 5, title: 'Strong Roots', subtitle: 'Bright Future', icon: 'nature', route: '/advertisement', isActive: true },
+    {
+      buttonId: 1,
+      title: "Education",
+      subtitle: "For Better Tomorrow",
+      icon: "menu_book",
+      route: "/samaj-ratna",
+      isActive: true,
+    },
+    {
+      buttonId: 2,
+      title: "Unity",
+      subtitle: "In Diversity",
+      icon: "groups",
+      route: "/advertisement",
+      isActive: true,
+    },
+    {
+      buttonId: 3,
+      title: "Progress",
+      subtitle: "Through Support",
+      icon: "trending_up",
+      route: "/statistics",
+      isActive: true,
+    },
+    {
+      buttonId: 4,
+      title: "Service",
+      subtitle: "To Society",
+      icon: "volunteer_activism",
+      route: "/birthdays",
+      isActive: true,
+    },
+    {
+      buttonId: 5,
+      title: "Strong Roots",
+      subtitle: "Bright Future",
+      icon: "nature",
+      route: "/advertisement",
+      isActive: true,
+    },
   ];
 
   async getHomeButtonConfigs() {
     try {
       const records = await this.prisma.homeButtonConfig.findMany({
-        orderBy: { buttonId: 'asc' },
+        orderBy: { buttonId: "asc" },
       });
 
       if (records.length === 0) {
@@ -102,10 +141,11 @@ export class SettingsService {
   async updateHomeButtonConfigs(configs: any[]) {
     // Validate route allowlist
 
-
     for (const config of configs) {
       if (config.buttonId < 1 || config.buttonId > 5) {
-        throw new BadRequestException(`Invalid button position: ${config.buttonId}`);
+        throw new BadRequestException(
+          `Invalid button position: ${config.buttonId}`,
+        );
       }
     }
 
@@ -114,11 +154,11 @@ export class SettingsService {
       2: "/advertisement",
       3: "/statistics",
       4: "/birthdays",
-      5: "/advertisement"
+      5: "/advertisement",
     };
 
     try {
-      const updates = configs.map(config => {
+      const updates = configs.map((config) => {
         const fixedRoute = fixedRoutes[config.buttonId];
         return this.prisma.homeButtonConfig.upsert({
           where: { buttonId: config.buttonId },

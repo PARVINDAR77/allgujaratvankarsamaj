@@ -16,9 +16,7 @@ export class PrismaService
   async onModuleInit() {
     try {
       await this.$connect();
-      this.logger.log(
-        "Successfully connected to MySQL database via Prisma",
-      );
+      this.logger.log("Successfully connected to MySQL database via Prisma");
     } catch (error: any) {
       this.logger.warn(
         `MySQL database not yet reachable at DATABASE_URL (${error.message || error}). Backend will retry on demand.`,

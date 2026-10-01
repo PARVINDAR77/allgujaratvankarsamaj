@@ -1,19 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { UpdateVerificationStatusDto } from './dto/update-verification.dto';
-import { VerificationStatus } from '@prisma/client';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { UpdateVerificationStatusDto } from "./dto/update-verification.dto";
+import { VerificationStatus } from "@prisma/client";
 
 @Injectable()
 export class VerificationsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async submitVerification(userId: string, documentType: string, documentUrl: string) {
+  async submitVerification(
+    userId: string,
+    documentType: string,
+    documentUrl: string,
+  ) {
     const profile = await this.prisma.matrimonialProfile.findUnique({
       where: { userId },
     });
 
     if (!profile) {
-      throw new NotFoundException('Profile not found');
+      throw new NotFoundException("Profile not found");
     }
 
     return this.prisma.verificationRequest.create({
@@ -40,7 +44,7 @@ export class VerificationsService {
     });
 
     if (!request) {
-      throw new NotFoundException('Verification request not found');
+      throw new NotFoundException("Verification request not found");
     }
 
     const oldStatus = request.status;
@@ -63,17 +67,20 @@ export class VerificationsService {
           where: { id: request.profileId },
           data: { isVerified: true },
         });
-      } else if (newStatus === VerificationStatus.REJECTED && request.profile.isVerified) {
-         // Optionally revoke verification if a required document is rejected
-         // Leaving this commented out, depends on specific business logic
+      } else if (
+        newStatus === VerificationStatus.REJECTED &&
+        request.profile.isVerified
+      ) {
+        // Optionally revoke verification if a required document is rejected
+        // Leaving this commented out, depends on specific business logic
       }
 
       // 3. Create the Admin Audit Log
       await tx.adminAuditLog.create({
         data: {
           adminId,
-          action: 'UPDATE_VERIFICATION_STATUS',
-          entityType: 'VerificationRequest',
+          action: "UPDATE_VERIFICATION_STATUS",
+          entityType: "VerificationRequest",
           entityId: requestId,
           oldValue: oldStatus,
           newValue: newStatus,

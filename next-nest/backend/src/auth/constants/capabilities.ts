@@ -1,64 +1,64 @@
-import { Role } from '@prisma/client';
+import { Role } from "@prisma/client";
 
 export enum Capability {
   // Profiles
-  PROFILES_READ = 'profiles.read',
-  PROFILES_READ_PRIVATE = 'profiles.read_private',
-  PROFILES_CREATE = 'profiles.create',
-  PROFILES_UPDATE_OWN = 'profiles.update_own',
-  PROFILES_UPDATE_ANY = 'profiles.update_any',
-  PROFILES_DELETE_OWN = 'profiles.delete_own',
-  PROFILES_DELETE_ANY = 'profiles.delete_any',
+  PROFILES_READ = "profiles.read",
+  PROFILES_READ_PRIVATE = "profiles.read_private",
+  PROFILES_CREATE = "profiles.create",
+  PROFILES_UPDATE_OWN = "profiles.update_own",
+  PROFILES_UPDATE_ANY = "profiles.update_any",
+  PROFILES_DELETE_OWN = "profiles.delete_own",
+  PROFILES_DELETE_ANY = "profiles.delete_any",
 
   // Verification
-  VERIFICATION_READ = 'verification.read',
-  VERIFICATION_APPROVE = 'verification.approve',
-  VERIFICATION_REJECT = 'verification.reject',
+  VERIFICATION_READ = "verification.read",
+  VERIFICATION_APPROVE = "verification.approve",
+  VERIFICATION_REJECT = "verification.reject",
 
   // Users
-  USERS_READ = 'users.read',
-  USERS_UPDATE = 'users.update',
-  USERS_SUSPEND = 'users.suspend',
+  USERS_READ = "users.read",
+  USERS_UPDATE = "users.update",
+  USERS_SUSPEND = "users.suspend",
 
   // Samaj Services
-  SAMAJ_SERVICES_READ = 'samaj-services.read',
-  SAMAJ_SERVICES_MANAGE = 'samaj-services.manage',
+  SAMAJ_SERVICES_READ = "samaj-services.read",
+  SAMAJ_SERVICES_MANAGE = "samaj-services.manage",
 
   // Advertisements
-  ADVERTISEMENTS_READ = 'advertisements.read',
-  ADVERTISEMENTS_MANAGE = 'advertisements.manage',
+  ADVERTISEMENTS_READ = "advertisements.read",
+  ADVERTISEMENTS_MANAGE = "advertisements.manage",
 
   // Success Stories
-  SUCCESS_STORIES_READ = 'success-stories.read',
-  SUCCESS_STORIES_MANAGE = 'success-stories.manage',
+  SUCCESS_STORIES_READ = "success-stories.read",
+  SUCCESS_STORIES_MANAGE = "success-stories.manage",
 
   // Government Employees
-  GOVERNMENT_EMPLOYEES_READ = 'government-employees.read',
-  GOVERNMENT_EMPLOYEES_MANAGE = 'government-employees.manage',
+  GOVERNMENT_EMPLOYEES_READ = "government-employees.read",
+  GOVERNMENT_EMPLOYEES_MANAGE = "government-employees.manage",
 
   // Reports
-  REPORTS_CREATE = 'reports.create',
-  REPORTS_READ = 'reports.read',
-  REPORTS_RESOLVE = 'reports.resolve',
+  REPORTS_CREATE = "reports.create",
+  REPORTS_READ = "reports.read",
+  REPORTS_RESOLVE = "reports.resolve",
 
   // Shortlists
-  SHORTLISTS_CREATE = 'shortlists.create',
-  SHORTLISTS_DELETE = 'shortlists.delete',
+  SHORTLISTS_CREATE = "shortlists.create",
+  SHORTLISTS_DELETE = "shortlists.delete",
 
   // Interests
-  INTERESTS_CREATE = 'interests.create',
-  INTERESTS_READ = 'interests.read',
-  INTERESTS_MANAGE = 'interests.manage',
+  INTERESTS_CREATE = "interests.create",
+  INTERESTS_READ = "interests.read",
+  INTERESTS_MANAGE = "interests.manage",
 
   // Locations
-  LOCATIONS_READ = 'locations.read',
-  LOCATIONS_MANAGE = 'locations.manage',
+  LOCATIONS_READ = "locations.read",
+  LOCATIONS_MANAGE = "locations.manage",
 
   // Statistics
-  STATISTICS_READ = 'statistics.read',
+  STATISTICS_READ = "statistics.read",
 
   // Audit
-  ADMIN_AUDIT_READ = 'admin.audit.read',
+  ADMIN_AUDIT_READ = "admin.audit.read",
 }
 
 export const RoleCapabilities: Record<Role, Capability[]> = {

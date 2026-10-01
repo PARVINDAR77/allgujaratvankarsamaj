@@ -1,5 +1,12 @@
-import { Injectable, Logger, NotFoundException, ConflictException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+  ForbiddenException,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 import {
   CreateGovtEmploymentDto,
   UpdateGovtEmploymentDto,
@@ -10,8 +17,8 @@ import {
   AdminStatusGovtEmpDto,
   CreateDepartmentDto,
   CreateDesignationDto,
-} from './dto/government-employees.dto';
-import { GovtVerificationStatus } from '@prisma/client';
+} from "./dto/government-employees.dto";
+import { GovtVerificationStatus } from "@prisma/client";
 
 @Injectable()
 export class GovernmentEmployeesService {
@@ -25,55 +32,123 @@ export class GovernmentEmployeesService {
 
   private readonly initialDepartments = [
     {
-      name: 'Education Department',
-      gujaratiName: 'શિક્ષણ વિભાગ',
-      code: 'DEPT_EDU',
+      name: "Education Department",
+      gujaratiName: "શિક્ષણ વિભાગ",
+      code: "DEPT_EDU",
       designations: [
-        { name: 'Primary Teacher', gujaratiName: 'પ્રાથમિક શિક્ષક', code: 'DESIG_PRI_TEACHER' },
-        { name: 'High School Teacher', gujaratiName: 'ઉચ્ચતર માધ્યમિક શિક્ષક', code: 'DESIG_HS_TEACHER' },
-        { name: 'College Lecturer / Professor', gujaratiName: 'અધ્યાપક / પ્રાધ્યાપક', code: 'DESIG_PROFESSOR' },
-        { name: 'Principal / Headmaster', gujaratiName: 'આચાર્ય', code: 'DESIG_PRINCIPAL' },
+        {
+          name: "Primary Teacher",
+          gujaratiName: "પ્રાથમિક શિક્ષક",
+          code: "DESIG_PRI_TEACHER",
+        },
+        {
+          name: "High School Teacher",
+          gujaratiName: "ઉચ્ચતર માધ્યમિક શિક્ષક",
+          code: "DESIG_HS_TEACHER",
+        },
+        {
+          name: "College Lecturer / Professor",
+          gujaratiName: "અધ્યાપક / પ્રાધ્યાપક",
+          code: "DESIG_PROFESSOR",
+        },
+        {
+          name: "Principal / Headmaster",
+          gujaratiName: "આચાર્ય",
+          code: "DESIG_PRINCIPAL",
+        },
       ],
     },
     {
-      name: 'Revenue Department',
-      gujaratiName: 'મહેસૂલ વિભાગ',
-      code: 'DEPT_REV',
+      name: "Revenue Department",
+      gujaratiName: "મહેસૂલ વિભાગ",
+      code: "DEPT_REV",
       designations: [
-        { name: 'Talati Mantri', gujaratiName: 'તલાટી મંત્રી', code: 'DESIG_TALATI' },
-        { name: 'Revenue Inspector / Circle Officer', gujaratiName: 'મહેસૂલ નાયબ નિરીક્ષક', code: 'DESIG_REV_INSP' },
-        { name: 'Deputy Mamlatdar / Mamlatdar', gujaratiName: 'મામલતદાર', code: 'DESIG_MAMLATDAR' },
+        {
+          name: "Talati Mantri",
+          gujaratiName: "તલાટી મંત્રી",
+          code: "DESIG_TALATI",
+        },
+        {
+          name: "Revenue Inspector / Circle Officer",
+          gujaratiName: "મહેસૂલ નાયબ નિરીક્ષક",
+          code: "DESIG_REV_INSP",
+        },
+        {
+          name: "Deputy Mamlatdar / Mamlatdar",
+          gujaratiName: "મામલતદાર",
+          code: "DESIG_MAMLATDAR",
+        },
       ],
     },
     {
-      name: 'Police & Home Department',
-      gujaratiName: 'પોલીસ અને ગૃહ વિભાગ',
-      code: 'DEPT_POL',
+      name: "Police & Home Department",
+      gujaratiName: "પોલીસ અને ગૃહ વિભાગ",
+      code: "DEPT_POL",
       designations: [
-        { name: 'Police Constable', gujaratiName: 'પોલીસ કોન્સ્ટેબલ', code: 'DESIG_CONSTABLE' },
-        { name: 'Police Sub Inspector (PSI)', gujaratiName: 'પી.એસ.આઈ.', code: 'DESIG_PSI' },
-        { name: 'Police Inspector (PI)', gujaratiName: 'પી.આઈ.', code: 'DESIG_PI' },
-        { name: 'DySP / ACP', gujaratiName: 'ડી.વાય.એસ.પી.', code: 'DESIG_DYSP' },
+        {
+          name: "Police Constable",
+          gujaratiName: "પોલીસ કોન્સ્ટેબલ",
+          code: "DESIG_CONSTABLE",
+        },
+        {
+          name: "Police Sub Inspector (PSI)",
+          gujaratiName: "પી.એસ.આઈ.",
+          code: "DESIG_PSI",
+        },
+        {
+          name: "Police Inspector (PI)",
+          gujaratiName: "પી.આઈ.",
+          code: "DESIG_PI",
+        },
+        {
+          name: "DySP / ACP",
+          gujaratiName: "ડી.વાય.એસ.પી.",
+          code: "DESIG_DYSP",
+        },
       ],
     },
     {
-      name: 'Health & Family Welfare Department',
-      gujaratiName: 'આરોગ્ય અને પબ્લિક હેલ્થ વિભાગ',
-      code: 'DEPT_HEALTH',
+      name: "Health & Family Welfare Department",
+      gujaratiName: "આરોગ્ય અને પબ્લિક હેલ્થ વિભાગ",
+      code: "DEPT_HEALTH",
       designations: [
-        { name: 'Staff Nurse / Nursing Superintendent', gujaratiName: 'સ્ટાફ નર્સ', code: 'DESIG_NURSE' },
-        { name: 'Medical Officer / Doctor', gujaratiName: 'મેડિકલ ઓફિસર', code: 'DESIG_MO' },
-        { name: 'Pharmacist', gujaratiName: 'ફાર્માસિસ્ટ', code: 'DESIG_PHARMA' },
+        {
+          name: "Staff Nurse / Nursing Superintendent",
+          gujaratiName: "સ્ટાફ નર્સ",
+          code: "DESIG_NURSE",
+        },
+        {
+          name: "Medical Officer / Doctor",
+          gujaratiName: "મેડિકલ ઓફિસર",
+          code: "DESIG_MO",
+        },
+        {
+          name: "Pharmacist",
+          gujaratiName: "ફાર્માસિસ્ટ",
+          code: "DESIG_PHARMA",
+        },
       ],
     },
     {
-      name: 'Panchayat & Rural Development',
-      gujaratiName: 'પંચાયત અને ગ્રામ વિકાસ વિભાગ',
-      code: 'DEPT_PANCHAYAT',
+      name: "Panchayat & Rural Development",
+      gujaratiName: "પંચાયત અને ગ્રામ વિકાસ વિભાગ",
+      code: "DEPT_PANCHAYAT",
       designations: [
-        { name: 'Gram Sevak', gujaratiName: 'ગ્રામ સેવક', code: 'DESIG_GRAM_SEVAK' },
-        { name: 'Extension Officer', gujaratiName: 'વિસ્તરણ અધિકારી', code: 'DESIG_EXT_OFFICER' },
-        { name: 'Taluka Development Officer (TDO)', gujaratiName: 'તાલુકા વિકાસ અધિકારી', code: 'DESIG_TDO' },
+        {
+          name: "Gram Sevak",
+          gujaratiName: "ગ્રામ સેવક",
+          code: "DESIG_GRAM_SEVAK",
+        },
+        {
+          name: "Extension Officer",
+          gujaratiName: "વિસ્તરણ અધિકારી",
+          code: "DESIG_EXT_OFFICER",
+        },
+        {
+          name: "Taluka Development Officer (TDO)",
+          gujaratiName: "તાલુકા વિકાસ અધિકારી",
+          code: "DESIG_TDO",
+        },
       ],
     },
   ];
@@ -85,10 +160,10 @@ export class GovernmentEmployeesService {
         include: {
           designations: {
             where: { isActive: true },
-            orderBy: { name: 'asc' },
+            orderBy: { name: "asc" },
           },
         },
-        orderBy: { name: 'asc' },
+        orderBy: { name: "asc" },
       });
 
       if (departments.length === 0) {
@@ -119,16 +194,19 @@ export class GovernmentEmployeesService {
           include: {
             designations: {
               where: { isActive: true },
-              orderBy: { name: 'asc' },
+              orderBy: { name: "asc" },
             },
           },
-          orderBy: { name: 'asc' },
+          orderBy: { name: "asc" },
         });
       }
 
       return departments;
     } catch (err: any) {
-      this.logger.warn('Prisma Master Departments query fallback:', err?.message);
+      this.logger.warn(
+        "Prisma Master Departments query fallback:",
+        err?.message,
+      );
       return this.initialDepartments.map((d, idx) => ({
         id: `dept-${idx + 1}`,
         name: d.name,
@@ -150,41 +228,111 @@ export class GovernmentEmployeesService {
   // Admin Master Data CRUD
   async createDepartment(dto: CreateDepartmentDto, adminId: string) {
     const dept = await this.prisma.govtDepartment.create({ data: dto });
-    await this.logAdminAudit(adminId, 'CREATE_DEPARTMENT', 'GovtDepartment', dept.id, null, JSON.stringify(dept));
+    await this.logAdminAudit(
+      adminId,
+      "CREATE_DEPARTMENT",
+      "GovtDepartment",
+      dept.id,
+      null,
+      JSON.stringify(dept),
+    );
     return dept;
   }
 
-  async updateDepartment(id: string, dto: Partial<CreateDepartmentDto>, adminId: string) {
-    const oldVal = await this.prisma.govtDepartment.findUnique({ where: { id } });
-    const updated = await this.prisma.govtDepartment.update({ where: { id }, data: dto });
-    await this.logAdminAudit(adminId, 'UPDATE_DEPARTMENT', 'GovtDepartment', id, JSON.stringify(oldVal), JSON.stringify(updated));
+  async updateDepartment(
+    id: string,
+    dto: Partial<CreateDepartmentDto>,
+    adminId: string,
+  ) {
+    const oldVal = await this.prisma.govtDepartment.findUnique({
+      where: { id },
+    });
+    const updated = await this.prisma.govtDepartment.update({
+      where: { id },
+      data: dto,
+    });
+    await this.logAdminAudit(
+      adminId,
+      "UPDATE_DEPARTMENT",
+      "GovtDepartment",
+      id,
+      JSON.stringify(oldVal),
+      JSON.stringify(updated),
+    );
     return updated;
   }
 
   async softDeleteDepartment(id: string, adminId: string) {
-    const oldVal = await this.prisma.govtDepartment.findUnique({ where: { id } });
-    const updated = await this.prisma.govtDepartment.update({ where: { id }, data: { isActive: false } });
-    await this.logAdminAudit(adminId, 'DEACTIVATE_DEPARTMENT', 'GovtDepartment', id, JSON.stringify(oldVal), JSON.stringify(updated));
+    const oldVal = await this.prisma.govtDepartment.findUnique({
+      where: { id },
+    });
+    const updated = await this.prisma.govtDepartment.update({
+      where: { id },
+      data: { isActive: false },
+    });
+    await this.logAdminAudit(
+      adminId,
+      "DEACTIVATE_DEPARTMENT",
+      "GovtDepartment",
+      id,
+      JSON.stringify(oldVal),
+      JSON.stringify(updated),
+    );
     return updated;
   }
 
   async createDesignation(dto: CreateDesignationDto, adminId: string) {
     const desig = await this.prisma.govtDesignation.create({ data: dto });
-    await this.logAdminAudit(adminId, 'CREATE_DESIGNATION', 'GovtDesignation', desig.id, null, JSON.stringify(desig));
+    await this.logAdminAudit(
+      adminId,
+      "CREATE_DESIGNATION",
+      "GovtDesignation",
+      desig.id,
+      null,
+      JSON.stringify(desig),
+    );
     return desig;
   }
 
-  async updateDesignation(id: string, dto: Partial<CreateDesignationDto>, adminId: string) {
-    const oldVal = await this.prisma.govtDesignation.findUnique({ where: { id } });
-    const updated = await this.prisma.govtDesignation.update({ where: { id }, data: dto });
-    await this.logAdminAudit(adminId, 'UPDATE_DESIGNATION', 'GovtDesignation', id, JSON.stringify(oldVal), JSON.stringify(updated));
+  async updateDesignation(
+    id: string,
+    dto: Partial<CreateDesignationDto>,
+    adminId: string,
+  ) {
+    const oldVal = await this.prisma.govtDesignation.findUnique({
+      where: { id },
+    });
+    const updated = await this.prisma.govtDesignation.update({
+      where: { id },
+      data: dto,
+    });
+    await this.logAdminAudit(
+      adminId,
+      "UPDATE_DESIGNATION",
+      "GovtDesignation",
+      id,
+      JSON.stringify(oldVal),
+      JSON.stringify(updated),
+    );
     return updated;
   }
 
   async softDeleteDesignation(id: string, adminId: string) {
-    const oldVal = await this.prisma.govtDesignation.findUnique({ where: { id } });
-    const updated = await this.prisma.govtDesignation.update({ where: { id }, data: { isActive: false } });
-    await this.logAdminAudit(adminId, 'DEACTIVATE_DESIGNATION', 'GovtDesignation', id, JSON.stringify(oldVal), JSON.stringify(updated));
+    const oldVal = await this.prisma.govtDesignation.findUnique({
+      where: { id },
+    });
+    const updated = await this.prisma.govtDesignation.update({
+      where: { id },
+      data: { isActive: false },
+    });
+    await this.logAdminAudit(
+      adminId,
+      "DEACTIVATE_DESIGNATION",
+      "GovtDesignation",
+      id,
+      JSON.stringify(oldVal),
+      JSON.stringify(updated),
+    );
     return updated;
   }
 
@@ -200,14 +348,14 @@ export class GovernmentEmployeesService {
           include: {
             department: true,
             designation: true,
-            verifications: { orderBy: { createdAt: 'desc' }, take: 1 },
+            verifications: { orderBy: { createdAt: "desc" }, take: 1 },
           },
         },
       },
     });
 
     if (!profile) {
-      throw new NotFoundException('Matrimonial profile not found for user');
+      throw new NotFoundException("Matrimonial profile not found for user");
     }
 
     return profile.governmentEmployment || null;
@@ -220,11 +368,15 @@ export class GovernmentEmployeesService {
     });
 
     if (!profile) {
-      throw new NotFoundException('Matrimonial profile not found. Please create matrimonial profile first.');
+      throw new NotFoundException(
+        "Matrimonial profile not found. Please create matrimonial profile first.",
+      );
     }
 
     if (profile.governmentEmployment) {
-      throw new ConflictException('Government employment profile already exists. Use PATCH /me to update.');
+      throw new ConflictException(
+        "Government employment profile already exists. Use PATCH /me to update.",
+      );
     }
 
     return this.prisma.governmentEmployment.create({
@@ -247,7 +399,9 @@ export class GovernmentEmployeesService {
   async updateMyEmployment(userId: string, dto: UpdateGovtEmploymentDto) {
     const emp = await this.getMyEmployment(userId);
     if (!emp) {
-      throw new NotFoundException('Government employment record not found. Use POST /me to create.');
+      throw new NotFoundException(
+        "Government employment record not found. Use POST /me to create.",
+      );
     }
 
     return this.prisma.governmentEmployment.update({
@@ -265,7 +419,9 @@ export class GovernmentEmployeesService {
   async submitMyVerification(userId: string, dto: SubmitVerificationDto) {
     const emp = await this.getMyEmployment(userId);
     if (!emp) {
-      throw new NotFoundException('Government employment record not found. Create employment profile first.');
+      throw new NotFoundException(
+        "Government employment record not found. Create employment profile first.",
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -288,7 +444,7 @@ export class GovernmentEmployeesService {
         include: {
           department: true,
           designation: true,
-          verifications: { orderBy: { createdAt: 'desc' }, take: 1 },
+          verifications: { orderBy: { createdAt: "desc" }, take: 1 },
         },
       });
 
@@ -308,13 +464,13 @@ export class GovernmentEmployeesService {
     try {
       // Import utilities inside or at top of file (we will add imports at the top)
       // but for now we can dynamically or locally use the generated query
-      
+
       // Base condition for government employee specific rules
       const whereCondition: any = {
         verificationStatus: GovtVerificationStatus.VERIFIED,
         isActive: true,
         profile: {
-          status: 'APPROVED',
+          status: "APPROVED",
         },
       };
 
@@ -368,12 +524,16 @@ export class GovernmentEmployeesService {
               },
             },
           },
-          orderBy: query.sortBy ? { [query.sortBy]: query.sortOrder || 'desc' } : { createdAt: 'desc' },
+          orderBy: query.sortBy
+            ? { [query.sortBy]: query.sortOrder || "desc" }
+            : { createdAt: "desc" },
         }),
         this.prisma.governmentEmployment.count({ where: whereCondition }),
       ]);
 
-      const formattedItems = items.map((item) => this.transformToPublicDto(item));
+      const formattedItems = items.map((item) =>
+        this.transformToPublicDto(item),
+      );
 
       return {
         data: formattedItems,
@@ -387,10 +547,20 @@ export class GovernmentEmployeesService {
         },
       };
     } catch (err: any) {
-      this.logger.warn('Prisma Public Govt Employee search fallback:', err?.message);
+      this.logger.warn(
+        "Prisma Public Govt Employee search fallback:",
+        err?.message,
+      );
       return {
         data: [],
-        meta: { page: 1, limit: 20, total: 0, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+        meta: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
       };
     }
   }
@@ -402,7 +572,7 @@ export class GovernmentEmployeesService {
           isFeatured: true,
           verificationStatus: GovtVerificationStatus.VERIFIED,
           isActive: true,
-          profile: { status: 'APPROVED' },
+          profile: { status: "APPROVED" },
         },
         take: 10,
         include: {
@@ -415,12 +585,15 @@ export class GovernmentEmployeesService {
             },
           },
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { updatedAt: "desc" },
       });
 
       return items.map((item) => this.transformToPublicDto(item));
     } catch (err: any) {
-      this.logger.warn('Prisma Featured Govt Employees fallback:', err?.message);
+      this.logger.warn(
+        "Prisma Featured Govt Employees fallback:",
+        err?.message,
+      );
       return [];
     }
   }
@@ -447,7 +620,9 @@ export class GovernmentEmployeesService {
     });
 
     if (!item) {
-      throw new NotFoundException('Verified Government Employee profile not found');
+      throw new NotFoundException(
+        "Verified Government Employee profile not found",
+      );
     }
 
     return this.transformToPublicDto(item);
@@ -460,7 +635,7 @@ export class GovernmentEmployeesService {
   async getAdminGovtEmployees(page = 1, limit = 20, status?: string) {
     const skip = (page - 1) * limit;
     const whereCondition: any = {};
-    if (status && status !== 'ALL') {
+    if (status && status !== "ALL") {
       whereCondition.verificationStatus = status as GovtVerificationStatus;
     }
 
@@ -472,7 +647,7 @@ export class GovernmentEmployeesService {
         include: {
           department: true,
           designation: true,
-          verifications: { orderBy: { createdAt: 'desc' } },
+          verifications: { orderBy: { createdAt: "desc" } },
           profile: {
             include: {
               user: true,
@@ -481,7 +656,7 @@ export class GovernmentEmployeesService {
             },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       this.prisma.governmentEmployment.count({ where: whereCondition }),
     ]);
@@ -501,32 +676,55 @@ export class GovernmentEmployeesService {
 
   async getAdminStats() {
     try {
-      const [total, pending, verified, rejected, featured, active] = await Promise.all([
-        this.prisma.governmentEmployment.count(),
-        this.prisma.governmentEmployment.count({ where: { verificationStatus: GovtVerificationStatus.PENDING } }),
-        this.prisma.governmentEmployment.count({ where: { verificationStatus: GovtVerificationStatus.VERIFIED } }),
-        this.prisma.governmentEmployment.count({ where: { verificationStatus: GovtVerificationStatus.REJECTED } }),
-        this.prisma.governmentEmployment.count({ where: { isFeatured: true } }),
-        this.prisma.governmentEmployment.count({ where: { isActive: true } }),
-      ]);
+      const [total, pending, verified, rejected, featured, active] =
+        await Promise.all([
+          this.prisma.governmentEmployment.count(),
+          this.prisma.governmentEmployment.count({
+            where: { verificationStatus: GovtVerificationStatus.PENDING },
+          }),
+          this.prisma.governmentEmployment.count({
+            where: { verificationStatus: GovtVerificationStatus.VERIFIED },
+          }),
+          this.prisma.governmentEmployment.count({
+            where: { verificationStatus: GovtVerificationStatus.REJECTED },
+          }),
+          this.prisma.governmentEmployment.count({
+            where: { isFeatured: true },
+          }),
+          this.prisma.governmentEmployment.count({ where: { isActive: true } }),
+        ]);
 
       return { total, pending, verified, rejected, featured, active };
     } catch (err: any) {
-      return { total: 0, pending: 0, verified: 0, rejected: 0, featured: 0, active: 0 };
+      return {
+        total: 0,
+        pending: 0,
+        verified: 0,
+        rejected: 0,
+        featured: 0,
+        active: 0,
+      };
     }
   }
 
-  async verifyGovtEmployee(id: string, dto: AdminVerifyGovtEmpDto, adminId: string) {
+  async verifyGovtEmployee(
+    id: string,
+    dto: AdminVerifyGovtEmpDto,
+    adminId: string,
+  ) {
     const emp = await this.prisma.governmentEmployment.findUnique({
       where: { id },
-      include: { verifications: { orderBy: { createdAt: 'desc' }, take: 1 } },
+      include: { verifications: { orderBy: { createdAt: "desc" }, take: 1 } },
     });
 
     if (!emp) {
-      throw new NotFoundException('Government employment record not found');
+      throw new NotFoundException("Government employment record not found");
     }
 
-    const targetStatus = dto.action === 'APPROVE' ? GovtVerificationStatus.VERIFIED : GovtVerificationStatus.REJECTED;
+    const targetStatus =
+      dto.action === "APPROVE"
+        ? GovtVerificationStatus.VERIFIED
+        : GovtVerificationStatus.REJECTED;
 
     return this.prisma.$transaction(async (tx) => {
       // Update employment record
@@ -534,9 +732,16 @@ export class GovernmentEmployeesService {
         where: { id },
         data: {
           verificationStatus: targetStatus,
-          verifiedAt: targetStatus === GovtVerificationStatus.VERIFIED ? new Date() : null,
-          verifiedBy: targetStatus === GovtVerificationStatus.VERIFIED ? adminId : null,
-          rejectionReason: targetStatus === GovtVerificationStatus.REJECTED ? dto.rejectionReason : null,
+          verifiedAt:
+            targetStatus === GovtVerificationStatus.VERIFIED
+              ? new Date()
+              : null,
+          verifiedBy:
+            targetStatus === GovtVerificationStatus.VERIFIED ? adminId : null,
+          rejectionReason:
+            targetStatus === GovtVerificationStatus.REJECTED
+              ? dto.rejectionReason
+              : null,
         },
         include: { department: true, designation: true },
       });
@@ -558,37 +763,52 @@ export class GovernmentEmployeesService {
       // Log audit
       await this.logAdminAudit(
         adminId,
-        dto.action === 'APPROVE' ? 'APPROVE_GOVT_EMPLOYMENT' : 'REJECT_GOVT_EMPLOYMENT',
-        'GovernmentEmployment',
+        dto.action === "APPROVE"
+          ? "APPROVE_GOVT_EMPLOYMENT"
+          : "REJECT_GOVT_EMPLOYMENT",
+        "GovernmentEmployment",
         id,
         JSON.stringify({ verificationStatus: emp.verificationStatus }),
-        JSON.stringify({ verificationStatus: targetStatus, rejectionReason: dto.rejectionReason }),
+        JSON.stringify({
+          verificationStatus: targetStatus,
+          rejectionReason: dto.rejectionReason,
+        }),
       );
 
       return updatedEmp;
     });
   }
 
-  async setGovtEmployeeFeatured(id: string, dto: AdminFeatureGovtEmpDto, adminId: string) {
+  async setGovtEmployeeFeatured(
+    id: string,
+    dto: AdminFeatureGovtEmpDto,
+    adminId: string,
+  ) {
     const emp = await this.prisma.governmentEmployment.findUnique({
       where: { id },
       include: { profile: true },
     });
 
     if (!emp) {
-      throw new NotFoundException('Government employment record not found');
+      throw new NotFoundException("Government employment record not found");
     }
 
     // Backend rule enforcement
     if (dto.isFeatured) {
       if (emp.verificationStatus !== GovtVerificationStatus.VERIFIED) {
-        throw new BadRequestException('Cannot feature profile: Verification status is not VERIFIED');
+        throw new BadRequestException(
+          "Cannot feature profile: Verification status is not VERIFIED",
+        );
       }
       if (!emp.isActive) {
-        throw new BadRequestException('Cannot feature profile: Record is not active');
+        throw new BadRequestException(
+          "Cannot feature profile: Record is not active",
+        );
       }
-      if (emp.profile.status !== 'APPROVED') {
-        throw new BadRequestException('Cannot feature profile: Matrimonial profile is not approved');
+      if (emp.profile.status !== "APPROVED") {
+        throw new BadRequestException(
+          "Cannot feature profile: Matrimonial profile is not approved",
+        );
       }
     }
 
@@ -599,8 +819,8 @@ export class GovernmentEmployeesService {
 
     await this.logAdminAudit(
       adminId,
-      dto.isFeatured ? 'FEATURE_GOVT_EMPLOYMENT' : 'UNFEATURE_GOVT_EMPLOYMENT',
-      'GovernmentEmployment',
+      dto.isFeatured ? "FEATURE_GOVT_EMPLOYMENT" : "UNFEATURE_GOVT_EMPLOYMENT",
+      "GovernmentEmployment",
       id,
       JSON.stringify({ isFeatured: emp.isFeatured }),
       JSON.stringify({ isFeatured: dto.isFeatured }),
@@ -609,10 +829,16 @@ export class GovernmentEmployeesService {
     return updated;
   }
 
-  async setGovtEmployeeStatus(id: string, dto: AdminStatusGovtEmpDto, adminId: string) {
-    const emp = await this.prisma.governmentEmployment.findUnique({ where: { id } });
+  async setGovtEmployeeStatus(
+    id: string,
+    dto: AdminStatusGovtEmpDto,
+    adminId: string,
+  ) {
+    const emp = await this.prisma.governmentEmployment.findUnique({
+      where: { id },
+    });
     if (!emp) {
-      throw new NotFoundException('Government employment record not found');
+      throw new NotFoundException("Government employment record not found");
     }
 
     const updated = await this.prisma.governmentEmployment.update({
@@ -622,8 +848,8 @@ export class GovernmentEmployeesService {
 
     await this.logAdminAudit(
       adminId,
-      dto.isActive ? 'ACTIVATE_GOVT_EMPLOYMENT' : 'DEACTIVATE_GOVT_EMPLOYMENT',
-      'GovernmentEmployment',
+      dto.isActive ? "ACTIVATE_GOVT_EMPLOYMENT" : "DEACTIVATE_GOVT_EMPLOYMENT",
+      "GovernmentEmployment",
       id,
       JSON.stringify({ isActive: emp.isActive }),
       JSON.stringify({ isActive: dto.isActive }),
@@ -633,7 +859,14 @@ export class GovernmentEmployeesService {
   }
 
   // Helper for admin audit logging
-  private async logAdminAudit(adminId: string, action: string, entityType: string, entityId: string, oldValue: string | null, newValue: string | null) {
+  private async logAdminAudit(
+    adminId: string,
+    action: string,
+    entityType: string,
+    entityId: string,
+    oldValue: string | null,
+    newValue: string | null,
+  ) {
     try {
       await this.prisma.adminAuditLog.create({
         data: {
@@ -646,33 +879,37 @@ export class GovernmentEmployeesService {
         },
       });
     } catch (err: any) {
-      this.logger.warn('Failed to record admin audit log:', err?.message);
+      this.logger.warn("Failed to record admin audit log:", err?.message);
     }
   }
 
   // DTO Transformation isolating sensitive documents & admin data
   private transformToPublicDto(emp: any) {
     const p = emp.profile || {};
-    const birthYear = p.dateOfBirth ? new Date(p.dateOfBirth).getFullYear() : null;
+    const birthYear = p.dateOfBirth
+      ? new Date(p.dateOfBirth).getFullYear()
+      : null;
     const currentYear = new Date().getFullYear();
     const calculatedAge = birthYear ? currentYear - birthYear : null;
 
     return {
       id: emp.id,
       profileId: p.id,
-      fullName: `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Vankar Member',
-      gender: p.gender || 'MALE',
+      fullName:
+        `${p.firstName || ""} ${p.lastName || ""}`.trim() || "Vankar Member",
+      gender: p.gender || "MALE",
       age: calculatedAge,
-      education: p.education || 'Graduate',
-      maritalStatus: p.maritalStatus || 'NEVER_MARRIED',
+      education: p.education || "Graduate",
+      maritalStatus: p.maritalStatus || "NEVER_MARRIED",
       photoUrl: p.photoUrl || null,
       districtName: p.district?.name || p.district?.gujaratiName || null,
       talukaName: p.taluka?.name || p.taluka?.gujaratiName || null,
       employmentType: emp.employmentType,
-      departmentName: emp.department?.name || 'Government Department',
-      departmentGujaratiName: emp.department?.gujaratiName || 'સરકારી વિભાગ',
-      designationName: emp.designation?.name || 'Officer / Employee',
-      designationGujaratiName: emp.designation?.gujaratiName || 'સરકારી કર્મચારી',
+      departmentName: emp.department?.name || "Government Department",
+      departmentGujaratiName: emp.department?.gujaratiName || "સરકારી વિભાગ",
+      designationName: emp.designation?.name || "Officer / Employee",
+      designationGujaratiName:
+        emp.designation?.gujaratiName || "સરકારી કર્મચારી",
       officeLocation: emp.officeLocation || null,
       joiningYear: emp.joiningYear || null,
       isVerified: true,

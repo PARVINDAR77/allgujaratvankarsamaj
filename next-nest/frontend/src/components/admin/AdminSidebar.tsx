@@ -37,12 +37,16 @@ const menuSections = [
       { name: "Locations", href: "/admin/locations", icon: "📍" },
       { name: "Parganas", href: "/admin/parganas", icon: "🏛️" },
       { name: "Samaj Services", href: "/admin/services", icon: "🤝" },
+      { name: "Pavan Prernadata", href: "/admin/pavan-prernadata", icon: "📖" },
+      { name: "Samaj Super Stars", href: "/admin/samaj-super-stars", icon: "🌟" },
+      { name: "Samaj Ratna", href: "/admin/samaj-ratna", icon: "🏆" },
     ],
   },
   {
     title: "CONTENT & SETTINGS",
     items: [
       { name: "Home Screen", href: "/admin/home-screen", icon: "📱" },
+      { name: "Advertisements", href: "/admin/advertisements", icon: "📢" },
       { name: "Reports", href: "/admin/reports", icon: "📈" },
       { name: "Settings", href: "/admin/settings", icon: "⚙️" },
     ],

@@ -16,7 +16,7 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(incrementViewProvider)('samaj_super_stars');
+      ref.read(incrementViewProvider)('SAMAJ_SUPER_STARS');
     });
   }
 
@@ -125,7 +125,7 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const ViewBadge(sectionName: 'samaj_super_stars'),
+                const ViewBadge(sectionName: 'SAMAJ_SUPER_STARS'),
                 const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),

@@ -88,14 +88,13 @@ class ProfileModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
+    final map = <String, dynamic>{
       'firstName': firstName,
       'lastName': lastName,
       'photoUrl': photoUrl,
       'gender': gender.contains('Male') ? 'MALE' : 'FEMALE',
       'maritalStatus': maritalStatus.contains('Divorced') ? 'DIVORCED' : (maritalStatus.contains('Widow') ? 'WIDOWED' : (maritalStatus.contains('Awaiting') ? 'SEPARATED' : 'NEVER_MARRIED')),
-      'dateOfBirth': dateOfBirth, // backend expects YYYY-MM-DD or valid date string. In create profile it's formatted as DD-MM-YYYY, so we might need to parse it if backend is strict, but nestjs can parse ISO
+      'dateOfBirth': dateOfBirth, 
       'education': education,
       'occupation': employmentType,
       'organizationName': department,
@@ -104,7 +103,6 @@ class ProfileModel {
       'city': taluka,
       'state': district,
       'country': 'India',
-      'isVerified': isVerified,
       'isPhysicallyDisabled': isPhysicallyDisabled,
       'pwbdCategory': pwbdCategory,
       'isAbroad': isAbroad,
@@ -112,5 +110,10 @@ class ProfileModel {
       'businessIndustry': businessIndustry,
       'businessService': businessService,
     };
+    
+    // Do not include 'id' and 'isVerified' in the payload. 
+    // They are controlled by the backend and will fail validation.
+    
+    return map;
   }
 }

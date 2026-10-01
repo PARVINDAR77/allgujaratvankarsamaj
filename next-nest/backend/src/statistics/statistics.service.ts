@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, BadRequestException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class StatisticsService {
@@ -13,22 +13,22 @@ export class StatisticsService {
       pendingVerifications,
       openReports,
       totalSuccessStories,
-      activeGovtEmployees
+      activeGovtEmployees,
     ] = await Promise.all([
       this.prisma.user.count(),
-      this.prisma.matrimonialProfile.count({ where: { status: 'APPROVED' } }),
-      this.prisma.matchInterest.count({ where: { status: 'ACCEPTED' } }),
-      this.prisma.verificationRequest.count({ where: { status: 'PENDING' } }),
-      this.prisma.report.count({ where: { status: 'OPEN' } }),
+      this.prisma.matrimonialProfile.count({ where: { status: "APPROVED" } }),
+      this.prisma.matchInterest.count({ where: { status: "ACCEPTED" } }),
+      this.prisma.verificationRequest.count({ where: { status: "PENDING" } }),
+      this.prisma.report.count({ where: { status: "OPEN" } }),
       this.prisma.successStory.count(),
       this.prisma.governmentEmployment.count({ where: { isActive: true } }),
     ]);
 
     // Gather gender breakdown for active profiles
     const genderStats = await this.prisma.matrimonialProfile.groupBy({
-      by: ['gender'],
+      by: ["gender"],
       _count: { id: true },
-      where: { status: 'APPROVED' }
+      where: { status: "APPROVED" },
     });
 
     const genderBreakdown = {
@@ -42,28 +42,38 @@ export class StatisticsService {
 
     // Pargana breakdown
     const parganaStats = await this.prisma.matrimonialProfile.groupBy({
-      by: ['parganaId'],
+      by: ["parganaId"],
       _count: { id: true },
-      where: { status: 'APPROVED', parganaId: { not: null } }
+      where: { status: "APPROVED", parganaId: { not: null } },
     });
 
     // Fetch pargana names
-    const parganaIds = parganaStats.map(p => p.parganaId).filter(id => id !== null) as string[];
+    const parganaIds = parganaStats
+      .map((p) => p.parganaId)
+      .filter((id) => id !== null) as string[];
     const parganas = await this.prisma.pargana.findMany({
       where: { id: { in: parganaIds } },
-      select: { id: true, name: true }
+      select: { id: true, name: true },
     });
-    
-    const parganaMap = new Map(parganas.map(p => [p.id, p.name]));
-    const parganaBreakdown = parganaStats.map(stat => ({
-      name: stat.parganaId ? parganaMap.get(stat.parganaId) || 'Unknown' : 'Unknown',
-      count: stat._count.id,
-      percentage: activeProfiles > 0 ? Math.round((stat._count.id / activeProfiles) * 100) : 0
-    })).sort((a, b) => b.count - a.count).slice(0, 5); // Top 5
+
+    const parganaMap = new Map(parganas.map((p) => [p.id, p.name]));
+    const parganaBreakdown = parganaStats
+      .map((stat) => ({
+        name: stat.parganaId
+          ? parganaMap.get(stat.parganaId) || "Unknown"
+          : "Unknown",
+        count: stat._count.id,
+        percentage:
+          activeProfiles > 0
+            ? Math.round((stat._count.id / activeProfiles) * 100)
+            : 0,
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5); // Top 5
 
     // Recent Users
     const recentUsersRaw = await this.prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 5,
       select: {
         id: true,
@@ -74,75 +84,91 @@ export class StatisticsService {
         role: true,
         createdAt: true,
         profile: {
-          select: { 
+          select: {
             firstName: true,
             lastName: true,
-            pargana: { select: { name: true } } 
-          }
-        }
-      }
+            pargana: { select: { name: true } },
+          },
+        },
+      },
     });
 
-    const recentUsers = recentUsersRaw.map(u => ({
+    const recentUsers = recentUsersRaw.map((u) => ({
       id: u.id,
-      name: (u.profile?.firstName ? `${u.profile.firstName} ${u.profile.lastName || ''}`.trim() : u.name) || '',
-      email: u.email || '',
-      phone: u.phone || '',
-      pargana: u.profile?.pargana?.name || 'Not Set',
+      name:
+        (u.profile?.firstName
+          ? `${u.profile.firstName} ${u.profile.lastName || ""}`.trim()
+          : u.name) || "",
+      email: u.email || "",
+      phone: u.phone || "",
+      pargana: u.profile?.pargana?.name || "Not Set",
       status: u.status,
       role: u.role,
-      createdAt: u.createdAt.toISOString()
+      createdAt: u.createdAt.toISOString(),
     }));
 
     // Recent Verifications
-    const recentVerificationsRaw = await this.prisma.verificationRequest.findMany({
-      where: { status: 'PENDING' },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-      include: {
-        profile: { select: { firstName: true, lastName: true } }
-      }
-    });
+    const recentVerificationsRaw =
+      await this.prisma.verificationRequest.findMany({
+        where: { status: "PENDING" },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        include: {
+          profile: { select: { firstName: true, lastName: true } },
+        },
+      });
 
-    const recentVerifications = recentVerificationsRaw.map(v => ({
+    const recentVerifications = recentVerificationsRaw.map((v) => ({
       id: v.id,
-      name: v.profile ? `${v.profile.firstName} ${v.profile.lastName}` : 'Unknown Profile',
-      type: 'Profile Identity',
+      name: v.profile
+        ? `${v.profile.firstName} ${v.profile.lastName}`
+        : "Unknown Profile",
+      type: "Profile Identity",
       status: v.status,
-      date: v.createdAt.toISOString()
+      date: v.createdAt.toISOString(),
     }));
 
     // Recent Activities (Audit Logs)
     const recentLogs = await this.prisma.adminAuditLog.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 5
+      orderBy: { createdAt: "desc" },
+      take: 5,
     });
 
     // Fetch admin names manually since there's no relation in schema
-    const adminIds = [...new Set(recentLogs.map(l => l.adminId))];
+    const adminIds = [...new Set(recentLogs.map((l) => l.adminId))];
     const admins = await this.prisma.user.findMany({
       where: { id: { in: adminIds } },
-      select: { id: true, name: true, email: true }
+      select: { id: true, name: true, email: true },
     });
-    const adminMap = new Map(admins.map(a => [a.id, a.name || a.email || 'Admin']));
+    const adminMap = new Map(
+      admins.map((a) => [a.id, a.name || a.email || "Admin"]),
+    );
 
-    const recentActivities = recentLogs.map(log => ({
+    const recentActivities = recentLogs.map((log) => ({
       id: log.id,
-      icon: log.action.includes('DELETE') ? '🗑️' : log.action.includes('UPDATE') ? '📝' : '✨',
+      icon: log.action.includes("DELETE")
+        ? "🗑️"
+        : log.action.includes("UPDATE")
+          ? "📝"
+          : "✨",
       title: `${log.action} ${log.entityType}`,
-      user: adminMap.get(log.adminId) || 'System',
+      user: adminMap.get(log.adminId) || "System",
       time: log.createdAt.toISOString(),
-      status: 'completed'
+      status: "completed",
     }));
 
     // Mocked Monthly Growth for chart (requires historical timeseries table, mocked safely here as fallback)
     const monthlyGrowth = [
-      { month: 'Jan', users: 100, profiles: 80 },
-      { month: 'Feb', users: 150, profiles: 120 },
-      { month: 'Mar', users: 200, profiles: 160 },
-      { month: 'Apr', users: 280, profiles: 220 },
-      { month: 'May', users: Math.round(totalUsers * 0.8), profiles: Math.round(activeProfiles * 0.8) },
-      { month: 'Jun', users: totalUsers, profiles: activeProfiles },
+      { month: "Jan", users: 100, profiles: 80 },
+      { month: "Feb", users: 150, profiles: 120 },
+      { month: "Mar", users: 200, profiles: 160 },
+      { month: "Apr", users: 280, profiles: 220 },
+      {
+        month: "May",
+        users: Math.round(totalUsers * 0.8),
+        profiles: Math.round(activeProfiles * 0.8),
+      },
+      { month: "Jun", users: totalUsers, profiles: activeProfiles },
     ];
 
     return {
@@ -158,7 +184,7 @@ export class StatisticsService {
       recentUsers,
       recentVerifications,
       recentActivities,
-      monthlyGrowth
+      monthlyGrowth,
     };
   }
 
@@ -169,14 +195,16 @@ export class StatisticsService {
 
     const profiles = await this.prisma.matrimonialProfile.findMany({
       where: {
-        status: 'APPROVED',
+        status: "APPROVED",
       },
     });
 
     // Filter profiles where birthday month and day match today
     const birthdayProfiles = profiles.filter((profile) => {
       const dob = new Date(profile.dateOfBirth);
-      return dob.getMonth() + 1 === currentMonth && dob.getDate() === currentDay;
+      return (
+        dob.getMonth() + 1 === currentMonth && dob.getDate() === currentDay
+      );
     });
 
     return birthdayProfiles;
@@ -186,6 +214,24 @@ export class StatisticsService {
   }
 
   async incrementSectionView(sectionName: string) {
+    const allowedSections = [
+      "HOME_EDUCATION",
+      "HOME_UNITY",
+      "HOME_PROGRESS",
+      "HOME_SERVICE",
+      "HOME_STRONG_ROOTS",
+      "PAVAN_PRERNADATA",
+      "SAMAJ_SUPER_STARS",
+      "SAMAJ_RATNA",
+      "FAMILY_DIRECTORY",
+    ];
+
+    if (!allowedSections.includes(sectionName)) {
+      throw new BadRequestException(
+        `Invalid section identifier: ${sectionName}`,
+      );
+    }
+
     const existing = await this.prisma.sectionViewCount.findUnique({
       where: { sectionName },
     });
@@ -201,6 +247,73 @@ export class StatisticsService {
     }
   }
 
+  async getPublicLiveStatistics() {
+    const totalCandidates = await this.prisma.matrimonialProfile.count({
+      where: { status: "APPROVED" },
+    });
 
+    const startOfDay = new Date();
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const boysToday = await this.prisma.matrimonialProfile.count({
+      where: {
+        gender: "MALE",
+        createdAt: { gte: startOfDay },
+      },
+    });
+
+    const girlsToday = await this.prisma.matrimonialProfile.count({
+      where: {
+        gender: "FEMALE",
+        createdAt: { gte: startOfDay },
+      },
+    });
+
+    const govtStatsRaw = await this.prisma.governmentEmployment.groupBy({
+      by: ["departmentId"],
+      _count: { id: true },
+      where: { isActive: true },
+    });
+
+    const departmentIds = govtStatsRaw.map(g => g.departmentId);
+    const departments = await this.prisma.govtDepartment.findMany({
+      where: { id: { in: departmentIds } }
+    });
+    const depMap = new Map(departments.map(d => [d.id, d.name]));
+
+    const governmentStats = govtStatsRaw.map(g => ({
+      name: depMap.get(g.departmentId) || "Other",
+      count: g._count.id
+    })).sort((a, b) => b.count - a.count);
+
+    const privateStatsRaw = await this.prisma.matrimonialProfile.groupBy({
+      by: ["occupation"],
+      _count: { id: true },
+      where: { 
+        status: "APPROVED",
+        occupation: { not: null, notIn: ["", " "] }
+      },
+    });
+
+    const privateStats = privateStatsRaw.map(p => ({
+      name: p.occupation || "Other",
+      count: p._count.id
+    })).sort((a, b) => b.count - a.count).slice(0, 10);
+
+    return {
+      totalCandidates,
+      today: {
+        boys: boysToday,
+        girls: girlsToday,
+      },
+      departments: {
+        government: governmentStats,
+        private: privateStats.length > 0 ? privateStats : [
+          { name: "IT Professional", count: 0 },
+          { name: "Business Owner", count: 0 },
+          { name: "Self Employed", count: 0 }
+        ]
+      }
+    };
+  }
 }
-

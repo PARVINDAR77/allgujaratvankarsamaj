@@ -32,15 +32,54 @@ export class AdminService {
         { month: "Jun", users: 790, profiles: 640 },
         { month: "Jul", users: 950, profiles: 780 },
         { month: "Aug", users: 1120, profiles: 920 },
-        { month: "Sep", users: totalUsers || 1248, profiles: totalProfiles || 856 },
+        {
+          month: "Sep",
+          users: totalUsers || 1248,
+          profiles: totalProfiles || 856,
+        },
       ];
 
       const recentActivities = [
-        { id: "act-1", icon: "user-plus", title: "New Member Registered", user: "Vikram Vankar", time: "5 mins ago", status: "success" },
-        { id: "act-2", icon: "shield-check", title: "Profile Verified", user: "Hiral Parmar", time: "22 mins ago", status: "info" },
-        { id: "act-3", icon: "heart", title: "New Match Expressed", user: "Ramesh Solanki & Priya Vankar", time: "1 hour ago", status: "warning" },
-        { id: "act-4", icon: "image", title: "New Photo Uploaded", user: "Karan Vankar", time: "2 hours ago", status: "info" },
-        { id: "act-5", icon: "file-text", title: "Family Details Updated", user: "Maheshkumar Vankar", time: "4 hours ago", status: "success" },
+        {
+          id: "act-1",
+          icon: "user-plus",
+          title: "New Member Registered",
+          user: "Vikram Vankar",
+          time: "5 mins ago",
+          status: "success",
+        },
+        {
+          id: "act-2",
+          icon: "shield-check",
+          title: "Profile Verified",
+          user: "Hiral Parmar",
+          time: "22 mins ago",
+          status: "info",
+        },
+        {
+          id: "act-3",
+          icon: "heart",
+          title: "New Match Expressed",
+          user: "Ramesh Solanki & Priya Vankar",
+          time: "1 hour ago",
+          status: "warning",
+        },
+        {
+          id: "act-4",
+          icon: "image",
+          title: "New Photo Uploaded",
+          user: "Karan Vankar",
+          time: "2 hours ago",
+          status: "info",
+        },
+        {
+          id: "act-5",
+          icon: "file-text",
+          title: "Family Details Updated",
+          user: "Maheshkumar Vankar",
+          time: "4 hours ago",
+          status: "success",
+        },
       ];
 
       const recentUsers = await this.prisma.user
@@ -52,28 +91,101 @@ export class AdminService {
         .then((users) =>
           users.map((u) => ({
             id: u.id,
-            name: (u as any).name || (u.profile?.firstName ? `${u.profile.firstName} ${u.profile.lastName}`.trim() : u.email || "User"),
+            name:
+              (u as any).name ||
+              (u.profile?.firstName
+                ? `${u.profile.firstName} ${u.profile.lastName}`.trim()
+                : u.email || "User"),
             email: u.email,
             phone: (u as any).phone || "9876543210",
             pargana: u.profile?.city || "35 Pargana",
             status: u.status,
             role: u.role,
             createdAt: u.createdAt,
-          }))
+          })),
         )
         .catch(() => [
-          { id: "u-1", name: "Ramesh Vankar", email: "ramesh@vankar.org", phone: "9876543210", pargana: "35 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-          { id: "u-2", name: "Hiralben Parmar", email: "hiral@vankar.org", phone: "9876543211", pargana: "27 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-          { id: "u-3", name: "Hemantkumar Vankar", email: "hemant@vankar.org", phone: "9876543212", pargana: "16 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
-          { id: "u-4", name: "Priyankaben Solanki", email: "priyanka@vankar.org", phone: "9876543213", pargana: "14 Pargana", status: "PENDING", role: "USER", createdAt: new Date() },
-          { id: "u-5", name: "Vijaykumar Vankar", email: "vijay@vankar.org", phone: "9876543214", pargana: "35 Pargana", status: "ACTIVE", role: "USER", createdAt: new Date() },
+          {
+            id: "u-1",
+            name: "Ramesh Vankar",
+            email: "ramesh@vankar.org",
+            phone: "9876543210",
+            pargana: "35 Pargana",
+            status: "ACTIVE",
+            role: "USER",
+            createdAt: new Date(),
+          },
+          {
+            id: "u-2",
+            name: "Hiralben Parmar",
+            email: "hiral@vankar.org",
+            phone: "9876543211",
+            pargana: "27 Pargana",
+            status: "ACTIVE",
+            role: "USER",
+            createdAt: new Date(),
+          },
+          {
+            id: "u-3",
+            name: "Hemantkumar Vankar",
+            email: "hemant@vankar.org",
+            phone: "9876543212",
+            pargana: "16 Pargana",
+            status: "ACTIVE",
+            role: "USER",
+            createdAt: new Date(),
+          },
+          {
+            id: "u-4",
+            name: "Priyankaben Solanki",
+            email: "priyanka@vankar.org",
+            phone: "9876543213",
+            pargana: "14 Pargana",
+            status: "PENDING",
+            role: "USER",
+            createdAt: new Date(),
+          },
+          {
+            id: "u-5",
+            name: "Vijaykumar Vankar",
+            email: "vijay@vankar.org",
+            phone: "9876543214",
+            pargana: "35 Pargana",
+            status: "ACTIVE",
+            role: "USER",
+            createdAt: new Date(),
+          },
         ]);
 
       const recentVerifications = [
-        { id: "ver-1", name: "Hemantkumar Vankar", type: "ID Proof & Photo", status: "VERIFIED", date: "2026-09-09" },
-        { id: "ver-2", name: "Hiralben Parmar", type: "Family Contact", status: "VERIFIED", date: "2026-09-09" },
-        { id: "ver-3", name: "Mehul Vankar", type: "Education Certificate", status: "PENDING", date: "2026-09-10" },
-        { id: "ver-4", name: "Aarti Vankar", type: "Profile Photo", status: "PENDING", date: "2026-09-10" },
+        {
+          id: "ver-1",
+          name: "Hemantkumar Vankar",
+          type: "ID Proof & Photo",
+          status: "VERIFIED",
+          date: "2026-09-09",
+        },
+        {
+          id: "ver-2",
+          name: "Hiralben Parmar",
+          type: "Family Contact",
+          status: "VERIFIED",
+          date: "2026-09-09",
+        },
+        {
+          id: "ver-3",
+          name: "Mehul Vankar",
+          type: "Education Certificate",
+          status: "PENDING",
+          date: "2026-09-10",
+        },
+        {
+          id: "ver-4",
+          name: "Aarti Vankar",
+          type: "Profile Photo",
+          status: "PENDING",
+          date: "2026-09-10",
+        },
       ];
 
       return {
@@ -103,8 +215,6 @@ export class AdminService {
     }
   }
 
-
-
   async getVerifications() {
     try {
       const requests = await this.prisma.verificationRequest.findMany({
@@ -113,13 +223,33 @@ export class AdminService {
       return requests;
     } catch {
       return [
-        { id: "ver-1", profileId: "p-1", name: "Hemantkumar Vankar", type: "Aadhaar Card", documentUrl: "/docs/aadhaar.jpg", status: "VERIFIED", createdAt: new Date() },
-        { id: "ver-2", profileId: "p-2", name: "Hiralben Parmar", type: "Passport Photo", documentUrl: "/docs/photo.jpg", status: "PENDING", createdAt: new Date() },
+        {
+          id: "ver-1",
+          profileId: "p-1",
+          name: "Hemantkumar Vankar",
+          type: "Aadhaar Card",
+          documentUrl: "/docs/aadhaar.jpg",
+          status: "VERIFIED",
+          createdAt: new Date(),
+        },
+        {
+          id: "ver-2",
+          profileId: "p-2",
+          name: "Hiralben Parmar",
+          type: "Passport Photo",
+          documentUrl: "/docs/photo.jpg",
+          status: "PENDING",
+          createdAt: new Date(),
+        },
       ];
     }
   }
 
-  async updateVerificationStatus(id: string, status: any, rejectionReason?: string) {
+  async updateVerificationStatus(
+    id: string,
+    status: any,
+    rejectionReason?: string,
+  ) {
     try {
       return await this.prisma.verificationRequest.update({
         where: { id },
@@ -132,7 +262,9 @@ export class AdminService {
 
   async getReports() {
     try {
-      return await this.prisma.report.findMany({ orderBy: { createdAt: "desc" } });
+      return await this.prisma.report.findMany({
+        orderBy: { createdAt: "desc" },
+      });
     } catch {
       return [];
     }
@@ -151,7 +283,9 @@ export class AdminService {
 
   async getMatches() {
     try {
-      return await this.prisma.matchInterest.findMany({ orderBy: { createdAt: "desc" } });
+      return await this.prisma.matchInterest.findMany({
+        orderBy: { createdAt: "desc" },
+      });
     } catch {
       return [];
     }
@@ -195,7 +329,6 @@ export class AdminService {
   async getShortlists() {
     try {
       return await this.prisma.shortlist.findMany({
-        
         orderBy: { createdAt: "desc" },
       });
     } catch {
@@ -203,4 +336,3 @@ export class AdminService {
     }
   }
 }
-

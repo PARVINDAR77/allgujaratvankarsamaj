@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateSuccessStoryDto } from './dto/create-success-story.dto';
-import { UpdateSuccessStoryDto } from './dto/update-success-story.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateSuccessStoryDto } from "./dto/create-success-story.dto";
+import { UpdateSuccessStoryDto } from "./dto/update-success-story.dto";
 
 @Injectable()
 export class SuccessStoriesService {
@@ -11,15 +11,15 @@ export class SuccessStoriesService {
     const story = await this.prisma.successStory.create({
       data: createSuccessStoryDto,
     });
-    
+
     await this.prisma.adminAuditLog.create({
       data: {
         adminId,
-        action: 'CREATE_SUCCESS_STORY',
-        entityType: 'SuccessStory',
+        action: "CREATE_SUCCESS_STORY",
+        entityType: "SuccessStory",
         entityId: story.id,
         newValue: JSON.stringify(story),
-      }
+      },
     });
     return story;
   }
@@ -29,13 +29,13 @@ export class SuccessStoriesService {
       where: {
         isPublished: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
   async findAllAdmin() {
     return this.prisma.successStory.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -44,27 +44,31 @@ export class SuccessStoriesService {
       where: { id },
     });
     if (!story) {
-      throw new NotFoundException('Success story not found');
+      throw new NotFoundException("Success story not found");
     }
     return story;
   }
 
-  async update(id: string, updateSuccessStoryDto: UpdateSuccessStoryDto, adminId: string) {
+  async update(
+    id: string,
+    updateSuccessStoryDto: UpdateSuccessStoryDto,
+    adminId: string,
+  ) {
     const oldStory = await this.findOne(id);
     const updated = await this.prisma.successStory.update({
       where: { id },
       data: updateSuccessStoryDto,
     });
-    
+
     await this.prisma.adminAuditLog.create({
       data: {
         adminId,
-        action: 'UPDATE_SUCCESS_STORY',
-        entityType: 'SuccessStory',
+        action: "UPDATE_SUCCESS_STORY",
+        entityType: "SuccessStory",
         entityId: id,
         oldValue: JSON.stringify(oldStory),
         newValue: JSON.stringify(updated),
-      }
+      },
     });
 
     return updated;
@@ -75,17 +79,17 @@ export class SuccessStoriesService {
     const deleted = await this.prisma.successStory.delete({
       where: { id },
     });
-    
+
     await this.prisma.adminAuditLog.create({
       data: {
         adminId,
-        action: 'DELETE_SUCCESS_STORY',
-        entityType: 'SuccessStory',
+        action: "DELETE_SUCCESS_STORY",
+        entityType: "SuccessStory",
         entityId: id,
         oldValue: JSON.stringify(oldStory),
-      }
+      },
     });
-    
+
     return deleted;
   }
 }

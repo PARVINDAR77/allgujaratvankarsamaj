@@ -305,6 +305,9 @@ export default function AdvertisementsPage() {
                     <option value="BUTTON_3">Button 3 Poster</option>
                     <option value="BUTTON_4">Button 4 Poster</option>
                     <option value="BUTTON_5">Button 5 Poster</option>
+                    <option value="PAVAN_PRERNADATA">Pavan Prernadata</option>
+                    <option value="SAMAJ_SUPER_STARS">Samaj Super Stars</option>
+                    <option value="SAMAJ_RATNA">Samaj Ratna</option>
                   </select>
                 </div>
 

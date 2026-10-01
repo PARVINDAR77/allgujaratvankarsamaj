@@ -126,8 +126,14 @@ export class ParganasService {
 
       return parganas;
     } catch (err: any) {
-      this.logger.warn("DB connection fallback for public parganas", err?.message);
-      return this.initialParganas.map((p, idx) => ({ id: `pg-${idx + 1}`, ...p }));
+      this.logger.warn(
+        "DB connection fallback for public parganas",
+        err?.message,
+      );
+      return this.initialParganas.map((p, idx) => ({
+        id: `pg-${idx + 1}`,
+        ...p,
+      }));
     }
   }
 
@@ -147,8 +153,14 @@ export class ParganasService {
 
       return parganas;
     } catch (err: any) {
-      this.logger.warn("DB connection fallback for admin parganas", err?.message);
-      return this.initialParganas.map((p, idx) => ({ id: `pg-${idx + 1}`, ...p }));
+      this.logger.warn(
+        "DB connection fallback for admin parganas",
+        err?.message,
+      );
+      return this.initialParganas.map((p, idx) => ({
+        id: `pg-${idx + 1}`,
+        ...p,
+      }));
     }
   }
 
@@ -193,7 +205,7 @@ export class ParganasService {
       contactPhone: string;
       totalCount: number;
       isActive: boolean;
-    }>
+    }>,
   ) {
     const existing = await this.prisma.pargana.findUnique({ where: { id } });
     if (!existing) {

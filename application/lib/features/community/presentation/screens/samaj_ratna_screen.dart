@@ -16,7 +16,7 @@ class _SamajRatnaScreenState extends ConsumerState<SamajRatnaScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(incrementViewProvider)('samaj_ratna');
+      ref.read(incrementViewProvider)('SAMAJ_RATNA');
     });
   }
 
@@ -30,7 +30,7 @@ class _SamajRatnaScreenState extends ConsumerState<SamajRatnaScreen> {
         backgroundColor: const Color(0xFF041126),
         iconTheme: const IconThemeData(color: Color(0xFFD4AF37)),
         actions: [
-          const Center(child: ViewBadge(sectionName: 'samaj_ratna')),
+          const Center(child: ViewBadge(sectionName: 'SAMAJ_RATNA')),
           const SizedBox(width: 16),
         ],
       ),

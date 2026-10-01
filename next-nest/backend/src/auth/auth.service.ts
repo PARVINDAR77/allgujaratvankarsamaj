@@ -49,7 +49,9 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    let user = dto.phone ? await this.usersService.findByPhone(dto.phone) : null;
+    let user = dto.phone
+      ? await this.usersService.findByPhone(dto.phone)
+      : null;
     if (!user && dto.email) {
       user = await this.usersService.findByEmail(dto.email);
     }

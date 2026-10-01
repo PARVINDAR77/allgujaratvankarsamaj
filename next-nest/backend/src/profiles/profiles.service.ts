@@ -4,11 +4,21 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { Prisma, Gender, MaritalStatus, MatrimonialProfile, ProfileStatus } from "@prisma/client";
+import {
+  Prisma,
+  Gender,
+  MaritalStatus,
+  MatrimonialProfile,
+  ProfileStatus,
+} from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProfileDto } from "./dto/create-profile.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
-import { BaseProfileQueryDto, SortOrder, ProfileSortField } from "./dto/profile-query.dto";
+import {
+  BaseProfileQueryDto,
+  SortOrder,
+  ProfileSortField,
+} from "./dto/profile-query.dto";
 import { v4 as uuidv4 } from "uuid";
 
 export interface CompletenessResult {
@@ -101,7 +111,9 @@ export class ProfilesService {
   async createProfile(userId: string, dto: CreateProfileDto) {
     const gender = dto.gender || Gender.MALE;
     const maritalStatus = dto.maritalStatus || MaritalStatus.NEVER_MARRIED;
-    const dob = dto.dateOfBirth ? new Date(dto.dateOfBirth) : new Date(1995, 0, 1);
+    const dob = dto.dateOfBirth
+      ? new Date(dto.dateOfBirth)
+      : new Date(1995, 0, 1);
     const validDob = isNaN(dob.getTime()) ? new Date(1995, 0, 1) : dob;
 
     try {
@@ -128,7 +140,9 @@ export class ProfilesService {
           country: dto.country ? dto.country.trim() : null,
           education: dto.education ? dto.education.trim() : null,
           occupation: dto.occupation ? dto.occupation.trim() : null,
-          organizationName: dto.organizationName ? dto.organizationName.trim() : null,
+          organizationName: dto.organizationName
+            ? dto.organizationName.trim()
+            : null,
           designation: dto.designation ? dto.designation.trim() : null,
           nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
           about: dto.about ? dto.about.trim() : null,
@@ -137,15 +151,21 @@ export class ProfilesService {
           pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
           isAbroad: dto.isAbroad ?? false,
           abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
-          businessIndustry: dto.businessIndustry ? dto.businessIndustry.trim() : null,
-          businessService: dto.businessService ? dto.businessService.trim() : null,
+          businessIndustry: dto.businessIndustry
+            ? dto.businessIndustry.trim()
+            : null,
+          businessService: dto.businessService
+            ? dto.businessService.trim()
+            : null,
         },
       });
       await this.syncSamajServicePerson(userId, newProfile);
       return newProfile;
     } catch (err: any) {
       if (err instanceof ConflictException) throw err;
-      this.logger.warn(`PostgreSQL offline or error during DB profile create for user ${userId}: ${err?.message || err}`);
+      this.logger.warn(
+        `PostgreSQL offline or error during DB profile create for user ${userId}: ${err?.message || err}`,
+      );
       if (this.memoryProfiles.has(userId)) {
         throw new ConflictException("Profile already exists");
       }
@@ -165,7 +185,9 @@ export class ProfilesService {
         country: dto.country ? dto.country.trim() : null,
         education: dto.education ? dto.education.trim() : null,
         occupation: dto.occupation ? dto.occupation.trim() : null,
-        organizationName: dto.organizationName ? dto.organizationName.trim() : null,
+        organizationName: dto.organizationName
+          ? dto.organizationName.trim()
+          : null,
         designation: dto.designation ? dto.designation.trim() : null,
         nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
         about: dto.about ? dto.about.trim() : null,
@@ -174,8 +196,12 @@ export class ProfilesService {
         pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
         isAbroad: dto.isAbroad ?? false,
         abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
-        businessIndustry: dto.businessIndustry ? dto.businessIndustry.trim() : null,
-        businessService: dto.businessService ? dto.businessService.trim() : null,
+        businessIndustry: dto.businessIndustry
+          ? dto.businessIndustry.trim()
+          : null,
+        businessService: dto.businessService
+          ? dto.businessService.trim()
+          : null,
         stateId: null,
         districtId: null,
         talukaId: null,
@@ -226,7 +252,9 @@ export class ProfilesService {
       return profile;
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
-      const profile = Array.from(this.memoryProfiles.values()).find(p => p.id === id);
+      const profile = Array.from(this.memoryProfiles.values()).find(
+        (p) => p.id === id,
+      );
       if (!profile) {
         throw new NotFoundException("Profile not found");
       }
@@ -245,30 +273,63 @@ export class ProfilesService {
       }
 
       const updateData: any = {};
-      if (dto.firstName !== undefined) updateData.firstName = dto.firstName.trim();
+      if (dto.firstName !== undefined)
+        updateData.firstName = dto.firstName.trim();
       if (dto.lastName !== undefined) updateData.lastName = dto.lastName.trim();
-      if (dto.dateOfBirth !== undefined) updateData.dateOfBirth = new Date(dto.dateOfBirth);
+      if (dto.dateOfBirth !== undefined)
+        updateData.dateOfBirth = new Date(dto.dateOfBirth);
       if (dto.gender !== undefined) updateData.gender = dto.gender;
-      if (dto.maritalStatus !== undefined) updateData.maritalStatus = dto.maritalStatus;
-      if (dto.religion !== undefined) updateData.religion = dto.religion ? dto.religion.trim() : null;
-      if (dto.caste !== undefined) updateData.caste = dto.caste ? dto.caste.trim() : null;
-      if (dto.city !== undefined) updateData.city = dto.city ? dto.city.trim() : null;
-      if (dto.state !== undefined) updateData.state = dto.state ? dto.state.trim() : null;
-      if (dto.country !== undefined) updateData.country = dto.country ? dto.country.trim() : null;
-      if (dto.education !== undefined) updateData.education = dto.education ? dto.education.trim() : null;
-      if (dto.occupation !== undefined) updateData.occupation = dto.occupation ? dto.occupation.trim() : null;
-      if (dto.organizationName !== undefined) updateData.organizationName = dto.organizationName ? dto.organizationName.trim() : null;
-      if (dto.designation !== undefined) updateData.designation = dto.designation ? dto.designation.trim() : null;
-      if (dto.nativePlace !== undefined) updateData.nativePlace = dto.nativePlace ? dto.nativePlace.trim() : null;
-      if (dto.about !== undefined) updateData.about = dto.about ? dto.about.trim() : null;
+      if (dto.maritalStatus !== undefined)
+        updateData.maritalStatus = dto.maritalStatus;
+      if (dto.religion !== undefined)
+        updateData.religion = dto.religion ? dto.religion.trim() : null;
+      if (dto.caste !== undefined)
+        updateData.caste = dto.caste ? dto.caste.trim() : null;
+      if (dto.city !== undefined)
+        updateData.city = dto.city ? dto.city.trim() : null;
+      if (dto.state !== undefined)
+        updateData.state = dto.state ? dto.state.trim() : null;
+      if (dto.country !== undefined)
+        updateData.country = dto.country ? dto.country.trim() : null;
+      if (dto.education !== undefined)
+        updateData.education = dto.education ? dto.education.trim() : null;
+      if (dto.occupation !== undefined)
+        updateData.occupation = dto.occupation ? dto.occupation.trim() : null;
+      if (dto.organizationName !== undefined)
+        updateData.organizationName = dto.organizationName
+          ? dto.organizationName.trim()
+          : null;
+      if (dto.designation !== undefined)
+        updateData.designation = dto.designation
+          ? dto.designation.trim()
+          : null;
+      if (dto.nativePlace !== undefined)
+        updateData.nativePlace = dto.nativePlace
+          ? dto.nativePlace.trim()
+          : null;
+      if (dto.about !== undefined)
+        updateData.about = dto.about ? dto.about.trim() : null;
       if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
-      
-      if (dto.isPhysicallyDisabled !== undefined) updateData.isPhysicallyDisabled = dto.isPhysicallyDisabled;
-      if (dto.pwbdCategory !== undefined) updateData.pwbdCategory = dto.pwbdCategory ? dto.pwbdCategory.trim() : null;
+
+      if (dto.isPhysicallyDisabled !== undefined)
+        updateData.isPhysicallyDisabled = dto.isPhysicallyDisabled;
+      if (dto.pwbdCategory !== undefined)
+        updateData.pwbdCategory = dto.pwbdCategory
+          ? dto.pwbdCategory.trim()
+          : null;
       if (dto.isAbroad !== undefined) updateData.isAbroad = dto.isAbroad;
-      if (dto.abroadCountry !== undefined) updateData.abroadCountry = dto.abroadCountry ? dto.abroadCountry.trim() : null;
-      if (dto.businessIndustry !== undefined) updateData.businessIndustry = dto.businessIndustry ? dto.businessIndustry.trim() : null;
-      if (dto.businessService !== undefined) updateData.businessService = dto.businessService ? dto.businessService.trim() : null;
+      if (dto.abroadCountry !== undefined)
+        updateData.abroadCountry = dto.abroadCountry
+          ? dto.abroadCountry.trim()
+          : null;
+      if (dto.businessIndustry !== undefined)
+        updateData.businessIndustry = dto.businessIndustry
+          ? dto.businessIndustry.trim()
+          : null;
+      if (dto.businessService !== undefined)
+        updateData.businessService = dto.businessService
+          ? dto.businessService.trim()
+          : null;
 
       const updatedProfile = await this.prisma.matrimonialProfile.update({
         where: { userId },
@@ -284,29 +345,117 @@ export class ProfilesService {
       }
       const updated: MatrimonialProfile = {
         ...existing,
-        firstName: dto.firstName !== undefined ? dto.firstName.trim() : existing.firstName,
-        lastName: dto.lastName !== undefined ? dto.lastName.trim() : existing.lastName,
-        dateOfBirth: dto.dateOfBirth !== undefined ? new Date(dto.dateOfBirth) : existing.dateOfBirth,
+        firstName:
+          dto.firstName !== undefined
+            ? dto.firstName.trim()
+            : existing.firstName,
+        lastName:
+          dto.lastName !== undefined ? dto.lastName.trim() : existing.lastName,
+        dateOfBirth:
+          dto.dateOfBirth !== undefined
+            ? new Date(dto.dateOfBirth)
+            : existing.dateOfBirth,
         gender: dto.gender !== undefined ? dto.gender : existing.gender,
-        maritalStatus: dto.maritalStatus !== undefined ? dto.maritalStatus : existing.maritalStatus,
-        religion: dto.religion !== undefined ? (dto.religion ? dto.religion.trim() : null) : existing.religion,
-        caste: dto.caste !== undefined ? (dto.caste ? dto.caste.trim() : null) : existing.caste,
-        city: dto.city !== undefined ? (dto.city ? dto.city.trim() : null) : existing.city,
-        state: dto.state !== undefined ? (dto.state ? dto.state.trim() : null) : existing.state,
-        country: dto.country !== undefined ? (dto.country ? dto.country.trim() : null) : existing.country,
-        education: dto.education !== undefined ? (dto.education ? dto.education.trim() : null) : existing.education,
-        occupation: dto.occupation !== undefined ? (dto.occupation ? dto.occupation.trim() : null) : existing.occupation,
-        organizationName: dto.organizationName !== undefined ? (dto.organizationName ? dto.organizationName.trim() : null) : existing.organizationName,
-        designation: dto.designation !== undefined ? (dto.designation ? dto.designation.trim() : null) : existing.designation,
-        nativePlace: dto.nativePlace !== undefined ? (dto.nativePlace ? dto.nativePlace.trim() : null) : existing.nativePlace,
-        about: dto.about !== undefined ? (dto.about ? dto.about.trim() : null) : existing.about,
+        maritalStatus:
+          dto.maritalStatus !== undefined
+            ? dto.maritalStatus
+            : existing.maritalStatus,
+        religion:
+          dto.religion !== undefined
+            ? dto.religion
+              ? dto.religion.trim()
+              : null
+            : existing.religion,
+        caste:
+          dto.caste !== undefined
+            ? dto.caste
+              ? dto.caste.trim()
+              : null
+            : existing.caste,
+        city:
+          dto.city !== undefined
+            ? dto.city
+              ? dto.city.trim()
+              : null
+            : existing.city,
+        state:
+          dto.state !== undefined
+            ? dto.state
+              ? dto.state.trim()
+              : null
+            : existing.state,
+        country:
+          dto.country !== undefined
+            ? dto.country
+              ? dto.country.trim()
+              : null
+            : existing.country,
+        education:
+          dto.education !== undefined
+            ? dto.education
+              ? dto.education.trim()
+              : null
+            : existing.education,
+        occupation:
+          dto.occupation !== undefined
+            ? dto.occupation
+              ? dto.occupation.trim()
+              : null
+            : existing.occupation,
+        organizationName:
+          dto.organizationName !== undefined
+            ? dto.organizationName
+              ? dto.organizationName.trim()
+              : null
+            : existing.organizationName,
+        designation:
+          dto.designation !== undefined
+            ? dto.designation
+              ? dto.designation.trim()
+              : null
+            : existing.designation,
+        nativePlace:
+          dto.nativePlace !== undefined
+            ? dto.nativePlace
+              ? dto.nativePlace.trim()
+              : null
+            : existing.nativePlace,
+        about:
+          dto.about !== undefined
+            ? dto.about
+              ? dto.about.trim()
+              : null
+            : existing.about,
         photoUrl: dto.photoUrl !== undefined ? dto.photoUrl : existing.photoUrl,
-        isPhysicallyDisabled: dto.isPhysicallyDisabled !== undefined ? dto.isPhysicallyDisabled : existing.isPhysicallyDisabled,
-        pwbdCategory: dto.pwbdCategory !== undefined ? (dto.pwbdCategory ? dto.pwbdCategory.trim() : null) : existing.pwbdCategory,
+        isPhysicallyDisabled:
+          dto.isPhysicallyDisabled !== undefined
+            ? dto.isPhysicallyDisabled
+            : existing.isPhysicallyDisabled,
+        pwbdCategory:
+          dto.pwbdCategory !== undefined
+            ? dto.pwbdCategory
+              ? dto.pwbdCategory.trim()
+              : null
+            : existing.pwbdCategory,
         isAbroad: dto.isAbroad !== undefined ? dto.isAbroad : existing.isAbroad,
-        abroadCountry: dto.abroadCountry !== undefined ? (dto.abroadCountry ? dto.abroadCountry.trim() : null) : existing.abroadCountry,
-        businessIndustry: dto.businessIndustry !== undefined ? (dto.businessIndustry ? dto.businessIndustry.trim() : null) : existing.businessIndustry,
-        businessService: dto.businessService !== undefined ? (dto.businessService ? dto.businessService.trim() : null) : existing.businessService,
+        abroadCountry:
+          dto.abroadCountry !== undefined
+            ? dto.abroadCountry
+              ? dto.abroadCountry.trim()
+              : null
+            : existing.abroadCountry,
+        businessIndustry:
+          dto.businessIndustry !== undefined
+            ? dto.businessIndustry
+              ? dto.businessIndustry.trim()
+              : null
+            : existing.businessIndustry,
+        businessService:
+          dto.businessService !== undefined
+            ? dto.businessService
+              ? dto.businessService.trim()
+              : null
+            : existing.businessService,
         updatedAt: new Date(),
       };
       this.memoryProfiles.set(userId, updated);
@@ -323,7 +472,6 @@ export class ProfilesService {
       if (!existingProfile) {
         throw new NotFoundException("Profile not found");
       }
-
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
       const profile = this.memoryProfiles.get(userId);
@@ -355,16 +503,24 @@ export class ProfilesService {
     if (query.ageMin || query.ageMax) {
       const today = new Date();
       where.dateOfBirth = {};
-      
+
       if (query.ageMin) {
         // If min age is 20, they must be born BEFORE (today - 20 years)
-        const maxDate = new Date(today.getFullYear() - query.ageMin, today.getMonth(), today.getDate());
+        const maxDate = new Date(
+          today.getFullYear() - query.ageMin,
+          today.getMonth(),
+          today.getDate(),
+        );
         where.dateOfBirth.lte = maxDate;
       }
-      
+
       if (query.ageMax) {
         // If max age is 30, they must be born AFTER (today - 31 years)
-        const minDate = new Date(today.getFullYear() - query.ageMax - 1, today.getMonth(), today.getDate());
+        const minDate = new Date(
+          today.getFullYear() - query.ageMax - 1,
+          today.getMonth(),
+          today.getDate(),
+        );
         where.dateOfBirth.gt = minDate;
       }
     }
@@ -379,13 +535,13 @@ export class ProfilesService {
 
     if (query.occupationCategory) {
       // Handle occupation categories
-      if (query.occupationCategory.toUpperCase() === 'GOVERNMENT') {
+      if (query.occupationCategory.toUpperCase() === "GOVERNMENT") {
         where.governmentEmployment = { isNot: null };
       } else {
         where.occupation = { contains: query.occupationCategory };
       }
     }
-    
+
     // Keyword search across multiple fields
     if (query.search) {
       where.OR = [
@@ -400,7 +556,7 @@ export class ProfilesService {
 
     // Sort order
     const orderBy: Prisma.MatrimonialProfileOrderByWithRelationInput = {};
-    const sortOrder = query.sortOrder === SortOrder.ASC ? 'asc' : 'desc';
+    const sortOrder = query.sortOrder === SortOrder.ASC ? "asc" : "desc";
 
     switch (query.sortBy) {
       case ProfileSortField.FIRST_NAME:
@@ -408,7 +564,7 @@ export class ProfilesService {
         break;
       case ProfileSortField.AGE:
         // Sorting by age descending means sorting by DOB ascending
-        orderBy.dateOfBirth = sortOrder === 'desc' ? 'asc' : 'desc';
+        orderBy.dateOfBirth = sortOrder === "desc" ? "asc" : "desc";
         break;
       case ProfileSortField.UPDATED_AT:
         orderBy.updatedAt = sortOrder;
@@ -431,10 +587,10 @@ export class ProfilesService {
             include: {
               department: true,
               designation: true,
-            }
-          }
-        }
-      })
+            },
+          },
+        },
+      }),
     ]);
 
     return {
@@ -448,20 +604,31 @@ export class ProfilesService {
     };
   }
 
-  private async syncSamajServicePerson(userId: string, profile: MatrimonialProfile) {
-    if (profile.occupation?.includes('Business') && profile.businessIndustry && profile.businessService) {
+  private async syncSamajServicePerson(
+    userId: string,
+    profile: MatrimonialProfile,
+  ) {
+    if (
+      profile.occupation?.includes("Business") &&
+      profile.businessIndustry &&
+      profile.businessService
+    ) {
       const service = await this.prisma.samajService.findFirst({
         where: {
           category: profile.businessIndustry,
           title: profile.businessService,
-        }
+        },
       });
       if (service) {
-        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        const user = await this.prisma.user.findUnique({
+          where: { id: userId },
+        });
         if (user && user.phone) {
-          const existingPerson = await this.prisma.samajServicePerson.findFirst({
-            where: { userId }
-          });
+          const existingPerson = await this.prisma.samajServicePerson.findFirst(
+            {
+              where: { userId },
+            },
+          );
           const data = {
             serviceId: service.id,
             name: `${profile.firstName} ${profile.lastName}`.trim(),
@@ -474,21 +641,21 @@ export class ProfilesService {
           if (existingPerson) {
             await this.prisma.samajServicePerson.update({
               where: { id: existingPerson.id },
-              data
+              data,
             });
           } else {
             await this.prisma.samajServicePerson.create({
-              data: { ...data, userId }
+              data: { ...data, userId },
             });
           }
           return;
         }
       }
     }
-    
+
     // If not business, remove existing
     await this.prisma.samajServicePerson.deleteMany({
-      where: { userId }
+      where: { userId },
     });
   }
 }

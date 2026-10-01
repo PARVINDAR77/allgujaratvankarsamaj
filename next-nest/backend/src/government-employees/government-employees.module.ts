@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { GovernmentEmployeesService } from './government-employees.service';
-import { GovernmentEmployeesController } from './government-employees.controller';
+import { Module } from "@nestjs/common";
+import { GovernmentEmployeesService } from "./government-employees.service";
+import { GovernmentEmployeesController } from "./government-employees.controller";
 
 @Module({
   controllers: [GovernmentEmployeesController],

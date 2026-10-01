@@ -1,6 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateShortlistDto } from './dto/create-shortlist.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateShortlistDto } from "./dto/create-shortlist.dto";
 
 @Injectable()
 export class ShortlistsService {
@@ -17,7 +21,7 @@ export class ShortlistsService {
     });
 
     if (existing) {
-      throw new BadRequestException('Profile is already shortlisted');
+      throw new BadRequestException("Profile is already shortlisted");
     }
 
     return this.prisma.shortlist.create({
@@ -39,7 +43,7 @@ export class ShortlistsService {
         },
       });
     } catch (e) {
-      throw new NotFoundException('Shortlist entry not found');
+      throw new NotFoundException("Shortlist entry not found");
     }
   }
 

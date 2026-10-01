@@ -33,7 +33,7 @@ class SamajRatna {
   }
 }
 
-final samajRatnaProvider = FutureProvider<List<SamajRatna>>((ref) async {
+final samajRatnaProvider = FutureProvider.autoDispose<List<SamajRatna>>((ref) async {
   final dio = Dio();
   final response = await dio.get('http://localhost:3000/api/v1/samaj-ratna');
   

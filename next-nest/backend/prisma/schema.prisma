@@ -526,3 +526,35 @@ model SectionViewCount {
   @@map("section_view_counts")
 }
 
+model PavanPrernadata {
+  id           String   @id @default(uuid())
+  name         String
+  gujaratiName String?  @map("gujarati_name")
+  photoUrl     String?  @map("photo_url")
+  description  String?
+  designation  String?
+  year         String?
+  displayOrder Int      @default(0) @map("display_order")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("pavan_prernadata")
+}
+
+model SamajSuperStar {
+  id           String   @id @default(uuid())
+  name         String
+  gujaratiName String?  @map("gujarati_name")
+  photoUrl     String?  @map("photo_url")
+  description  String?
+  designation  String?
+  year         String?
+  displayOrder Int      @default(0) @map("display_order")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("samaj_super_stars")
+}
+

@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { User, Role, Status, Gender } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
@@ -38,7 +43,8 @@ export class UsersService {
     role?: Role;
     status?: Status;
   }): Promise<User> {
-    const normalizedEmail = data.email?.toLowerCase().trim() || `${uuidv4()}@vankar.org`;
+    const normalizedEmail =
+      data.email?.toLowerCase().trim() || `${uuidv4()}@vankar.org`;
     const user = await this.prisma.user.create({
       data: {
         email: normalizedEmail,
@@ -59,7 +65,11 @@ export class UsersService {
     });
     return users.map((u) => ({
       id: u.id,
-      name: (u as any).name || (u.profile?.firstName ? `${u.profile.firstName} ${u.profile.lastName}`.trim() : u.email || "Member"),
+      name:
+        (u as any).name ||
+        (u.profile?.firstName
+          ? `${u.profile.firstName} ${u.profile.lastName}`.trim()
+          : u.email || "Member"),
       email: u.email,
       phone: (u as any).phone || "9876543210",
       pargana: u.profile?.city || "35 Pargana",
@@ -69,7 +79,12 @@ export class UsersService {
     }));
   }
 
-  async updateUserStatusAdmin(userId: string, adminId: string, status: Status, ipAddress?: string) {
+  async updateUserStatusAdmin(
+    userId: string,
+    adminId: string,
+    status: Status,
+    ipAddress?: string,
+  ) {
     if (!Object.values(Status).includes(status)) {
       throw new BadRequestException("Invalid status");
     }
@@ -102,7 +117,12 @@ export class UsersService {
     });
   }
 
-  async updateUserRoleAdmin(userId: string, adminId: string, role: Role, ipAddress?: string) {
+  async updateUserRoleAdmin(
+    userId: string,
+    adminId: string,
+    role: Role,
+    ipAddress?: string,
+  ) {
     if (!Object.values(Role).includes(role)) {
       throw new BadRequestException("Invalid role");
     }
@@ -144,9 +164,11 @@ export class UsersService {
       id: p.id,
       userId: p.userId,
       name: `${p.firstName} ${p.lastName}`.trim(),
-      age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 26,
+      age: p.dateOfBirth
+        ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()
+        : 26,
       gender: p.gender,
-      pargana: p.city || "35 Pargana",
+      pargana: p.nativePlace || "35 Pargana",
       city: p.city || "Ahmedabad",
       education: p.education || "Graduate",
       occupation: p.occupation || "Service",
@@ -157,9 +179,16 @@ export class UsersService {
     }));
   }
 
-  async updateProfileStatusAdmin(profileId: string, adminId: string, status: string, ipAddress?: string) {
+  async updateProfileStatusAdmin(
+    profileId: string,
+    adminId: string,
+    status: string,
+    ipAddress?: string,
+  ) {
     return this.prisma.$transaction(async (tx) => {
-      const profile = await tx.matrimonialProfile.findUnique({ where: { id: profileId } });
+      const profile = await tx.matrimonialProfile.findUnique({
+        where: { id: profileId },
+      });
       if (!profile) throw new NotFoundException("Profile not found");
 
       const updatedProfile = await tx.matrimonialProfile.update({
@@ -183,9 +212,16 @@ export class UsersService {
     });
   }
 
-  async toggleProfileFeaturedAdmin(profileId: string, adminId: string, isFeatured: boolean, ipAddress?: string) {
+  async toggleProfileFeaturedAdmin(
+    profileId: string,
+    adminId: string,
+    isFeatured: boolean,
+    ipAddress?: string,
+  ) {
     return this.prisma.$transaction(async (tx) => {
-      const profile = await tx.matrimonialProfile.findUnique({ where: { id: profileId } });
+      const profile = await tx.matrimonialProfile.findUnique({
+        where: { id: profileId },
+      });
       if (!profile) throw new NotFoundException("Profile not found");
 
       const updatedProfile = await tx.matrimonialProfile.update({

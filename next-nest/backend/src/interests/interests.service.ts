@@ -1,6 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateInterestDto } from './dto/create-interest.dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateInterestDto } from "./dto/create-interest.dto";
 
 @Injectable()
 export class InterestsService {
@@ -11,7 +15,9 @@ export class InterestsService {
       where: { userId },
     });
     if (!profile) {
-      throw new BadRequestException('You must create a profile before sending interests');
+      throw new BadRequestException(
+        "You must create a profile before sending interests",
+      );
     }
     return profile.id;
   }
@@ -20,7 +26,7 @@ export class InterestsService {
     const senderProfileId = await this.getProfileIdForUser(userId);
 
     if (senderProfileId === dto.targetProfileId) {
-      throw new BadRequestException('You cannot send an interest to yourself');
+      throw new BadRequestException("You cannot send an interest to yourself");
     }
 
     const existingInterest = await this.prisma.matchInterest.findFirst({
@@ -31,7 +37,7 @@ export class InterestsService {
     });
 
     if (existingInterest) {
-      throw new BadRequestException('Interest already sent');
+      throw new BadRequestException("Interest already sent");
     }
 
     return this.prisma.matchInterest.create({
@@ -50,16 +56,18 @@ export class InterestsService {
     });
 
     if (!interest) {
-      throw new NotFoundException('Interest not found');
+      throw new NotFoundException("Interest not found");
     }
 
     if (interest.receiverProfileId !== receiverProfileId) {
-      throw new BadRequestException('You can only accept interests sent to you');
+      throw new BadRequestException(
+        "You can only accept interests sent to you",
+      );
     }
 
     return this.prisma.matchInterest.update({
       where: { id: interestId },
-      data: { status: 'ACCEPTED' },
+      data: { status: "ACCEPTED" },
     });
   }
 
@@ -71,16 +79,18 @@ export class InterestsService {
     });
 
     if (!interest) {
-      throw new NotFoundException('Interest not found');
+      throw new NotFoundException("Interest not found");
     }
 
     if (interest.receiverProfileId !== receiverProfileId) {
-      throw new BadRequestException('You can only decline interests sent to you');
+      throw new BadRequestException(
+        "You can only decline interests sent to you",
+      );
     }
 
     return this.prisma.matchInterest.update({
       where: { id: interestId },
-      data: { status: 'DECLINED' },
+      data: { status: "DECLINED" },
     });
   }
 

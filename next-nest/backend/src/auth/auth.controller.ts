@@ -54,13 +54,17 @@ export class AuthController {
   @ApiOperation({ summary: "User login" })
   @ApiResponse({
     status: 200,
-    description: "Login successful, sets HTTP-only cookie and returns user data",
+    description:
+      "Login successful, sets HTTP-only cookie and returns user data",
   })
   @ApiResponse({ status: 400, description: "Validation failed" })
   @ApiResponse({ status: 401, description: "Invalid credentials" })
-  async login(@Body() dto: LoginDto, @Res({ passthrough: true }) res: Response) {
+  async login(
+    @Body() dto: LoginDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const authResult = await this.authService.login(dto);
-    
+
     res.cookie("admin_token", authResult.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

@@ -1,14 +1,29 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsEnum, IsIn, IsOptional, IsString, Max, Min, IsInt } from 'class-validator';
-import { Gender, MaritalStatus, VerificationStatus } from '@prisma/client';
-import { PaginationQueryDto } from '../../common/pagination/dto/pagination-query.dto';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import {
+  IsEnum,
+  IsIn,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+  IsInt,
+} from "class-validator";
+import { Gender, MaritalStatus, VerificationStatus } from "@prisma/client";
+import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto";
 
-const ALLOWED_SORT_FIELDS = ['createdAt', 'updatedAt', 'dateOfBirth', 'firstName'] as const;
-type SortField = typeof ALLOWED_SORT_FIELDS[number];
+const ALLOWED_SORT_FIELDS = [
+  "createdAt",
+  "updatedAt",
+  "dateOfBirth",
+  "firstName",
+] as const;
+type SortField = (typeof ALLOWED_SORT_FIELDS)[number];
 
 export class BaseProfileQueryDto extends PaginationQueryDto {
-  @ApiPropertyOptional({ description: 'Search keyword for name, occupation, or location' })
+  @ApiPropertyOptional({
+    description: "Search keyword for name, occupation, or location",
+  })
   @IsOptional()
   @IsString()
   search?: string;
@@ -73,18 +88,20 @@ export class BaseProfileQueryDto extends PaginationQueryDto {
   occupation?: string;
 
   // Additional category filtering (for extending this base query)
-  @ApiPropertyOptional({ description: 'Optional category filter, e.g. "GOVERNMENT_EMPLOYEE"' })
+  @ApiPropertyOptional({
+    description: 'Optional category filter, e.g. "GOVERNMENT_EMPLOYEE"',
+  })
   @IsOptional()
   @IsString()
   category?: string;
 
-  @ApiPropertyOptional({ description: 'Sort field', enum: ALLOWED_SORT_FIELDS })
+  @ApiPropertyOptional({ description: "Sort field", enum: ALLOWED_SORT_FIELDS })
   @IsOptional()
   @IsIn(ALLOWED_SORT_FIELDS)
   sortBy?: SortField;
 
-  @ApiPropertyOptional({ description: 'Sort order', enum: ['asc', 'desc'] })
+  @ApiPropertyOptional({ description: "Sort order", enum: ["asc", "desc"] })
   @IsOptional()
-  @IsIn(['asc', 'desc'])
-  sortOrder?: 'asc' | 'desc';
+  @IsIn(["asc", "desc"])
+  sortOrder?: "asc" | "desc";
 }

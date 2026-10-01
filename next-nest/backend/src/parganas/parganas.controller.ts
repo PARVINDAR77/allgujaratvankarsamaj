@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ParganasService } from "./parganas.service";
 import { Public } from "../auth/decorators/public.decorator";
@@ -10,7 +18,9 @@ export class ParganasController {
 
   @Public()
   @Get("parganas")
-  @ApiOperation({ summary: "Get list of active parganas for Flutter & public website" })
+  @ApiOperation({
+    summary: "Get list of active parganas for Flutter & public website",
+  })
   async getPublicParganas() {
     return this.parganasService.getPublicParganas();
   }

@@ -1,4 +1,4 @@
-import { PaginatedResponse, PaginationMeta } from './pagination.types';
+import { PaginatedResponse, PaginationMeta } from "./pagination.types";
 
 export function createPaginatedResponse<T>(
   data: T[],

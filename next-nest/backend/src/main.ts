@@ -7,14 +7,14 @@ import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 import helmet from "helmet";
 import * as morgan from "morgan";
 
-import * as express from 'express';
-import { join } from 'path';
+import * as express from "express";
+import { join } from "path";
 import * as cookieParser from "cookie-parser";
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
   const app = await NestFactory.create(AppModule);
-  
+
   // Read config early for bootstrap dependencies
   const configService = app.get(ConfigService);
 
@@ -59,10 +59,10 @@ async function bootstrap() {
   // Enable CORS for mobile and web clients
   const nodeEnv = configService.get<string>("NODE_ENV", "development");
   const allowedOriginsStr = configService.get<string>("ALLOWED_ORIGINS", "");
-  
+
   let corsOrigin: any = true;
   if (nodeEnv === "production" && allowedOriginsStr) {
-    corsOrigin = allowedOriginsStr.split(",").map(o => o.trim());
+    corsOrigin = allowedOriginsStr.split(",").map((o) => o.trim());
   }
 
   app.enableCors({
@@ -71,13 +71,16 @@ async function bootstrap() {
   });
 
   // Serve static files from the 'uploads' directory with robust CORS and security headers
-  app.use('/uploads', express.static(join(process.cwd(), 'uploads'), {
-    setHeaders: (res) => {
-      res.set('Access-Control-Allow-Origin', '*');
-      res.set('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-    }
-  }));
+  app.use(
+    "/uploads",
+    express.static(join(process.cwd(), "uploads"), {
+      setHeaders: (res) => {
+        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+        res.set("Cross-Origin-Resource-Policy", "cross-origin");
+      },
+    }),
+  );
 
   // Global API Prefix /api/v1
   app.setGlobalPrefix("api/v1");

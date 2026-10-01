@@ -133,7 +133,9 @@ export class ProfilesController {
 
   @Public()
   @Get(":id")
-  @ApiOperation({ summary: "Get public details of a matrimonial profile by ID" })
+  @ApiOperation({
+    summary: "Get public details of a matrimonial profile by ID",
+  })
   @ApiResponse({
     status: 200,
     description: "Profile details",

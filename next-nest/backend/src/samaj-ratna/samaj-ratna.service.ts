@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class SamajRatnaService {
@@ -7,14 +7,14 @@ export class SamajRatnaService {
 
   async findAllAdmin() {
     return this.prisma.samajRatna.findMany({
-      orderBy: { displayOrder: 'asc' },
+      orderBy: { displayOrder: "asc" },
     });
   }
 
   async findAllPublic() {
     return this.prisma.samajRatna.findMany({
       where: { isActive: true },
-      orderBy: { displayOrder: 'asc' },
+      orderBy: { displayOrder: "asc" },
     });
   }
 
@@ -26,8 +26,8 @@ export class SamajRatnaService {
 
   async update(id: string, data: any) {
     const exists = await this.prisma.samajRatna.findUnique({ where: { id } });
-    if (!exists) throw new NotFoundException('Samaj Ratna not found');
-    
+    if (!exists) throw new NotFoundException("Samaj Ratna not found");
+
     return this.prisma.samajRatna.update({
       where: { id },
       data,

@@ -11,7 +11,9 @@ export class SettingsController {
 
   @Public()
   @Get("settings/public")
-  @ApiOperation({ summary: "Get public site configuration and settings for Flutter & Web" })
+  @ApiOperation({
+    summary: "Get public site configuration and settings for Flutter & Web",
+  })
   async getPublicSettings() {
     return this.settingsService.getPublicSettings();
   }
@@ -36,7 +38,9 @@ export class SettingsController {
 
   @Public()
   @Get("home-buttons")
-  @ApiOperation({ summary: "Get dynamic home button configurations for Flutter app" })
+  @ApiOperation({
+    summary: "Get dynamic home button configurations for Flutter app",
+  })
   async getHomeButtons() {
     return this.settingsService.getHomeButtonConfigs();
   }
@@ -44,7 +48,9 @@ export class SettingsController {
   // @UseGuards(JwtAuthGuard)
   // @ApiBearerAuth()
   @Put("admin/home-buttons")
-  @ApiOperation({ summary: "Update home button configurations from Admin Panel" })
+  @ApiOperation({
+    summary: "Update home button configurations from Admin Panel",
+  })
   async updateHomeButtons(@Body() configs: any[]) {
     return this.settingsService.updateHomeButtonConfigs(configs);
   }

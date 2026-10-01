@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { SuccessStoriesController } from './success-stories.controller';
-import { SuccessStoriesService } from './success-stories.service';
+import { Module } from "@nestjs/common";
+import { SuccessStoriesController } from "./success-stories.controller";
+import { SuccessStoriesService } from "./success-stories.service";
 
-import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaModule } from "../prisma/prisma.module";
 
 @Module({
   imports: [PrismaModule],

@@ -1,6 +1,6 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateReportDto } from './dto/create-report.dto';
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateReportDto } from "./dto/create-report.dto";
 
 @Injectable()
 export class ReportsService {
@@ -8,15 +8,15 @@ export class ReportsService {
 
   async createReport(reporterUserId: string, dto: CreateReportDto) {
     const targetProfile = await this.prisma.matrimonialProfile.findUnique({
-      where: { id: dto.targetProfileId }
+      where: { id: dto.targetProfileId },
     });
 
     if (!targetProfile) {
-      throw new BadRequestException('Target profile not found');
+      throw new BadRequestException("Target profile not found");
     }
 
     if (targetProfile.userId === reporterUserId) {
-      throw new BadRequestException('You cannot report yourself');
+      throw new BadRequestException("You cannot report yourself");
     }
 
     // Optionally check if a report already exists to prevent spam

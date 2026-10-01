@@ -14,15 +14,17 @@ import { LocationsModule } from "./locations/locations.module";
 import { GovernmentEmployeesModule } from "./government-employees/government-employees.module";
 import { StatisticsModule } from "./statistics/statistics.module";
 import { RequestIdMiddleware } from "./common/middleware/request-id.middleware";
-import { InterestsModule } from './interests/interests.module';
-import { ReportsModule } from './reports/reports.module';
-import { ShortlistsModule } from './shortlists/shortlists.module';
-import { StorageModule } from './storage/storage.module';
-import { VerificationsModule } from './verifications/verifications.module';
-import { AdvertisementsModule } from './advertisements/advertisements.module';
-import { SuccessStoriesModule } from './success-stories/success-stories.module';
-import { MasterDataModule } from './master-data/master-data.module';
-import { SamajRatnaModule } from './samaj-ratna/samaj-ratna.module';
+import { InterestsModule } from "./interests/interests.module";
+import { ReportsModule } from "./reports/reports.module";
+import { ShortlistsModule } from "./shortlists/shortlists.module";
+import { StorageModule } from "./storage/storage.module";
+import { VerificationsModule } from "./verifications/verifications.module";
+import { AdvertisementsModule } from "./advertisements/advertisements.module";
+import { SuccessStoriesModule } from "./success-stories/success-stories.module";
+import { MasterDataModule } from "./master-data/master-data.module";
+import { SamajRatnaModule } from "./samaj-ratna/samaj-ratna.module";
+import { PavanPrernadataModule } from './pavan-prernadata/pavan-prernadata.module';
+import { SamajSuperStarsModule } from './samaj-super-stars/samaj-super-stars.module';
 
 @Module({
   imports: [
@@ -51,6 +53,8 @@ import { SamajRatnaModule } from './samaj-ratna/samaj-ratna.module';
     SuccessStoriesModule,
     MasterDataModule,
     SamajRatnaModule,
+    PavanPrernadataModule,
+    SamajSuperStarsModule,
   ],
 })
 export class AppModule implements NestModule {

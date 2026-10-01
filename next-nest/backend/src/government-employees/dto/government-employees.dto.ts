@@ -1,23 +1,34 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsString, Max, Min } from 'class-validator';
-import { GovtEmploymentType } from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from "class-validator";
+import { GovtEmploymentType } from "@prisma/client";
 
 export class CreateGovtEmploymentDto {
-  @ApiProperty({ enum: GovtEmploymentType, example: GovtEmploymentType.STATE_GOVT })
+  @ApiProperty({
+    enum: GovtEmploymentType,
+    example: GovtEmploymentType.STATE_GOVT,
+  })
   @IsEnum(GovtEmploymentType)
   employmentType: GovtEmploymentType;
 
-  @ApiPropertyOptional({ example: 'dept-uuid-001' })
+  @ApiPropertyOptional({ example: "dept-uuid-001" })
   @IsOptional()
   @IsString()
   departmentId?: string;
 
-  @ApiPropertyOptional({ example: 'desig-uuid-001' })
+  @ApiPropertyOptional({ example: "desig-uuid-001" })
   @IsOptional()
   @IsString()
   designationId?: string;
 
-  @ApiPropertyOptional({ example: 'Collectorate, Gandhinagar' })
+  @ApiPropertyOptional({ example: "Collectorate, Gandhinagar" })
   @IsOptional()
   @IsString()
   officeLocation?: string;
@@ -58,18 +69,20 @@ export class UpdateGovtEmploymentDto {
 }
 
 export class SubmitVerificationDto {
-  @ApiProperty({ example: 'GOVT_ID_CARD' })
+  @ApiProperty({ example: "GOVT_ID_CARD" })
   @IsString()
   @IsNotEmpty()
   documentType: string;
 
-  @ApiProperty({ example: 'https://storage.vankarsamaj.com/proofs/emp-123.jpg' })
+  @ApiProperty({
+    example: "https://storage.vankarsamaj.com/proofs/emp-123.jpg",
+  })
   @IsString()
   @IsNotEmpty()
   documentUrl: string;
 }
 
-import { BaseProfileQueryDto } from '../../profiles/dto/base-profile-query.dto';
+import { BaseProfileQueryDto } from "../../profiles/dto/base-profile-query.dto";
 
 export class GovtEmployeeSearchQueryDto extends BaseProfileQueryDto {
   @ApiPropertyOptional()
@@ -84,12 +97,12 @@ export class GovtEmployeeSearchQueryDto extends BaseProfileQueryDto {
 }
 
 export class AdminVerifyGovtEmpDto {
-  @ApiProperty({ example: 'APPROVE' })
+  @ApiProperty({ example: "APPROVE" })
   @IsString()
   @IsNotEmpty()
-  action: 'APPROVE' | 'REJECT';
+  action: "APPROVE" | "REJECT";
 
-  @ApiPropertyOptional({ example: 'Document illegible or expired' })
+  @ApiPropertyOptional({ example: "Document illegible or expired" })
   @IsOptional()
   @IsString()
   rejectionReason?: string;
@@ -106,39 +119,39 @@ export class AdminStatusGovtEmpDto {
 }
 
 export class CreateDepartmentDto {
-  @ApiProperty({ example: 'Education Department' })
+  @ApiProperty({ example: "Education Department" })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional({ example: 'શિક્ષણ વિભાગ' })
+  @ApiPropertyOptional({ example: "શિક્ષણ વિભાગ" })
   @IsOptional()
   @IsString()
   gujaratiName?: string;
 
-  @ApiPropertyOptional({ example: 'DEPT_EDU' })
+  @ApiPropertyOptional({ example: "DEPT_EDU" })
   @IsOptional()
   @IsString()
   code?: string;
 }
 
 export class CreateDesignationDto {
-  @ApiProperty({ example: 'dept-uuid-001' })
+  @ApiProperty({ example: "dept-uuid-001" })
   @IsString()
   @IsNotEmpty()
   departmentId: string;
 
-  @ApiProperty({ example: 'High School Teacher' })
+  @ApiProperty({ example: "High School Teacher" })
   @IsString()
   @IsNotEmpty()
   name: string;
 
-  @ApiPropertyOptional({ example: 'ઉચ્ચતર માધ્યમિક શિક્ષક' })
+  @ApiPropertyOptional({ example: "ઉચ્ચતર માધ્યમિક શિક્ષક" })
   @IsOptional()
   @IsString()
   gujaratiName?: string;
 
-  @ApiPropertyOptional({ example: 'DESIG_TEACHER' })
+  @ApiPropertyOptional({ example: "DESIG_TEACHER" })
   @IsOptional()
   @IsString()
   code?: string;

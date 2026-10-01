@@ -9,6 +9,7 @@ export default function SamajRatnaManagementPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -61,6 +62,34 @@ export default function SamajRatnaManagementPage() {
       });
     }
     setIsModalOpen(true);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const data = new FormData();
+    data.append("file", file);
+
+    try {
+      const token = localStorage.getItem("adminToken") || localStorage.getItem("token") || "";
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1"}/storage/upload`, {
+        method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: data,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+      const json = await res.json();
+      setFormData(prev => ({ ...prev, photoUrl: json.url }));
+    } catch (err) {
+      alert("Failed to upload file");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -251,7 +280,13 @@ export default function SamajRatnaManagementPage() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                   <label style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>Photo URL</label>
-                  <input type="text" placeholder="https://example.com/photo.jpg" value={formData.photoUrl} onChange={e => setFormData({...formData, photoUrl: e.target.value})} style={{ width: "100%", background: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.3)", borderRadius: "8px", padding: "12px 16px", color: "#FFFFFF", fontSize: "14px", fontWeight: 600, outline: "none" }} />
+                  <div style={{ display: "flex", gap: "12px" }}>
+                    <input type="text" placeholder="https://example.com/photo.jpg" value={formData.photoUrl} onChange={e => setFormData({...formData, photoUrl: e.target.value})} style={{ flex: 1, background: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.3)", borderRadius: "8px", padding: "12px 16px", color: "#FFFFFF", fontSize: "14px", fontWeight: 600, outline: "none" }} />
+                    <label style={{ padding: "12px 20px", background: "rgba(212, 175, 55, 0.15)", border: "1px solid rgba(212, 175, 55, 0.4)", borderRadius: "8px", color: "#D4AF37", cursor: "pointer", fontWeight: 700, display: "flex", alignItems: "center", gap: "8px" }}>
+                      {uploading ? "Uploading..." : "Upload Image"}
+                      <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: "none" }} disabled={uploading} />
+                    </label>
+                  </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "20px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

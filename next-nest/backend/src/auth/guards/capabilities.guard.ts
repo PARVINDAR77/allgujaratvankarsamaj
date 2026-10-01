@@ -1,18 +1,23 @@
-import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { Capability, RoleCapabilities } from '../constants/capabilities';
-import { CAPABILITIES_KEY } from '../decorators/capabilities.decorator';
-import { Role } from '@prisma/client';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { Capability, RoleCapabilities } from "../constants/capabilities";
+import { CAPABILITIES_KEY } from "../decorators/capabilities.decorator";
+import { Role } from "@prisma/client";
 
 @Injectable()
 export class CapabilitiesGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredCapabilities = this.reflector.getAllAndOverride<Capability[]>(CAPABILITIES_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
+    const requiredCapabilities = this.reflector.getAllAndOverride<Capability[]>(
+      CAPABILITIES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
 
     if (!requiredCapabilities || requiredCapabilities.length === 0) {
       return true; // No capabilities required
@@ -34,10 +39,12 @@ export class CapabilitiesGuard implements CanActivate {
 
     // Check if user has ALL required capabilities for the route (or at least one, depending on logic. Usually 'every' for strict requirements)
     // Actually, maybe we just need 'every', or maybe 'some'. The old permissions guard used 'every'.
-    const hasCapabilities = requiredCapabilities.every((capability) => userCapabilities.includes(capability));
+    const hasCapabilities = requiredCapabilities.every((capability) =>
+      userCapabilities.includes(capability),
+    );
 
     if (!hasCapabilities) {
-      throw new ForbiddenException('Insufficient capabilities');
+      throw new ForbiddenException("Insufficient capabilities");
     }
 
     return true;

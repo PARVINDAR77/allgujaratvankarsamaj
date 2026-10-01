@@ -16,7 +16,7 @@ class _FamilyDirectoryPosterScreenState extends ConsumerState<FamilyDirectoryPos
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(incrementViewProvider)('family_directory');
+      ref.read(incrementViewProvider)('FAMILY_DIRECTORY');
     });
   }
 
@@ -123,7 +123,7 @@ class _FamilyDirectoryPosterScreenState extends ConsumerState<FamilyDirectoryPos
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const ViewBadge(sectionName: 'family_directory'),
+                const ViewBadge(sectionName: 'FAMILY_DIRECTORY'),
                 const SizedBox(height: 12),
                 GestureDetector(
                   onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),

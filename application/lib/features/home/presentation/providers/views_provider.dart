@@ -16,6 +16,7 @@ final incrementViewProvider = Provider((ref) => (String sectionName) async {
   final dio = Dio();
   try {
     await dio.post('${AppConfig.baseUrl}/statistics/views/$sectionName/increment');
+    ref.invalidate(viewsProvider);
   } catch (e) {
     // ignore
   }

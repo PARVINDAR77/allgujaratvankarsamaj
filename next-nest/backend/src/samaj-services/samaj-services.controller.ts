@@ -25,7 +25,9 @@ export class SamajServicesController {
 
   @Public()
   @Get("samaj-services")
-  @ApiOperation({ summary: "Get active Samaj Services for Flutter App & Public Web" })
+  @ApiOperation({
+    summary: "Get active Samaj Services for Flutter App & Public Web",
+  })
   async getPublicServices() {
     return this.samajServicesService.getPublicServices();
   }
@@ -39,7 +41,9 @@ export class SamajServicesController {
 
   @Public()
   @Get("samaj-services/:serviceId/persons")
-  @ApiOperation({ summary: "Get active service persons belonging to selected service ID" })
+  @ApiOperation({
+    summary: "Get active service persons belonging to selected service ID",
+  })
   async getPublicPersonsByServiceId(@Param("serviceId") serviceId: string) {
     return this.samajServicesService.getPublicPersonsByServiceId(serviceId);
   }
@@ -50,7 +54,9 @@ export class SamajServicesController {
 
   @ApiBearerAuth()
   @Get("admin/samaj-services")
-  @ApiOperation({ summary: "Get all Samaj Services for Admin Panel management" })
+  @ApiOperation({
+    summary: "Get all Samaj Services for Admin Panel management",
+  })
   async getAdminServices() {
     return this.samajServicesService.getAllAdminServices();
   }
@@ -64,7 +70,9 @@ export class SamajServicesController {
 
   @ApiBearerAuth()
   @Patch("admin/samaj-services/:id")
-  @ApiOperation({ summary: "Update Samaj Service details or status from Admin Panel" })
+  @ApiOperation({
+    summary: "Update Samaj Service details or status from Admin Panel",
+  })
   async updateService(@Param("id") id: string, @Body() body: any) {
     return this.samajServicesService.updateService(id, body);
   }
@@ -78,7 +86,9 @@ export class SamajServicesController {
 
   @ApiBearerAuth()
   @Get("admin/samaj-services/persons")
-  @ApiOperation({ summary: "Get all service persons for Admin Panel management" })
+  @ApiOperation({
+    summary: "Get all service persons for Admin Panel management",
+  })
   async getAdminServicePersons(@Query("serviceId") serviceId?: string) {
     return this.samajServicesService.getAllAdminServicePersons(serviceId);
   }
@@ -95,7 +105,7 @@ export class SamajServicesController {
   @ApiOperation({ summary: "Update service person details from Admin Panel" })
   async updateServicePerson(
     @Param("id") id: string,
-    @Body() dto: UpdateServicePersonDto
+    @Body() dto: UpdateServicePersonDto,
   ) {
     return this.samajServicesService.updateServicePerson(id, dto);
   }

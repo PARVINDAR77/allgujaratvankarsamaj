@@ -1,4 +1,9 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from "@nestjs/common";
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -115,20 +120,41 @@ export class LocationsService {
     });
   }
 
-  async createState(data: { name: string; gujaratiName?: string; code: string; isActive?: boolean }) {
-    const existing = await this.prisma.state.findUnique({ where: { code: data.code } });
-    if (existing) throw new BadRequestException(`State with code ${data.code} already exists`);
+  async createState(data: {
+    name: string;
+    gujaratiName?: string;
+    code: string;
+    isActive?: boolean;
+  }) {
+    const existing = await this.prisma.state.findUnique({
+      where: { code: data.code },
+    });
+    if (existing)
+      throw new BadRequestException(
+        `State with code ${data.code} already exists`,
+      );
 
     return this.prisma.state.create({ data });
   }
 
-  async updateState(id: string, data: Partial<{ name: string; gujaratiName: string; code: string; isActive: boolean }>) {
+  async updateState(
+    id: string,
+    data: Partial<{
+      name: string;
+      gujaratiName: string;
+      code: string;
+      isActive: boolean;
+    }>,
+  ) {
     return this.prisma.state.update({ where: { id }, data });
   }
 
   async deleteState(id: string) {
     // Soft delete to protect profile relationships
-    return this.prisma.state.update({ where: { id }, data: { isActive: false } });
+    return this.prisma.state.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   // ==================== DISTRICTS API ====================
@@ -153,16 +179,34 @@ export class LocationsService {
     });
   }
 
-  async createDistrict(data: { stateId: string; name: string; gujaratiName?: string; code?: string; isActive?: boolean }) {
+  async createDistrict(data: {
+    stateId: string;
+    name: string;
+    gujaratiName?: string;
+    code?: string;
+    isActive?: boolean;
+  }) {
     return this.prisma.district.create({ data });
   }
 
-  async updateDistrict(id: string, data: Partial<{ stateId: string; name: string; gujaratiName: string; code: string; isActive: boolean }>) {
+  async updateDistrict(
+    id: string,
+    data: Partial<{
+      stateId: string;
+      name: string;
+      gujaratiName: string;
+      code: string;
+      isActive: boolean;
+    }>,
+  ) {
     return this.prisma.district.update({ where: { id }, data });
   }
 
   async deleteDistrict(id: string) {
-    return this.prisma.district.update({ where: { id }, data: { isActive: false } });
+    return this.prisma.district.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   // ==================== TALUKAS API ====================
@@ -187,16 +231,34 @@ export class LocationsService {
     });
   }
 
-  async createTaluka(data: { districtId: string; name: string; gujaratiName?: string; code?: string; isActive?: boolean }) {
+  async createTaluka(data: {
+    districtId: string;
+    name: string;
+    gujaratiName?: string;
+    code?: string;
+    isActive?: boolean;
+  }) {
     return this.prisma.taluka.create({ data });
   }
 
-  async updateTaluka(id: string, data: Partial<{ districtId: string; name: string; gujaratiName: string; code: string; isActive: boolean }>) {
+  async updateTaluka(
+    id: string,
+    data: Partial<{
+      districtId: string;
+      name: string;
+      gujaratiName: string;
+      code: string;
+      isActive: boolean;
+    }>,
+  ) {
     return this.prisma.taluka.update({ where: { id }, data });
   }
 
   async deleteTaluka(id: string) {
-    return this.prisma.taluka.update({ where: { id }, data: { isActive: false } });
+    return this.prisma.taluka.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 
   // ==================== PARGANAS API (DYNAMIC VILLAGE COUNT) ====================
@@ -214,7 +276,10 @@ export class LocationsService {
 
     return parganas.map((p) => ({
       ...p,
-      computedVillageCount: p._count.villages > 0 ? `${p._count.villages} Gam` : p.villageCount || "N/A",
+      computedVillageCount:
+        p._count.villages > 0
+          ? `${p._count.villages} Gam`
+          : p.villageCount || "N/A",
     }));
   }
 
@@ -222,19 +287,30 @@ export class LocationsService {
     const parganas = await this.prisma.pargana.findMany({
       orderBy: { name: "asc" },
       include: {
-        talukas: { include: { taluka: { select: { id: true, name: true, gujaratiName: true } } } },
+        talukas: {
+          include: {
+            taluka: { select: { id: true, name: true, gujaratiName: true } },
+          },
+        },
         _count: { select: { villages: true } },
       },
     });
 
     return parganas.map((p) => ({
       ...p,
-      computedVillageCount: p._count.villages > 0 ? `${p._count.villages} Gam` : p.villageCount || "N/A",
+      computedVillageCount:
+        p._count.villages > 0
+          ? `${p._count.villages} Gam`
+          : p.villageCount || "N/A",
     }));
   }
 
   // ==================== VILLAGES API (SEARCHABLE & PAGINATED) ====================
-  async getPublicVillages(query: { parganaId?: string; talukaId?: string; search?: string }) {
+  async getPublicVillages(query: {
+    parganaId?: string;
+    talukaId?: string;
+    search?: string;
+  }) {
     const { parganaId, talukaId, search } = query;
     return this.prisma.village.findMany({
       where: {
@@ -255,7 +331,11 @@ export class LocationsService {
     });
   }
 
-  async getAdminVillages(query: { parganaId?: string; talukaId?: string; search?: string }) {
+  async getAdminVillages(query: {
+    parganaId?: string;
+    talukaId?: string;
+    search?: string;
+  }) {
     const { parganaId, talukaId, search } = query;
     return this.prisma.village.findMany({
       where: {
@@ -300,12 +380,15 @@ export class LocationsService {
       code: string;
       pincode: string;
       isActive: boolean;
-    }>
+    }>,
   ) {
     return this.prisma.village.update({ where: { id }, data });
   }
 
   async deleteVillage(id: string) {
-    return this.prisma.village.update({ where: { id }, data: { isActive: false } });
+    return this.prisma.village.update({
+      where: { id },
+      data: { isActive: false },
+    });
   }
 }

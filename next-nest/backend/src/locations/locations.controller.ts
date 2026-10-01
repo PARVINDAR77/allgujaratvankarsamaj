@@ -1,4 +1,13 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
 import { LocationsService } from "./locations.service";
 import { Public } from "../auth/decorators/public.decorator";
@@ -39,13 +48,19 @@ export class LocationsController {
 
   @Public()
   @Get("villages")
-  @ApiOperation({ summary: "Get public active villages (searchable & paginated)" })
+  @ApiOperation({
+    summary: "Get public active villages (searchable & paginated)",
+  })
   async getPublicVillages(
     @Query("parganaId") parganaId?: string,
     @Query("talukaId") talukaId?: string,
-    @Query("search") search?: string
+    @Query("search") search?: string,
   ) {
-    return this.locationsService.getPublicVillages({ parganaId, talukaId, search });
+    return this.locationsService.getPublicVillages({
+      parganaId,
+      talukaId,
+      search,
+    });
   }
 
   // ==================== ADMIN ENDPOINTS ====================
@@ -129,9 +144,13 @@ export class LocationsController {
   async getAdminVillages(
     @Query("parganaId") parganaId?: string,
     @Query("talukaId") talukaId?: string,
-    @Query("search") search?: string
+    @Query("search") search?: string,
   ) {
-    return this.locationsService.getAdminVillages({ parganaId, talukaId, search });
+    return this.locationsService.getAdminVillages({
+      parganaId,
+      talukaId,
+      search,
+    });
   }
 
   @Post("admin/villages")
