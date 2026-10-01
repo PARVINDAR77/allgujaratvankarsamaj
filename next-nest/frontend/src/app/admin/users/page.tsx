@@ -72,27 +72,7 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleAddUser = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
 
-    const newUser: AdminUserItem = {
-      id: `u-${Date.now()}`,
-      name: name || email.split("@")[0],
-      email,
-      phone: phone || "9876543210",
-      pargana,
-      status: "ACTIVE",
-      role: role as any,
-      createdAt: new Date().toISOString(),
-    };
-
-    setUsers([newUser, ...users]);
-    setShowAddModal(false);
-    setName("");
-    setEmail("");
-    setPhone("");
-  };
 
   return (
     <AdminLayout title="User Management" subtitle="Manage registered community members & access statuses">
@@ -207,7 +187,7 @@ export default function AdminUsersPage() {
                         <td style={{ padding: "14px 18px", textAlign: "right" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
                             <button
-                              onClick={() => toggleUserStatus(u.id)}
+                              onClick={() => toggleUserStatus(u.id, u.status)}
                               style={{
                                 padding: "6px 14px",
                                 borderRadius: "8px",
