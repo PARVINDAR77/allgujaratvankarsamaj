@@ -103,15 +103,17 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api/docs", app, document);
 
-  // Read port from ConfigService (default 3000)
-  const port = process.env.PORT || configService.get<number>("PORT", 3000);
-
-  // Listen explicitly on IPv4 localhost for Hostinger shared hosting
-  await app.listen(port, '127.0.0.1');
-
-  logger.log(`Application is running on: http://0.0.0.0:${port}/api/v1`);
+  // Listen on Unix Socket if specified (for Hostinger), otherwise fallback to port
+  if (process.env.SOCKET_PATH) {
+    await app.listen(process.env.SOCKET_PATH);
+    logger.log(`Application is running on Unix Socket: ${process.env.SOCKET_PATH}`);
+  } else {
+    const port = process.env.PORT || configService.get<number>("PORT", 3000);
+    await app.listen(port, '127.0.0.1');
+    logger.log(`Application is running on: http://127.0.0.1:${port}/api/v1`);
+  }
   logger.log(
-    `Swagger documentation available at: http://localhost:${port}/api/docs`,
+    `Swagger documentation available at: /api/docs`,
   );
 }
 
