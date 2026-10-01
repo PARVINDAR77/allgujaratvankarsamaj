@@ -123,8 +123,8 @@ cd "$PROJECT_ROOT/next-nest/backend"
 npm ci
 npx prisma generate
 
-echo "≡ƒùä∩╕Å Running Database Migrations..."
-npx prisma migrate deploy
+echo "≡ƒùä∩╕Å Skipping Database Migrations (Hostinger RAM limits)..."
+# npx prisma migrate deploy
 npm run build
 cd "$PROJECT_ROOT"
 
