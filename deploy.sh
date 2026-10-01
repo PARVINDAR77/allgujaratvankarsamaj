@@ -199,6 +199,7 @@ cp -r "$PROJECT_ROOT/application/build/web" "${APP_WEB_ROOT}_tmp"
 [ -f "$APP_WEB_ROOT/.htaccess" ] && cp "$APP_WEB_ROOT/.htaccess" "${APP_WEB_ROOT}_tmp/"
 [ -d "$APP_WEB_ROOT/api" ] && cp -r "$APP_WEB_ROOT/api" "${APP_WEB_ROOT}_tmp/"
 [ -f "$APP_WEB_ROOT/api_proxy.php" ] && cp "$APP_WEB_ROOT/api_proxy.php" "${APP_WEB_ROOT}_tmp/"
+[ -f "$APP_WEB_ROOT/index.php" ] && cp "$APP_WEB_ROOT/index.php" "${APP_WEB_ROOT}_tmp/"
 mv "${APP_WEB_ROOT}" "${APP_WEB_ROOT}_old" 2>/dev/null || true
 mv "${APP_WEB_ROOT}_tmp" "${APP_WEB_ROOT}"
 rm -rf "${APP_WEB_ROOT}_old"
