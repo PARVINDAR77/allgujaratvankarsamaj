@@ -53,12 +53,13 @@ class _VerifiedProfileScreenState
     });
 
     return Scaffold(
-      backgroundColor: const Color(0xFF020B18),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF041126),
+        backgroundColor: Colors.white,
+        elevation: 0,
         title: const Text('Verification Status',
-            style: TextStyle(color: Color(0xFFFFD700), fontSize: 16)),
-        iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
+            style: TextStyle(color: AppColors.secondary, fontSize: 18, fontWeight: FontWeight.bold)),
+        iconTheme: const IconThemeData(color: AppColors.secondary),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -126,10 +127,10 @@ class _VerifiedProfileScreenState
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF041126),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isVerified ? AppColors.secondary : Colors.white24,
+          color: isVerified ? AppColors.secondary : Colors.grey.shade300,
           width: 1.5,
         ),
         boxShadow: isVerified
@@ -139,7 +140,13 @@ class _VerifiedProfileScreenState
                   blurRadius: 16,
                 )
               ]
-            : [],
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
       ),
       child: Row(
         children: [
@@ -148,12 +155,12 @@ class _VerifiedProfileScreenState
             decoration: BoxDecoration(
               color: isVerified
                   ? AppColors.secondary.withValues(alpha: 0.15)
-                  : Colors.white10,
+                  : Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
             child: Icon(
               isVerified ? Icons.verified : Icons.pending_outlined,
-              color: isVerified ? AppColors.secondary : Colors.white54,
+              color: isVerified ? AppColors.secondary : Colors.black54,
               size: 32,
             ),
           ),
@@ -165,7 +172,7 @@ class _VerifiedProfileScreenState
                 Text(
                   isVerified ? '✓ Verified Profile' : 'Not Yet Verified',
                   style: TextStyle(
-                    color: isVerified ? AppColors.secondary : Colors.white,
+                    color: isVerified ? AppColors.secondary : Colors.black87,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -175,7 +182,7 @@ class _VerifiedProfileScreenState
                   isVerified
                       ? 'Your profile has been verified by the samaj admin.'
                       : 'Submit your document to get a verified badge on your profile.',
-                  style: const TextStyle(color: Colors.white60, fontSize: 13),
+                  style: const TextStyle(color: Colors.black54, fontSize: 13),
                 ),
               ],
             ),
@@ -189,7 +196,7 @@ class _VerifiedProfileScreenState
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF041126),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border:
             Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
@@ -224,34 +231,34 @@ class _VerifiedProfileScreenState
         children: [
           const Text('Submit for Verification',
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
+                  color: Colors.black87,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           const Text(
             'Upload a valid government document to get your profile verified.',
-            style: TextStyle(color: Colors.white60, fontSize: 13),
+            style: TextStyle(color: Colors.black54, fontSize: 14),
           ),
           const SizedBox(height: 20),
 
           // Document type dropdown
           const Text('Document Type',
               style:
-                  TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold)),
+                  TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              color: const Color(0xFF041126),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white24),
+              border: Border.all(color: Colors.grey.shade300),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _documentType,
-                dropdownColor: const Color(0xFF041126),
+                dropdownColor: Colors.white,
                 isExpanded: true,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
+                style: const TextStyle(color: Colors.black87, fontSize: 15),
                 iconEnabledColor: AppColors.secondary,
                 onChanged: (v) => setState(() => _documentType = v ?? _documentType),
                 items: _documentTypes
@@ -265,23 +272,23 @@ class _VerifiedProfileScreenState
           // Document URL field
           const Text('Document URL / Link',
               style:
-                  TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold)),
+                  TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
           TextFormField(
             controller: _docUrlController,
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.black87),
             decoration: InputDecoration(
               hintText: 'https://drive.google.com/...',
-              hintStyle: const TextStyle(color: Colors.white38),
+              hintStyle: const TextStyle(color: Colors.black38),
               filled: true,
-              fillColor: const Color(0xFF041126),
+              fillColor: Colors.white,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white24),
+                borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white24),
+                borderSide: BorderSide(color: Colors.grey.shade300),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
@@ -301,7 +308,7 @@ class _VerifiedProfileScreenState
           const SizedBox(height: 12),
           const Text(
             'Upload your document to Google Drive, Dropbox, or any public link and paste the URL above.',
-            style: TextStyle(color: Colors.white38, fontSize: 11),
+            style: TextStyle(color: Colors.black54, fontSize: 12),
           ),
           const SizedBox(height: 28),
 
@@ -389,7 +396,7 @@ class _BenefitRow extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(text,
-                style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                style: const TextStyle(color: Colors.black87, fontSize: 14)),
           ),
         ],
       ),
