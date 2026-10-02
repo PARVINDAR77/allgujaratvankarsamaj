@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
 import 'dart:typed_data';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
@@ -440,6 +441,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_designation != null) updateData['designation'] = _designation;
                     if (_country != null) updateData['country'] = _country;
                     if (_aboutMe != null) updateData['about'] = _aboutMe;
+
+                    if (_profileImageBytes != null) {
+                      final base64Image = base64Encode(_profileImageBytes!);
+                      updateData['photoUrl'] = 'data:image/jpeg;base64,$base64Image';
+                    }
 
                     // Fallback to profile values if creating a new profile and fields were untouched
                     if (profile.id == 'NEW') {
