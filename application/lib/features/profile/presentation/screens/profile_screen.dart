@@ -207,22 +207,35 @@ class ProfileScreen extends ConsumerWidget {
                 'Why are you leaving?',
                 style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold),
               ),
-              content: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: reasons.map((reason) {
-                    return RadioListTile<String>(
-                      title: Text(reason, style: const TextStyle(fontSize: 14, color: Colors.black87)),
-                      value: reason,
-                      groupValue: selectedReason,
-                      activeColor: AppColors.secondary,
-                      onChanged: (String? value) {
-                        setState(() {
-                          selectedReason = value;
-                        });
-                      },
-                    );
-                  }).toList(),
+              content: Theme(
+                data: Theme.of(context).copyWith(
+                  unselectedWidgetColor: Colors.black54,
+                  radioTheme: RadioThemeData(
+                    fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+                      if (states.contains(MaterialState.selected)) {
+                        return AppColors.secondary;
+                      }
+                      return Colors.black54;
+                    }),
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: reasons.map((reason) {
+                      return RadioListTile<String>(
+                        title: Text(reason, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                        value: reason,
+                        groupValue: selectedReason,
+                        activeColor: AppColors.secondary,
+                        onChanged: (String? value) {
+                          setState(() {
+                            selectedReason = value;
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
               actions: [
