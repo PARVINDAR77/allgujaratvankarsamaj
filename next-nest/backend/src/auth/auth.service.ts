@@ -6,6 +6,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
+import { ProfileStatus } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { UsersService } from "../users/users.service";
 import { LoginDto } from "./dto/login.dto";
@@ -87,7 +88,9 @@ export class AuthService {
       where: { userId: user.id },
     });
 
-    const isVerified = profile?.isVerified ?? false;
+    const isVerified =
+      profile?.isVerified === true &&
+      profile?.status === ProfileStatus.APPROVED;
 
     const payload = {
       sub: user.id,

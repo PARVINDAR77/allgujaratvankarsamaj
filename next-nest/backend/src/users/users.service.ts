@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { User, Role, Status, Gender } from "@prisma/client";
+import { User, Role, Status, Gender, ProfileStatus, VerificationStatus } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 
@@ -262,9 +262,23 @@ export class UsersService {
       });
       if (!profile) throw new NotFoundException("Profile not found");
 
+      const isApproved = status === "APPROVED" || status === "ACTIVE";
+      const profileStatus = isApproved ? ProfileStatus.APPROVED : ProfileStatus.REJECTED;
+
       const updatedProfile = await tx.matrimonialProfile.update({
         where: { id: profileId },
-        data: { status: status as any },
+        data: {
+          status: profileStatus,
+          isVerified: isApproved,
+        },
+      });
+
+      // Also update any pending verification requests for this profile
+      await tx.verificationRequest.updateMany({
+        where: { profileId, status: VerificationStatus.PENDING },
+        data: {
+          status: isApproved ? VerificationStatus.VERIFIED : VerificationStatus.REJECTED,
+        },
       });
 
       await tx.adminAuditLog.create({
@@ -273,13 +287,13 @@ export class UsersService {
           action: "UPDATE_PROFILE_STATUS",
           entityId: profileId,
           entityType: "MatrimonialProfile",
-          oldValue: JSON.stringify({ status: profile.status }),
-          newValue: JSON.stringify({ status: updatedProfile.status }),
+          oldValue: JSON.stringify({ status: profile.status, isVerified: profile.isVerified }),
+          newValue: JSON.stringify({ status: updatedProfile.status, isVerified: updatedProfile.isVerified }),
           ipAddress: ipAddress || null,
         },
       });
 
-      return { id: profileId, status: updatedProfile.status };
+      return { id: profileId, status: updatedProfile.status, isVerified: updatedProfile.isVerified };
     });
   }
 

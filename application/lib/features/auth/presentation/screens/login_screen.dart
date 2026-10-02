@@ -63,7 +63,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
-          context.go('/main-poster');
+          final currentUser = ref.read(authNotifierProvider).user;
+          if (currentUser != null && !currentUser.isVerified) {
+            context.go('/profile-under-review');
+          } else {
+            context.go('/main-poster');
+          }
         } else {
           final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'લોગિન નિષ્ફળ';
           ScaffoldMessenger.of(context).showSnackBar(

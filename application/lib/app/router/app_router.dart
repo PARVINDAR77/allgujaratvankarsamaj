@@ -25,7 +25,6 @@ import '../../features/profile/presentation/screens/profile_under_review_screen.
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
 import '../../features/community/presentation/screens/samaj_ratna_screen.dart';
-import '../../features/search/presentation/screens/search_results_screen.dart';
 
 import '../../shared/presentation/screens/main_navigation_screen.dart';
 import '../../features/home/presentation/screens/main_poster_screen.dart';
@@ -70,12 +69,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       if (authState.isAuthenticated) {
         final user = authState.user;
         final isVerified = user?.isVerified ?? false;
-        final isAdmin = user?.isAdmin ?? false;
-
-        // If unverified regular member, restrict them strictly to verification screens
-        if (!isVerified && !isAdmin) {
+        // If profile is not verified, strictly restrict to review / verification screens
+        if (!isVerified) {
           final isAllowedUnverifiedRoute = location == '/verified-profile' ||
               location == '/profile-under-review' ||
+              location == '/profile/create' ||
+              location == '/profile/edit' ||
               location == '/privacy-policy' ||
               location == '/privacy-contact';
 

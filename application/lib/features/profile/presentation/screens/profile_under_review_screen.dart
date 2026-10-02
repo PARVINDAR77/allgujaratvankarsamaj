@@ -101,11 +101,14 @@ class _ProfileUnderReviewScreenState
         ? DateTime.tryParse(latestReq!['createdAt'].toString())
         : null;
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF041026),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF07182E),
-        elevation: 0,
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF041026),
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: const Color(0xFF07182E),
+          elevation: 0,
         centerTitle: true,
         title: const Text(
           'ચકાસણી સ્થિતિ (Verification)',
@@ -379,6 +382,7 @@ class _ProfileUnderReviewScreenState
             ],
           ),
         ),
+      ),
       ),
     );
   }
