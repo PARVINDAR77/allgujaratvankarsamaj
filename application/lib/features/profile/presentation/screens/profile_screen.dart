@@ -212,7 +212,7 @@ class ProfileScreen extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: reasons.map((reason) {
                     return RadioListTile<String>(
-                      title: Text(reason, style: const TextStyle(fontSize: 14)),
+                      title: Text(reason, style: const TextStyle(fontSize: 14, color: Colors.black87)),
                       value: reason,
                       groupValue: selectedReason,
                       activeColor: AppColors.secondary,
@@ -237,8 +237,12 @@ class ProfileScreen extends ConsumerWidget {
                           Navigator.of(dialogContext).pop();
                           _showDeleteConfirmationDialog(context, ref);
                         },
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentRed),
-                  child: const Text('Continue', style: TextStyle(color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentRed,
+                    disabledBackgroundColor: Colors.grey.shade300,
+                    disabledForegroundColor: Colors.grey.shade600,
+                  ),
+                  child: Text('Continue', style: TextStyle(color: selectedReason == null ? Colors.grey.shade600 : Colors.white)),
                 ),
               ],
             );
@@ -260,6 +264,7 @@ class ProfileScreen extends ConsumerWidget {
           ),
           content: const Text(
             'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.',
+            style: TextStyle(color: Colors.black87),
           ),
           actions: [
             TextButton(
