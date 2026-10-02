@@ -199,7 +199,78 @@ rm -rf "${APP_WEB_ROOT}_tmp"
 cp -r "$PROJECT_ROOT/application/build/web" "${APP_WEB_ROOT}_tmp"
 [ -f "$APP_WEB_ROOT/.htaccess" ] && cp "$APP_WEB_ROOT/.htaccess" "${APP_WEB_ROOT}_tmp/"
 [ -d "$APP_WEB_ROOT/api" ] && cp -r "$APP_WEB_ROOT/api" "${APP_WEB_ROOT}_tmp/"
-[ -f "$APP_WEB_ROOT/api_proxy.php" ] && cp "$APP_WEB_ROOT/api_proxy.php" "${APP_WEB_ROOT}_tmp/"
+# Generate a robust api_proxy.php for Hostinger Unix socket support
+cat << 'EOF' > "${APP_WEB_ROOT}_tmp/api_proxy.php"
+<?php
+// Enhanced API Proxy to Unix Socket with Error Reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Don't output PHP errors to the client to prevent breaking JSON
+
+$socket_path = 'unix:///home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock';
+
+$method = $_SERVER['REQUEST_METHOD'];
+// Get the original URI requested, fallback to /api/v1 if missing
+$uri = $_SERVER['REQUEST_URI'];
+if (empty($uri)) {
+    $uri = '/api/v1';
+}
+
+$headers = [];
+foreach (getallheaders() as $name => $value) {
+    if (strtolower($name) !== 'host' && strtolower($name) !== 'connection') {
+        $headers[] = "$name: $value";
+    }
+}
+$headers[] = "Host: localhost";
+$headers[] = "Connection: close";
+
+$body = file_get_contents('php://input');
+if ($body !== false) {
+    $headers[] = "Content-Length: " . strlen($body);
+}
+
+$request = "$method $uri HTTP/1.1\r\n" . implode("\r\n", $headers) . "\r\n\r\n" . $body;
+
+$fp = stream_socket_client($socket_path, $errno, $errstr, 5);
+
+if (!$fp) {
+    http_response_code(502);
+    header('Content-Type: application/json');
+    echo json_encode(["statusCode" => 502, "message" => "Bad Gateway: Backend socket is unreachable ($errstr)"]);
+    exit;
+}
+
+fwrite($fp, $request);
+
+$response = '';
+while (!feof($fp)) {
+    $response .= fread($fp, 8192);
+}
+fclose($fp);
+
+if (empty($response)) {
+    http_response_code(502);
+    header('Content-Type: application/json');
+    echo json_encode(["statusCode" => 502, "message" => "Bad Gateway: Backend returned empty response"]);
+    exit;
+}
+
+$parts = explode("\r\n\r\n", $response, 2);
+$header_text = $parts[0];
+$body_text = isset($parts[1]) ? $parts[1] : '';
+
+$header_lines = explode("\r\n", $header_text);
+foreach ($header_lines as $line) {
+    if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/', $line, $matches)) {
+        http_response_code((int)$matches[1]);
+    } else {
+        header($line, false);
+    }
+}
+
+echo $body_text;
+?>
+EOF
 [ -f "$APP_WEB_ROOT/index.php" ] && cp "$APP_WEB_ROOT/index.php" "${APP_WEB_ROOT}_tmp/"
 mv "${APP_WEB_ROOT}" "${APP_WEB_ROOT}_old" 2>/dev/null || true
 mv "${APP_WEB_ROOT}_tmp" "${APP_WEB_ROOT}"
