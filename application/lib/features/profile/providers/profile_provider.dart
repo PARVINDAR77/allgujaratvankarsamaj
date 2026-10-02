@@ -3,6 +3,7 @@ import '../../../shared/models/profile_model.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_failure.dart';
 import '../../../shared/models/pagination_meta.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../data/datasources/profile_remote_data_source.dart';
 import '../data/repositories/profile_repository.dart';
 
@@ -153,6 +154,10 @@ final profileNotifierProvider = StateNotifierProvider<ProfileNotifier, ProfileSt
 });
 
 final myProfileProvider = FutureProvider<ProfileModel>((ref) async {
+  final authState = ref.watch(authNotifierProvider);
+  if (!authState.isAuthenticated) {
+    throw const ApiFailure(type: ApiFailureType.unauthorized, message: 'Not authenticated');
+  }
   final repository = ref.watch(profileRepositoryProvider);
   return await repository.getMyProfile();
 });
