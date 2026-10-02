@@ -123,8 +123,8 @@ cd "$PROJECT_ROOT/next-nest/backend"
 npm ci
 npx prisma generate
 
-echo "Syncing Admin Roles in Database..."
-node update_roles.js || true
+echo "Syncing Admin Roles in Database via MySQL CLI..."
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "UPDATE users SET role = 'SUPER_ADMIN', status = 'ACTIVE' WHERE email IN ('admin@vankarsamaj.org', 'admin@vankarsamaj.com');" || true
 
 echo "Skipping Database Migrations (Hostinger RAM limits)..."
 # npx prisma migrate deploy
