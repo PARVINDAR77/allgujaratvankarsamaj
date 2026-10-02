@@ -29,7 +29,7 @@ class ProfileScreen extends ConsumerWidget {
                 width: double.infinity,
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: AppColors.background,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: AppColors.secondary, width: 1.5),
                 ),
@@ -57,12 +57,12 @@ class ProfileScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Text(
                         profile.fullName,
-                        style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         authState.user?.email ?? '',
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        style: const TextStyle(color: Colors.black54, fontSize: 13),
                       ),
                       const SizedBox(height: 8),
                       if (profile.isVerified == true)
@@ -83,7 +83,7 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         )
                       else
-                        const Text('સભ્ય (Member)', style: TextStyle(color: Colors.white54, fontSize: 13)),
+                        const Text('સભ્ય (Member)', style: TextStyle(color: Colors.black54, fontSize: 13)),
                     ],
                   ),
                 ),
