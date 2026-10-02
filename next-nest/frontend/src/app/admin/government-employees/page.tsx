@@ -47,7 +47,7 @@ export default function GovernmentEmployeesAdminPage() {
   const [rejectionReason, setRejectionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
 
-  const API_BASE = "http://localhost:3000/api/v1";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
   const fetchStatsAndData = async () => {
     setLoading(true);

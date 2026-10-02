@@ -1,9 +1,14 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
-function getAuthHeaders() {
-  return {
+function getAuthHeaders(): Record<string, string> {
+  const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+  const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
 }
 
 async function adminFetch(url: string, options: RequestInit = {}): Promise<Response> {
@@ -166,7 +171,7 @@ export interface SamajServicePersonItem {
 }
 
 export const adminApi = {
-  async login(email: string, password: string): Promise<{ message: string; user: any }> {
+  async login(email: string, password: string): Promise<{ message: string; user: any; accessToken?: string }> {
     const res = await adminFetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       body: JSON.stringify({ email, password }),
@@ -589,31 +594,28 @@ export const adminApi = {
   // ----------------------------------------------------
   async getAdvertisements() {
     try {
-      const res = await fetch(`${API_BASE_URL}/admin/advertisements`, { headers: getAuthHeaders() });
+      const res = await adminFetch(`${API_BASE_URL}/admin/advertisements`);
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
   },
   async createAdvertisement(data: any) {
-    const res = await fetch(`${API_BASE_URL}/admin/advertisements`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/advertisements`, {
       method: "POST",
-      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     return res.json();
   },
   async updateAdvertisement(id: string, data: any) {
-    const res = await fetch(`${API_BASE_URL}/admin/advertisements/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/advertisements/${id}`, {
       method: "PATCH",
-      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     return res.json();
   },
   async deleteAdvertisement(id: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/advertisements/${id}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/advertisements/${id}`, {
       method: "DELETE",
-      headers: getAuthHeaders(),
     });
     return res.json();
   },

@@ -71,7 +71,8 @@ export default function SearchPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:3000/api/v1/profile/search-query", {
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+      const response = await fetch(`${apiBase}/profile/search-query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

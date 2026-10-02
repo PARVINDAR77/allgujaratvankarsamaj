@@ -23,6 +23,9 @@ export default function AdminLoginPage() {
         
         if (typeof window !== "undefined") {
           localStorage.setItem("adminUser", JSON.stringify(data.user));
+          if (data.accessToken) {
+            localStorage.setItem("adminToken", data.accessToken);
+          }
         }
         router.push("/admin/dashboard");
       } else {

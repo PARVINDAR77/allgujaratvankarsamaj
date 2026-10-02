@@ -82,7 +82,7 @@ export default function AdvertisementsPage() {
 
     try {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1"}/storage/upload`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "/api/v1"}/storage/upload`, {
         method: "POST",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),

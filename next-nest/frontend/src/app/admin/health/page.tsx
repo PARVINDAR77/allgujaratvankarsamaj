@@ -10,7 +10,8 @@ export default function AdminHealthPage() {
 
   const fetchHealth = () => {
     setRefreshing(true);
-    fetch("http://localhost:3000/api/v1/admin/health")
+    const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+    fetch(`${apiBase}/admin/health`)
       .then((res) => res.json())
       .then((data) => setHealth(data))
       .catch(() =>

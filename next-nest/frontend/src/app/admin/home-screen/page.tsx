@@ -44,7 +44,7 @@ export default function HomeScreenConfigPage() {
     setIsSaving(true);
     try {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token") || "";
-      const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api/v1";
+      const url = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
       const response = await fetch(`${url}/admin/home-buttons`, {
         method: "PUT",
         headers: {
