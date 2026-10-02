@@ -1,0 +1,58 @@
+[
+  {
+    "Id": "01_home_welcome",
+    "Tag": "OFFICIAL COMMUNITY APP",
+    "Headline": "Vankar Samaj Matrimony",
+    "Gujarati": "અખિલ ગુજરાત વણકર સમાજ મેટ્રિમોની",
+    "Asset": "home_poster_v3.jpg",
+    "Fallback": "buddha_home_poster.jpeg"
+  },
+  {
+    "Id": "02_verified_profiles",
+    "Tag": "100% VERIFIED CANDIDATES",
+    "Headline": "Verified Matrimonial Profiles",
+    "Gujarati": "ચકાસાયેલ વર-કન્યા બાયોડેટા",
+    "Asset": "varified propfile.png",
+    "Fallback": "veryfied profile.jpeg"
+  },
+  {
+    "Id": "03_detailed_biodata",
+    "Tag": "COMPLETE COMPATIBILITY",
+    "Headline": "Detailed Biodata & Horoscope",
+    "Gujarati": "શિક્ષણ, વ્યવસાય અને કુંડળી વિગતો",
+    "Asset": "veryfied profile.jpeg",
+    "Fallback": "p.jpeg"
+  },
+  {
+    "Id": "04_mutual_interest",
+    "Tag": "DIRECT CONNECTION",
+    "Headline": "Express Mutual Interest",
+    "Gujarati": "પસંદગી દર્શાવો અને સીધા જોડાઓ",
+    "Asset": "mutual_interest_bg.jpg",
+    "Fallback": "login_poster_2.jpeg"
+  },
+  {
+    "Id": "05_samaj_services",
+    "Tag": "COMMUNITY DIRECTORY",
+    "Headline": "Samaj Services & Facilities",
+    "Gujarati": "સમાજ ડિરેક્ટરી અને સુવિધાઓ",
+    "Asset": "pavan_prernadata_poster.jpeg",
+    "Fallback": "samaj_super_stars_poster.jpeg"
+  },
+  {
+    "Id": "06_govt_employees",
+    "Tag": "PROFESSIONAL NETWORK",
+    "Headline": "Govt & Private Employees",
+    "Gujarati": "સરકારી અને ખાનગી કર્મચારી ડિરેક્ટરી",
+    "Asset": "govt_employees_poster.jpeg",
+    "Fallback": "family directory.jpeg"
+  },
+  {
+    "Id": "07_samaj_stars",
+    "Tag": "COMMUNITY PRIDE",
+    "Headline": "Samaj Ratna & Super Stars",
+    "Gujarati": "સમાજ રત્ન અને પ્રતિભાઓ",
+    "Asset": "samaj ratna.jpeg",
+    "Fallback": "samaj_super_stars_poster.jpeg"
+  }
+]
