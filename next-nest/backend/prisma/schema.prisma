@@ -125,7 +125,7 @@ model MatrimonialProfile {
   pargana    Pargana?  @relation(fields: [parganaId], references: [id], onDelete: SetNull)
   village    Village?  @relation(fields: [villageId], references: [id], onDelete: SetNull)
 
-  status               ProfileStatus         @default(APPROVED)
+  status               ProfileStatus         @default(PENDING)
   isVerified           Boolean               @default(false) @map("is_verified")
   isFeatured           Boolean               @default(false) @map("is_featured")
   createdAt            DateTime              @default(now()) @map("created_at")

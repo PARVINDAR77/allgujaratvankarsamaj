@@ -207,7 +207,7 @@ export class ProfilesService {
         talukaId: null,
         parganaId: null,
         villageId: null,
-        status: ProfileStatus.APPROVED,
+        status: ProfileStatus.PENDING,
         isVerified: false,
         isFeatured: false,
         createdAt: new Date(),

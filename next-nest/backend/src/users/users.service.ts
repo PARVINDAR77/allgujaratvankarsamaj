@@ -175,7 +175,7 @@ export class UsersService {
       city: p.city || "Ahmedabad",
       education: p.education || "Graduate",
       occupation: p.occupation || "Service",
-      status: p.status || "APPROVED",
+      status: p.status || "PENDING",
       isVerified: p.isVerified,
       isFeatured: p.isFeatured,
       createdAt: p.createdAt,
