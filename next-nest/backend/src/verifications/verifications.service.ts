@@ -1,7 +1,12 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateVerificationStatusDto } from "./dto/update-verification.dto";
-import { VerificationStatus } from "@prisma/client";
+import {
+  VerificationStatus,
+  Gender,
+  MaritalStatus,
+  ProfileStatus,
+} from "@prisma/client";
 
 @Injectable()
 export class VerificationsService {
@@ -12,12 +17,53 @@ export class VerificationsService {
     documentType: string,
     documentUrl: string,
   ) {
-    const profile = await this.prisma.matrimonialProfile.findUnique({
+    let profile = await this.prisma.matrimonialProfile.findUnique({
       where: { userId },
     });
 
     if (!profile) {
-      throw new NotFoundException("Profile not found");
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (!user) {
+        throw new NotFoundException("User not found");
+      }
+
+      const nameParts = (user.name || "User").trim().split(" ");
+      const firstName = nameParts[0] || "User";
+      const lastName = nameParts.slice(1).join(" ") || "Member";
+
+      profile = await this.prisma.matrimonialProfile.create({
+        data: {
+          userId,
+          firstName,
+          lastName,
+          gender: user.gender || Gender.MALE,
+          dateOfBirth: new Date(2000, 0, 1),
+          maritalStatus: MaritalStatus.NEVER_MARRIED,
+          status: ProfileStatus.PENDING,
+          isVerified: false,
+        },
+      });
+    }
+
+    // Check if an existing PENDING request already exists for this profile
+    const existingPending = await this.prisma.verificationRequest.findFirst({
+      where: {
+        profileId: profile.id,
+        status: VerificationStatus.PENDING,
+      },
+    });
+
+    if (existingPending) {
+      return this.prisma.verificationRequest.update({
+        where: { id: existingPending.id },
+        data: {
+          documentType,
+          documentUrl,
+          createdAt: new Date(),
+        },
+      });
     }
 
     return this.prisma.verificationRequest.create({
@@ -61,18 +107,23 @@ export class VerificationsService {
         },
       });
 
-      // 2. Update the Profile isVerified flag if the document was approved
+      // 2. Update the Profile isVerified and status flags
       if (newStatus === VerificationStatus.VERIFIED) {
         await tx.matrimonialProfile.update({
           where: { id: request.profileId },
-          data: { isVerified: true },
+          data: {
+            isVerified: true,
+            status: ProfileStatus.APPROVED,
+          },
         });
-      } else if (
-        newStatus === VerificationStatus.REJECTED &&
-        request.profile.isVerified
-      ) {
-        // Optionally revoke verification if a required document is rejected
-        // Leaving this commented out, depends on specific business logic
+      } else if (newStatus === VerificationStatus.REJECTED) {
+        await tx.matrimonialProfile.update({
+          where: { id: request.profileId },
+          data: {
+            isVerified: false,
+            status: ProfileStatus.REJECTED,
+          },
+        });
       }
 
       // 3. Create the Admin Audit Log
@@ -94,16 +145,76 @@ export class VerificationsService {
 
   async getPendingVerifications() {
     return this.prisma.verificationRequest.findMany({
-      where: { status: VerificationStatus.PENDING },
+      orderBy: { createdAt: "desc" },
       include: {
         profile: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
+            pargana: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
     });
+  }
+
+  async getMyVerificationStatus(userId: string) {
+    let profile = await this.prisma.matrimonialProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+      if (user) {
+        const nameParts = (user.name || "User").trim().split(" ");
+        profile = await this.prisma.matrimonialProfile.create({
+          data: {
+            userId,
+            firstName: nameParts[0] || "User",
+            lastName: nameParts.slice(1).join(" ") || "Member",
+            gender: user.gender || Gender.MALE,
+            dateOfBirth: new Date(2000, 0, 1),
+            maritalStatus: MaritalStatus.NEVER_MARRIED,
+            status: ProfileStatus.PENDING,
+            isVerified: false,
+          },
+        });
+      }
+    }
+
+    if (!profile) {
+      return {
+        isVerified: false,
+        profileStatus: ProfileStatus.PENDING,
+        latestRequest: null,
+      };
+    }
+
+    const latestRequest = await this.prisma.verificationRequest.findFirst({
+      where: { profileId: profile.id },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return {
+      isVerified: profile.isVerified,
+      profileStatus: profile.status,
+      latestRequest: latestRequest
+        ? {
+            id: latestRequest.id,
+            documentType: latestRequest.documentType,
+            documentUrl: latestRequest.documentUrl,
+            status: latestRequest.status,
+            rejectionReason: latestRequest.rejectionReason,
+            createdAt: latestRequest.createdAt,
+          }
+        : null,
+    };
   }
 }

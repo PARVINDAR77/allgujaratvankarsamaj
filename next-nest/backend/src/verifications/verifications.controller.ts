@@ -41,6 +41,13 @@ export class VerificationsController {
       body.documentUrl,
     );
   }
+
+  @Get("my-status")
+  @ApiOperation({ summary: "Get verification status for authenticated user" })
+  @ApiResponse({ status: 200, description: "Current verification status" })
+  async getMyVerificationStatus(@Request() req: any) {
+    return this.verificationsService.getMyVerificationStatus(req.user.id);
+  }
 }
 
 @ApiTags("Admin Verifications")
@@ -56,16 +63,18 @@ export class AdminVerificationsController {
   @ApiResponse({ status: 200, description: "List of pending requests" })
   async getPendingVerificationsAdmin() {
     const requests = await this.verificationsService.getPendingVerifications();
-    return requests.map((req) => ({
+    return requests.map((req: any) => ({
       id: req.id,
       profileId: req.profileId,
       documentType: req.documentType,
       documentUrl: req.documentUrl,
       status: req.status,
+      rejectionReason: req.rejectionReason,
       createdAt: req.createdAt,
       profile: {
         id: req.profile.id,
         name: `${req.profile.firstName} ${req.profile.lastName}`.trim(),
+        pargana: req.profile.pargana,
       },
     }));
   }

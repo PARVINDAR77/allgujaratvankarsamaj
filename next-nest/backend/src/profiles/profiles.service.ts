@@ -220,9 +220,30 @@ export class ProfilesService {
 
   async getProfileByUserId(userId: string) {
     try {
-      const profile = await this.prisma.matrimonialProfile.findUnique({
+      let profile = await this.prisma.matrimonialProfile.findUnique({
         where: { userId },
       });
+
+      if (!profile) {
+        const user = await this.prisma.user.findUnique({
+          where: { id: userId },
+        });
+        if (user) {
+          const nameParts = (user.name || "User").trim().split(" ");
+          profile = await this.prisma.matrimonialProfile.create({
+            data: {
+              userId,
+              firstName: nameParts[0] || "User",
+              lastName: nameParts.slice(1).join(" ") || "Member",
+              gender: user.gender || Gender.MALE,
+              dateOfBirth: new Date(2000, 0, 1),
+              maritalStatus: MaritalStatus.NEVER_MARRIED,
+              status: ProfileStatus.PENDING,
+              isVerified: false,
+            },
+          });
+        }
+      }
 
       if (!profile) {
         throw new NotFoundException("Profile not found");

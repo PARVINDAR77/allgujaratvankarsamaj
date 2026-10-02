@@ -56,6 +56,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         email: data['email']?.toString() ?? '',
         role: data['role']?.toString() ?? 'USER',
         status: 'ACTIVE',
+        isVerified: data['isVerified'] == true,
       );
     } catch (e) {
       print('JWT Decode error: $e');
@@ -80,8 +81,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final token = response.data['accessToken'];
       if (token != null) {
         await _storage.saveToken(token);
-        final user = _decodeToken(token);
+        var user = _decodeToken(token);
         if (user != null) {
+          final userData = response.data['user'];
+          if (userData is Map<String, dynamic> && userData.containsKey('isVerified')) {
+            user = user.copyWith(isVerified: userData['isVerified'] == true);
+          }
           state = AuthState.authenticated(user);
           return true;
         } else {
@@ -126,6 +131,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
       state = AuthState.error('An unexpected error occurred: $e');
       return false;
     }
+  }
+
+  Future<bool> checkVerificationStatus() async {
+    if (!state.isAuthenticated || state.user == null) return false;
+    try {
+      final res = await _dio.get('/verifications/my-status');
+      if (res.data != null && res.data is Map<String, dynamic>) {
+        final isVerified = res.data['isVerified'] == true;
+        if (state.user!.isVerified != isVerified) {
+          state = AuthState.authenticated(state.user!.copyWith(isVerified: isVerified));
+        }
+        return isVerified;
+      }
+    } catch (e) {
+      try {
+        final res = await _dio.get('/profiles/me');
+        if (res.data != null && res.data is Map<String, dynamic>) {
+          final isVerified = res.data['isVerified'] == true;
+          if (state.user!.isVerified != isVerified) {
+            state = AuthState.authenticated(state.user!.copyWith(isVerified: isVerified));
+          }
+          return isVerified;
+        }
+      } catch (_) {}
+    }
+    return state.user?.isVerified ?? false;
   }
 
   Future<void> logout() async {

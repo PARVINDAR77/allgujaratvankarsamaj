@@ -133,46 +133,84 @@ export default function AdminVerificationsPage() {
                 {filteredItems.map((item) => (
                   <tr key={item.id}  className="hover:bg-admin-card/70 transition-colors border-b border-admin-gold/10">
                     <td  className="font-bold text-white py-[14px] px-[18px]">{item.profile?.name || "Unknown"}</td>
-                    <td  className="font-medium text-admin-muted py-[14px] px-[18px]">{item.documentType || "Unknown"}</td>
+                    <td  className="font-medium text-admin-muted py-[14px] px-[18px]">
+                      <div className="font-semibold text-white">{item.documentType || "ID Proof"}</div>
+                      {item.documentUrl && (
+                        <a
+                          href={item.documentUrl.startsWith("http") ? item.documentUrl : `https://allgujaratvankarsamaj.com${item.documentUrl}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-admin-gold hover:underline text-[11px] font-bold mt-1"
+                        >
+                          <span>📄 View Document Proof ↗</span>
+                        </a>
+                      )}
+                    </td>
                     <td  className="font-semibold text-white py-[14px] px-[18px]">{item.profile?.pargana?.name || "N/A"}</td>
                     <td   className="text-admin-muted-lighter text-[11px] py-[14px] px-[18px] font-mono" >{new Date(item.createdAt).toLocaleDateString()}</td>
                     <td  className="py-[14px] px-[18px]">
                       <StatusBadge status={item.status} />
+                      {item.status === "REJECTED" && item.rejectionReason && (
+                        <div className="text-[10px] text-rose-400 mt-1 font-medium">
+                          Reason: {item.rejectionReason}
+                        </div>
+                      )}
                     </td>
                     <td  className="text-right py-[14px] px-[18px]">
                       <div  className="flex justify-end gap-2">
-                        <button
-                          onClick={() => updateStatus(item.id, "VERIFIED")}
-                          style={{
-                            padding: "6px 14px",
-                            borderRadius: "8px",
-                            backgroundColor: "rgba(6, 78, 59, 0.6)",
-                            color: "#6EE7B7",
-                            border: "1px solid rgba(16, 185, 129, 0.4)",
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                          className="hover:bg-emerald-800 transition-colors"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          onClick={() => updateStatus(item.id, "REJECTED")}
-                          style={{
-                            padding: "6px 14px",
-                            borderRadius: "8px",
-                            backgroundColor: "rgba(136, 19, 55, 0.6)",
-                            color: "#FDA4AF",
-                            border: "1px solid rgba(244, 63, 94, 0.4)",
-                            fontSize: "11px",
-                            fontWeight: 800,
-                            cursor: "pointer",
-                          }}
-                          className="hover:bg-rose-800 transition-colors"
-                        >
-                          Reject
-                        </button>
+                        {item.status === "PENDING" ? (
+                          <>
+                            <button
+                              onClick={() => updateStatus(item.id, "VERIFIED")}
+                              style={{
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                backgroundColor: "rgba(6, 78, 59, 0.6)",
+                                color: "#6EE7B7",
+                                border: "1px solid rgba(16, 185, 129, 0.4)",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                cursor: "pointer",
+                              }}
+                              className="hover:bg-emerald-800 transition-colors"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => updateStatus(item.id, "REJECTED")}
+                              style={{
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                backgroundColor: "rgba(136, 19, 55, 0.6)",
+                                color: "#FDA4AF",
+                                border: "1px solid rgba(244, 63, 94, 0.4)",
+                                fontSize: "11px",
+                                fontWeight: 800,
+                                cursor: "pointer",
+                              }}
+                              className="hover:bg-rose-800 transition-colors"
+                            >
+                              Reject
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => updateStatus(item.id, item.status === "VERIFIED" ? "REJECTED" : "VERIFIED")}
+                            style={{
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                              backgroundColor: "rgba(255, 255, 255, 0.05)",
+                              color: "#8E9BAE",
+                              border: "1px solid rgba(255, 255, 255, 0.15)",
+                              fontSize: "10px",
+                              fontWeight: 700,
+                              cursor: "pointer",
+                            }}
+                            className="hover:text-white transition-colors"
+                          >
+                            Change Status
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

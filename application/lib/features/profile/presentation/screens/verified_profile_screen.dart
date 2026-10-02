@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../auth/providers/auth_provider.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../verifications/providers/verifications_provider.dart';
 
@@ -17,6 +22,7 @@ class _VerifiedProfileScreenState
   final _formKey = GlobalKey<FormState>();
   String _documentType = 'Aadhar Card';
   final _docUrlController = TextEditingController();
+  bool _isUploadingFile = false;
 
   static const _documentTypes = [
     'Aadhar Card',
@@ -33,22 +39,69 @@ class _VerifiedProfileScreenState
     super.dispose();
   }
 
+  Future<void> _pickAndUploadDocument() async {
+    try {
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (image == null) return;
+
+      setState(() => _isUploadingFile = true);
+
+      final dio = ref.read(apiClientProvider);
+      final bytes = await image.readAsBytes();
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(bytes, filename: image.name),
+      });
+
+      final response = await dio.post('/storage/upload', data: formData);
+      if (response.data != null && response.data['url'] != null) {
+        final relUrl = response.data['url'] as String;
+        final fullUrl = relUrl.startsWith('http')
+            ? relUrl
+            : 'https://allgujaratvankarsamaj.com$relUrl';
+        setState(() {
+          _docUrlController.text = fullUrl;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('દસ્તાવેજ અપલોડ થયો! હવે સબમિટ કરો. (Document uploaded!)'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('અપલોડ નિષ્ફળ: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isUploadingFile = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final myProfileAsync = ref.watch(myProfileProvider);
     final submitState = ref.watch(verificationSubmitProvider);
 
-    // After successful submit, refresh profile and reset submit state
+    // After successful submit, refresh profile and redirect to under review screen
     ref.listen(verificationSubmitProvider, (_, next) {
       if (next.isSuccess) {
         ref.invalidate(myProfileProvider);
         ref.read(verificationSubmitProvider.notifier).reset();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Verification request submitted! Under review.'),
+            content: Text('દસ્તાવેજ સફળતાપૂર્વક સબમિટ થયો! હવે એડમિન ચકાસણી કરશે.'),
             backgroundColor: Colors.green,
           ),
         );
+        context.go('/profile-under-review');
       }
     });
 
@@ -61,6 +114,15 @@ class _VerifiedProfileScreenState
             style: TextStyle(color: AppColors.secondary, fontSize: 18, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: AppColors.secondary),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: AppColors.secondary),
+            tooltip: 'લૉગઆઉટ (Sign Out)',
+            onPressed: () async {
+              await ref.read(authNotifierProvider.notifier).logout();
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: myProfileAsync.when(
@@ -266,6 +328,47 @@ class _VerifiedProfileScreenState
                     .toList(),
               ),
             ),
+          ),
+          const SizedBox(height: 18),
+
+          // Option 1: Direct File / Photo Upload
+          const Text('ઓળખ કાર્ડનો ફોટો અપલોડ કરો (Upload ID Photo)',
+              style:
+                  TextStyle(color: Colors.black87, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: _isUploadingFile ? null : _pickAndUploadDocument,
+            icon: _isUploadingFile
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                  )
+                : const Icon(Icons.add_a_photo_rounded, color: Colors.black),
+            label: Text(
+              _isUploadingFile
+                  ? 'અપલોડ થઈ રહ્યું છે... (Uploading...)'
+                  : 'ગેલેરીમાંથી ફોટો પસંદ કરો (Choose from Gallery)',
+              style: const TextStyle(
+                  color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4AF37),
+              minimumSize: const Size(double.infinity, 46),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+          ),
+          const SizedBox(height: 18),
+          const Row(
+            children: [
+              Expanded(child: Divider()),
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Text('અથવા લિંક દાખલ કરો (OR Enter Link)',
+                    style: TextStyle(color: Colors.black45, fontSize: 12)),
+              ),
+              Expanded(child: Divider()),
+            ],
           ),
           const SizedBox(height: 18),
 

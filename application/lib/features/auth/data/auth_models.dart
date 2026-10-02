@@ -3,6 +3,7 @@ class UserModel {
   final String email;
   final String role;
   final String status;
+  final bool isVerified;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -11,9 +12,30 @@ class UserModel {
     required this.email,
     required this.role,
     required this.status,
+    this.isVerified = false,
     this.createdAt,
     this.updatedAt,
   });
+
+  UserModel copyWith({
+    String? id,
+    String? email,
+    String? role,
+    String? status,
+    bool? isVerified,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      status: status ?? this.status,
+      isVerified: isVerified ?? this.isVerified,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -21,6 +43,7 @@ class UserModel {
       email: json['email'] as String? ?? '',
       role: json['role'] as String? ?? 'USER',
       status: json['status'] as String? ?? 'ACTIVE',
+      isVerified: json['isVerified'] == true,
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
     );
@@ -32,6 +55,7 @@ class UserModel {
       'email': email,
       'role': role,
       'status': status,
+      'isVerified': isVerified,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };

@@ -56,7 +56,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     refreshListenable: authListenable,
     redirect: (context, state) {
       final authState = ref.read(authNotifierProvider);
-      final isLoggingIn = state.uri.toString() == '/login' || state.uri.toString() == '/register';
+      final location = state.uri.toString();
+      final isLoggingIn = location == '/login' || location == '/register';
 
       if (authState.status == AuthStatus.initial) {
         return null;
@@ -66,8 +67,28 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return '/login';
       }
 
-      if (authState.isAuthenticated && isLoggingIn) {
-        return '/home';
+      if (authState.isAuthenticated) {
+        final user = authState.user;
+        final isVerified = user?.isVerified ?? false;
+        final isAdmin = user?.isAdmin ?? false;
+
+        // If unverified regular member, restrict them strictly to verification screens
+        if (!isVerified && !isAdmin) {
+          final isAllowedUnverifiedRoute = location == '/verified-profile' ||
+              location == '/profile-under-review' ||
+              location == '/privacy-policy' ||
+              location == '/privacy-contact';
+
+          if (!isAllowedUnverifiedRoute) {
+            return '/profile-under-review';
+          }
+          return null;
+        }
+
+        // Verified member or admin attempting to visit auth pages should go to /home
+        if (isLoggingIn) {
+          return '/home';
+        }
       }
 
       return null;
@@ -126,6 +147,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/verified-profile',
         name: 'verified-profile',
         builder: (context, state) => const VerifiedProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile-under-review',
+        name: 'profile-under-review',
+        builder: (context, state) => const ProfileUnderReviewScreen(),
       ),
       GoRoute(
         path: '/samaj-services',

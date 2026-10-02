@@ -6,6 +6,7 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
+import { PrismaService } from "../prisma/prisma.service";
 import { UsersService } from "../users/users.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
@@ -16,6 +17,7 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -81,10 +83,17 @@ export class AuthService {
       user.status = "ACTIVE" as any;
     }
 
+    const profile = await this.prisma.matrimonialProfile.findUnique({
+      where: { userId: user.id },
+    });
+
+    const isVerified = profile?.isVerified ?? false;
+
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
+      isVerified,
     };
 
     const expiresIn = this.configService.get<string>("JWT_EXPIRES_IN", "1d");
@@ -94,7 +103,11 @@ export class AuthService {
 
     return {
       accessToken,
-      user: safeUser,
+      user: {
+        ...safeUser,
+        isVerified,
+        profileStatus: profile?.status ?? "PENDING",
+      },
       tokenType: "Bearer",
       expiresIn,
     };

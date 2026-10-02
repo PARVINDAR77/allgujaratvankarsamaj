@@ -60,6 +60,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     final success = await ref.read(authNotifierProvider.notifier).register(
           _emailController.text.trim(),
           _passwordController.text,
+          phone: _mobileController.text.trim(),
+          name: _fullNameController.text.trim(),
         );
 
     if (mounted) {
@@ -90,11 +92,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         ),
         title: const Row(
           children: [
-            Icon(Icons.person_add_rounded, color: Color(0xFFD4AF37), size: 28),
+            Icon(Icons.verified_user_rounded, color: Color(0xFFD4AF37), size: 28),
             SizedBox(width: 10),
             Expanded(
               child: Text(
-                'પ્રોફાઇલ નિર્માણ ફરજિયાત છે',
+                'દસ્તાવેજ ચકાસણી ફરજિયાત છે',
                 style: TextStyle(
                     color: Color(0xFFD4AF37),
                     fontSize: 16,
@@ -108,31 +110,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'નોંધણી સફળ થઈ ગઈ છે! એપ્લિકેશનનો ઉપયોગ કરવા માટે પ્રોફાઈલ બનાવવી ફરજિયાત છે.',
+              'તમારી નોંધણી સફળ થઈ ગઈ છે!\n\nસમાજની સુરક્ષા અને વિશ્વસનીયતા માટે તમારું ઓળખ કાર્ડ (Aadhaar / ID Card) અપલોડ કરવું ફરજિયાત છે. એડમિન દ્વારા મંજૂર થયા પછી જ તમે અન્ય પ્રોફાઇલ જોઈ શકશો.',
               style:
-                  TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+                  TextStyle(color: Colors.white, fontSize: 13, height: 1.5),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Registration successful! Identity document verification is mandatory before access to the platform is granted.',
+              style:
+                  TextStyle(color: Colors.white60, fontSize: 12, height: 1.4),
             ),
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              context.go('/home');
-            },
-            child: const Text('મુખ્ય પૃષ્ઠ (Home)',
-                style: TextStyle(color: Colors.white60)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              context.go('/home');
-            },
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4AF37)),
-            child: const Text('પ્રોફાઇલ જુઓ',
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(dialogCtx);
+                context.go('/verified-profile');
+              },
+              icon: const Icon(Icons.upload_file, color: Colors.black),
+              label: const Text(
+                'ઓળખ કાર્ડ અપલોડ કરો (Upload Document)',
                 style: TextStyle(
-                    color: Colors.black, fontWeight: FontWeight.bold)),
+                    color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFD4AF37),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
           ),
         ],
       ),
