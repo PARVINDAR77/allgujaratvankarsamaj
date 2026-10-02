@@ -48,8 +48,29 @@ class ProfileRepository {
   }
 
   Future<ProfileModel> getMyProfile() async {
-    final data = await _remoteDataSource.getMyProfile();
-    return ProfileModel.fromJson(data);
+    try {
+      final data = await _remoteDataSource.getMyProfile();
+      return ProfileModel.fromJson(data);
+    } on ApiFailure catch (e) {
+      if (e.statusCode == 404) {
+        return const ProfileModel(
+          id: 'NEW',
+          firstName: '',
+          lastName: '',
+          gender: 'Male (પુરુષ)',
+          maritalStatus: 'Never Married (અપરિણીત)',
+          dateOfBirth: '',
+          education: 'Select Degree',
+          employmentType: 'Government Sector (સરકારી નોકરી / સેકટર)',
+          department: 'State Government (રાજ્ય સરકાર)',
+          designation: '',
+          district: '',
+          taluka: '',
+          pargana: '',
+        );
+      }
+      rethrow;
+    }
   }
 
   Future<ProfileModel> createProfile(ProfileModel profile) async {

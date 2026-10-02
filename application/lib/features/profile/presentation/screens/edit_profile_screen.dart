@@ -38,6 +38,30 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _casteCategory;
   String? _dob;
   String _religion = 'Select Religion';
+  
+  String? _firstName;
+  String? _lastName;
+  String? _mobileNumber;
+  String? _emailAddress;
+  String? _whatsappNumber;
+  String? _houseNumber;
+  String? _area;
+  String? _city;
+  String? _district;
+  String? _country;
+  String? _pincode;
+  String? _companyName;
+  String? _designation;
+  String? _fatherName;
+  String? _fatherOccupation;
+  String? _fatherContact;
+  String? _motherName;
+  String? _motherOccupation;
+  String? _guardianContact;
+  String? _siblings;
+  String? _mamasVillage;
+  String? _nativePlace;
+  String? _aboutMe;
 
   Future<void> _pickImage() async {
     try {
@@ -196,8 +220,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   // Personal Details Section
                   _buildSectionHeader(Icons.person_outline, 'Personal Details (અંગત માહિતી)'),
                   const SizedBox(height: 16),
-                  _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined, initialValue: profile.firstName),
-                  _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, initialValue: profile.lastName),
+                  _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined, initialValue: profile.firstName, onChanged: (v) => _firstName = v),
+                  _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, initialValue: profile.lastName, onChanged: (v) => _lastName = v),
               _buildTextField(
                 'Date of Birth *',
                 _dob ?? 'Tap to select date of birth',
@@ -231,20 +255,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               // Contact Details Section
               _buildSectionHeader(Icons.phone_android, 'Contact Details (સંપર્ક માહિતી)'),
               const SizedBox(height: 16),
-              _buildTextField('Mobile Number (મોબાઈલ નંબર - 10 અંક) *', 'Enter Mobile Number (મોબાઈલ નંબર - 10 અંક)', Icons.phone_android),
-              _buildTextField('Email Address (ઈમેઈલ સરનામું) *', 'Enter Email Address (ઈમેઈલ સરનામું)', Icons.email_outlined),
-              _buildTextField('WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)', 'Enter WhatsApp / Alt Phone...', Icons.chat_bubble_outline),
+              _buildTextField('Mobile Number (મોબાઈલ નંબર - 10 અંક) *', 'Enter Mobile Number (મોબાઈલ નંબર - 10 અંક)', Icons.phone_android, onChanged: (v) => _mobileNumber = v),
+              _buildTextField('Email Address (ઈમેઈલ સરનામું) *', 'Enter Email Address (ઈમેઈલ સરનામું)', Icons.email_outlined, onChanged: (v) => _emailAddress = v),
+              _buildTextField('WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)', 'Enter WhatsApp / Alt Phone...', Icons.chat_bubble_outline, onChanged: (v) => _whatsappNumber = v),
 
               const SizedBox(height: 24),
               // Location & Address Section
               _buildSectionHeader(Icons.location_on_outlined, 'Location & Address (રહેઠાણનું સરનામું)'),
               const SizedBox(height: 16),
-              _buildTextField('Flat / House / Building Name & No. (મકાન / બિલ્ડિંગ નંબર)', 'Enter Flat / House / Building Name & No...', Icons.domain),
-              _buildTextField('Area / Society / Landmark (સોસાયટી / વિસ્તાર / લેન્ડમાર્ક)', 'Enter Area / Society / Landmark...', Icons.explore_outlined),
-              _buildTextField('City / Taluka (શહેર / તાલુકો) *', 'Enter City / Taluka (શહેર / તાલુકો)', Icons.location_city),
-              _buildTextField('District & State (જિલ્લો અને રાજ્ય) *', 'Enter District & State (જિલ્લો અને રાજ્ય)', Icons.map_outlined),
-              _buildTextField('Country (દેશ) *', 'Enter Country (દેશ)', Icons.public),
-              _buildTextField('Pincode / Zip Code (પીનકોડ)', 'Enter Pincode / Zip Code (પીનકોડ)', Icons.markunread_mailbox_outlined),
+              _buildTextField('Flat / House / Building Name & No. (મકાન / બિલ્ડિંગ નંબર)', 'Enter Flat / House / Building Name & No...', Icons.domain, onChanged: (v) => _houseNumber = v),
+              _buildTextField('Area / Society / Landmark (સોસાયટી / વિસ્તાર / લેન્ડમાર્ક)', 'Enter Area / Society / Landmark...', Icons.explore_outlined, onChanged: (v) => _area = v),
+              _buildTextField('City / Taluka (શહેર / તાલુકો) *', 'Enter City / Taluka (શહેર / તાલુકો)', Icons.location_city, initialValue: profile.taluka, onChanged: (v) => _city = v),
+              _buildTextField('District & State (જિલ્લો અને રાજ્ય) *', 'Enter District & State (જિલ્લો અને રાજ્ય)', Icons.map_outlined, initialValue: profile.district, onChanged: (v) => _district = v),
+              _buildTextField('Country (દેશ) *', 'Enter Country (દેશ)', Icons.public, onChanged: (v) => _country = v),
+              _buildTextField('Pincode / Zip Code (પીનકોડ)', 'Enter Pincode / Zip Code (પીનકોડ)', Icons.markunread_mailbox_outlined, onChanged: (v) => _pincode = v),
 
               const SizedBox(height: 24),
               // Career & Employment Details Section
@@ -324,7 +348,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   'Company Name (કંપનીનું નામ)',
                   'Enter Company Name',
                   Icons.business_outlined,
-                  onChanged: (v) => setState(() => _department = v),
+                  initialValue: profile.department,
+                  onChanged: (v) => setState(() => _companyName = v),
                 ),
               ],
               if (_employmentType.contains('Business')) ...[
@@ -354,7 +379,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     child: Text('Please wait while loading categories...'),
                   ),
               ],
-              _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined),
+              _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, initialValue: profile.designation, onChanged: (v) => _designation = v),
               _buildDropdownField(
                 'Yearly Income (વાર્ષિક આવક - રૂ.)',
                 'Select Income (વાર્ષિક આવક પસંદ કરો)',
@@ -368,21 +393,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               // Family Details Section
               _buildSectionHeader(Icons.family_restroom, 'Family Details (પરિવારની વિગતો અને વાલીનો સંપર્ક)'),
               const SizedBox(height: 16),
-              _buildTextField('Father\'s Name (પિતાનું નામ) *', 'Enter Father\'s Name (પિતાનું નામ)', Icons.person_outline),
-              _buildTextField('Father\'s Occupation (પિતાનો વ્યવસાય)', 'Enter Father\'s Occupation (પિતાનો વ્યવસાય)', Icons.work_outline),
-              _buildTextField('Father\'s Contact Number (પિતાનો ફોન નંબર - 10 અંક)', 'Enter Father\'s Contact Number...', Icons.phone),
-              _buildTextField('Mother\'s Name (માતાનું નામ) *', 'Enter Mother\'s Name (માતાનું નામ)', Icons.face_3_outlined),
-              _buildTextField('Mother\'s Occupation (માતાનો વ્યવસાય)', 'Enter Mother\'s Occupation (માતાનો વ્યવસાય)', Icons.work_outline),
-              _buildTextField('Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)', 'Enter Guardian Contact Number...', Icons.contact_phone_outlined),
-              _buildTextField('Brothers & Sisters (ભાઈ-બહેનની વિગત)', 'Enter Brothers & Sisters (ભાઈ-બહેનની વિગત)', Icons.groups_outlined),
-              _buildTextField('Mama\'s Village / Mosal (મોસાળ / મોસાળનું ગામ)', 'Enter Mama\'s Village / Mosal...', Icons.holiday_village_outlined),
-              _buildTextField('Native Place (મૂળ વતન / પરગણું)', 'Enter Native Place (મૂળ વતન / પરગણું)', Icons.home_work_outlined),
+              _buildTextField('Father\'s Name (પિતાનું નામ) *', 'Enter Father\'s Name (પિતાનું નામ)', Icons.person_outline, onChanged: (v) => _fatherName = v),
+              _buildTextField('Father\'s Occupation (પિતાનો વ્યવસાય)', 'Enter Father\'s Occupation (પિતાનો વ્યવસાય)', Icons.work_outline, onChanged: (v) => _fatherOccupation = v),
+              _buildTextField('Father\'s Contact Number (પિતાનો ફોન નંબર - 10 અંક)', 'Enter Father\'s Contact Number...', Icons.phone, onChanged: (v) => _fatherContact = v),
+              _buildTextField('Mother\'s Name (માતાનું નામ) *', 'Enter Mother\'s Name (માતાનું નામ)', Icons.face_3_outlined, onChanged: (v) => _motherName = v),
+              _buildTextField('Mother\'s Occupation (માતાનો વ્યવસાય)', 'Enter Mother\'s Occupation (માતાનો વ્યવસાય)', Icons.work_outline, onChanged: (v) => _motherOccupation = v),
+              _buildTextField('Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)', 'Enter Guardian Contact Number...', Icons.contact_phone_outlined, onChanged: (v) => _guardianContact = v),
+              _buildTextField('Brothers & Sisters (ભાઈ-બહેનની વિગત)', 'Enter Brothers & Sisters (ભાઈ-બહેનની વિગત)', Icons.groups_outlined, onChanged: (v) => _siblings = v),
+              _buildTextField('Mama\'s Village / Mosal (મોસાળ / મોસાળનું ગામ)', 'Enter Mama\'s Village / Mosal...', Icons.holiday_village_outlined, onChanged: (v) => _mamasVillage = v),
+              _buildTextField('Native Place (મૂળ વતન / પરગણું)', 'Enter Native Place (મૂળ વતન / પરગણું)', Icons.home_work_outlined, initialValue: profile.pargana, onChanged: (v) => _nativePlace = v),
 
               const SizedBox(height: 24),
               // About Me Section
               _buildSectionHeader(Icons.info_outline, 'About Me (પોતાના વિશે વિશેષ માહિતી)'),
               const SizedBox(height: 16),
-              _buildTextField('Tell us about yourself (વધારાની વિગતો)', 'Enter Tell us about yourself (વધારાની વિગતો)', Icons.notes, isMultiline: true),
+              _buildTextField('Tell us about yourself (વધારાની વિગતો)', 'Enter Tell us about yourself (વધારાની વિગતો)', Icons.notes, isMultiline: true, onChanged: (v) => _aboutMe = v),
 
               const SizedBox(height: 32),
               // Submit Button
@@ -403,13 +428,38 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       updateData['businessIndustry'] = _businessIndustry != 'Select Industry' ? _businessIndustry : profile.businessIndustry;
                       updateData['businessService'] = _businessService != 'Select Service' ? _businessService : profile.businessService;
                     }
-                    // Note: updateData['city'], updateData['state'], etc., can be added here if we collect them properly
+                    if (_employmentType.contains('Private')) {
+                      updateData['organizationName'] = _companyName ?? profile.department;
+                    }
+
+                    if (_firstName != null) updateData['firstName'] = _firstName;
+                    if (_lastName != null) updateData['lastName'] = _lastName;
+                    if (_city != null) updateData['city'] = _city;
+                    if (_district != null) updateData['state'] = _district;
+                    if (_nativePlace != null) updateData['nativePlace'] = _nativePlace;
+                    if (_designation != null) updateData['designation'] = _designation;
+                    if (_country != null) updateData['country'] = _country;
+                    if (_aboutMe != null) updateData['about'] = _aboutMe;
+
+                    // Fallback to profile values if creating a new profile and fields were untouched
+                    if (profile.id == 'NEW') {
+                       updateData['firstName'] ??= profile.firstName;
+                       updateData['lastName'] ??= profile.lastName;
+                    }
                     
                     if (updateData.isNotEmpty) {
-                      await ref.read(profileRepositoryProvider).updateMyProfile(updateData);
+                      if (profile.id == 'NEW') {
+                        // Create new profile
+                        if (updateData['firstName'] == null || updateData['firstName'].toString().trim().isEmpty) updateData['firstName'] = 'Vankar';
+                        if (updateData['lastName'] == null || updateData['lastName'].toString().trim().isEmpty) updateData['lastName'] = 'Samaj';
+                        final newProfile = ProfileModel.fromJson({'id': '', ...updateData});
+                        await ref.read(profileRepositoryProvider).createProfile(newProfile);
+                      } else {
+                        await ref.read(profileRepositoryProvider).updateMyProfile(updateData);
+                      }
                       ref.invalidate(myProfileProvider);
                       if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile saved successfully')));
                       }
                     }
                     if (context.mounted && context.canPop()) {
