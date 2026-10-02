@@ -187,7 +187,25 @@ SOCKET_PATH=/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock NODE
 mkdir -p "$(dirname "$ADMIN_WEB_ROOT")"
 rm -rf "${ADMIN_WEB_ROOT}_tmp"
 cp -r "$PROJECT_ROOT/next-nest/frontend/out" "${ADMIN_WEB_ROOT}_tmp"
-[ -f "$ADMIN_WEB_ROOT/.htaccess" ] && cp "$ADMIN_WEB_ROOT/.htaccess" "${ADMIN_WEB_ROOT}_tmp/"
+
+# Inject Next.js Apache .htaccess for static exports
+cat << 'EOF' > "${ADMIN_WEB_ROOT}_tmp/.htaccess"
+RewriteEngine On
+RewriteBase /admin/
+
+# If the request is for the root of /admin/, serve admin.html
+RewriteRule ^$ admin.html [L]
+
+# If the requested file has no extension, and a corresponding .html exists, serve it
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+# Stop the root Flutter .htaccess from intercepting /admin requests
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ 404.html [L]
+EOF
+
 [ -d "$ADMIN_WEB_ROOT/api" ] && cp -r "$ADMIN_WEB_ROOT/api" "${ADMIN_WEB_ROOT}_tmp/"
 mv "${ADMIN_WEB_ROOT}" "${ADMIN_WEB_ROOT}_old" 2>/dev/null || true
 mv "${ADMIN_WEB_ROOT}_tmp" "${ADMIN_WEB_ROOT}"
