@@ -261,10 +261,14 @@ $body_text = isset($parts[1]) ? $parts[1] : '';
 
 $header_lines = explode("\r\n", $header_text);
 foreach ($header_lines as $line) {
+    if (empty(trim($line))) continue;
+    
     if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/', $line, $matches)) {
         http_response_code((int)$matches[1]);
     } else {
-        header($line, false);
+        // Do not pass Transfer-Encoding, let Hostinger/PHP handle it
+        if (stripos(trim($line), 'Transfer-Encoding:') === 0) continue;
+        header($line, true);
     }
 }
 
