@@ -183,15 +183,42 @@ pkill -f node || true
 rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
 SOCKET_PATH=/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock NODE_ENV=production nohup node "$PROJECT_ROOT/next-nest/backend/dist/main.js" > "$PROJECT_ROOT/next-nest/backend/backend.log" 2>&1 &
 
-# 2. Flutter App (Atomic MV)
-echo "Deploying Flutter App..."
+# 2. Deploy Application (Atomic Merge: Next.js + Flutter)
+echo "Deploying Application..."
 mkdir -p "$(dirname "$APP_WEB_ROOT")"
 rm -rf "${APP_WEB_ROOT}_tmp"
-cp -r "$PROJECT_ROOT/application/build/web" "${APP_WEB_ROOT}_tmp"
+mkdir -p "${APP_WEB_ROOT}_tmp"
+
+# 2a. Copy Next.js Admin Panel (Base)
+echo "Merging Next.js Admin Panel..."
+cp -r "$PROJECT_ROOT/next-nest/frontend/out/"* "${APP_WEB_ROOT}_tmp/" || true
+# Remove Next.js index.html so it doesn't conflict with Flutter's main entry point
+rm -f "${APP_WEB_ROOT}_tmp/index.html"
+
+# Inject Next.js Apache .htaccess into the admin folder for static exports
+mkdir -p "${APP_WEB_ROOT}_tmp/admin"
+cat << 'EOF' > "${APP_WEB_ROOT}_tmp/admin/.htaccess"
+RewriteEngine On
+RewriteBase /admin/
+
+# If the request is for the root of /admin/, serve the root admin.html
+RewriteRule ^$ ../admin.html [L]
+
+# If the requested file has no extension, and a corresponding .html exists, serve it
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+# Stop the root Flutter .htaccess from intercepting /admin requests
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ ../404.html [L]
+EOF
+
+# 2b. Copy Flutter App (Overrides)
+echo "Merging Flutter App..."
+cp -r "$PROJECT_ROOT/application/build/web/"* "${APP_WEB_ROOT}_tmp/"
 [ -f "$APP_WEB_ROOT/.htaccess" ] && cp "$APP_WEB_ROOT/.htaccess" "${APP_WEB_ROOT}_tmp/"
 [ -d "$APP_WEB_ROOT/api" ] && cp -r "$APP_WEB_ROOT/api" "${APP_WEB_ROOT}_tmp/"
-# Preserve the existing admin folder if it exists (so we don't wipe it out entirely)
-[ -d "$APP_WEB_ROOT/admin" ] && cp -r "$APP_WEB_ROOT/admin" "${APP_WEB_ROOT}_tmp/"
 
 # Generate a robust api_proxy.php for Hostinger Unix socket support
 cat << 'EOF' > "${APP_WEB_ROOT}_tmp/api_proxy.php"
@@ -271,38 +298,11 @@ echo $body_text;
 ?>
 EOF
 [ -f "$APP_WEB_ROOT/index.php" ] && cp "$APP_WEB_ROOT/index.php" "${APP_WEB_ROOT}_tmp/"
+
+# Swap atomic directories
 mv "${APP_WEB_ROOT}" "${APP_WEB_ROOT}_old" 2>/dev/null || true
 mv "${APP_WEB_ROOT}_tmp" "${APP_WEB_ROOT}"
 rm -rf "${APP_WEB_ROOT}_old"
-
-# 3. Next.js Admin (Atomic MV)
-echo "Deploying Next.js Admin..."
-mkdir -p "$(dirname "$ADMIN_WEB_ROOT")"
-rm -rf "${ADMIN_WEB_ROOT}_tmp"
-cp -r "$PROJECT_ROOT/next-nest/frontend/out" "${ADMIN_WEB_ROOT}_tmp"
-
-# Inject Next.js Apache .htaccess for static exports
-cat << 'EOF' > "${ADMIN_WEB_ROOT}_tmp/.htaccess"
-RewriteEngine On
-RewriteBase /admin/
-
-# If the request is for the root of /admin/, serve admin.html
-RewriteRule ^$ admin.html [L]
-
-# If the requested file has no extension, and a corresponding .html exists, serve it
-RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteRule ^(.*)$ $1.html [L]
-
-# Stop the root Flutter .htaccess from intercepting /admin requests
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ 404.html [L]
-EOF
-
-[ -d "$ADMIN_WEB_ROOT/api" ] && cp -r "$ADMIN_WEB_ROOT/api" "${ADMIN_WEB_ROOT}_tmp/"
-mv "${ADMIN_WEB_ROOT}" "${ADMIN_WEB_ROOT}_old" 2>/dev/null || true
-mv "${ADMIN_WEB_ROOT}_tmp" "${ADMIN_WEB_ROOT}"
-rm -rf "${ADMIN_WEB_ROOT}_old"
 
 # ---------------------------------------------------------
 # Health Checks with Retry
