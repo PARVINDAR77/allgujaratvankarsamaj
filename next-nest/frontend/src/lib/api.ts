@@ -40,3 +40,14 @@ export async function fetchFromBackend<T = any>(
 export async function checkBackendHealth() {
   return fetchFromBackend("/health");
 }
+
+export function getImageUrl(url?: string | null): string {
+  if (!url) return "";
+  let cleanUrl = url.trim();
+  // Strip hardcoded localhost:3000 if present from database legacy records
+  if (cleanUrl.includes("localhost:3000")) {
+    cleanUrl = cleanUrl.replace(/^https?:\/\/localhost:3000/, "");
+  }
+  return cleanUrl;
+}
+

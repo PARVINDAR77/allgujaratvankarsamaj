@@ -192,6 +192,13 @@ mkdir -p "$(dirname "$APP_WEB_ROOT")"
 rm -rf "${APP_WEB_ROOT}_tmp"
 mkdir -p "${APP_WEB_ROOT}_tmp"
 
+# Ensure persistent uploads folder across deployments
+PERSISTENT_UPLOADS="/home/u796269890/domains/allgujaratvankarsamaj.com/uploads"
+mkdir -p "$PERSISTENT_UPLOADS"
+mkdir -p "$PROJECT_ROOT/next-nest/backend/uploads"
+ln -sfn "$PERSISTENT_UPLOADS" "$PROJECT_ROOT/next-nest/backend/uploads"
+ln -sfn "$PERSISTENT_UPLOADS" "${APP_WEB_ROOT}_tmp/uploads"
+
 # 2a. Copy Next.js Admin Panel (Base)
 echo "Merging Next.js Admin Panel..."
 cp -r "$PROJECT_ROOT/next-nest/frontend/out/"* "${APP_WEB_ROOT}_tmp/" || true
@@ -220,8 +227,28 @@ EOF
 # 2b. Copy Flutter App (Overrides)
 echo "Merging Flutter App..."
 cp -r "$PROJECT_ROOT/application/build/web/"* "${APP_WEB_ROOT}_tmp/"
-[ -f "$APP_WEB_ROOT/.htaccess" ] && cp "$APP_WEB_ROOT/.htaccess" "${APP_WEB_ROOT}_tmp/"
 [ -d "$APP_WEB_ROOT/api" ] && cp -r "$APP_WEB_ROOT/api" "${APP_WEB_ROOT}_tmp/"
+
+# Generate robust root .htaccess
+cat << 'EOF' > "${APP_WEB_ROOT}_tmp/.htaccess"
+RewriteEngine On
+
+# Allow direct file access for existing files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Route /api/ to api_proxy.php
+RewriteRule ^api/(.*)$ api_proxy.php [QSA,L]
+
+# Route /uploads/ to api_proxy.php as fallback
+RewriteRule ^uploads/(.*)$ api_proxy.php [QSA,L]
+
+# Normal Flutter/SPA routing (fallback to index.html for non-files)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.html [QSA,L]
+EOF
 
 # Generate a robust api_proxy.php for Hostinger Unix socket support
 cat << 'EOF' > "${APP_WEB_ROOT}_tmp/api_proxy.php"

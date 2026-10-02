@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminApi } from "@/lib/admin-api";
+import { getImageUrl } from "@/lib/api";
 
 export default function AdminPhotosPage() {
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     adminApi.getPendingPhotos()
@@ -51,9 +53,14 @@ export default function AdminPhotosPage() {
             {photos.map((p) => (
               <div key={p.id} className="bg-admin-border border border-admin-gold-dark/30 rounded-2xl overflow-hidden shadow-xl">
                 <div className="h-48 bg-admin-card flex items-center justify-center border-b border-admin-gold-dark/20 relative">
-                  {p.photoUrl ? (
+                  {p.photoUrl && !brokenImages[p.id] ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                    <img 
+                      src={getImageUrl(p.photoUrl)} 
+                      alt="Profile" 
+                      onError={() => setBrokenImages(prev => ({ ...prev, [p.id]: true }))}
+                      className="w-full h-full object-cover" 
+                    />
                   ) : (
                     <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#D4AF37] to-[#E8C95A] text-black font-black text-2xl flex items-center justify-center shadow-lg">
                       {(p.firstName || "U").charAt(0)}

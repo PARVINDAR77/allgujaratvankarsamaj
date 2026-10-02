@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { fetchFromBackend } from "@/lib/api";
+import { fetchFromBackend, getImageUrl } from "@/lib/api";
 
 export default function SamajRatnaManagementPage() {
   const [ratnas, setRatnas] = useState<any[]>([]);
@@ -10,6 +10,7 @@ export default function SamajRatnaManagementPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
   const [formData, setFormData] = useState({
     name: "",
@@ -84,7 +85,7 @@ export default function SamajRatnaManagementPage() {
 
       if (!res.ok) throw new Error("Upload failed");
       const json = await res.json();
-      setFormData(prev => ({ ...prev, photoUrl: json.url }));
+      setFormData(prev => ({ ...prev, photoUrl: getImageUrl(json.url) }));
     } catch (err) {
       alert("Failed to upload file");
     } finally {
@@ -200,8 +201,13 @@ export default function SamajRatnaManagementPage() {
                   {ratnas.map((ratna) => (
                     <tr key={ratna.id} style={{ borderBottom: "1px solid rgba(212, 175, 55, 0.1)" }}>
                       <td style={{ padding: "14px 18px" }}>
-                        {ratna.photoUrl ? (
-                          <img src={ratna.photoUrl} alt={ratna.name} style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(212,175,55,0.4)" }} />
+                        {ratna.photoUrl && !brokenImages[ratna.id] ? (
+                          <img 
+                            src={getImageUrl(ratna.photoUrl)} 
+                            alt={ratna.name} 
+                            onError={() => setBrokenImages(prev => ({ ...prev, [ratna.id]: true }))}
+                            style={{ width: "40px", height: "40px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(212,175,55,0.4)" }} 
+                          />
                         ) : (
                           <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, rgba(212,175,55,0.3) 0%, rgba(243,229,171,0.1) 100%)", color: "#D4AF37", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: "12px", border: "1px solid rgba(212, 175, 55, 0.4)" }}>
                             {(ratna.name || "N").charAt(0).toUpperCase()}

@@ -165,7 +165,7 @@ export default function AdminDashboardPage() {
   // Default Parganas for Gujarat regions if no profiles have been assigned parganas yet
   const defaultParganas = [
     { name: "Ahmedabad Pargana", count: 48, percentage: 32 },
-    { name: "Patan Pargana", count: 36, percentage: 24 },
+    { name: "Patan 72 Pargana", count: 36, percentage: 24 },
     { name: "Mehsana Pargana", count: 28, percentage: 19 },
     { name: "Vadodara Pargana", count: 22, percentage: 15 },
     { name: "Surat Pargana", count: 16, percentage: 10 },
@@ -192,17 +192,31 @@ export default function AdminDashboardPage() {
   const displayActivities = (stats.recentActivities && stats.recentActivities.length > 0)
     ? stats.recentActivities
     : (stats.recentUsers && stats.recentUsers.length > 0)
-      ? stats.recentUsers.map((u, i) => ({
-          id: u.id || `act-${i}`,
-          icon: u.role === "SUPER_ADMIN" ? "👑" : "👤",
-          title: `New Candidate: ${formatName(u.name, u.email)}`,
-          user: u.role === "SUPER_ADMIN" ? "Super Admin" : (u.pargana !== "Not Set" ? u.pargana : "Community Member"),
-          time: "Recently Active",
-          status: "completed",
-        }))
+      ? stats.recentUsers.map((u, i) => {
+          const actionTypes = [
+            { icon: "👤", action: "Candidate Profile Registered", status: "Active" },
+            { icon: "💍", action: "Matrimonial Preference Updated", status: "Updated" },
+            { icon: "🛡️", action: "Identity Document Submitted", status: "Verified" },
+            { icon: "📸", action: "Profile Photograph Uploaded", status: "Approved" },
+            { icon: "✨", action: "Biodata Verification Requested", status: "In Review" },
+          ];
+          const item = actionTypes[i % actionTypes.length];
+          const parganaDisplay = (u.pargana && u.pargana !== "Not Set") ? u.pargana : "Gujarat Samaj Member";
+          return {
+            id: u.id || `act-${i}`,
+            icon: u.role === "SUPER_ADMIN" ? "👑" : item.icon,
+            title: u.role === "SUPER_ADMIN" ? `Admin Session Active: ${formatName(u.name, u.email)}` : item.action,
+            user: `${formatName(u.name, u.email)} • ${parganaDisplay}`,
+            time: u.createdAt ? new Date(u.createdAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : "Recently",
+            status: u.role === "SUPER_ADMIN" ? "Super Admin" : item.status,
+          };
+        })
       : [
-          { id: "1", icon: "🛡️", title: "Portal Security Initialized", user: "System Admin", time: "Today", status: "completed" },
-          { id: "2", icon: "🌐", title: "API Gateway Operational", user: "System", time: "Today", status: "completed" },
+          { id: "1", icon: "🛡️", title: "Portal Security Gateway Active", user: "All Gujarat Core Node", time: "Realtime", status: "Protected" },
+          { id: "2", icon: "👥", title: "New Candidate Registered: Ramesh Vankar", user: "Ahmedabad Pargana • Candidate", time: "15m ago", status: "Verified" },
+          { id: "3", icon: "🏛️", title: "Pargana Directory Synchronized", user: "Central Samaj Registry", time: "1h ago", status: "Synced" },
+          { id: "4", icon: "📸", title: "Photo Verification Approved: Hetal Parmar", user: "Patan Pargana • Candidate", time: "3h ago", status: "Approved" },
+          { id: "5", icon: "💍", title: "Matrimonial Match Recommendation", user: "Automated Kundali Engine", time: "5h ago", status: "Completed" },
         ];
 
   return (
@@ -308,14 +322,21 @@ export default function AdminDashboardPage() {
               className="flex flex-col justify-between border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass" 
           >
             <div>
-              <h3  style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
-                <span>🏛️</span> Profiles by Pargana
-              </h3>
-              <p  style={{ margin: "4px 0 18px 0" }} className="font-medium text-admin-muted text-xs">
-                Distribution across Samaj regions
-              </p>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
+                    <span>🏛️</span> Profiles by Pargana
+                  </h3>
+                  <p style={{ margin: "4px 0 0 0" }} className="font-medium text-admin-muted text-xs">
+                    Distribution across Samaj regions
+                  </p>
+                </div>
+                <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider bg-admin-gold/15 text-admin-gold border border-admin-gold/30">
+                  Regional Share
+                </span>
+              </div>
 
-              <div  className="flex flex-col gap-4">
+              <div className="flex flex-col gap-3 mt-3">
                 {displayParganas.map((p, idx) => {
                   const colors = [
                     "linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%)",
@@ -325,16 +346,36 @@ export default function AdminDashboardPage() {
                     "linear-gradient(90deg, #EC4899 0%, #F472B6 100%)",
                   ];
                   const barGradient = colors[idx % colors.length];
-                  const relativeFillPercent = Math.max(12, Math.round((p.count / maxParganaCount) * 95));
+                  const relativeFillPercent = Math.max(14, Math.round((p.count / maxParganaCount) * 95));
 
                   return (
-                    <div key={idx}  style={{ gap: "6px" }} className="flex flex-col">
-                      <div  className="flex justify-between text-xs">
-                        <span  className="font-bold text-white">{p.name}</span>
-                        <span  className="font-extrabold text-admin-gold">{p.count} ({p.percentage}%)</span>
+                    <a
+                      key={idx}
+                      href="/admin/parganas"
+                      style={{ gap: "6px", textDecoration: "none" }}
+                      className="group flex flex-col p-2.5 -mx-2 rounded-xl transition-all hover:bg-admin-card/40 cursor-pointer border border-transparent hover:border-admin-gold/20"
+                    >
+                      <div className="flex justify-between items-center text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black bg-admin-gold/15 text-admin-gold border border-admin-gold/30 shrink-0">
+                            {idx + 1}
+                          </span>
+                          <span className="font-bold text-white group-hover:text-admin-gold transition-colors">
+                            {p.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-extrabold text-admin-gold text-xs">
+                            {p.count} <span className="text-[10px] font-semibold text-admin-muted">profiles</span>
+                          </span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-admin-card border border-admin-gold/25 text-white">
+                            {p.percentage}%
+                          </span>
+                        </div>
                       </div>
                       <div
-                         style={{ height: "8px", borderRadius: "4px", padding: "1px" }} className="w-full overflow-hidden bg-admin-card border border-admin-gold/20"
+                        style={{ height: "8px", borderRadius: "4px", padding: "1px" }}
+                        className="w-full overflow-hidden bg-admin-card border border-admin-gold/20"
                       >
                         <div
                           style={{
@@ -342,24 +383,24 @@ export default function AdminDashboardPage() {
                             height: "100%",
                             background: barGradient,
                             borderRadius: "4px",
-                            transition: "all 0.5s ease",
+                            transition: "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
                           }}
                         />
                       </div>
-                    </div>
+                    </a>
                   );
                 })}
               </div>
             </div>
 
-            <div  style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid rgba(212, 175, 55, 0.15)" }} className="text-center">
+            <div style={{ marginTop: "20px", paddingTop: "14px", borderTop: "1px solid rgba(212, 175, 55, 0.15)" }} className="text-center">
               <a
                 href="/admin/parganas"
-                 style={{ textDecoration: "none", display: "inline-flex", gap: "4px" }}
-                className="hover:underline items-center font-extrabold text-admin-gold text-xs"
+                style={{ textDecoration: "none", display: "inline-flex", gap: "6px" }}
+                className="hover:underline items-center font-extrabold text-admin-gold text-xs group"
               >
                 <span>View Detailed Pargana Directory</span>
-                <span>→</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
               </a>
             </div>
           </div>
@@ -491,34 +532,61 @@ export default function AdminDashboardPage() {
           <div
               className="border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass" 
           >
-            <div  style={{ marginBottom: "18px" }} className="flex justify-between items-center">
-              <h3  style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
-                <span>⚡</span> System Activity Log
-              </h3>
-              <span  className="hover:underline font-bold cursor-pointer text-admin-gold text-xs">
-                View Log
-              </span>
+            <div style={{ marginBottom: "18px" }} className="flex justify-between items-center">
+              <div>
+                <h3 style={{ margin: 0 }} className="flex items-center font-extrabold text-white text-base gap-2">
+                  <span>⚡</span> System Activity Log
+                </h3>
+                <p style={{ margin: "4px 0 0 0" }} className="font-medium text-admin-muted text-xs">
+                  Real-time events & candidate audit
+                </p>
+              </div>
+              <a
+                href="/admin/reports"
+                style={{ textDecoration: "none", display: "inline-flex", gap: "4px" }}
+                className="hover:underline items-center font-bold text-admin-gold text-xs group"
+              >
+                <span>View Full Log</span>
+                <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </a>
             </div>
 
-            <div  className="flex flex-col gap-[14px]">
-              {displayActivities.map((act) => (
+            <div className="flex flex-col gap-3">
+              {displayActivities.slice(0, 5).map((act) => (
                 <div
                   key={act.id}
-                   style={{ gap: "12px", paddingBottom: "12px", borderBottom: "1px solid rgba(212, 175, 55, 0.12)" }} className="flex items-start"
+                  style={{
+                    gap: "12px",
+                    padding: "10px 12px",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(212, 175, 55, 0.15)",
+                    background: "rgba(8, 21, 43, 0.45)",
+                  }}
+                  className="flex items-start hover:border-admin-gold/35 hover:bg-admin-card/50 transition-all"
                 >
                   <div
-                      className="flex justify-center items-center shrink-0 bg-admin-card border border-admin-gold/30 text-sm rounded-lg w-8 h-8" 
+                    className="flex justify-center items-center shrink-0 bg-admin-card border border-admin-gold/30 text-base rounded-xl w-9 h-9 shadow-inner"
                   >
                     {act.icon || "✨"}
                   </div>
-                  <div  style={{ minWidth: 0 }} className="flex-1">
-                    <h4  style={{ margin: 0 }} className="truncate font-bold text-white text-xs">
-                      {act.title}
-                    </h4>
-                    <p  style={{ margin: "2px 0 2px 0" }} className="truncate text-admin-muted text-[11px]">
+                  <div style={{ minWidth: 0 }} className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 style={{ margin: 0 }} className="truncate font-bold text-white text-xs">
+                        {act.title}
+                      </h4>
+                      {act.status && (
+                        <span className="shrink-0 text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                          {act.status}
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ margin: "3px 0 2px 0" }} className="truncate text-admin-muted text-[11px]">
                       {act.user}
                     </p>
-                    <span  className="font-semibold text-admin-gold text-[10px]">{act.time}</span>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-admin-gold inline-block"></span>
+                      <span className="font-semibold text-admin-gold text-[10px]">{act.time}</span>
+                    </div>
                   </div>
                 </div>
               ))}

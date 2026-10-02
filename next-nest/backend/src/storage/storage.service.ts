@@ -26,8 +26,8 @@ export class StorageService {
     // Write file to disk
     await fs.writeFile(filePath, fileBuffer);
 
-    // Return the local URL
-    return `http://localhost:3000/uploads/${uniqueFilename}`;
+    // Return the relative URL
+    return `/uploads/${uniqueFilename}`;
   }
 
   async deleteFile(fileUrl: string): Promise<void> {

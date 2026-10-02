@@ -3,12 +3,14 @@
 import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminApi } from "@/lib/admin-api";
+import { getImageUrl } from "@/lib/api";
 
 export default function AdvertisementsPage() {
   const [ads, setAds] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
+  const [brokenImages, setBrokenImages] = useState<Record<string, boolean>>({});
 
   const [formTitle, setFormTitle] = useState("");
   const [formImageUrl, setFormImageUrl] = useState("");
@@ -92,7 +94,7 @@ export default function AdvertisementsPage() {
 
       if (!res.ok) throw new Error("Upload failed");
       const data = await res.json();
-      setFormImageUrl(data.url);
+      setFormImageUrl(getImageUrl(data.url));
     } catch (err) {
       alert("Failed to upload file");
     } finally {
@@ -200,7 +202,7 @@ export default function AdvertisementsPage() {
                       <tr key={ad.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                         <td style={{ padding: "12px 18px" }}>
                           {ad.imageUrl ? (
-                            <img src={ad.imageUrl} alt={ad.title} style={{ height: "40px", width: "80px", objectFit: "cover", borderRadius: "6px" }} />
+                            <img src={getImageUrl(ad.imageUrl)} alt={ad.title} style={{ height: "40px", width: "80px", objectFit: "cover", borderRadius: "6px" }} onError={(e) => (e.currentTarget.style.display = 'none')} />
                           ) : (
                             <span style={{ color: "#8E9BAE", fontStyle: "italic" }}>No Image</span>
                           )}

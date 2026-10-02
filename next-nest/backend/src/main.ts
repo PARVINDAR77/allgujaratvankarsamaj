@@ -71,16 +71,15 @@ async function bootstrap() {
   });
 
   // Serve static files from the 'uploads' directory with robust CORS and security headers
-  app.use(
-    "/uploads",
-    express.static(join(process.cwd(), "uploads"), {
-      setHeaders: (res) => {
-        res.set("Access-Control-Allow-Origin", "*");
-        res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-        res.set("Cross-Origin-Resource-Policy", "cross-origin");
-      },
-    }),
-  );
+  const uploadStaticMiddleware = express.static(join(process.cwd(), "uploads"), {
+    setHeaders: (res) => {
+      res.set("Access-Control-Allow-Origin", "*");
+      res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+      res.set("Cross-Origin-Resource-Policy", "cross-origin");
+    },
+  });
+  app.use("/uploads", uploadStaticMiddleware);
+  app.use("/api/v1/uploads", uploadStaticMiddleware);
 
   // Global API Prefix /api/v1
   app.setGlobalPrefix("api/v1");
