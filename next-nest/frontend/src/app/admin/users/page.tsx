@@ -11,6 +11,15 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    gender: "Male",
+    password: "",
+  });
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -72,7 +81,34 @@ export default function AdminUsersPage() {
     }
   };
 
-
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "/api/v1"}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newUserData.name.trim(),
+          email: newUserData.email.trim(),
+          phone: newUserData.phone.trim(),
+          gender: newUserData.gender,
+          password: newUserData.password,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to register candidate");
+      }
+      setIsModalOpen(false);
+      setNewUserData({ name: "", email: "", phone: "", gender: "Male", password: "" });
+      fetchUsers();
+    } catch (err: any) {
+      alert("Error registering candidate: " + err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <AdminLayout title="User Management" subtitle="Manage registered community members & access statuses">
@@ -131,6 +167,27 @@ export default function AdminUsersPage() {
               <option value="PENDING">PENDING Only</option>
             </select>
           </div>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            style={{
+              padding: "10px 20px",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+              color: "#041026",
+              fontWeight: 800,
+              fontSize: "12px",
+              textTransform: "uppercase",
+              letterSpacing: "0.8px",
+              border: "none",
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(212, 175, 55, 0.4)",
+            }}
+            className="hover:brightness-110 transition-all flex items-center gap-1.5"
+          >
+            <span>+</span>
+            <span>Add Candidate</span>
+          </button>
         </div>
 
         {/* Users Data Table */}
@@ -229,6 +286,133 @@ export default function AdminUsersPage() {
           )}
         </div>
       </div>
+
+      {/* ─── ADD CANDIDATE MODAL ────────────────────────────────────── */}
+      {isModalOpen && (
+        <div style={{
+          position: "fixed",
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: "rgba(4, 16, 38, 0.8)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+          padding: "20px"
+        }}>
+          <div style={{
+            backgroundColor: "#0D1B32",
+            border: "1px solid rgba(212, 175, 55, 0.4)",
+            borderRadius: "20px",
+            width: "100%",
+            maxWidth: "520px",
+            boxShadow: "0 20px 50px rgba(0,0,0,0.6)",
+            overflow: "hidden"
+          }}>
+            <div style={{
+              padding: "20px 24px",
+              borderBottom: "1px solid rgba(212, 175, 55, 0.2)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <h3 style={{ margin: 0, color: "#FFFFFF", fontSize: "16px", fontWeight: 800, display: "flex", alignItems: "center", gap: "8px" }}>
+                <span>👤</span> Add New Community Candidate
+              </h3>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                style={{ background: "none", border: "none", color: "#8E9BAE", fontSize: "20px", cursor: "pointer", padding: "4px" }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUser} style={{ padding: "24px", display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                <label style={{ fontSize: "11px", color: "#D4AF37", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" }}>Full Name</label>
+                <input 
+                  required
+                  type="text" 
+                  placeholder="e.g. Ramesh Vankar"
+                  value={newUserData.name} 
+                  onChange={e => setNewUserData({...newUserData, name: e.target.value})}
+                  style={{ width: "100%", background: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.3)", borderRadius: "8px", padding: "10px 14px", color: "#FFFFFF", fontSize: "13px", outline: "none" }} 
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "11px", color: "#D4AF37", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" }}>Email Address</label>
+                  <input 
+                    required
+                    type="email" 
+                    placeholder="user@example.com"
+                    value={newUserData.email} 
+                    onChange={e => setNewUserData({...newUserData, email: e.target.value})}
+                    style={{ width: "100%", background: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.3)", borderRadius: "8px", padding: "10px 14px", color: "#FFFFFF", fontSize: "13px", outline: "none" }} 
+                  />
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "11px", color: "#D4AF37", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" }}>Phone (10 Digits)</label>
+                  <input 
+                    required
+                    type="tel" 
+                    maxLength={10}
+                    placeholder="9876543210"
+                    value={newUserData.phone} 
+                    onChange={e => setNewUserData({...newUserData, phone: e.target.value.replace(/\D/g, "")})}
+                    style={{ width: "100%", background: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.3)", borderRadius: "8px", padding: "10px 14px", color: "#FFFFFF", fontSize: "13px", outline: "none" }} 
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "11px", color: "#D4AF37", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" }}>Gender</label>
+                  <select 
+                    value={newUserData.gender} 
+                    onChange={e => setNewUserData({...newUserData, gender: e.target.value})}
+                    style={{ width: "100%", background: "#041026", border: "1px solid rgba(212, 175, 55, 0.3)", borderRadius: "8px", padding: "10px 14px", color: "#FFFFFF", fontSize: "13px", outline: "none", cursor: "pointer" }}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <label style={{ fontSize: "11px", color: "#D4AF37", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" }}>Password</label>
+                  <input 
+                    required
+                    type="password" 
+                    placeholder="Minimum 8 characters"
+                    minLength={8}
+                    value={newUserData.password} 
+                    onChange={e => setNewUserData({...newUserData, password: e.target.value})}
+                    style={{ width: "100%", background: "rgba(4, 16, 38, 0.6)", border: "1px solid rgba(212, 175, 55, 0.3)", borderRadius: "8px", padding: "10px 14px", color: "#FFFFFF", fontSize: "13px", outline: "none" }} 
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px", marginTop: "12px" }}>
+                <button 
+                  type="button" 
+                  onClick={() => setIsModalOpen(false)}
+                  style={{ padding: "10px 20px", borderRadius: "10px", background: "transparent", color: "#8E9BAE", border: "1px solid rgba(255,255,255,0.1)", fontWeight: 700, cursor: "pointer", fontSize: "12px" }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={submitting}
+                  style={{ padding: "10px 24px", borderRadius: "10px", background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)", color: "#041026", border: "none", fontWeight: 900, textTransform: "uppercase", letterSpacing: "1px", cursor: "pointer", fontSize: "12px", opacity: submitting ? 0.7 : 1 }}
+                >
+                  {submitting ? "Registering..." : "Create Candidate"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 }

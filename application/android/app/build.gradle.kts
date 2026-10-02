@@ -15,7 +15,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.vankarsamaj.matrimony.application"
+    namespace = "com.emperorsmartsolutions"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -31,7 +31,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.vankarsamaj.matrimony.application"
+        applicationId = "com.emperorsmartsolutions"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

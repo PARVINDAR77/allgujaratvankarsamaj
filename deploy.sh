@@ -211,17 +211,34 @@ cat << 'EOF' > "${APP_WEB_ROOT}_tmp/admin/.htaccess"
 RewriteEngine On
 RewriteBase /admin/
 
+# Strip trailing slash if present: e.g. /admin/users/ -> /admin/users
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)/$ $1 [R=301,L]
+
 # If the request is for the root of /admin/, serve the root admin.html
 RewriteRule ^$ ../admin.html [L]
+
+# If file exists directly (e.g. users.html), serve it
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
 
 # If the requested file has no extension, and a corresponding .html exists, serve it
 RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^(.*)$ $1.html [L]
 
-# Stop the root Flutter .htaccess from intercepting /admin requests
+# Also check directly in admin folder
+RewriteCond %{DOCUMENT_ROOT}/admin/$1.html -f
+RewriteRule ^(.*)$ $1.html [L]
+
+# Return 404 for missing static assets to prevent HTML syntax errors in JS/CSS
+RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map|json)$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ - [R=404,L]
+
+# Stop the root Flutter .htaccess from intercepting /admin requests - fallback to admin.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ ../404.html [L]
+RewriteRule ^(.*)$ ../admin.html [L]
 EOF
 
 # 2b. Copy Flutter App (Overrides)
@@ -237,6 +254,11 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
+
+# Return real 404 for missing static assets (js, css, images) so they never serve index.html
+RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map)$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ - [R=404,L]
 
 # Route /api/ to api_proxy.php
 RewriteRule ^api/(.*)$ api_proxy.php [QSA,L]
@@ -403,6 +425,9 @@ rm -rf "$PREV_ADMIN_DIR" "$PREV_APP_DIR"
 echo "=========================================="
 echo "Γ£à DEPLOYMENT SUCCESSFUL!"
 echo "Date: $(date)"
+
+
+
 echo "Target Commit: $CURRENT_COMMIT"
 echo "=========================================="
 

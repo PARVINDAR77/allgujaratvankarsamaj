@@ -1,4 +1,4 @@
-package com.vankarsamaj.matrimony.application
+package com.emperorsmartsolutions
 
 import io.flutter.embedding.android.FlutterActivity
 
