@@ -217,7 +217,8 @@ if (empty($uri)) {
 
 $headers = [];
 foreach (getallheaders() as $name => $value) {
-    if (strtolower($name) !== 'host' && strtolower($name) !== 'connection') {
+    $lowerName = strtolower($name);
+    if ($lowerName !== 'host' && $lowerName !== 'connection' && $lowerName !== 'content-length') {
         $headers[] = "$name: $value";
     }
 }
