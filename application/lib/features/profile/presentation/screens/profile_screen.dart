@@ -14,10 +14,11 @@ class ProfileScreen extends ConsumerWidget {
     final myProfileAsync = ref.watch(myProfileProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.primary,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: AppColors.background,
-        title: const Text('My Profile (મારી પ્રોફાઈલ)', style: TextStyle(color: AppColors.secondary)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text('My Profile (મારી પ્રોફાઈલ)', style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold)),
         iconTheme: const IconThemeData(color: AppColors.secondary),
       ),
       body: SafeArea(
@@ -31,14 +32,21 @@ class ProfileScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.secondary, width: 1.5),
+                  border: Border.all(color: AppColors.secondary.withValues(alpha: 0.5), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: myProfileAsync.when(
                   loading: () => const Center(child: CircularProgressIndicator(color: AppColors.secondary)),
-                  error: (err, stack) => Center(
+                  error: (err, stack) => const Center(
                     child: Text(
                       'Failed to load profile. Please complete your profile.',
-                      style: const TextStyle(color: AppColors.accentRed, fontSize: 14),
+                      style: TextStyle(color: AppColors.accentRed, fontSize: 14),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -46,23 +54,23 @@ class ProfileScreen extends ConsumerWidget {
                     children: [
                       CircleAvatar(
                         radius: 40,
-                        backgroundColor: AppColors.secondary,
+                        backgroundColor: Colors.grey[200],
                         backgroundImage: profile.photoUrl != null && profile.photoUrl!.isNotEmpty
                             ? NetworkImage(profile.photoUrl!)
                             : null,
                         child: profile.photoUrl == null || profile.photoUrl!.isEmpty
-                            ? const Icon(Icons.person, size: 50, color: Colors.black)
+                            ? const Icon(Icons.person, size: 50, color: Colors.black54)
                             : null,
                       ),
                       const SizedBox(height: 12),
                       Text(
                         profile.fullName,
-                        style: const TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         authState.user?.email ?? '',
-                        style: const TextStyle(color: Colors.black54, fontSize: 13),
+                        style: const TextStyle(color: Colors.black54, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
                       if (profile.isVerified == true)
@@ -83,36 +91,33 @@ class ProfileScreen extends ConsumerWidget {
                           ),
                         )
                       else
-                        const Text('સભ્ય (Member)', style: TextStyle(color: Colors.black54, fontSize: 13)),
+                        const Text('સભ્ય (Member)', style: TextStyle(color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w500)),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              ListTile(
-                tileColor: AppColors.background,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                leading: const Icon(Icons.edit, color: AppColors.secondary),
-                title: const Text('Edit Profile (પ્રોફાઈલ સુધારો)', style: TextStyle(color: Colors.white)),
+              const SizedBox(height: 24),
+              _buildListTile(
+                context,
+                icon: Icons.edit,
+                title: 'Edit Profile (પ્રોફાઈલ સુધારો)',
                 onTap: () => context.push('/profile/edit'),
               ),
-              const SizedBox(height: 10),
-              ListTile(
-                tileColor: AppColors.background,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                leading: const Icon(Icons.contact_phone, color: AppColors.secondary),
-                title: const Text('Privacy & Contact (ગોપનીયતા)', style: TextStyle(color: Colors.white)),
+              const SizedBox(height: 12),
+              _buildListTile(
+                context,
+                icon: Icons.contact_phone,
+                title: 'Privacy & Contact (ગોપનીયતા)',
                 onTap: () => context.push('/privacy-contact'),
               ),
-              const SizedBox(height: 10),
-              ListTile(
-                tileColor: AppColors.background,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                leading: const Icon(Icons.verified, color: AppColors.secondary),
-                title: const Text('Verified Profile Details', style: TextStyle(color: Colors.white)),
+              const SizedBox(height: 12),
+              _buildListTile(
+                context,
+                icon: Icons.verified,
+                title: 'Verified Profile Details',
                 onTap: () => context.push('/verified-profile'),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               ElevatedButton.icon(
                 onPressed: () async {
                   await ref.read(authNotifierProvider.notifier).logout();
@@ -123,15 +128,38 @@ class ProfileScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.accentRed,
                   foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 48),
+                  minimumSize: const Size(double.infinity, 54),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 2,
                 ),
                 icon: const Icon(Icons.logout),
-                label: const Text('Logout (લોગઆઉટ)', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: const Text('Logout (લોગઆઉટ)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildListTile(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap}) {
+    return ListTile(
+      tileColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: Colors.grey.shade200),
+      ),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: AppColors.secondary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(icon, color: AppColors.secondary),
+      ),
+      title: Text(title, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
+      trailing: const Icon(Icons.chevron_right, color: Colors.black45),
+      onTap: onTap,
     );
   }
 }
