@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:typed_data';
+import 'dart:convert';
 import '../../../../core/network/api_client.dart';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
@@ -168,22 +169,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           decoration: BoxDecoration(
                             color: const Color(0xFFF5F7FA),
                             shape: BoxShape.circle,
-                            border: Border.all(color: Colors.grey.shade300),
-                            image: _profileImageBytes != null
-                                ? DecorationImage(
-                                    image: MemoryImage(_profileImageBytes!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : (profile.photoUrl != null && profile.photoUrl!.isNotEmpty
-                                    ? DecorationImage(
-                                        image: NetworkImage(profile.photoUrl!),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : null),
+                            border: Border.all(color: Colors.grey.shade300, width: 2),
                           ),
-                          child: _profileImageBytes == null && (profile.photoUrl == null || profile.photoUrl!.isEmpty)
-                              ? const Icon(Icons.add_a_photo, color: Colors.black54, size: 36)
-                              : null,
+                          child: ClipOval(
+                            child: _profileImageBytes != null
+                                ? Image.memory(
+                                    _profileImageBytes!,
+                                    fit: BoxFit.cover,
+                                    width: 80,
+                                    height: 80,
+                                  )
+                                : (profile.fullPhotoUrl != null
+                                    ? Image.network(
+                                        profile.fullPhotoUrl!,
+                                        fit: BoxFit.cover,
+                                        width: 80,
+                                        height: 80,
+                                        errorBuilder: (ctx, err, st) =>
+                                            const Icon(Icons.add_a_photo, color: Colors.black54, size: 36),
+                                      )
+                                    : const Icon(Icons.add_a_photo, color: Colors.black54, size: 36)),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -443,23 +449,49 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_aboutMe != null) updateData['about'] = _aboutMe;
 
                     if (_profileImageBytes != null) {
+                      final dio = ref.read(apiClientProvider);
+                      String? uploadedUrl;
+                      
+                      // Strategy 1: Base64 JSON upload (extremely reliable across all proxies/platforms)
                       try {
-                        final dio = ref.read(apiClientProvider);
-                        final formData = FormData.fromMap({
-                          'file': MultipartFile.fromBytes(
-                            _profileImageBytes!,
-                            filename: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
-                          ),
-                        });
-                        final uploadRes = await dio.post('/storage/upload', data: formData);
+                        final base64String = base64Encode(_profileImageBytes!);
+                        final uploadRes = await dio.post(
+                          '/storage/upload',
+                          data: {
+                            'base64': base64String,
+                            'filename': 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+                            'mimetype': 'image/jpeg',
+                          },
+                        );
                         if (uploadRes.data != null && uploadRes.data['url'] != null) {
-                          final relUrl = uploadRes.data['url'] as String;
-                          updateData['photoUrl'] = relUrl.startsWith('http')
-                              ? relUrl
-                              : 'https://allgujaratvankarsamaj.com$relUrl';
+                          uploadedUrl = uploadRes.data['url'] as String;
                         }
-                      } catch (e) {
-                        debugPrint('Photo upload error: $e');
+                      } catch (base64Err) {
+                        debugPrint('Base64 upload attempt error: $base64Err');
+                      }
+
+                      // Strategy 2: Multipart fallback if Strategy 1 did not set uploadedUrl
+                      if (uploadedUrl == null) {
+                        try {
+                          final formData = FormData.fromMap({
+                            'file': MultipartFile.fromBytes(
+                              _profileImageBytes!,
+                              filename: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+                            ),
+                          });
+                          final uploadRes = await dio.post('/storage/upload', data: formData);
+                          if (uploadRes.data != null && uploadRes.data['url'] != null) {
+                            uploadedUrl = uploadRes.data['url'] as String;
+                          }
+                        } catch (multipartErr) {
+                          debugPrint('Multipart upload fallback error: $multipartErr');
+                        }
+                      }
+
+                      if (uploadedUrl != null) {
+                        updateData['photoUrl'] = uploadedUrl.startsWith('http')
+                            ? uploadedUrl
+                            : 'https://allgujaratvankarsamaj.com$uploadedUrl';
                       }
                     }
 

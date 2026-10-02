@@ -61,12 +61,20 @@ class ProfileModel {
 
   String get fullName => '$firstName $lastName';
 
+  String? get fullPhotoUrl {
+    if (photoUrl == null || photoUrl!.trim().isEmpty) return null;
+    final clean = photoUrl!.trim();
+    if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
+    final relative = clean.startsWith('/') ? clean : '/$clean';
+    return 'https://allgujaratvankarsamaj.com$relative';
+  }
+
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
     return ProfileModel(
       id: json['id'] as String,
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
-      photoUrl: json['photoUrl'] as String?,
+      photoUrl: (json['photoUrl'] ?? json['photo_url']) as String?,
       gender: json['gender'] as String? ?? 'Male (પુરુષ)',
       maritalStatus: json['maritalStatus'] as String? ?? 'Never Married (અપરિણીત)',
       dateOfBirth: json['dateOfBirth'] as String? ?? '',

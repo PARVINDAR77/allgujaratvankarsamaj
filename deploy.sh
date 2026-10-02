@@ -332,7 +332,7 @@ EOF
 # Generate a robust api_proxy.php for Hostinger Unix socket support
 cat << 'EOF' > "${APP_WEB_ROOT}_tmp/api_proxy.php"
 <?php
-// Enhanced API Proxy to Unix Socket with Error Reporting
+// Enhanced API Proxy to Unix Socket with Direct File Upload and JSON Base64 Support
 error_reporting(E_ALL);
 ini_set('display_errors', 0); // Don't output PHP errors to the client to prevent breaking JSON
 
@@ -343,6 +343,34 @@ $method = $_SERVER['REQUEST_METHOD'];
 $uri = $_SERVER['REQUEST_URI'];
 if (empty($uri)) {
     $uri = '/api/v1';
+}
+
+// 1. Direct handling for file upload if PHP received a multipart form file
+if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upload#', $uri)) && !empty($_FILES['file'])) {
+    $file = $_FILES['file'];
+    if ($file['error'] === UPLOAD_ERR_OK && is_uploaded_file($file['tmp_name'])) {
+        $uploadDir = '/home/u796269890/domains/allgujaratvankarsamaj.com/uploads';
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0755, true);
+        }
+        $origName = basename($file['name']);
+        $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION) ?: 'jpg');
+        $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
+        if (in_array($ext, $allowedExts)) {
+            $uniqueFilename = bin2hex(random_bytes(16)) . '.' . $ext;
+            $destPath = $uploadDir . '/' . $uniqueFilename;
+            if (move_uploaded_file($file['tmp_name'], $destPath)) {
+                header('Content-Type: application/json');
+                header('Access-Control-Allow-Origin: *');
+                http_response_code(201);
+                echo json_encode([
+                    'success' => true,
+                    'url' => '/uploads/' . $uniqueFilename
+                ]);
+                exit;
+            }
+        }
+    }
 }
 
 $headers = [];

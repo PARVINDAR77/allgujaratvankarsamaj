@@ -52,15 +52,26 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   data: (profile) => Column(
                     children: [
-                      CircleAvatar(
-                        radius: 40,
-                        backgroundColor: Colors.grey[200],
-                        backgroundImage: profile.photoUrl != null && profile.photoUrl!.isNotEmpty
-                            ? NetworkImage(profile.photoUrl!)
-                            : null,
-                        child: profile.photoUrl == null || profile.photoUrl!.isEmpty
-                            ? const Icon(Icons.person, size: 50, color: Colors.black54)
-                            : null,
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.grey[200],
+                          border: Border.all(color: Colors.grey.shade300, width: 2),
+                        ),
+                        child: ClipOval(
+                          child: profile.fullPhotoUrl != null
+                              ? Image.network(
+                                  profile.fullPhotoUrl!,
+                                  width: 80,
+                                  height: 80,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.person, size: 50, color: Colors.black54),
+                                )
+                              : const Icon(Icons.person, size: 50, color: Colors.black54),
+                        ),
                       ),
                       const SizedBox(height: 12),
                       Text(

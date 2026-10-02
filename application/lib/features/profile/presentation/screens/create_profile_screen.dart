@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 import 'dart:typed_data';
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
@@ -100,23 +101,49 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
 
     String? uploadedPhotoUrl;
     if (_profileImageBytes != null) {
+      final dio = ref.read(apiClientProvider);
+      String? rawUrl;
+
+      // Strategy 1: Base64 JSON upload
       try {
-        final dio = ref.read(apiClientProvider);
-        final formData = FormData.fromMap({
-          'file': MultipartFile.fromBytes(
-            _profileImageBytes!,
-            filename: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
-          ),
-        });
-        final uploadRes = await dio.post('/storage/upload', data: formData);
+        final base64String = base64Encode(_profileImageBytes!);
+        final uploadRes = await dio.post(
+          '/storage/upload',
+          data: {
+            'base64': base64String,
+            'filename': 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            'mimetype': 'image/jpeg',
+          },
+        );
         if (uploadRes.data != null && uploadRes.data['url'] != null) {
-          final relUrl = uploadRes.data['url'] as String;
-          uploadedPhotoUrl = relUrl.startsWith('http')
-              ? relUrl
-              : 'https://allgujaratvankarsamaj.com$relUrl';
+          rawUrl = uploadRes.data['url'] as String;
         }
-      } catch (uploadErr) {
-        debugPrint('Photo upload failed: $uploadErr');
+      } catch (base64Err) {
+        debugPrint('Base64 upload attempt error: $base64Err');
+      }
+
+      // Strategy 2: Multipart fallback
+      if (rawUrl == null) {
+        try {
+          final formData = FormData.fromMap({
+            'file': MultipartFile.fromBytes(
+              _profileImageBytes!,
+              filename: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            ),
+          });
+          final uploadRes = await dio.post('/storage/upload', data: formData);
+          if (uploadRes.data != null && uploadRes.data['url'] != null) {
+            rawUrl = uploadRes.data['url'] as String;
+          }
+        } catch (multipartErr) {
+          debugPrint('Multipart upload fallback error: $multipartErr');
+        }
+      }
+
+      if (rawUrl != null) {
+        uploadedPhotoUrl = rawUrl.startsWith('http')
+            ? rawUrl
+            : 'https://allgujaratvankarsamaj.com$rawUrl';
       }
     }
 

@@ -23,7 +23,6 @@ Dio _buildDioClient(SecureStorageService storage) {
       receiveTimeout: AppConfig.receiveTimeout,
       sendTimeout: AppConfig.sendTimeout,
       headers: {
-        'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
     ),

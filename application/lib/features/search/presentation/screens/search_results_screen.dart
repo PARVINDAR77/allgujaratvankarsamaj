@@ -90,8 +90,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             CircleAvatar(
               radius: 40,
               backgroundColor: Colors.blue.shade50,
-              backgroundImage: profile.photoUrl != null ? NetworkImage(profile.photoUrl!) : null,
-              child: profile.photoUrl == null ? const Icon(Icons.person, size: 50, color: Color(0xFF0056D2)) : null,
+              backgroundImage: profile.fullPhotoUrl != null ? NetworkImage(profile.fullPhotoUrl!) : null,
+              onBackgroundImageError: profile.fullPhotoUrl != null ? (_, __) {} : null,
+              child: profile.fullPhotoUrl == null ? const Icon(Icons.person, size: 50, color: Color(0xFF0056D2)) : null,
             ),
             const SizedBox(width: 16),
             Expanded(

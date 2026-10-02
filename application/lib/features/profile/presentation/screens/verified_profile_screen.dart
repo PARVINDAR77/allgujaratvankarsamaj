@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'dart:convert';
 import '../../../../app/theme/app_colors.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../../core/network/api_client.dart';
@@ -49,16 +50,45 @@ class _VerifiedProfileScreenState
 
       final dio = ref.read(apiClientProvider);
       final bytes = await image.readAsBytes();
-      final formData = FormData.fromMap({
-        'file': MultipartFile.fromBytes(bytes, filename: image.name),
-      });
+      String? rawUrl;
 
-      final response = await dio.post('/storage/upload', data: formData);
-      if (response.data != null && response.data['url'] != null) {
-        final relUrl = response.data['url'] as String;
-        final fullUrl = relUrl.startsWith('http')
-            ? relUrl
-            : 'https://allgujaratvankarsamaj.com$relUrl';
+      // Strategy 1: Base64 JSON upload
+      try {
+        final base64String = base64Encode(bytes);
+        final response = await dio.post(
+          '/storage/upload',
+          data: {
+            'base64': base64String,
+            'filename': image.name,
+            'mimetype': image.mimeType ?? 'image/jpeg',
+          },
+        );
+        if (response.data != null && response.data['url'] != null) {
+          rawUrl = response.data['url'] as String;
+        }
+      } catch (b64Err) {
+        debugPrint('Base64 doc upload error: $b64Err');
+      }
+
+      // Strategy 2: Multipart fallback
+      if (rawUrl == null) {
+        try {
+          final formData = FormData.fromMap({
+            'file': MultipartFile.fromBytes(bytes, filename: image.name),
+          });
+          final response = await dio.post('/storage/upload', data: formData);
+          if (response.data != null && response.data['url'] != null) {
+            rawUrl = response.data['url'] as String;
+          }
+        } catch (multiErr) {
+          debugPrint('Multipart doc upload error: $multiErr');
+        }
+      }
+
+      if (rawUrl != null) {
+        final fullUrl = rawUrl.startsWith('http')
+            ? rawUrl
+            : 'https://allgujaratvankarsamaj.com$rawUrl';
         setState(() {
           _docUrlController.text = fullUrl;
         });

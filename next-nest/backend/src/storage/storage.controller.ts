@@ -3,6 +3,7 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
+  Body,
   BadRequestException,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -15,26 +16,13 @@ export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post("upload")
-  @ApiOperation({ summary: "Upload a file (Image or PDF)" })
-  @ApiConsumes("multipart/form-data")
-  @ApiBody({
-    schema: {
-      type: "object",
-      properties: {
-        file: {
-          type: "string",
-          format: "binary",
-        },
-      },
-    },
-  })
+  @ApiOperation({ summary: "Upload a file (Image or PDF via Multipart or Base64 JSON)" })
+  @ApiConsumes("multipart/form-data", "application/json")
   @UseInterceptors(FileInterceptor("file"))
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      throw new BadRequestException("No file uploaded");
-    }
-
-    // Allow images and PDFs
+  async uploadFile(
+    @UploadedFile() file?: Express.Multer.File,
+    @Body() body?: any,
+  ) {
     const allowedMimeTypes = [
       "image/jpeg",
       "image/png",
@@ -42,17 +30,59 @@ export class StorageController {
       "image/webp",
       "application/pdf",
     ];
-    if (!allowedMimeTypes.includes(file.mimetype)) {
-      throw new BadRequestException(
-        "Invalid file type. Only images and PDFs are allowed.",
+
+    // Case 1: Standard multipart file upload
+    if (file && file.buffer) {
+      if (!allowedMimeTypes.includes(file.mimetype)) {
+        throw new BadRequestException(
+          "Invalid file type. Only images and PDFs are allowed.",
+        );
+      }
+      const url = await this.storageService.uploadFile(
+        file.buffer,
+        file.mimetype,
+        file.originalname || "image.jpg",
       );
+      return { url };
     }
 
-    const url = await this.storageService.uploadFile(
-      file.buffer,
-      file.mimetype,
-      file.originalname,
-    );
-    return { url };
+    // Case 2: Base64 string payload (JSON)
+    const base64Data = body?.base64 || body?.file;
+    if (typeof base64Data === "string" && base64Data.trim().length > 0) {
+      let rawBase64 = base64Data.trim();
+      let mimetype = body?.mimetype || "image/jpeg";
+      let originalName = body?.filename || "upload.jpg";
+
+      // Parse data URI prefix if present (e.g., data:image/png;base64,...)
+      const dataUriMatch = rawBase64.match(/^data:([a-zA-Z0-9\/\-+.]+);base64,(.+)$/s);
+      if (dataUriMatch) {
+        mimetype = dataUriMatch[1].toLowerCase();
+        rawBase64 = dataUriMatch[2].trim();
+        if (!body?.filename) {
+          const ext = mimetype.split("/")[1] || "jpg";
+          originalName = `upload.${ext}`;
+        }
+      }
+
+      if (!allowedMimeTypes.includes(mimetype)) {
+        throw new BadRequestException(
+          "Invalid file type. Only images and PDFs are allowed.",
+        );
+      }
+
+      const fileBuffer = Buffer.from(rawBase64, "base64");
+      if (!fileBuffer || fileBuffer.length === 0) {
+        throw new BadRequestException("Invalid or empty base64 data");
+      }
+
+      const url = await this.storageService.uploadFile(
+        fileBuffer,
+        mimetype,
+        originalName,
+      );
+      return { url };
+    }
+
+    throw new BadRequestException("No file or base64 image data provided");
   }
 }
