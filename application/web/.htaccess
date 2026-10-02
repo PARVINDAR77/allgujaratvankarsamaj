@@ -1,0 +1,38 @@
+RewriteEngine On
+
+# Disable caching for HTML and JS to ensure updates apply immediately
+<IfModule mod_headers.c>
+    <FilesMatch "\.(html|js|json)$">
+        Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+</IfModule>
+
+# Allow direct file access for existing files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Return real 404 for missing static assets (js, css, images) so they never serve index.html
+RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map)$ [NC]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ - [R=404,L]
+
+# Route /api/ to api_proxy.php
+RewriteRule ^api/(.*)$ api_proxy.php [QSA,L]
+
+# Route /uploads/ to api_proxy.php as fallback
+RewriteRule ^uploads/(.*)$ api_proxy.php [QSA,L]
+
+# Privacy Policy & Account Deletion URLs for Google Play Console compliance
+RewriteRule ^privacy-policy/?$ privacy-policy.html [L]
+RewriteRule ^privacy/?$ privacy-policy.html [L]
+RewriteRule ^delete-account/?$ delete-account.html [L]
+RewriteRule ^account-deletion/?$ delete-account.html [L]
+RewriteRule ^delete-data/?$ delete-account.html [L]
+
+# Normal Flutter/SPA routing (fallback to index.html for non-files)
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.html [QSA,L]

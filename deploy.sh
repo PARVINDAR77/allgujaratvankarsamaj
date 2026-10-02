@@ -331,6 +331,13 @@ RewriteRule ^api/(.*)$ api_proxy.php [QSA,L]
 # Route /uploads/ to api_proxy.php as fallback
 RewriteRule ^uploads/(.*)$ api_proxy.php [QSA,L]
 
+# Privacy Policy & Account Deletion URLs for Google Play Console compliance
+RewriteRule ^privacy-policy/?$ privacy-policy.html [L]
+RewriteRule ^privacy/?$ privacy-policy.html [L]
+RewriteRule ^delete-account/?$ delete-account.html [L]
+RewriteRule ^account-deletion/?$ delete-account.html [L]
+RewriteRule ^delete-data/?$ delete-account.html [L]
+
 # Normal Flutter/SPA routing (fallback to index.html for non-files)
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

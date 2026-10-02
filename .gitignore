@@ -12,7 +12,8 @@ build/
 .packages
 .pub-cache/
 .pub/
-application/build/
+application/build/*
+!application/build/web/
 application/android/.gradle/
 application/android/app/build/
 application/ios/Pods/

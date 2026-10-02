@@ -20,6 +20,7 @@ import '../../features/profile/presentation/screens/create_profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/privacy_contact_screen.dart';
 import '../../features/profile/presentation/screens/privacy_policy_screen.dart';
+import '../../features/profile/presentation/screens/delete_account_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
@@ -58,12 +59,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authNotifierProvider);
       final location = state.uri.toString();
       final isLoggingIn = location == '/login' || location == '/register';
+      final isPublicRoute = isLoggingIn ||
+          location == '/privacy-policy' ||
+          location == '/delete-account' ||
+          location == '/privacy-contact';
 
       if (authState.status == AuthStatus.initial) {
         return null;
       }
 
-      if (!authState.isAuthenticated && !isLoggingIn) {
+      if (!authState.isAuthenticated && !isPublicRoute) {
         return '/login';
       }
 
@@ -77,6 +82,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               location == '/profile/create' ||
               location == '/profile/edit' ||
               location == '/privacy-policy' ||
+              location == '/delete-account' ||
               location == '/privacy-contact';
 
           if (!isAllowedUnverifiedRoute) {
@@ -142,6 +148,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/privacy-policy',
         name: 'privacy-policy',
         builder: (context, state) => const PrivacyPolicyScreen(),
+      ),
+      GoRoute(
+        path: '/delete-account',
+        name: 'delete-account',
+        builder: (context, state) => const DeleteAccountScreen(),
       ),
       GoRoute(
         path: '/verified-profile',

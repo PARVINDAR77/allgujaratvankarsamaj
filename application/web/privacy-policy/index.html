@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy - All Gujarat Vankar Samaj Matrimony</title>
+  <meta name="description" content="Official Privacy Policy for All Gujarat Vankar Samaj Matrimony application and website. Learn how your data is collected, protected, and managed.">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/png" href="favicon.png">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #041026;
+      --primary-light: #0d2247;
+      --secondary: #D4AF37;
+      --secondary-dark: #b89326;
+      --accent: #E05638;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --success: #10B981;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.08), 0 8px 10px -6px rgba(0,0,0,0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Header & Navigation */
+    header {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      color: white;
+      padding: 2.5rem 1.5rem 3.5rem;
+      position: relative;
+      border-bottom: 4px solid var(--secondary);
+    }
+
+    .header-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .brand-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(212, 175, 55, 0.18);
+      border: 1px solid var(--secondary);
+      color: #F8E7A2;
+      padding: 0.35rem 1.1rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-bottom: 1.25rem;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 0.5rem;
+      color: #FFFFFF;
+    }
+
+    .subtitle-gujarati {
+      font-size: 1.25rem;
+      color: var(--secondary);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      font-size: 0.9rem;
+      color: #94A3B8;
+      margin-top: 1rem;
+    }
+
+    .meta-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    /* Action buttons in header */
+    .header-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.4rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-secondary {
+      background: var(--secondary);
+      color: var(--primary);
+    }
+    .btn-secondary:hover {
+      background: var(--secondary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+    .btn-outline:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: white;
+    }
+
+    /* Main Container */
+    .main-container {
+      max-width: 1000px;
+      margin: -2rem auto 4rem;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 10;
+    }
+
+    /* Summary Highlights */
+    .highlight-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .highlight-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .highlight-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: #FEF3C7;
+      color: #B45309;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      flex-shrink: 0;
+    }
+
+    .highlight-info h4 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.05rem;
+      color: var(--primary);
+      margin-bottom: 0.2rem;
+    }
+
+    .highlight-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Main Content Card */
+    .content-card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 3rem 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .section-block {
+      margin-bottom: 2.75rem;
+      scroll-margin-top: 2rem;
+    }
+
+    .section-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding-bottom: 0.6rem;
+      border-bottom: 2px solid #F1F5F9;
+    }
+
+    .section-number {
+      background: #E2E8F0;
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    p {
+      margin-bottom: 1rem;
+      color: #334155;
+      font-size: 1rem;
+    }
+
+    ul, ol {
+      margin: 1rem 0 1.25rem 1.5rem;
+      color: #334155;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    strong {
+      color: var(--primary);
+    }
+
+    /* Policy Table */
+    .policy-table-wrapper {
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: #F1F5F9;
+      color: var(--primary);
+      font-weight: 600;
+      padding: 0.9rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 0.9rem 1.1rem;
+      border-bottom: 1px solid #EDF2F7;
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Notice callout box */
+    .callout {
+      background: #EFF6FF;
+      border-left: 4px solid #3B82F6;
+      padding: 1.25rem 1.5rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1.5rem 0;
+    }
+
+    .callout-title {
+      font-weight: 700;
+      color: #1E40AF;
+      margin-bottom: 0.4rem;
+      font-size: 1rem;
+    }
+
+    .callout-warning {
+      background: #FFFBEB;
+      border-left-color: #F59E0B;
+    }
+    .callout-warning .callout-title {
+      color: #B45309;
+    }
+
+    .callout-deletion {
+      background: #FEF2F2;
+      border-left-color: #EF4444;
+    }
+    .callout-deletion .callout-title {
+      color: #B91C1C;
+    }
+
+    /* Footer */
+    footer {
+      background: var(--primary);
+      color: #94A3B8;
+      padding: 3rem 1.5rem;
+      text-align: center;
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: #CBD5E1;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--secondary);
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.85rem; }
+      .content-card { padding: 1.75rem 1.25rem; }
+      .section-title { font-size: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="header-container">
+      <div class="brand-badge">
+        <span>🛡️ Official Google Play Compliance Document</span>
+      </div>
+      <h1>Privacy Policy (ગોપનીયતા નીતિ)</h1>
+      <div class="subtitle-gujarati">અખિલ ગુજરાત વણકર સમાજ મેટ્રિમોની</div>
+      <p style="color: #E2E8F0; max-width: 650px; font-size: 1.05rem;">
+        Complete Transparency &amp; Data Safety for our Community Matrimonial Platform
+      </p>
+
+      <div class="meta-bar">
+        <div class="meta-item">
+          <span>📅 <strong>Effective Date:</strong> October 2, 2026</span>
+        </div>
+        <div class="meta-item">
+          <span>📌 <strong>App:</strong> All Gujarat Vankar Samaj Matrimony</span>
+        </div>
+        <div class="meta-item">
+          <span>🏢 <strong>Publisher:</strong> All Gujarat Vankar Samaj</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <a href="#table-of-contents" class="btn btn-outline">Read Policy</a>
+        <a href="delete-account.html" class="btn btn-secondary">Delete Account Request &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="main-container">
+
+    <!-- Highlight Cards -->
+    <div class="highlight-grid">
+      <div class="highlight-card">
+        <div class="highlight-icon">🔒</div>
+        <div class="highlight-info">
+          <h4>Zero Ad Selling</h4>
+          <p>We never sell or monetize your private matrimonial information to 3rd-party advertisers.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">🛡️</div>
+        <div class="highlight-info">
+          <h4>256-Bit SSL Protection</h4>
+          <p>All communication between your device and server is safeguarded with HTTPS encryption.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">🗑️</div>
+        <div class="highlight-info">
+          <h4>Full Deletion Control</h4>
+          <p>You can permanently delete your profile, photos, and records at any time with one click.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">👥</div>
+        <div class="highlight-info">
+          <h4>Verified Community</h4>
+          <p>Exclusively built to serve members of the Vankar community across Gujarat.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Policy Document -->
+    <div class="content-card" id="table-of-contents">
+
+      <div class="callout">
+        <div class="callout-title">Commitment to Your Privacy</div>
+        <p style="margin-bottom: 0;">
+          This Privacy Policy strictly explains how <strong>All Gujarat Vankar Samaj</strong> ("we", "us", or "our") collects, uses, handles, and protects user information when you download, install, or use the <strong>All Gujarat Vankar Samaj Matrimony</strong> mobile application (available on Google Play Store) and our official website portal <strong>https://allgujaratvankarsamaj.com</strong>.
+        </p>
+      </div>
+
+      <!-- Section 1 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">1</span> Introduction &amp; Applicability</h2>
+        <p>
+          <strong>All Gujarat Vankar Samaj Matrimony</strong> is an exclusive matrimonial matchmaking platform created specifically for the Vankar community. We recognize that matrimonial data is deeply personal, sensitive, and sacred. We are strictly committed to safeguarding the privacy and confidentiality of every single bride, groom, and family member using our platform.
+        </p>
+        <p>
+          By creating an account or accessing the application, you acknowledge that you have read, understood, and consented to the data collection and processing practices described in this document.
+        </p>
+      </div>
+
+      <!-- Section 2 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">2</span> Information We Collect</h2>
+        <p>
+          To facilitate genuine matrimonial matchmaking within the community, we collect only the necessary information that you voluntarily provide during registration and profile creation:
+        </p>
+
+        <div class="policy-table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Data Fields Collected</th>
+                <th>Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Personal Identity</strong></td>
+                <td>Full name, gender, date of birth, age, marital status (unmarried, divorced, widowed).</td>
+                <td>Authenticating candidate identity and matching age/gender criteria.</td>
+              </tr>
+              <tr>
+                <td><strong>Contact Information</strong></td>
+                <td>Mobile phone number, email address, WhatsApp number, residential city, native village/district.</td>
+                <td>Account security, SMS OTP verification, and approved match communications.</td>
+              </tr>
+              <tr>
+                <td><strong>Community &amp; Horoscope</strong></td>
+                <td>Sub-caste / Samaj (Vankar), Pargana, Gotra, Horoscope/Rashi/Nakshtra (optional).</td>
+                <td>Community-aligned matchmaking based on traditional cultural preferences.</td>
+              </tr>
+              <tr>
+                <td><strong>Professional &amp; Education</strong></td>
+                <td>Highest qualification, college/degree, occupation type, job title, employer sector, income range.</td>
+                <td>Helping families evaluate career compatibility and educational alignment.</td>
+              </tr>
+              <tr>
+                <td><strong>Photographs &amp; Media</strong></td>
+                <td>Profile photos, biodata document images uploaded voluntarily by the user.</td>
+                <td>Profile representation and mutual visual verification between candidates.</td>
+              </tr>
+              <tr>
+                <td><strong>Device &amp; Diagnostics</strong></td>
+                <td>Device model, Android OS version, IP address, crash telemetry logs.</td>
+                <td>Preventing multiple fake registrations, app debugging, and platform security.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 3 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">3</span> App Permissions Requested on Android</h2>
+        <p>
+          When you install the Android application from Google Play, our app may request specific hardware or software permissions. These permissions are strictly activated only when you perform relevant actions:
+        </p>
+        <ul>
+          <li><strong>CAMERA Permission (android.permission.CAMERA):</strong> Used exclusively when you choose to take a photo of yourself or a biodata paper directly inside the app to set your profile picture.</li>
+          <li><strong>READ_EXTERNAL_STORAGE / READ_MEDIA_IMAGES:</strong> Used when you select an existing photo or PDF from your device gallery to upload to your profile.</li>
+          <li><strong>INTERNET &amp; ACCESS_NETWORK_STATE:</strong> Required to connect securely to the matrimonial API servers and load profiles.</li>
+          <li><strong>POST_NOTIFICATIONS:</strong> Used to notify you when another candidate expresses interest in your profile or when your profile status is updated by administrators.</li>
+        </ul>
+        <p>
+          <em>Note: We NEVER access your contacts, SMS, audio recordings, or continuous background GPS location.</em>
+        </p>
+      </div>
+
+      <!-- Section 4 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">4</span> How We Use Your Information</h2>
+        <p>We process your personal information strictly for the following purposes:</p>
+        <ol>
+          <li><strong>Matrimonial Discovery:</strong> To index your profile and display eligible matches to other verified registered candidates within the Samaj.</li>
+          <li><strong>Candidate Verification:</strong> To perform administrative review and verify that profiles meet our community standards and are not fraudulent.</li>
+          <li><strong>Communication &amp; Alerts:</strong> To send account verification codes (OTP), match notifications, and administrative updates.</li>
+          <li><strong>Fraud Prevention:</strong> To detect, investigate, and prevent suspicious activities, scams, harassment, or unauthorized duplicate accounts.</li>
+        </ol>
+
+        <div class="callout callout-warning">
+          <div class="callout-title">🚫 Absolute Zero Commercialization Guarantee</div>
+          <p style="margin-bottom: 0;">
+            We <strong>DO NOT</strong> sell, rent, lease, trade, or disclose your personal or contact details to third-party telemarketers, credit card issuers, ad networks, or data brokers.
+          </p>
+        </div>
+      </div>
+
+      <!-- Section 5 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">5</span> Data Sharing &amp; Visibility</h2>
+        <p>
+          Your information is shared strictly within the scope of matrimonial matchmaking:
+        </p>
+        <ul>
+          <li><strong>With Registered Candidates:</strong> Registered and authenticated community users can view your matrimonial bio, photos, education, and career details.</li>
+          <li><strong>Contact Number Privacy:</strong> You have control over who views your direct phone number. Contact details are released only after mutual consent or administrative verification.</li>
+          <li><strong>Cloud &amp; Hosting Infrastructure:</strong> Stored securely on encrypted database servers managed by Hostinger Cloud Hosting with restricted access.</li>
+          <li><strong>Legal Requirements:</strong> If mandated by applicable Indian laws, subpoenas, or court orders, we may disclose records to law enforcement agencies.</li>
+        </ul>
+      </div>
+
+      <!-- Section 6 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">6</span> Data Security Measures</h2>
+        <p>
+          We employ robust technical and organizational security controls to protect your data:
+        </p>
+        <ul>
+          <li><strong>256-bit TLS/SSL Encryption:</strong> All communications between your Android device and our backend servers are encrypted in transit.</li>
+          <li><strong>Password Hashing:</strong> User credentials are protected using strong cryptographic one-way salted hashing algorithms (bcrypt).</li>
+          <li><strong>Access Restrictions:</strong> Access to backend user records is strictly restricted to authorized Samaj administrators.</li>
+        </ul>
+      </div>
+
+      <!-- Section 7 (Account & Data Deletion) -->
+      <div class="section-block" id="deletion">
+        <h2 class="section-title"><span class="section-number">7</span> Account &amp; Data Deletion (Google Play Compliance)</h2>
+        <p>
+          In accordance with Google Play's <strong>User Data and Account Deletion Policy</strong>, every user has the absolute right to delete their account and have all personal data permanently erased from our systems at any time.
+        </p>
+
+        <div class="callout callout-deletion">
+          <div class="callout-title">How to Delete Your Account and Data</div>
+          <p>
+            You can delete your account using either of the following two straightforward methods:
+          </p>
+          <ul style="margin-bottom: 0.5rem;">
+            <li><strong>Method 1 (Inside the Android App):</strong> Open the App &rarr; Navigate to <strong>Profile</strong> tab &rarr; Scroll down and tap <strong>"Delete Account (એકાઉન્ટ કાઢી નાખો)"</strong> &rarr; Select your reason &rarr; Confirm deletion. Your profile and images are immediately removed.</li>
+            <li><strong>Method 2 (Outside the App via Web Form):</strong> If you do not have the app installed or do not wish to log in, you can directly submit a request on our public web portal:
+              <br>
+              <a href="delete-account.html" style="font-weight: 700; color: #B91C1C; text-decoration: underline;">https://allgujaratvankarsamaj.com/delete-account</a>
+            </li>
+            <li><strong>Method 3 (Direct Email):</strong> You can email us at <a href="mailto:panjabiparvindar77@gmail.com" style="color: #B91C1C; font-weight: 600;">panjabiparvindar77@gmail.com</a> with the subject <em>"Account Deletion Request"</em> from your registered email.</li>
+          </ul>
+        </div>
+
+        <p><strong>What happens when your account is deleted:</strong></p>
+        <ul>
+          <li>All your matrimonial details (name, photos, horoscope, bio, family info) are permanently deleted.</li>
+          <li>All photos stored on the server disk are permanently purged.</li>
+          <li>Your login credentials and authentication sessions are permanently invalidated.</li>
+          <li>Your profile will immediately vanish from community search results.</li>
+        </ul>
+      </div>
+
+      <!-- Section 8 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">8</span> Eligibility &amp; Minor's Privacy (18+ / 21+)</h2>
+        <p>
+          Our matrimonial platform is strictly meant for marriage-eligible adults in compliance with the legal marriage age requirements of the Republic of India (minimum 18 years for females and 21 years for males).
+        </p>
+        <p>
+          We do not knowingly register or solicit data from children or individuals under the legal marriageable age. If we discover any minor's profile, it is immediately deleted.
+        </p>
+      </div>
+
+      <!-- Section 9 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">9</span> Policy Updates</h2>
+        <p>
+          We may periodically update this Privacy Policy to reflect app enhancements or statutory legal changes. The "Effective Date" at the top of this page will always indicate when the latest revision took effect. Continued use of the service constitutes agreement to updated terms.
+        </p>
+      </div>
+
+      <!-- Section 10 -->
+      <div class="section-block">
+        <h2 class="section-title"><span class="section-number">10</span> Grievance Officer &amp; Official Contact</h2>
+        <p>
+          For questions, feedback, privacy concerns, or data requests, please reach out to our designated administrative contact:
+        </p>
+        <div style="background: #F8FAFC; border: 1px solid var(--border); padding: 1.5rem; border-radius: 10px;">
+          <p style="margin-bottom: 0.35rem;"><strong>Officer / Administrator:</strong> Parvindar Panjabi</p>
+          <p style="margin-bottom: 0.35rem;"><strong>Organization:</strong> All Gujarat Vankar Samaj</p>
+          <p style="margin-bottom: 0.35rem;"><strong>Official Support Email:</strong> <a href="mailto:panjabiparvindar77@gmail.com" style="color: #2563EB; font-weight: 600;">panjabiparvindar77@gmail.com</a></p>
+          <p style="margin-bottom: 0.35rem;"><strong>Official Website:</strong> <a href="https://allgujaratvankarsamaj.com" target="_blank" style="color: #2563EB;">https://allgujaratvankarsamaj.com</a></p>
+          <p style="margin-bottom: 0;"><strong>Location:</strong> Gujarat, India</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-links">
+      <a href="https://allgujaratvankarsamaj.com">Home</a>
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="delete-account.html">Delete Account Request</a>
+      <a href="mailto:panjabiparvindar77@gmail.com">Contact Support</a>
+    </div>
+    <p>&copy; 2026 All Gujarat Vankar Samaj. All rights reserved.</p>
+    <p style="font-size: 0.8rem; margin-top: 0.5rem; color: #64748B;">Dedicated Matrimonial &amp; Community Service Platform for Vankar Samaj across Gujarat.</p>
+  </footer>
+
+</body>
+</html>
