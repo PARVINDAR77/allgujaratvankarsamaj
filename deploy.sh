@@ -180,6 +180,7 @@ echo "≡ƒöä Executing atomic deployments..."
 # Since this Hostinger plan doesn't support Passenger, we run it in the background on a Unix Socket
 echo "≡ƒöä Restarting Node.js Backend..."
 pkill -f node || true
+rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
 SOCKET_PATH=/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock NODE_ENV=production nohup node "$PROJECT_ROOT/next-nest/backend/dist/main.js" > "$PROJECT_ROOT/next-nest/backend/backend.log" 2>&1 &
 
 # 2. Next.js Admin (Atomic MV)
