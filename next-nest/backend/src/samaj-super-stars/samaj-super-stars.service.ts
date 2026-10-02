@@ -1,21 +1,32 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class SamajSuperStarsService {
+  private readonly logger = new Logger(SamajSuperStarsService.name);
   constructor(private prisma: PrismaService) {}
 
   async findAllAdmin() {
-    return this.prisma.samajSuperStar.findMany({
-      orderBy: { displayOrder: "asc" },
-    });
+    try {
+      return await this.prisma.samajSuperStar.findMany({
+        orderBy: { displayOrder: "asc" },
+      });
+    } catch (e) {
+      this.logger.warn("Could not query samaj_super_stars table:", e);
+      return [];
+    }
   }
 
   async findAllPublic() {
-    return this.prisma.samajSuperStar.findMany({
-      where: { isActive: true },
-      orderBy: { displayOrder: "asc" },
-    });
+    try {
+      return await this.prisma.samajSuperStar.findMany({
+        where: { isActive: true },
+        orderBy: { displayOrder: "asc" },
+      });
+    } catch (e) {
+      this.logger.warn("Could not query samaj_super_stars table:", e);
+      return [];
+    }
   }
 
   async create(data: any) {

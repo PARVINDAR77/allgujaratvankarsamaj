@@ -62,24 +62,66 @@ export class UsersService {
   // --- Admin Endpoints ---
 
   async getAllUsersForAdmin() {
-    const users = await this.prisma.user.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { profile: true },
-    });
-    return users.map((u) => ({
-      id: u.id,
-      name:
-        (u as any).name ||
-        (u.profile?.firstName
-          ? `${u.profile.firstName} ${u.profile.lastName}`.trim()
-          : u.email || "Member"),
-      email: u.email,
-      phone: (u as any).phone || "9876543210",
-      pargana: u.profile?.city || "35 Pargana",
-      status: u.status,
-      role: u.role,
-      createdAt: u.createdAt,
-    }));
+    try {
+      const users = await this.prisma.user.findMany({
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          status: true,
+          role: true,
+          createdAt: true,
+          profile: {
+            select: {
+              firstName: true,
+              lastName: true,
+              city: true,
+              nativePlace: true,
+            },
+          },
+        },
+      });
+      return users.map((u) => ({
+        id: u.id,
+        name:
+          u.name ||
+          (u.profile?.firstName
+            ? `${u.profile.firstName} ${u.profile.lastName || ""}`.trim()
+            : u.email || "Member"),
+        email: u.email || "",
+        phone: u.phone || "9876543210",
+        pargana: u.profile?.city || u.profile?.nativePlace || "35 Pargana",
+        status: u.status,
+        role: u.role,
+        createdAt: u.createdAt,
+      }));
+    } catch (err) {
+      this.logger.error("Failed to query admin users with profiles, falling back to basic users", err);
+      const basicUsers = await this.prisma.user.findMany({
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          status: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+      return basicUsers.map((u) => ({
+        id: u.id,
+        name: u.name || u.email || "Member",
+        email: u.email || "",
+        phone: u.phone || "9876543210",
+        pargana: "35 Pargana",
+        status: u.status,
+        role: u.role,
+        createdAt: u.createdAt,
+      }));
+    }
   }
 
   async updateUserStatusAdmin(
@@ -159,27 +201,53 @@ export class UsersService {
   }
 
   async getAllProfilesForAdmin() {
-    const profiles = await this.prisma.matrimonialProfile.findMany({
-      orderBy: { createdAt: "desc" },
-      include: { user: true },
-    });
-    return profiles.map((p) => ({
-      id: p.id,
-      userId: p.userId,
-      name: `${p.firstName} ${p.lastName}`.trim(),
-      age: p.dateOfBirth
-        ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()
-        : 26,
-      gender: p.gender,
-      pargana: p.nativePlace || "35 Pargana",
-      city: p.city || "Ahmedabad",
-      education: p.education || "Graduate",
-      occupation: p.occupation || "Service",
-      status: p.status || "PENDING",
-      isVerified: p.isVerified,
-      isFeatured: p.isFeatured,
-      createdAt: p.createdAt,
-    }));
+    try {
+      const profiles = await this.prisma.matrimonialProfile.findMany({
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          userId: true,
+          firstName: true,
+          lastName: true,
+          dateOfBirth: true,
+          gender: true,
+          nativePlace: true,
+          city: true,
+          education: true,
+          occupation: true,
+          status: true,
+          isVerified: true,
+          isFeatured: true,
+          createdAt: true,
+          user: {
+            select: {
+              email: true,
+              phone: true,
+            },
+          },
+        },
+      });
+      return profiles.map((p) => ({
+        id: p.id,
+        userId: p.userId,
+        name: `${p.firstName} ${p.lastName || ""}`.trim(),
+        age: p.dateOfBirth
+          ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()
+          : 26,
+        gender: p.gender,
+        pargana: p.nativePlace || "35 Pargana",
+        city: p.city || "Ahmedabad",
+        education: p.education || "Graduate",
+        occupation: p.occupation || "Service",
+        status: p.status || "PENDING",
+        isVerified: p.isVerified,
+        isFeatured: p.isFeatured,
+        createdAt: p.createdAt,
+      }));
+    } catch (err) {
+      this.logger.error("Failed to query admin matrimonial profiles", err);
+      return [];
+    }
   }
 
   async updateProfileStatusAdmin(

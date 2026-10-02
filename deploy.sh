@@ -126,6 +126,61 @@ npx prisma generate
 echo "Syncing Admin Roles in Database via MySQL CLI..."
 mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "UPDATE users SET role = 'SUPER_ADMIN', status = 'ACTIVE' WHERE email IN ('admin@vankarsamaj.org', 'admin@vankarsamaj.com');" || true
 
+echo "Applying required schema tables and columns via MySQL CLI..."
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "
+CREATE TABLE IF NOT EXISTS \`samaj_super_stars\` (
+  \`id\` varchar(191) NOT NULL,
+  \`name\` varchar(191) NOT NULL,
+  \`gujarati_name\` varchar(191) DEFAULT NULL,
+  \`photo_url\` text DEFAULT NULL,
+  \`description\` text DEFAULT NULL,
+  \`designation\` varchar(191) DEFAULT NULL,
+  \`year\` varchar(191) DEFAULT NULL,
+  \`display_order\` int NOT NULL DEFAULT 0,
+  \`is_active\` tinyint(1) NOT NULL DEFAULT 1,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS \`pavan_prernadata\` (
+  \`id\` varchar(191) NOT NULL,
+  \`name\` varchar(191) NOT NULL,
+  \`gujarati_name\` varchar(191) DEFAULT NULL,
+  \`photo_url\` text DEFAULT NULL,
+  \`description\` text DEFAULT NULL,
+  \`designation\` varchar(191) DEFAULT NULL,
+  \`year\` varchar(191) DEFAULT NULL,
+  \`display_order\` int NOT NULL DEFAULT 0,
+  \`is_active\` tinyint(1) NOT NULL DEFAULT 1,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS \`samaj_ratnas\` (
+  \`id\` varchar(191) NOT NULL,
+  \`name\` varchar(191) NOT NULL,
+  \`gujarati_name\` varchar(191) DEFAULT NULL,
+  \`photo_url\` text DEFAULT NULL,
+  \`description\` text DEFAULT NULL,
+  \`designation\` varchar(191) DEFAULT NULL,
+  \`year\` varchar(191) DEFAULT NULL,
+  \`display_order\` int NOT NULL DEFAULT 0,
+  \`is_active\` tinyint(1) NOT NULL DEFAULT 1,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`is_physically_disabled\` tinyint(1) NOT NULL DEFAULT 0;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`pwbd_category\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`is_abroad\` tinyint(1) NOT NULL DEFAULT 0;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`abroad_country\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`business_industry\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`business_service\` varchar(191) DEFAULT NULL;
+" || true
+
 echo "Skipping Database Migrations (Hostinger RAM limits)..."
 # npx prisma migrate deploy
 npm run build
@@ -137,16 +192,16 @@ git pull origin main
 # ---------------------------------------------------------
 # Next.js Admin (Pre-built)
 # ---------------------------------------------------------
-echo "≡ƒûÑ∩╕Å Using pre-built Next.js Admin Panel (built locally)..."
+echo "🖥️ Using pre-built Next.js Admin Panel (built locally)..."
 # Hostinger shared hosting kills the Next.js build worker due to process limits.
 # Build Next.js locally with 'npm run build' and push the 'out/' folder to Git.
 if [ ! -d "$PROJECT_ROOT/next-nest/frontend/out" ]; then
-    echo "Γ¥î ERROR: next-nest/frontend/out/ not found!"
-    echo "ΓÜá∩╕Å Build Next.js locally and push the 'out/' folder to Git first:"
+    echo "❌ ERROR: next-nest/frontend/out/ not found!"
+    echo "⚠️ Build Next.js locally and push the 'out/' folder to Git first:"
     echo "   cd next-nest/frontend && npm run build && git add out && git commit && git push"
     exit 1
 fi
-echo "Γ£à Found pre-built Next.js output."
+echo "✅ Found pre-built Next.js output."
 cd "$PROJECT_ROOT"
 
 echo "Pulling latest code from Git..."
@@ -155,19 +210,19 @@ git pull origin main
 # ---------------------------------------------------------
 # Build: Flutter Web (WARNING)
 # ---------------------------------------------------------
-echo "≡ƒô▒ Preparing Flutter Web Application..."
+echo "📱 Preparing Flutter Web Application..."
 # We skip 'flutter build web' because Hostinger Business does not support the Flutter SDK.
 # The script assumes you ran 'flutter build web' LOCALLY and pushed the 'application/build/web' folder to Git.
 if [ ! -d "$PROJECT_ROOT/application/build/web" ]; then
-    echo "Γ¥î Error: application/build/web directory not found!"
-    echo "ΓÜá∩╕Å You must build Flutter locally and push the build/web folder to Git when using shared hosting."
+    echo "❌ Error: application/build/web directory not found!"
+    echo "⚠️ You must build Flutter locally and push the build/web folder to Git when using shared hosting."
     exit 1
 fi
 
 # ---------------------------------------------------------
 # Pre-rollback Snapshot (App State)
 # ---------------------------------------------------------
-echo "≡ƒô╕ Preparing rollback artifacts..."
+echo "📸 Preparing rollback artifacts..."
 PREV_ADMIN_DIR="${ADMIN_WEB_ROOT}_prev"
 PREV_APP_DIR="${APP_WEB_ROOT}_prev"
 
@@ -177,11 +232,11 @@ PREV_APP_DIR="${APP_WEB_ROOT}_prev"
 # ---------------------------------------------------------
 # Atomic Replacements & Reloads
 # ---------------------------------------------------------
-echo "≡ƒöä Executing atomic deployments..."
+echo "🔄 Executing atomic deployments..."
 
 # 1. NestJS (Background Process via Unix Socket)
 # Since this Hostinger plan doesn't support Passenger, we run it in the background on a Unix Socket
-echo "≡ƒöä Restarting Node.js Backend..."
+echo "🔄 Restarting Node.js Backend..."
 pkill -f node || true
 rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
 SOCKET_PATH=/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock NODE_ENV=production nohup node "$PROJECT_ROOT/next-nest/backend/dist/main.js" > "$PROJECT_ROOT/next-nest/backend/backend.log" 2>&1 &
@@ -211,34 +266,27 @@ cat << 'EOF' > "${APP_WEB_ROOT}_tmp/admin/.htaccess"
 RewriteEngine On
 RewriteBase /admin/
 
-# Strip trailing slash if present: e.g. /admin/users/ -> /admin/users
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)/$ $1 [R=301,L]
-
-# If the request is for the root of /admin/, serve the root admin.html
-RewriteRule ^$ ../admin.html [L]
-
-# If file exists directly (e.g. users.html), serve it
+# If file exists directly (e.g. static assets, images, etc.), serve it
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
-# If the requested file has no extension, and a corresponding .html exists, serve it
-RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteRule ^(.*)$ $1.html [L]
+# If directory exists, let mod_dir serve directory index (index.html)
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
 
-# Also check directly in admin folder
-RewriteCond %{DOCUMENT_ROOT}/admin/$1.html -f
-RewriteRule ^(.*)$ $1.html [L]
+# For clean URLs without trailing slashes, check if directory/index.html exists
+RewriteCond %{DOCUMENT_ROOT}/admin/$1/index.html -f
+RewriteRule ^(.*)$ $1/index.html [L]
 
 # Return 404 for missing static assets to prevent HTML syntax errors in JS/CSS
 RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map|json)$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ - [R=404,L]
 
-# Stop the root Flutter .htaccess from intercepting /admin requests - fallback to admin.html
+# Stop the root Flutter .htaccess from intercepting /admin requests - fallback to admin index.html
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ ../admin.html [L]
+RewriteRule ^(.*)$ index.html [L]
 EOF
 
 # 2b. Copy Flutter App (Overrides)

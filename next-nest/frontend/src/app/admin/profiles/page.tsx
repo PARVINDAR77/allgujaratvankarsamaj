@@ -8,17 +8,22 @@ import { adminApi, AdminProfileItem } from "@/lib/admin-api";
 export default function AdminProfilesPage() {
   const [profiles, setProfiles] = useState<AdminProfileItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [selectedProfile, setSelectedProfile] = useState<AdminProfileItem | null>(null);
 
   const [selectedCategory, setSelectedCategory] = useState<string>("");
 
   const loadProfiles = async () => {
+    setLoading(true);
     try {
       const data = await adminApi.getProfiles(selectedCategory);
-      setProfiles(data);
-    } catch (e) {
+      setProfiles(Array.isArray(data) ? data : []);
+      setError(null);
+    } catch (e: any) {
       console.error(e);
+      setError(e.message || "Failed to load profiles");
+      setProfiles([]);
     } finally {
       setLoading(false);
     }
@@ -47,11 +52,15 @@ export default function AdminProfilesPage() {
     }
   };
 
-  const filtered = profiles.filter(
+  const safeProfiles = Array.isArray(profiles) ? profiles : [];
+  const filtered = safeProfiles.filter(
     (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.city.toLowerCase().includes(search.toLowerCase()) ||
-      p.pargana.toLowerCase().includes(search.toLowerCase())
+      p &&
+      (
+        (p.name && p.name.toLowerCase().includes(search.toLowerCase())) ||
+        (p.city && p.city.toLowerCase().includes(search.toLowerCase())) ||
+        (p.pargana && p.pargana.toLowerCase().includes(search.toLowerCase()))
+      )
   );
 
   return (
@@ -150,6 +159,41 @@ export default function AdminProfilesPage() {
             <span style={{ fontSize: "18px" }}>{profiles.length}</span>
           </div>
         </div>
+
+        {error && (
+          <div style={{
+            backgroundColor: "rgba(220, 38, 38, 0.15)",
+            border: "1px solid rgba(239, 68, 68, 0.4)",
+            borderRadius: "14px",
+            padding: "16px 20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            color: "#FCA5A5",
+            fontSize: "13px",
+            fontWeight: 600,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+            <button
+              onClick={() => loadProfiles()}
+              style={{
+                backgroundColor: "rgba(239, 68, 68, 0.2)",
+                border: "1px solid #EF4444",
+                borderRadius: "8px",
+                padding: "6px 14px",
+                color: "#FFFFFF",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
 
         {/* Profile Cards Grid */}
         {loading ? (

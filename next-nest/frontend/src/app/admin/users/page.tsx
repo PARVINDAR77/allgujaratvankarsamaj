@@ -190,6 +190,41 @@ export default function AdminUsersPage() {
           </button>
         </div>
 
+        {error && (
+          <div style={{
+            backgroundColor: "rgba(220, 38, 38, 0.15)",
+            border: "1px solid rgba(239, 68, 68, 0.4)",
+            borderRadius: "14px",
+            padding: "16px 20px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            color: "#FCA5A5",
+            fontSize: "13px",
+            fontWeight: 600,
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+            <button
+              onClick={() => fetchUsers()}
+              style={{
+                backgroundColor: "rgba(239, 68, 68, 0.2)",
+                border: "1px solid #EF4444",
+                borderRadius: "8px",
+                padding: "6px 14px",
+                color: "#FFFFFF",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {/* Users Data Table */}
         <div
             className="border border-admin-gold/25 p-6 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass" 
@@ -214,7 +249,14 @@ export default function AdminUsersPage() {
                   </tr>
                 </thead>
                 <tbody  className="bg-admin-card">
-                  {filteredUsers.map((u) => {
+                  {filteredUsers.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} style={{ textAlign: "center", padding: "36px", color: "rgba(255, 255, 255, 0.6)", fontSize: "13px", fontWeight: 600 }}>
+                        {error ? "Unable to display users due to server error." : "No registered members found matching your search criteria."}
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredUsers.map((u) => {
                     const displayName = formatName(u.name, u.email);
                     return (
                       <tr key={u.id}  className="hover:bg-admin-card/70 transition-colors border-b border-admin-gold/10">
@@ -279,7 +321,7 @@ export default function AdminUsersPage() {
                         </td>
                       </tr>
                     );
-                  })}
+                  }))}
                 </tbody>
               </table>
             </div>
