@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../app/theme/app_colors.dart';
+import '../../../../core/network/api_client.dart';
+import '../../../auth/providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
@@ -22,6 +25,7 @@ class CreateProfileScreen extends ConsumerStatefulWidget {
 class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   Uint8List? _profileImageBytes;
   final ImagePicker _picker = ImagePicker();
+  bool _isSubmitting = false;
 
   String _firstName = '';
   String _lastName = '';
@@ -92,6 +96,30 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   }
 
   Future<void> _submitProfile() async {
+    setState(() => _isSubmitting = true);
+
+    String? uploadedPhotoUrl;
+    if (_profileImageBytes != null) {
+      try {
+        final dio = ref.read(apiClientProvider);
+        final formData = FormData.fromMap({
+          'file': MultipartFile.fromBytes(
+            _profileImageBytes!,
+            filename: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+          ),
+        });
+        final uploadRes = await dio.post('/storage/upload', data: formData);
+        if (uploadRes.data != null && uploadRes.data['url'] != null) {
+          final relUrl = uploadRes.data['url'] as String;
+          uploadedPhotoUrl = relUrl.startsWith('http')
+              ? relUrl
+              : 'https://allgujaratvankarsamaj.com$relUrl';
+        }
+      } catch (uploadErr) {
+        debugPrint('Photo upload failed: $uploadErr');
+      }
+    }
+
     final uniqueId = 'VNK${math.Random().nextInt(90000) + 10000}';
     final password = '${math.Random().nextInt(900000) + 100000}'; // 6 digit random pass
 
@@ -99,6 +127,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       id: uniqueId,
       firstName: _firstName.isNotEmpty ? _firstName : 'New',
       lastName: _lastName.isNotEmpty ? _lastName : 'User',
+      photoUrl: uploadedPhotoUrl,
       gender: _gender ?? 'Male (પુરુષ)',
       maritalStatus: _maritalStatus ?? 'Never Married (અપરિણીત)',
       dateOfBirth: _dob ?? '2000-01-01',
@@ -122,17 +151,23 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     try {
       final repository = ref.read(profileRepositoryProvider);
       await repository.createProfile(newProfile);
+      ref.invalidate(myProfileProvider);
+      await ref.read(authNotifierProvider.notifier).checkVerificationStatus();
       ref.read(profileNotifierProvider.notifier).fetchFirstPage();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to create profile: $e')),
-      );
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save profile: $e')),
+        );
+      }
       return;
     }
     
     if (!mounted) return;
-    
-    // Show Success Dialog with ID and Password
+    setState(() => _isSubmitting = false);
+
+    // Show Success Dialog with ID, Password and Mandatory Verification Next Step
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -144,12 +179,17 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         ),
         title: const Column(
           children: [
-            Icon(Icons.check_circle, color: Colors.green, size: 48),
+            Icon(Icons.verified_user_rounded, color: Color(0xFFD4AF37), size: 48),
             SizedBox(height: 12),
             Text(
-              'Profile Created Successfully!',
+              'પ્રોફાઇલ સબમિટ થઈ ગઈ છે!',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black87, fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(color: Colors.black87, fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Profile Submitted for Review',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black54, fontSize: 13),
             ),
           ],
         ),
@@ -157,8 +197,9 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             const Text(
-              'Please save your login details:',
-              style: TextStyle(color: Colors.black54, fontSize: 14),
+              'તમારી પ્રોફાઇલ અને ફોટો એડમિન ચકાસણી માટે મોકલી દેવાયા છે. એડમિન દ્વારા મંજૂરી મળ્યા પછી જ તમારું એકાઉન્ટ સંપૂર્ણ સક્રિય થશે.\n\nYour profile has been submitted for Admin Verification. Access will be granted once approved.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.black87, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 16),
             Container(
@@ -173,43 +214,41 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Unique ID:', style: TextStyle(color: Colors.black54, fontSize: 14)),
-                      Text(uniqueId, style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      const Text('Unique ID:', style: TextStyle(color: Colors.black54, fontSize: 13)),
+                      Text(uniqueId, style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1)),
                     ],
                   ),
-                  Divider(color: Colors.grey.shade300, height: 24),
+                  Divider(color: Colors.grey.shade300, height: 20),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Password:', style: TextStyle(color: Colors.black54, fontSize: 14)),
-                      Text(password, style: const TextStyle(color: Colors.black87, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1)),
+                      const Text('Password:', style: TextStyle(color: Colors.black54, fontSize: 13)),
+                      Text(password, style: const TextStyle(color: Colors.black87, fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: 1)),
                     ],
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'You can use this ID to search for this profile in the Advance Search section.',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black54, fontSize: 12),
             ),
           ],
         ),
         actions: [
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.of(ctx).pop();
-                context.go('/home');
+                context.go('/profile-under-review');
               },
+              icon: const Icon(Icons.hourglass_top_rounded, color: Colors.black, size: 20),
+              label: const Text(
+                'ચકાસણી સ્થિતિ જુઓ (View Review Status)',
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black, fontSize: 13),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFD4AF37),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
-              child: const Text('Continue to Home', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ),
         ],
@@ -549,7 +588,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               const SizedBox(height: 32),
               // Submit Button
               ElevatedButton(
-                onPressed: _submitProfile,
+                onPressed: _isSubmitting ? null : _submitProfile,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFD4AF37),
                   foregroundColor: Colors.black,
@@ -557,10 +596,29 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 4,
                 ),
-                child: const Text(
-                  'Create Profile',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
+                child: _isSubmitting
+                    ? const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: Colors.black,
+                            ),
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            'સેવ થઈ રહ્યું છે... (Saving Profile...)',
+                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black),
+                          ),
+                        ],
+                      )
+                    : const Text(
+                        'પ્રોફાઇલ સાચવો (Create Profile)',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
               ),
               const SizedBox(height: 40),
             ],

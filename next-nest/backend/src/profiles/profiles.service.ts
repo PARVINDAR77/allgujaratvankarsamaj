@@ -10,6 +10,7 @@ import {
   MaritalStatus,
   MatrimonialProfile,
   ProfileStatus,
+  VerificationStatus,
 } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProfileDto } from "./dto/create-profile.dto";
@@ -121,46 +122,121 @@ export class ProfilesService {
         where: { userId },
       });
 
+      let profile: MatrimonialProfile;
+
       if (existingProfile) {
-        throw new ConflictException("Profile already exists");
+        profile = await this.prisma.matrimonialProfile.update({
+          where: { id: existingProfile.id },
+          data: {
+            firstName: (dto.firstName || existingProfile.firstName).trim(),
+            lastName: (dto.lastName || existingProfile.lastName).trim(),
+            dateOfBirth: validDob,
+            gender: gender,
+            maritalStatus: maritalStatus,
+            religion: dto.religion ? dto.religion.trim() : existingProfile.religion,
+            caste: dto.caste ? dto.caste.trim() : existingProfile.caste,
+            city: dto.city ? dto.city.trim() : existingProfile.city,
+            state: dto.state ? dto.state.trim() : existingProfile.state,
+            country: dto.country ? dto.country.trim() : existingProfile.country,
+            education: dto.education ? dto.education.trim() : existingProfile.education,
+            occupation: dto.occupation ? dto.occupation.trim() : existingProfile.occupation,
+            organizationName: dto.organizationName
+              ? dto.organizationName.trim()
+              : existingProfile.organizationName,
+            designation: dto.designation
+              ? dto.designation.trim()
+              : existingProfile.designation,
+            nativePlace: dto.nativePlace
+              ? dto.nativePlace.trim()
+              : existingProfile.nativePlace,
+            about: dto.about ? dto.about.trim() : existingProfile.about,
+            photoUrl: dto.photoUrl ?? existingProfile.photoUrl,
+            isPhysicallyDisabled: dto.isPhysicallyDisabled ?? existingProfile.isPhysicallyDisabled,
+            pwbdCategory: dto.pwbdCategory
+              ? dto.pwbdCategory.trim()
+              : existingProfile.pwbdCategory,
+            isAbroad: dto.isAbroad ?? existingProfile.isAbroad,
+            abroadCountry: dto.abroadCountry
+              ? dto.abroadCountry.trim()
+              : existingProfile.abroadCountry,
+            businessIndustry: dto.businessIndustry
+              ? dto.businessIndustry.trim()
+              : existingProfile.businessIndustry,
+            businessService: dto.businessService
+              ? dto.businessService.trim()
+              : existingProfile.businessService,
+            status: ProfileStatus.PENDING,
+            isVerified: false,
+          },
+        });
+      } else {
+        profile = await this.prisma.matrimonialProfile.create({
+          data: {
+            userId,
+            firstName: (dto.firstName || "User").trim(),
+            lastName: (dto.lastName || "User").trim(),
+            dateOfBirth: validDob,
+            gender: gender,
+            maritalStatus: maritalStatus,
+            religion: dto.religion ? dto.religion.trim() : null,
+            caste: dto.caste ? dto.caste.trim() : null,
+            city: dto.city ? dto.city.trim() : null,
+            state: dto.state ? dto.state.trim() : null,
+            country: dto.country ? dto.country.trim() : null,
+            education: dto.education ? dto.education.trim() : null,
+            occupation: dto.occupation ? dto.occupation.trim() : null,
+            organizationName: dto.organizationName
+              ? dto.organizationName.trim()
+              : null,
+            designation: dto.designation ? dto.designation.trim() : null,
+            nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
+            about: dto.about ? dto.about.trim() : null,
+            photoUrl: dto.photoUrl ?? null,
+            isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
+            pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
+            isAbroad: dto.isAbroad ?? false,
+            abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
+            businessIndustry: dto.businessIndustry
+              ? dto.businessIndustry.trim()
+              : null,
+            businessService: dto.businessService
+              ? dto.businessService.trim()
+              : null,
+            status: ProfileStatus.PENDING,
+            isVerified: false,
+          },
+        });
       }
 
-      const newProfile = await this.prisma.matrimonialProfile.create({
-        data: {
-          userId,
-          firstName: (dto.firstName || "User").trim(),
-          lastName: (dto.lastName || "User").trim(),
-          dateOfBirth: validDob,
-          gender: gender,
-          maritalStatus: maritalStatus,
-          religion: dto.religion ? dto.religion.trim() : null,
-          caste: dto.caste ? dto.caste.trim() : null,
-          city: dto.city ? dto.city.trim() : null,
-          state: dto.state ? dto.state.trim() : null,
-          country: dto.country ? dto.country.trim() : null,
-          education: dto.education ? dto.education.trim() : null,
-          occupation: dto.occupation ? dto.occupation.trim() : null,
-          organizationName: dto.organizationName
-            ? dto.organizationName.trim()
-            : null,
-          designation: dto.designation ? dto.designation.trim() : null,
-          nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
-          about: dto.about ? dto.about.trim() : null,
-          photoUrl: dto.photoUrl ?? null,
-          isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
-          pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
-          isAbroad: dto.isAbroad ?? false,
-          abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
-          businessIndustry: dto.businessIndustry
-            ? dto.businessIndustry.trim()
-            : null,
-          businessService: dto.businessService
-            ? dto.businessService.trim()
-            : null,
-        },
+      // Automatically register a VerificationRequest for Admin Review queue
+      const docUrl = profile.photoUrl || dto.photoUrl || "/uploads/default-id.png";
+      const existingReq = await this.prisma.verificationRequest.findFirst({
+        where: { profileId: profile.id, status: VerificationStatus.PENDING },
       });
-      await this.syncSamajServicePerson(userId, newProfile);
-      return newProfile;
+
+      if (existingReq) {
+        await this.prisma.verificationRequest.update({
+          where: { id: existingReq.id },
+          data: {
+            documentType: "Profile Photo & KYC",
+            documentUrl: docUrl,
+            status: VerificationStatus.PENDING,
+            createdAt: new Date(),
+          },
+        });
+      } else {
+        await this.prisma.verificationRequest.create({
+          data: {
+            profileId: profile.id,
+            documentType: "Profile Photo & KYC",
+            documentUrl: docUrl,
+            status: VerificationStatus.PENDING,
+          },
+        });
+      }
+
+      await this.syncSamajServicePerson(userId, profile);
+      return profile;
     } catch (err: any) {
       if (err instanceof ConflictException) throw err;
       this.logger.warn(

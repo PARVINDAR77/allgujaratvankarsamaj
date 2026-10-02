@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:convert';
 import 'dart:typed_data';
+import '../../../../core/network/api_client.dart';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
-import '../../../../shared/constants/app_data.dart';
 import '../../providers/master_data_provider.dart';
 import '../../../community/providers/samaj_services_provider.dart';
 
@@ -443,8 +443,24 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_aboutMe != null) updateData['about'] = _aboutMe;
 
                     if (_profileImageBytes != null) {
-                      final base64Image = base64Encode(_profileImageBytes!);
-                      updateData['photoUrl'] = 'data:image/jpeg;base64,$base64Image';
+                      try {
+                        final dio = ref.read(apiClientProvider);
+                        final formData = FormData.fromMap({
+                          'file': MultipartFile.fromBytes(
+                            _profileImageBytes!,
+                            filename: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+                          ),
+                        });
+                        final uploadRes = await dio.post('/storage/upload', data: formData);
+                        if (uploadRes.data != null && uploadRes.data['url'] != null) {
+                          final relUrl = uploadRes.data['url'] as String;
+                          updateData['photoUrl'] = relUrl.startsWith('http')
+                              ? relUrl
+                              : 'https://allgujaratvankarsamaj.com$relUrl';
+                        }
+                      } catch (e) {
+                        debugPrint('Photo upload error: $e');
+                      }
                     }
 
                     // Fallback to profile values if creating a new profile and fields were untouched
