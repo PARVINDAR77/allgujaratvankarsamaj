@@ -61,8 +61,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   String? _districtId;
   String? _occupationCategory;
 
-  ProfileNotifier(this._repository) : super(ProfileState()) {
-    fetchFirstPage();
+  ProfileNotifier(this._repository) : super(ProfileState(isLoading: true)) {
+    Future.microtask(() => fetchFirstPage());
   }
 
   void updateFilters({
