@@ -57,9 +57,54 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
         child: profileState.isLoading && profiles.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : profiles.isEmpty
-                ? const Center(
-                    child: Text('No profiles match your search criteria.',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)))
+                ? Center(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(Icons.person_search_rounded, size: 64, color: const Color(0xFF0056D2).withValues(alpha: 0.7)),
+                          ),
+                          const SizedBox(height: 20),
+                          const Text(
+                            'કોઈ પ્રોફાઈલ મળી નથી\n(No Profiles Found)',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                          ),
+                          const SizedBox(height: 10),
+                          const Text(
+                            'તમારા શોધ માપદંડ મુજબ હાલમાં કોઈ ઉમેદવાર ઉપલબ્ધ નથી. કૃપા કરીને ફિલ્ટર્સ બદલીને ફરી પ્રયાસ કરો.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontSize: 13, color: Colors.black54, height: 1.4),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              if (context.canPop()) {
+                                context.pop();
+                              } else {
+                                context.go('/search');
+                              }
+                            },
+                            icon: const Icon(Icons.tune, size: 18),
+                            label: const Text('શોધ ફિલ્ટર બદલો (Adjust Filters)', style: TextStyle(fontWeight: FontWeight.bold)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0056D2),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.all(16),

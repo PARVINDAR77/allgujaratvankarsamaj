@@ -24,6 +24,7 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
+import '../../features/search/presentation/screens/search_results_screen.dart';
 import '../../features/community/presentation/screens/samaj_ratna_screen.dart';
 
 import '../../shared/presentation/screens/main_navigation_screen.dart';
@@ -204,6 +205,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/success-stories',
         name: 'success-stories',
         builder: (context, state) => const SuccessStoriesScreen(),
+      ),
+      GoRoute(
+        path: '/search-results',
+        name: 'search-results',
+        builder: (context, state) => const SearchResultsScreen(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
