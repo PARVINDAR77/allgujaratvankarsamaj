@@ -575,31 +575,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   ),
                 ),
                 
-                // Refresh Button (Top Right corner)
-                Positioned(
-                  top: 50,
-                  right: 20,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF041126).withValues(alpha: 0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      icon: const Icon(Icons.refresh, color: Color(0xFFD4AF37), size: 28),
-                      onPressed: () {
-                        ref.invalidate(homeButtonsProvider);
-                        ref.invalidate(advertisementsProvider);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('માહિતી અપડેટ થઈ ગઈ છે (Content Refreshed)', style: TextStyle(color: Colors.white)),
-                            backgroundColor: Color(0xFF041126),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
+
               ],
             ),
           ),
