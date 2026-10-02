@@ -84,9 +84,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (user != null) {
           state = AuthState.authenticated(user);
           return true;
+        } else {
+          state = AuthState.error('Failed to decode user token. Invalid token format.');
+          return false;
         }
       }
-      state = AuthState.error('Failed to parse authentication data');
+      
+      // If we reach here, token was null
+      final rawData = response.data.toString();
+      final preview = rawData.length > 100 ? rawData.substring(0, 100) + '...' : rawData;
+      state = AuthState.error('Missing accessToken in response. Raw: $preview');
       return false;
     } on DioException catch (e) {
       final failure = _mapDioException(e);
