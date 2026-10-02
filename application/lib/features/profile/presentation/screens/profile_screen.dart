@@ -126,6 +126,22 @@ class ProfileScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               ElevatedButton.icon(
+                onPressed: () => _showDeleteAccountReasons(context, ref),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: AppColors.accentRed,
+                  minimumSize: const Size(double.infinity, 54),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: const BorderSide(color: AppColors.accentRed, width: 1.5),
+                  ),
+                  elevation: 0,
+                ),
+                icon: const Icon(Icons.delete_forever),
+                label: const Text('Delete Account (એકાઉન્ટ કાઢી નાખો)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              ),
+              const SizedBox(height: 12),
+              ElevatedButton.icon(
                 onPressed: () async {
                   await ref.read(authNotifierProvider.notifier).logout();
                   if (context.mounted) {
@@ -169,4 +185,111 @@ class ProfileScreen extends ConsumerWidget {
       onTap: onTap,
     );
   }
+
+  void _showDeleteAccountReasons(BuildContext context, WidgetRef ref) {
+    String? selectedReason;
+    final List<String> reasons = [
+      'I found my match elsewhere',
+      'I am not finding the app useful',
+      'Privacy concerns',
+      'I am getting too many notifications',
+      'Other reasons'
+    ];
+
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              title: const Text(
+                'Why are you leaving?',
+                style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: reasons.map((reason) {
+                    return RadioListTile<String>(
+                      title: Text(reason, style: const TextStyle(fontSize: 14)),
+                      value: reason,
+                      groupValue: selectedReason,
+                      activeColor: AppColors.secondary,
+                      onChanged: (String? value) {
+                        setState(() {
+                          selectedReason = value;
+                        });
+                      },
+                    );
+                  }).toList(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+                ),
+                ElevatedButton(
+                  onPressed: selectedReason == null
+                      ? null
+                      : () {
+                          Navigator.of(dialogContext).pop();
+                          _showDeleteConfirmationDialog(context, ref);
+                        },
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentRed),
+                  child: const Text('Continue', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showDeleteConfirmationDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text(
+            'Are you sure?',
+            style: TextStyle(color: AppColors.accentRed, fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                // Pop the dialog
+                Navigator.of(dialogContext).pop();
+                
+                // Show a loading snackbar or message
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Deleting account...'), backgroundColor: AppColors.accentRed),
+                );
+
+                // Simulate deletion API call / actually log out
+                await ref.read(authNotifierProvider.notifier).logout();
+                
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentRed),
+              child: const Text('Delete Account', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
+
