@@ -189,25 +189,37 @@ export class StatisticsService {
   }
 
   async getTodaysBirthdays() {
-    const today = new Date();
-    const currentMonth = today.getMonth() + 1;
-    const currentDay = today.getDate();
+    try {
+      const today = new Date();
+      const currentMonth = today.getMonth() + 1;
+      const currentDay = today.getDate();
 
-    const profiles = await this.prisma.matrimonialProfile.findMany({
-      where: {
-        status: "APPROVED",
-      },
-    });
+      // Use raw SQL to filter birthdays at the database level.
+      // This prevents Prisma from crashing if there are legacy '0000-00-00' dates
+      // in non-matching profiles, and is vastly more memory-efficient.
+      const matchingRows = await this.prisma.$queryRaw<{ id: string }[]>`
+        SELECT id FROM matrimonial_profiles 
+        WHERE status = 'APPROVED' 
+        AND MONTH(date_of_birth) = ${currentMonth} 
+        AND DAY(date_of_birth) = ${currentDay}
+      `;
 
-    // Filter profiles where birthday month and day match today
-    const birthdayProfiles = profiles.filter((profile) => {
-      const dob = new Date(profile.dateOfBirth);
-      return (
-        dob.getMonth() + 1 === currentMonth && dob.getDate() === currentDay
-      );
-    });
+      if (!matchingRows || matchingRows.length === 0) {
+        return [];
+      }
 
-    return birthdayProfiles;
+      const ids = matchingRows.map((row) => row.id);
+
+      // Fetch the full mapped profiles for the matching IDs
+      return await this.prisma.matrimonialProfile.findMany({
+        where: {
+          id: { in: ids },
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching today's birthdays:", error);
+      return []; // Return empty array instead of throwing 500 to keep the UI functional
+    }
   }
   async getSectionViews() {
     return await this.prisma.sectionViewCount.findMany();

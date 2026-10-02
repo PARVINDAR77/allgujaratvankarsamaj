@@ -30,11 +30,8 @@ class AppConfig {
         );
       case 'development':
       default:
-        // Use localhost for Web, and the specified DEV_HOST (10.0.2.2 / LAN IP) for mobile
-        if (kIsWeb) {
-          return 'http://localhost:3000/api/v1';
-        }
-        return 'http://$_devHost:3000/api/v1';
+        // Pointing to production API so you don't need a local backend running
+        return 'https://allgujaratvankarsamaj.com/api/v1';
     }
   }
 
