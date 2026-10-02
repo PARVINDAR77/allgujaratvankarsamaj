@@ -320,21 +320,20 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                             occCat = _occupation.toUpperCase();
                           }
 
+                          // Perform the search
+                          ref.read(profileNotifierProvider.notifier).updateFilters(
+                            gender: gender,
+                            minAge: minAge,
+                            maxAge: maxAge,
+                            occupationCategory: occCat,
+                            // districtId, etc. can be added if we map them
+                          );
+
                           // Simulate search and navigate to matches
                           showDialog(
                             context: context,
                             barrierDismissible: false,
-                            builder: (ctx) {
-                              // Perform the search
-                              ref.read(profileNotifierProvider.notifier).updateFilters(
-                                gender: gender,
-                                minAge: minAge,
-                                maxAge: maxAge,
-                                occupationCategory: occCat,
-                                // districtId, etc. can be added if we map them
-                              );
-
-                              Future.delayed(const Duration(seconds: 1), () {
+                            builder: (ctx) {                              Future.delayed(const Duration(seconds: 1), () {
                                 if (ctx.mounted) {
                                   Navigator.of(ctx).pop(); // Safely close the dialog
                                 }
