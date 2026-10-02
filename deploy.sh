@@ -294,6 +294,14 @@ echo "Merging Flutter App..."
 cp -r "$PROJECT_ROOT/application/build/web/"* "${APP_WEB_ROOT}_tmp/"
 [ -d "$APP_WEB_ROOT/api" ] && cp -r "$APP_WEB_ROOT/api" "${APP_WEB_ROOT}_tmp/"
 
+# Automatic cache-busting on every deploy to prevent stale browser caching
+DEPLOY_TS=$(date +%s)
+echo "Injecting cache-buster timestamp: $DEPLOY_TS ..."
+sed -i "s/flutter_bootstrap\.js[^\"']*\"/flutter_bootstrap.js?v=$DEPLOY_TS\"/g" "${APP_WEB_ROOT}_tmp/index.html" || true
+sed -i "s/main\.dart\.js[^\"']*\"/main.dart.js?v=$DEPLOY_TS\"/g" "${APP_WEB_ROOT}_tmp/flutter_bootstrap.js" || true
+sed -i 's/serviceWorkerSettings:[^}]*}/serviceWorkerSettings: null/g' "${APP_WEB_ROOT}_tmp/flutter_bootstrap.js" || true
+rm -f "${APP_WEB_ROOT}_tmp/flutter_service_worker.js"
+
 # Generate robust root .htaccess
 cat << 'EOF' > "${APP_WEB_ROOT}_tmp/.htaccess"
 RewriteEngine On
