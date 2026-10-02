@@ -113,6 +113,13 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 12),
               _buildListTile(
                 context,
+                icon: Icons.policy,
+                title: 'Privacy Policy (ગોપનીયતા નીતિ)',
+                onTap: () => context.push('/privacy-policy'),
+              ),
+              const SizedBox(height: 12),
+              _buildListTile(
+                context,
                 icon: Icons.verified,
                 title: 'Verified Profile Details',
                 onTap: () => context.push('/verified-profile'),

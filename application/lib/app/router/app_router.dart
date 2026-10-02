@@ -19,6 +19,7 @@ import '../../features/pargana/presentation/screens/pargana_overview_screen.dart
 import '../../features/profile/presentation/screens/create_profile_screen.dart';
 import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/privacy_contact_screen.dart';
+import '../../features/profile/presentation/screens/privacy_policy_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_under_review_screen.dart';
 import '../../features/profile/presentation/screens/verified_profile_screen.dart';
@@ -115,6 +116,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/privacy-contact',
         name: 'privacy-contact',
         builder: (context, state) => const PrivacyContactScreen(),
+      ),
+      GoRoute(
+        path: '/privacy-policy',
+        name: 'privacy-policy',
+        builder: (context, state) => const PrivacyPolicyScreen(),
       ),
       GoRoute(
         path: '/verified-profile',
