@@ -5,7 +5,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
 } from "class-validator";
 
 export class CreateSuccessStoryDto {
@@ -31,7 +30,7 @@ export class CreateSuccessStoryDto {
 
   @ApiPropertyOptional({ description: "Image URL" })
   @IsOptional()
-  @IsUrl()
+  @IsString()
   imageUrl?: string;
 
   @ApiPropertyOptional({ description: "Is Published" })

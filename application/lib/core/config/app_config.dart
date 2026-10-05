@@ -41,5 +41,16 @@ class AppConfig {
 
   static bool get isDevelopment => environment == 'development';
   static bool get isProduction => environment == 'production';
+
+  /// Resolves media and upload URLs into fully qualified HTTPS URLs
+  static String resolveMediaUrl(String? url) {
+    if (url == null || url.trim().isEmpty) return '';
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    final cleanPath = trimmed.startsWith('/') ? trimmed : '/$trimmed';
+    return 'https://allgujaratvankarsamaj.com$cleanPath';
+  }
 }
 

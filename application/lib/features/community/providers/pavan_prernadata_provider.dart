@@ -26,7 +26,7 @@ class PavanPrernadata {
       id: json['id'],
       name: json['name'],
       gujaratiName: json['gujaratiName'],
-      photoUrl: json['photoUrl'],
+      photoUrl: AppConfig.resolveMediaUrl(json['photoUrl'] as String?),
       description: json['description'],
       designation: json['designation'],
       year: json['year'],

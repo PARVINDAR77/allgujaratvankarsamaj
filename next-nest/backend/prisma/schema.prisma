@@ -482,6 +482,9 @@ enum AdPlacement {
   BUTTON_3
   BUTTON_4
   BUTTON_5
+  PAVAN_PRERNADATA
+  SAMAJ_SUPER_STARS
+  SAMAJ_RATNA
 }
 
 model Advertisement {
@@ -556,5 +559,16 @@ model SamajSuperStar {
   updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@map("samaj_super_stars")
+}
+
+model SystemNotification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String   @db.Text
+  target    String   @default("ALL")
+  route     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("system_notifications")
 }
 

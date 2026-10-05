@@ -24,4 +24,10 @@ export class HealthController {
   async getHealth(): Promise<HealthStatusResponse> {
     return this.healthService.checkHealth();
   }
+
+  @Get("sync-schema")
+  @ApiOperation({ summary: "Synchronize missing tables and enum columns in database" })
+  async syncSchema() {
+    return this.healthService.syncDatabaseSchema();
+  }
 }

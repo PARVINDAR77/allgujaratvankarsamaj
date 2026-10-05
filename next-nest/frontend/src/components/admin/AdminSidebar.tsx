@@ -47,6 +47,7 @@ const menuSections = [
     items: [
       { name: "Home Screen", href: "/admin/home-screen", icon: "📱" },
       { name: "Advertisements", href: "/admin/advertisements", icon: "📢" },
+      { name: "Notifications", href: "/admin/notifications", icon: "🔔" },
       { name: "Reports", href: "/admin/reports", icon: "📈" },
       { name: "Settings", href: "/admin/settings", icon: "⚙️" },
     ],

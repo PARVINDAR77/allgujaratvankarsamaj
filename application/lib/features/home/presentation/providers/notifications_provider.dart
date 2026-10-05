@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:dio/dio.dart';
+import 'package:application/core/config/app_config.dart';
 
 class AppNotification {
   final String id;
@@ -68,7 +70,7 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
     // Initial state: starts with real system notification
     // If user has already opened/read it, isRead is true (unreadCount = 0)
     // If not yet opened, unreadCount = 1
-    state = [
+    final List<AppNotification> items = [
       AppNotification(
         id: welcomeId,
         title: 'ઓલ ગુજરાત વણકર સમાજમાં આપનું સ્વાગત છે',
@@ -79,7 +81,46 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
         icon: Icons.celebration,
       ),
     ];
+
+    try {
+      final dio = Dio(BaseOptions(
+        connectTimeout: const Duration(seconds: 5),
+        receiveTimeout: const Duration(seconds: 5),
+      ));
+      final res = await dio.get('${AppConfig.baseUrl}/notifications');
+      if (res.statusCode == 200 && res.data is List) {
+        for (final item in (res.data as List)) {
+          final id = item['id']?.toString() ?? '';
+          if (id.isEmpty) continue;
+          final title = item['title']?.toString() ?? '';
+          final message = item['message']?.toString() ?? '';
+          final route = item['route']?.toString();
+          final createdAtStr = item['createdAt']?.toString();
+          final time = createdAtStr != null
+              ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
+              : DateTime.now();
+          final isRead = _readIds.contains(id);
+
+          items.insert(
+            0,
+            AppNotification(
+              id: id,
+              title: title,
+              message: message,
+              time: time,
+              isRead: isRead,
+              route: route,
+              icon: Icons.notifications_active,
+            ),
+          );
+        }
+      }
+    } catch (_) {}
+
+    state = items;
   }
+
+  Future<void> refresh() => _initNotifications();
 
   int get unreadCount => state.where((n) => !n.isRead).length;
 

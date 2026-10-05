@@ -48,6 +48,10 @@ export function getImageUrl(url?: string | null): string {
   if (cleanUrl.includes("localhost:3000")) {
     cleanUrl = cleanUrl.replace(/^https?:\/\/localhost:3000/, "");
   }
+  if (cleanUrl.startsWith("/")) {
+    const base = (process.env.NEXT_PUBLIC_API_URL || "https://allgujaratvankarsamaj.com/api/v1").replace(/\/api\/v1\/?$/, "");
+    return `${base}${cleanUrl}`;
+  }
   return cleanUrl;
 }
 

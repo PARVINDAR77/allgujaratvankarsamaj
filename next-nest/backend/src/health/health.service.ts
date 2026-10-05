@@ -31,4 +31,13 @@ export class HealthService {
       database: dbStatus,
     };
   }
+
+  async syncDatabaseSchema() {
+    await this.prisma.syncSchema();
+    return {
+      success: true,
+      message: "Database schema tables and enums verified and synchronized successfully.",
+      timestamp: new Date().toISOString(),
+    };
+  }
 }

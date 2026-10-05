@@ -92,7 +92,10 @@ export default function AdvertisementsPage() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Upload failed");
+      }
       const data = await res.json();
       setFormImageUrl(getImageUrl(data.url));
     } catch (err) {
@@ -124,7 +127,7 @@ export default function AdvertisementsPage() {
       setIsModalOpen(false);
       loadAds();
     } catch (err) {
-      alert("Error saving Advertisement");
+      alert("Error saving Advertisement: " + ((err as any)?.message || err));
     }
   };
   const filteredAds = urlPlacement ? ads.filter(ad => ad.placement === urlPlacement) : ads;
@@ -268,7 +271,7 @@ export default function AdvertisementsPage() {
                 <div>
                   <label style={{ display: "block", color: "#8E9BAE", marginBottom: "6px", fontSize: "13px" }}>Image URL (or Upload File) *</label>
                   <div style={{ display: "flex", gap: "8px" }}>
-                    <input required value={formImageUrl} onChange={e => setFormImageUrl(e.target.value)} type="url" placeholder="https://" style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.3)", backgroundColor: "rgba(0,0,0,0.2)", color: "#FFF" }} />
+                    <input required value={formImageUrl} onChange={e => setFormImageUrl(e.target.value)} type="text" placeholder="/uploads/... or https://" style={{ flex: 1, padding: "10px", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.3)", backgroundColor: "rgba(0,0,0,0.2)", color: "#FFF" }} />
                     <label style={{ 
                       padding: "10px 16px", 
                       borderRadius: "8px", 
@@ -286,14 +289,14 @@ export default function AdvertisementsPage() {
                   </div>
                   {formImageUrl && (
                     <div style={{ marginTop: "12px", border: "1px dashed rgba(212,175,55,0.4)", borderRadius: "8px", padding: "8px", textAlign: "center" }}>
-                       <img src={formImageUrl} alt="Preview" style={{ maxHeight: "100px", maxWidth: "100%", borderRadius: "4px" }} onError={(e) => (e.currentTarget.style.display = 'none')} />
+                       <img src={getImageUrl(formImageUrl)} alt="Preview" style={{ maxHeight: "100px", maxWidth: "100%", borderRadius: "4px" }} onError={(e) => (e.currentTarget.style.display = 'none')} />
                     </div>
                   )}
                 </div>
 
                 <div>
                   <label style={{ display: "block", color: "#8E9BAE", marginBottom: "6px", fontSize: "13px" }}>Target URL (Optional link when clicked)</label>
-                  <input value={formTargetUrl} onChange={e => setFormTargetUrl(e.target.value)} type="url" style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.3)", backgroundColor: "rgba(0,0,0,0.2)", color: "#FFF" }} />
+                  <input value={formTargetUrl} onChange={e => setFormTargetUrl(e.target.value)} type="text" placeholder="https://... or /events" style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.3)", backgroundColor: "rgba(0,0,0,0.2)", color: "#FFF" }} />
                 </div>
 
                 <div>

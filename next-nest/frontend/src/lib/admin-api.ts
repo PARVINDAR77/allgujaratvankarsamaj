@@ -604,6 +604,13 @@ export const adminApi = {
       method: "POST",
       body: JSON.stringify(data),
     });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const msg = Array.isArray(errorData.errors) && errorData.errors.length
+        ? errorData.errors.join(", ")
+        : errorData.message || `Failed to create advertisement (Status: ${res.status})`;
+      throw new Error(msg);
+    }
     return res.json();
   },
   async updateAdvertisement(id: string, data: any) {
@@ -611,12 +618,58 @@ export const adminApi = {
       method: "PATCH",
       body: JSON.stringify(data),
     });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const msg = Array.isArray(errorData.errors) && errorData.errors.length
+        ? errorData.errors.join(", ")
+        : errorData.message || `Failed to update advertisement (Status: ${res.status})`;
+      throw new Error(msg);
+    }
     return res.json();
   },
   async deleteAdvertisement(id: string) {
     const res = await adminFetch(`${API_BASE_URL}/admin/advertisements/${id}`, {
       method: "DELETE",
     });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to delete advertisement (Status: ${res.status})`);
+    }
+    return res.json();
+  },
+
+  // ----------------------------------------------------
+  // NOTIFICATIONS (ADMIN)
+  // ----------------------------------------------------
+  async getNotifications() {
+    try {
+      const res = await adminFetch(`${API_BASE_URL}/admin/notifications`);
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (error) { throw error; }
+  },
+  async createNotification(data: { title: string; message: string; target?: string; route?: string }) {
+    const res = await adminFetch(`${API_BASE_URL}/admin/notifications`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      const msg = Array.isArray(errorData.errors) && errorData.errors.length
+        ? errorData.errors.join(", ")
+        : errorData.message || `Failed to create notification (Status: ${res.status})`;
+      throw new Error(msg);
+    }
+    return res.json();
+  },
+  async deleteNotification(id: string) {
+    const res = await adminFetch(`${API_BASE_URL}/admin/notifications/${id}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || `Failed to delete notification (Status: ${res.status})`);
+    }
     return res.json();
   },
 };

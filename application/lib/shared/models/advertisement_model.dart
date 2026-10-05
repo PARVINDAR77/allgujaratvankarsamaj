@@ -1,3 +1,5 @@
+import 'package:application/core/config/app_config.dart';
+
 /// AdvertisementModel — matches NestJS Advertisement entity exactly.
 /// Prisma contract: id, title, image_url, target_url?, placement, is_active,
 ///                  start_at?, end_at?, sort_order, created_by?, created_at, updated_at
@@ -33,7 +35,7 @@ class AdvertisementModel {
     return AdvertisementModel(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? '',
-      imageUrl: json['imageUrl'] as String? ?? '',
+      imageUrl: AppConfig.resolveMediaUrl(json['imageUrl'] as String? ?? ''),
       targetUrl: json['targetUrl'] as String?,
       placement: json['placement'] as String? ?? 'HOME_BANNER',
       isActive: json['isActive'] as bool? ?? true,

@@ -7,7 +7,6 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUrl,
 } from "class-validator";
 import { AdPlacement } from "@prisma/client";
 
@@ -19,12 +18,12 @@ export class CreateAdvertisementDto {
 
   @ApiProperty({ description: "Image URL for the ad" })
   @IsNotEmpty()
-  @IsUrl({ require_tld: false })
+  @IsString()
   imageUrl: string;
 
   @ApiPropertyOptional({ description: "Target URL on click" })
   @IsOptional()
-  @IsUrl({ require_tld: false })
+  @IsString()
   targetUrl?: string;
 
   @ApiPropertyOptional({ enum: AdPlacement, default: AdPlacement.HOME_BANNER })
