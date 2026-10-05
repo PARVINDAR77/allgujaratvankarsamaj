@@ -104,8 +104,34 @@ async function bootstrap() {
 
   // Listen on Unix Socket if specified (for Hostinger), otherwise fallback to port
   if (process.env.SOCKET_PATH) {
-    await app.listen(process.env.SOCKET_PATH);
-    logger.log(`Application is running on Unix Socket: ${process.env.SOCKET_PATH}`);
+    const socketPath = process.env.SOCKET_PATH;
+    const fs = await import("fs");
+    if (fs.existsSync(socketPath)) {
+      try {
+        fs.unlinkSync(socketPath);
+        logger.log(`Cleaned up stale socket at ${socketPath}`);
+      } catch (e) {
+        logger.warn(`Failed to unlink existing socket: ${e}`);
+      }
+    }
+    await app.listen(socketPath);
+    try {
+      fs.chmodSync(socketPath, 0o777);
+    } catch (e) {
+      logger.warn(`Failed to chmod socket: ${e}`);
+    }
+    logger.log(`Application is running on Unix Socket: ${socketPath}`);
+
+    const gracefulShutdown = () => {
+      try {
+        if (fs.existsSync(socketPath)) {
+          fs.unlinkSync(socketPath);
+        }
+      } catch (_) {}
+      process.exit(0);
+    };
+    process.on("SIGTERM", gracefulShutdown);
+    process.on("SIGINT", gracefulShutdown);
   } else {
     const port = process.env.PORT || configService.get<number>("PORT", 3000);
     await app.listen(port, '127.0.0.1');

@@ -238,8 +238,9 @@ echo "🔄 Executing atomic deployments..."
 # Since this Hostinger plan doesn't support Passenger, we run it in the background on a Unix Socket
 echo "🔄 Restarting Node.js Backend..."
 pkill -f node || true
+sleep 1
 rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
-SOCKET_PATH=/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock NODE_ENV=production nohup node "$PROJECT_ROOT/next-nest/backend/dist/main.js" > "$PROJECT_ROOT/next-nest/backend/backend.log" 2>&1 &
+(cd "$PROJECT_ROOT/next-nest/backend" && SOCKET_PATH=/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock NODE_ENV=production nohup node dist/main.js > "$PROJECT_ROOT/next-nest/backend/backend.log" 2>&1 &)
 
 # 2. Deploy Application (Atomic Merge: Next.js + Flutter)
 echo "Deploying Application..."
@@ -344,23 +345,36 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.html [QSA,L]
 EOF
 
-# Generate a robust api_proxy.php for Hostinger Unix socket support
+# Generate a robust self-healing api_proxy.php for Hostinger Unix socket support
 cat << 'EOF' > "${APP_WEB_ROOT}_tmp/api_proxy.php"
 <?php
-// Enhanced API Proxy to Unix Socket with Direct File Upload and JSON Base64 Support
-error_reporting(E_ALL);
-ini_set('display_errors', 0); // Don't output PHP errors to the client to prevent breaking JSON
+// Enhanced Self-Healing API Proxy to NestJS Backend on Hostinger Unix Domain Socket
+error_reporting(0);
+ini_set('display_errors', 0);
 
-$socket_path = 'unix:///home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock';
+$socket_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock';
+$socket_path = 'unix://' . $socket_file;
+$backend_dir = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source/next-nest/backend';
+$main_script = $backend_dir . '/dist/main.js';
+$log_file = $backend_dir . '/backend.log';
+$lock_file = sys_get_temp_dir() . '/vankar_backend_spawn.lock';
 
-$method = $_SERVER['REQUEST_METHOD'];
-// Get the original URI requested, fallback to /api/v1 if missing
-$uri = $_SERVER['REQUEST_URI'];
-if (empty($uri)) {
-    $uri = '/api/v1';
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$uri = $_SERVER['REQUEST_URI'] ?? '/api/v1';
+
+// Always allow CORS for mobile and web apps
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept, Origin, X-Requested-With, X-Request-ID');
+header('Access-Control-Allow-Credentials: true');
+
+// 1. Immediate CORS Preflight response
+if ($method === 'OPTIONS') {
+    http_response_code(204);
+    exit;
 }
 
-// 1. Direct handling for file upload if PHP received a multipart form file
+// 2. Direct handling for file upload if PHP received a multipart form file
 if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upload#', $uri)) && !empty($_FILES['file'])) {
     $file = $_FILES['file'];
     if ($file['error'] === UPLOAD_ERR_OK && is_uploaded_file($file['tmp_name'])) {
@@ -376,7 +390,6 @@ if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upl
             $destPath = $uploadDir . '/' . $uniqueFilename;
             if (move_uploaded_file($file['tmp_name'], $destPath)) {
                 header('Content-Type: application/json');
-                header('Access-Control-Allow-Origin: *');
                 http_response_code(201);
                 echo json_encode([
                     'success' => true,
@@ -388,6 +401,63 @@ if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upl
     }
 }
 
+// 3. Connect to backend socket with self-healing auto-restart
+function try_connect_socket($path, $timeout = 2) {
+    $errno = 0;
+    $errstr = '';
+    $fp = @stream_socket_client($path, $errno, $errstr, $timeout);
+    return [$fp, $errno, $errstr];
+}
+
+list($fp, $errno, $errstr) = try_connect_socket($socket_path, 2);
+
+// If socket connection failed, attempt automatic self-healing restart
+if (!$fp) {
+    $can_restart = true;
+    if (file_exists($lock_file)) {
+        if ((time() - filemtime($lock_file)) < 10) {
+            $can_restart = false;
+        }
+    }
+
+    if ($can_restart && (function_exists('shell_exec') || function_exists('exec'))) {
+        @touch($lock_file);
+        
+        if (file_exists($socket_file)) {
+            @unlink($socket_file);
+        }
+
+        $start_cmd = "cd " . escapeshellarg($backend_dir) . " && SOCKET_PATH=" . escapeshellarg($socket_file) . " NODE_ENV=production nohup node " . escapeshellarg($main_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
+        if (function_exists('shell_exec')) {
+            @shell_exec($start_cmd);
+        } else {
+            @exec($start_cmd);
+        }
+
+        for ($i = 0; $i < 14; $i++) {
+            usleep(250000); // 250ms
+            list($retry_fp, $retry_errno, $retry_errstr) = try_connect_socket($socket_path, 1);
+            if ($retry_fp) {
+                $fp = $retry_fp;
+                break;
+            }
+        }
+    }
+}
+
+// If STILL unreachable after auto-restart attempt
+if (!$fp) {
+    http_response_code(502);
+    header('Content-Type: application/json');
+    echo json_encode([
+        "statusCode" => 502,
+        "message" => "Bad Gateway: Backend socket is unreachable ($errstr). Backend auto-recovery in progress.",
+        "restartUrl" => "https://allgujaratvankarsamaj.com/restart_backend.php"
+    ]);
+    exit;
+}
+
+// 4. Build HTTP request to send over Unix socket
 $headers = [];
 foreach (getallheaders() as $name => $value) {
     $lowerName = strtolower($name);
@@ -399,20 +469,11 @@ $headers[] = "Host: localhost";
 $headers[] = "Connection: close";
 
 $body = file_get_contents('php://input');
-if ($body !== false) {
+if ($body !== false && strlen($body) > 0) {
     $headers[] = "Content-Length: " . strlen($body);
 }
 
-$request = "$method $uri HTTP/1.1\r\n" . implode("\r\n", $headers) . "\r\n\r\n" . $body;
-
-$fp = stream_socket_client($socket_path, $errno, $errstr, 5);
-
-if (!$fp) {
-    http_response_code(502);
-    header('Content-Type: application/json');
-    echo json_encode(["statusCode" => 502, "message" => "Bad Gateway: Backend socket is unreachable ($errstr)"]);
-    exit;
-}
+$request = "$method $uri HTTP/1.1\r\n" . implode("\r\n", $headers) . "\r\n\r\n" . ($body !== false ? $body : '');
 
 fwrite($fp, $request);
 
@@ -429,6 +490,7 @@ if (empty($response)) {
     exit;
 }
 
+// 5. Parse response and send to client
 $parts = explode("\r\n\r\n", $response, 2);
 $header_text = $parts[0];
 $body_text = isset($parts[1]) ? $parts[1] : '';
@@ -440,7 +502,6 @@ foreach ($header_lines as $line) {
     if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/', $line, $matches)) {
         http_response_code((int)$matches[1]);
     } else {
-        // Do not pass Transfer-Encoding, let Hostinger/PHP handle it
         if (stripos(trim($line), 'Transfer-Encoding:') === 0) continue;
         header($line, true);
     }
@@ -449,6 +510,9 @@ foreach ($header_lines as $line) {
 echo $body_text;
 ?>
 EOF
+
+# Copy restart_backend.php to web root
+[ -f "$PROJECT_ROOT/application/build/web/restart_backend.php" ] && cp "$PROJECT_ROOT/application/build/web/restart_backend.php" "${APP_WEB_ROOT}_tmp/"
 [ -f "$APP_WEB_ROOT/index.php" ] && cp "$APP_WEB_ROOT/index.php" "${APP_WEB_ROOT}_tmp/"
 
 # Swap atomic directories
