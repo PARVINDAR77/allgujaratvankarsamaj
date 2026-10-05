@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../../shared/constants/app_data.dart';
 
@@ -220,8 +222,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Rahul K. Solanki',
       'dept': 'IT / Software Development',
       'post': 'Software Engineer',
+      'company': 'InfoTech Solutions Pvt. Ltd., SG Highway',
+      'education': 'B.E. (Information Technology), GTU',
+      'experience': '6+ Years in Cloud & Enterprise Software',
       'district': 'Ahmedabad',
       'taluka': 'Ahmedabad City',
+      'nativePlace': 'Dholka (ધોળકા)',
+      'pargana': 'Bhal (ભાલ)',
+      'phone': '+91 94280 67890',
+      'email': 'rahul.solanki.it@gmail.com',
+      'address': 'B-402, Titanium City Centre, Prahlad Nagar, Ahmedabad - 380015',
+      'about': 'Full-stack software engineer specializing in scalable enterprise cloud architecture and cross-platform apps.',
+      'isVerified': true,
       'icon': Icons.computer,
       'iconColor': const Color(0xFF0056D2),
     },
@@ -230,8 +242,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Amit P. Parmar',
       'dept': 'Banking / Financial Services (BFSI)',
       'post': 'Chartered Accountant',
+      'company': 'A. P. Parmar & Associates (Chartered Accountants)',
+      'education': 'FCA, B.Com, DISA (ICAI)',
+      'experience': '10+ Years in Corporate Audit, GST & Taxation',
       'district': 'Surat',
       'taluka': 'Choryasi',
+      'nativePlace': 'Bardoli (બારડોલી)',
+      'pargana': 'Surat Chovisi (સુરત ચોવીસી)',
+      'phone': '+91 98795 23456',
+      'email': 'ca.amitparmar@gmail.com',
+      'address': '301, Silver Point, Ring Road, Surat - 395002',
+      'about': 'Providing comprehensive financial planning, corporate audit, tax compliance, and project finance consultation.',
+      'isVerified': true,
       'icon': Icons.account_balance_wallet,
       'iconColor': const Color(0xFF4CAF50),
     },
@@ -240,8 +262,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Dr. Priya V. Vankar',
       'dept': 'Healthcare / Medical / Hospital',
       'post': 'Doctor',
+      'company': 'Shreeji Multi-Speciality Hospital & Clinic, Vadodara',
+      'education': 'M.B.B.S., M.D. (Internal Medicine)',
+      'experience': '8+ Years in General Medicine & Critical Care',
       'district': 'Vadodara',
       'taluka': 'Vadodara City',
+      'nativePlace': 'Karjan (કરજણ)',
+      'pargana': 'Vadodara Chovisi (વડોદરા ચોવીસી)',
+      'phone': '+91 98250 12345',
+      'email': 'dr.priya.vankar@gmail.com',
+      'address': '204, Doctor House, Near Station, Alkapuri, Vadodara - 390007',
+      'about': 'Dedicated to providing compassionate patient care, health awareness camps, and preventive healthcare consultation.',
+      'isVerified': true,
       'icon': Icons.local_hospital,
       'iconColor': const Color(0xFFE91E63),
     },
@@ -250,8 +282,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Jayesh M. Chavda',
       'dept': 'Business / Self-Employed',
       'post': 'Business Owner',
+      'company': 'Chavda Engineering Works & Machinery',
+      'education': 'Diploma in Mechanical Engineering',
+      'experience': '15+ Years in Industrial Spares & Lathe Works',
       'district': 'Rajkot',
       'taluka': 'Rajkot City',
+      'nativePlace': 'Gondal (ગોંડલ)',
+      'pargana': 'Saurashtra 12 Gam (સૌરાષ્ટ્ર ૧૨ ગામ)',
+      'phone': '+91 99042 34567',
+      'email': 'jayesh.chavda.works@gmail.com',
+      'address': 'Plot No. 45, GIDC Industrial Estate, Aji Dam, Rajkot - 360003',
+      'about': 'Manufacturer of precision machine tools, auto parts, and custom mechanical fabrication.',
+      'isVerified': true,
       'icon': Icons.store,
       'iconColor': const Color(0xFFFF9800),
     },
@@ -260,8 +302,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Ketan R. Rathod',
       'dept': 'Engineering / Manufacturing',
       'post': 'Civil Engineer',
+      'company': 'Gujarat Infrastructure & Construction Corp.',
+      'education': 'B.Tech (Civil Engineering), Nirma University',
+      'experience': '9+ Years in Highway, Residential & Commercial Projects',
       'district': 'Gandhinagar',
       'taluka': 'Gandhinagar',
+      'nativePlace': 'Mansa (માણસા)',
+      'pargana': 'Gandhinagar Chovisi (ગાંધીનગર ચોવીસી)',
+      'phone': '+91 97234 56789',
+      'email': 'ketan.rathod.civil@gmail.com',
+      'address': 'Sector 11, Near Infocity, Gandhinagar - 382010',
+      'about': 'Civil project manager experienced in urban construction, structural design, and EPC infrastructure delivery.',
+      'isVerified': true,
       'icon': Icons.engineering,
       'iconColor': const Color(0xFF9C27B0),
     },
@@ -270,8 +322,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Bhavik B. Makwana',
       'dept': 'Textile / Garments',
       'post': 'Proprietor',
+      'company': 'Makwana Textiles & Fashion Prints',
+      'education': 'B.B.A. (Marketing & Trade)',
+      'experience': '12+ Years in Textile Weaving & Wholesale Distribution',
       'district': 'Surat',
       'taluka': 'Kamrej',
+      'nativePlace': 'Olpad (ઓલપાડ)',
+      'pargana': 'Surat Zilla Vankar Samaj',
+      'phone': '+91 98241 87654',
+      'email': 'bhavik.textiles@gmail.com',
+      'address': 'G-12, Millennium Textile Market, Ring Road, Surat - 395002',
+      'about': 'Specializing in premium synthetic fabrics, jacquard sarees, uniform materials, and export-grade textiles.',
+      'isVerified': true,
       'icon': Icons.shopping_bag,
       'iconColor': const Color(0xFF009688),
     },
@@ -280,8 +342,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Nilesh D. Vaghela',
       'dept': 'Diamond / Jewelry',
       'post': 'Director',
+      'company': 'Vaghela Gems & Jewels',
+      'education': 'Graduate Gemologist (GIA), B.Sc.',
+      'experience': '14+ Years in Diamond Polishing & Wholesale Gems',
       'district': 'Bhavnagar',
       'taluka': 'Bhavnagar City',
+      'nativePlace': 'Sihor (શિહોર)',
+      'pargana': 'Gohilwad Vankar Samaj',
+      'phone': '+91 99789 12300',
+      'email': 'nilesh.vaghela.gems@gmail.com',
+      'address': '405, Heera Bazar, Near City Center, Bhavnagar - 364001',
+      'about': 'Certified diamond manufacturer and bullion jeweler providing certified natural and lab-grown diamonds.',
+      'isVerified': true,
       'icon': Icons.diamond,
       'iconColor': const Color(0xFF3F51B5),
     },
@@ -290,8 +362,18 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'name': 'Hardik S. Jadav',
       'dept': 'Sales / Marketing / Business Development',
       'post': 'Marketing Manager',
+      'company': 'North Gujarat Agro & Dairy Allied Products',
+      'education': 'M.B.A. (Marketing & Supply Chain)',
+      'experience': '7+ Years in FMCG Distribution & Brand Strategy',
       'district': 'Mehsana',
       'taluka': 'Mehsana City',
+      'nativePlace': 'Unjha (ઊંઝા)',
+      'pargana': 'Mehsana Chovisi',
+      'phone': '+91 94088 76543',
+      'email': 'hardik.jadav.sales@gmail.com',
+      'address': 'Radhanpur Road, Near Modhera Circle, Mehsana - 384002',
+      'about': 'Experienced in FMCG brand acceleration, retail dealer network expansion, and regional sales operations.',
+      'isVerified': true,
       'icon': Icons.campaign,
       'iconColor': const Color(0xFFE65100),
     },
@@ -334,7 +416,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     }).toList();
 
     if (privateProfiles.isNotEmpty) {
-      return privateProfiles.map((p) {
+      final List<Map<String, dynamic>> realList = privateProfiles.map((p) {
         String sector = 'Private Industry & Services';
         if (p.businessIndustry != null && p.businessIndustry!.isNotEmpty && p.businessIndustry != 'Select Industry') {
           sector = p.businessIndustry!;
@@ -351,19 +433,41 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
           role = p.businessService!;
         }
 
+        final addressParts = [
+          p.addressLine,
+          p.city,
+          p.taluka,
+          p.district,
+          (p.pincode != null && p.pincode!.isNotEmpty) ? 'Pin: ${p.pincode}' : null,
+        ].where((s) => s != null && s.toString().trim().isNotEmpty).toList();
+
         return {
           'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id,
           'name': p.fullName,
           'dept': sector,
           'post': role,
+          'company': (p.department.isNotEmpty && p.department != 'General')
+              ? p.department
+              : (p.businessIndustry ?? ''),
+          'education': p.education,
+          'experience': p.designation,
           'district': p.district.isNotEmpty ? p.district : 'Ahmedabad',
           'taluka': p.taluka.isNotEmpty ? p.taluka : 'Ahmedabad City',
+          'nativePlace': p.nativePlace ?? '',
+          'pargana': p.pargana,
+          'phone': p.contactPhone ?? '',
+          'email': p.contactEmail ?? '',
+          'address': addressParts.join(', '),
+          'about': p.about ?? '',
+          'isVerified': p.isVerified ?? false,
           'photoUrl': p.photoUrl,
           'profile': p,
           'icon': Icons.business_center,
           'iconColor': const Color(0xFF0056D2),
         };
       }).toList();
+
+      return [...realList, ..._curatedSampleData];
     }
 
     // Curated high quality sample private & business employees if DB has no private entries
@@ -430,58 +534,550 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   }
 
   void _showEmployeeDetails(Map<String, dynamic> data) {
+    final hasPhone = data['phone'] != null && data['phone'].toString().trim().isNotEmpty;
+    final hasEmail = data['email'] != null && data['email'].toString().trim().isNotEmpty;
+    final hasCompany = data['company'] != null && data['company'].toString().trim().isNotEmpty;
+    final hasEducation = data['education'] != null && data['education'].toString().trim().isNotEmpty;
+    final hasExperience = data['experience'] != null && data['experience'].toString().trim().isNotEmpty;
+    final hasNative = data['nativePlace'] != null && data['nativePlace'].toString().trim().isNotEmpty;
+    final hasPargana = data['pargana'] != null && data['pargana'].toString().trim().isNotEmpty;
+    final hasAddress = data['address'] != null && data['address'].toString().trim().isNotEmpty;
+    final hasAbout = data['about'] != null && data['about'].toString().trim().isNotEmpty;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: const Color(0xFF0056D2),
-              radius: 18,
-              child: const Icon(Icons.person, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                data['name'].toString(),
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF041126)),
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 20,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 560, maxHeight: 760),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 1. Header Banner
+              _buildModalHeader(ctx, data),
+
+              // 2. Scrollable Content Body
+              Flexible(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Section A: Work & Profession
+                      _buildModalSectionHeader('કારકિર્દી અને સંસ્થા (Profession & Workplace)', Icons.work_outline, const Color(0xFF0056D2)),
+                      _buildModalCard(
+                        children: [
+                          _buildModalDetailTile(
+                            icon: Icons.category_outlined,
+                            iconColor: const Color(0xFF0056D2),
+                            label: 'Sector / Industry (ક્ષેત્ર / વ્યવસાય)',
+                            value: _getTranslatedText(data['dept']?.toString() ?? 'N/A'),
+                          ),
+                          _buildModalDivider(),
+                          _buildModalDetailTile(
+                            icon: Icons.badge_outlined,
+                            iconColor: const Color(0xFFE91E63),
+                            label: 'Role / Designation (હોદ્દો / પદ)',
+                            value: _getTranslatedText(data['post']?.toString() ?? 'N/A'),
+                          ),
+                          if (hasCompany) ...[
+                            _buildModalDivider(),
+                            _buildModalDetailTile(
+                              icon: Icons.apartment_outlined,
+                              iconColor: const Color(0xFF009688),
+                              label: 'Organization / Company / Hospital (સંસ્થા / કંપની)',
+                              value: data['company'].toString(),
+                            ),
+                          ],
+                          if (hasEducation) ...[
+                            _buildModalDivider(),
+                            _buildModalDetailTile(
+                              icon: Icons.school_outlined,
+                              iconColor: const Color(0xFF9C27B0),
+                              label: 'Education / Qualification (શિક્ષણ / પદવી)',
+                              value: data['education'].toString(),
+                            ),
+                          ],
+                          if (hasExperience) ...[
+                            _buildModalDivider(),
+                            _buildModalDetailTile(
+                              icon: Icons.workspace_premium_outlined,
+                              iconColor: const Color(0xFFFF9800),
+                              label: 'Experience / Specialization (અનુભવ / વિશેષતા)',
+                              value: data['experience'].toString(),
+                            ),
+                          ],
+                        ],
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Section B: Location & Native Roots
+                      _buildModalSectionHeader('સ્થળ અને મૂળ વતન (Location & Roots)', Icons.place_outlined, const Color(0xFF4CAF50)),
+                      _buildModalCard(
+                        children: [
+                          _buildModalDetailTile(
+                            icon: Icons.location_city_outlined,
+                            iconColor: const Color(0xFF4CAF50),
+                            label: 'District & Taluka (જિલ્લો અને તાલુકો)',
+                            value: '${_getTranslatedText(data['district']?.toString() ?? '')} • ${_getTranslatedText(data['taluka']?.toString() ?? '')}',
+                          ),
+                          if (hasNative) ...[
+                            _buildModalDivider(),
+                            _buildModalDetailTile(
+                              icon: Icons.home_outlined,
+                              iconColor: const Color(0xFF00A2FF),
+                              label: 'Native Place (મૂળ વતન)',
+                              value: data['nativePlace'].toString(),
+                            ),
+                          ],
+                          if (hasPargana) ...[
+                            _buildModalDivider(),
+                            _buildModalDetailTile(
+                              icon: Icons.groups_outlined,
+                              iconColor: const Color(0xFF673AB7),
+                              label: 'Pargana / Circle (પરગણા)',
+                              value: data['pargana'].toString(),
+                            ),
+                          ],
+                          if (hasAddress) ...[
+                            _buildModalDivider(),
+                            _buildModalDetailTile(
+                              icon: Icons.map_outlined,
+                              iconColor: const Color(0xFF795548),
+                              label: 'Workplace Address (સરનામું)',
+                              value: data['address'].toString(),
+                            ),
+                          ],
+                        ],
+                      ),
+
+                      if (hasPhone || hasEmail) ...[
+                        const SizedBox(height: 16),
+                        _buildModalSectionHeader('સંપર્ક વિગત (Contact Information)', Icons.contact_phone_outlined, const Color(0xFFE65100)),
+                        _buildModalCard(
+                          children: [
+                            if (hasPhone)
+                              _buildModalDetailTile(
+                                icon: Icons.phone_outlined,
+                                iconColor: const Color(0xFF2E7D32),
+                                label: 'Phone / Mobile (મોબાઇલ નંબર)',
+                                value: data['phone'].toString(),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 18, color: Color(0xFF0056D2)),
+                                      tooltip: 'Copy Number',
+                                      visualDensity: VisualDensity.compact,
+                                      onPressed: () {
+                                        Clipboard.setData(ClipboardData(text: data['phone'].toString()));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Phone number copied to clipboard'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: () async {
+                                        final uri = Uri.parse('tel:${data['phone'].toString().replaceAll(' ', '')}');
+                                        if (await canLaunchUrl(uri)) {
+                                          await launchUrl(uri);
+                                        }
+                                      },
+                                      icon: const Icon(Icons.call, size: 14),
+                                      label: const Text('Call', style: TextStyle(fontSize: 12)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF2E7D32),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                                        minimumSize: const Size(64, 30),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (hasPhone && hasEmail) _buildModalDivider(),
+                            if (hasEmail)
+                              _buildModalDetailTile(
+                                icon: Icons.mail_outline,
+                                iconColor: const Color(0xFFD32F2F),
+                                label: 'Email (ઇમેઇલ)',
+                                value: data['email'].toString(),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.copy, size: 18, color: Color(0xFF0056D2)),
+                                      tooltip: 'Copy Email',
+                                      visualDensity: VisualDensity.compact,
+                                      onPressed: () {
+                                        Clipboard.setData(ClipboardData(text: data['email'].toString()));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Email copied to clipboard'),
+                                            duration: Duration(seconds: 2),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: () async {
+                                        final uri = Uri.parse('mailto:${data['email'].toString().trim()}');
+                                        if (await canLaunchUrl(uri)) {
+                                          await launchUrl(uri);
+                                        }
+                                      },
+                                      icon: const Icon(Icons.send, size: 14),
+                                      label: const Text('Mail', style: TextStyle(fontSize: 12)),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF0056D2),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                                        minimumSize: const Size(64, 30),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
+                      ],
+
+                      if (hasAbout) ...[
+                        const SizedBox(height: 16),
+                        _buildModalSectionHeader('વિશેષ પરિચય (About & Profile Summary)', Icons.info_outline, const Color(0xFF673AB7)),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.format_quote, color: Color(0xFF94A3B8), size: 24),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  data['about'].toString(),
+                                  style: const TextStyle(
+                                    fontSize: 13,
+                                    height: 1.45,
+                                    color: Color(0xFF334155),
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
               ),
+
+              // 3. Modal Footer Actions
+              _buildModalFooter(ctx, data),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModalHeader(BuildContext ctx, Map<String, dynamic> data) {
+    final photoUrl = data['photoUrl']?.toString();
+    final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
+    final isVerified = data['isVerified'] == true;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 16, 12, 16),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF041126), Color(0xFF0B254E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Avatar
+          Container(
+            padding: const EdgeInsets.all(2.5),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFF3C34D), width: 2),
+              boxShadow: const [
+                BoxShadow(color: Colors.black38, blurRadius: 6, offset: Offset(0, 2)),
+              ],
             ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildDetailRow('Sector (ક્ષેત્ર)', _getTranslatedText(data['dept'].toString())),
-            const Divider(height: 16),
-            _buildDetailRow('Role (હોદ્દો)', _getTranslatedText(data['post'].toString())),
-            const Divider(height: 16),
-            _buildDetailRow('District (જિલ્લો)', _getTranslatedText(data['district'].toString())),
-            const Divider(height: 16),
-            _buildDetailRow('Taluka (તાલુકો)', _getTranslatedText(data['taluka'].toString())),
-          ],
-        ),
-        actions: [
-          TextButton(
+            child: CircleAvatar(
+              radius: 26,
+              backgroundColor: const Color(0xFF0F326A),
+              backgroundImage: hasPhoto ? NetworkImage(photoUrl) : null,
+              child: !hasPhoto
+                  ? const Icon(Icons.person, color: Color(0xFFF3C34D), size: 30)
+                  : null,
+            ),
+          ),
+          const SizedBox(width: 14),
+          // Name and Role
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        data['name'].toString(),
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                    if (isVerified) ...[
+                      const SizedBox(width: 6),
+                      const Icon(Icons.verified, color: Color(0xFFF3C34D), size: 18),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  _getTranslatedText(data['post']?.toString() ?? ''),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFFF3C34D),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        'ID: #${data['id']}',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        data['dept']?.toString() ?? '',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Color(0xFFBFDBFE),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Close button
+          IconButton(
+            icon: const Icon(Icons.close, color: Colors.white70, size: 22),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: 'Close (બંધ કરો)',
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('બંધ કરો (Close)', style: TextStyle(color: Color(0xFF0056D2), fontWeight: FontWeight.bold)),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildModalSectionHeader(String title, IconData icon, Color iconColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      padding: const EdgeInsets.only(bottom: 8.0, left: 2.0),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: iconColor),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              title,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
+                color: iconColor,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalCard({required List<Widget> children}) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
+    );
+  }
+
+  Widget _buildModalDetailTile({
+    required IconData icon,
+    required Color iconColor,
+    required String label,
+    required String value,
+    Widget? trailing,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w500)),
-          const SizedBox(height: 2),
-          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF041126))),
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, size: 18, color: iconColor),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF0F172A),
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ?trailing,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalDivider() {
+    return const Divider(height: 12, thickness: 0.7, color: Color(0xFFF1F5F9));
+  }
+
+  Widget _buildModalFooter(BuildContext ctx, Map<String, dynamic> data) {
+    final hasProfile = data['profile'] != null;
+    final hasPhone = data['phone'] != null && data['phone'].toString().trim().isNotEmpty;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+      ),
+      child: Row(
+        children: [
+          // Close button
+          OutlinedButton(
+            onPressed: () => Navigator.pop(ctx),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: const Color(0xFF475569),
+              side: const BorderSide(color: Color(0xFFCBD5E1)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            ),
+            child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+          ),
+          const Spacer(),
+          // Profile button if real profile
+          if (hasProfile) ...[
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(ctx);
+                context.push('/candidate-profile-details', extra: data['profile']);
+              },
+              icon: const Icon(Icons.person_search, size: 16),
+              label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0056D2),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+            ),
+          ] else if (hasPhone) ...[
+            ElevatedButton.icon(
+              onPressed: () async {
+                final uri = Uri.parse('tel:${data['phone'].toString().replaceAll(' ', '')}');
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri);
+                }
+              },
+              icon: const Icon(Icons.call, size: 16),
+              label: const Text('કોલ કરો (Call)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -794,20 +1390,34 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                             40,
                                           ),
                                           _buildDataCell(
-                                            CircleAvatar(
-                                              radius: 16,
-                                              backgroundColor: Colors.blue.shade50,
-                                              backgroundImage: (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty)
-                                                  ? NetworkImage(data['photoUrl'].toString())
-                                                  : null,
-                                              child: (data['photoUrl'] == null || data['photoUrl'].toString().isEmpty)
-                                                  ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
-                                                  : null,
+                                            InkWell(
+                                              onTap: () => _showEmployeeDetails(data),
+                                              child: CircleAvatar(
+                                                radius: 16,
+                                                backgroundColor: Colors.blue.shade50,
+                                                backgroundImage: (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty)
+                                                    ? NetworkImage(data['photoUrl'].toString())
+                                                    : null,
+                                                child: (data['photoUrl'] == null || data['photoUrl'].toString().isEmpty)
+                                                    ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
+                                                    : null,
+                                              ),
                                             ),
                                             70,
                                           ),
                                           _buildDataCell(
-                                            Text(data['name']!, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0056D2), fontSize: 13)),
+                                            InkWell(
+                                              onTap: () => _showEmployeeDetails(data),
+                                              child: Text(
+                                                data['name']!,
+                                                style: const TextStyle(
+                                                  fontWeight: FontWeight.w600,
+                                                  color: Color(0xFF0056D2),
+                                                  fontSize: 13,
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ),
                                             160,
                                           ),
                                           _buildDataCell(
