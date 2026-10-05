@@ -321,72 +321,200 @@ export class StatisticsService {
   }
 
   async getPublicLiveStatistics() {
-    const totalCandidates = await this.prisma.matrimonialProfile.count({
-      where: { status: "APPROVED" },
-    });
+    try {
+      const totalCandidates = await this.prisma.matrimonialProfile.count({
+        where: { status: "APPROVED" },
+      });
 
-    const startOfDay = new Date();
-    startOfDay.setHours(0, 0, 0, 0);
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
 
-    const boysToday = await this.prisma.matrimonialProfile.count({
-      where: {
-        gender: "MALE",
-        createdAt: { gte: startOfDay },
-      },
-    });
+      const boysToday = await this.prisma.matrimonialProfile.count({
+        where: {
+          gender: "MALE",
+          createdAt: { gte: startOfDay },
+        },
+      });
 
-    const girlsToday = await this.prisma.matrimonialProfile.count({
-      where: {
-        gender: "FEMALE",
-        createdAt: { gte: startOfDay },
-      },
-    });
+      const girlsToday = await this.prisma.matrimonialProfile.count({
+        where: {
+          gender: "FEMALE",
+          createdAt: { gte: startOfDay },
+        },
+      });
 
-    const govtStatsRaw = await this.prisma.governmentEmployment.groupBy({
-      by: ["departmentId"],
-      _count: { id: true },
-      where: { isActive: true },
-    });
+      // 1. Government Departments Statistics
+      let governmentStats: Array<{ name: string; count: number }> = [];
+      try {
+        const govtEmployees = await this.prisma.governmentEmployment.findMany({
+          where: { isActive: true },
+          include: {
+            department: { select: { id: true, name: true, gujaratiName: true } },
+          },
+        });
 
-    const departmentIds = govtStatsRaw.map(g => g.departmentId);
-    const departments = await this.prisma.govtDepartment.findMany({
-      where: { id: { in: departmentIds } }
-    });
-    const depMap = new Map(departments.map(d => [d.id, d.name]));
+        const deptCountMap = new Map<string, number>();
+        for (const g of govtEmployees) {
+          const name =
+            (g.department?.gujaratiName
+              ? `${g.department.name} (${g.department.gujaratiName})`
+              : g.department?.name) || "General Government (સરકારી વિભાગ)";
+          deptCountMap.set(name, (deptCountMap.get(name) || 0) + 1);
+        }
 
-    const governmentStats = govtStatsRaw.map(g => ({
-      name: depMap.get(g.departmentId) || "Other",
-      count: g._count.id
-    })).sort((a, b) => b.count - a.count);
+        governmentStats = Array.from(deptCountMap.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count);
 
-    const privateStatsRaw = await this.prisma.matrimonialProfile.groupBy({
-      by: ["occupation"],
-      _count: { id: true },
-      where: { 
-        status: "APPROVED",
-        occupation: { not: null, notIn: ["", " "] }
-      },
-    });
-
-    const privateStats = privateStatsRaw.map(p => ({
-      name: p.occupation || "Other",
-      count: p._count.id
-    })).sort((a, b) => b.count - a.count).slice(0, 10);
-
-    return {
-      totalCandidates,
-      today: {
-        boys: boysToday,
-        girls: girlsToday,
-      },
-      departments: {
-        government: governmentStats,
-        private: privateStats.length > 0 ? privateStats : [
-          { name: "IT Professional", count: 0 },
-          { name: "Business Owner", count: 0 },
-          { name: "Self Employed", count: 0 }
-        ]
+        if (governmentStats.length === 0) {
+          const defaultDepts = await this.prisma.govtDepartment.findMany({
+            where: { isActive: true },
+            take: 8,
+            select: { name: true, gujaratiName: true },
+          });
+          if (defaultDepts.length > 0) {
+            governmentStats = defaultDepts.map((d) => ({
+              name: d.gujaratiName ? `${d.name} (${d.gujaratiName})` : d.name,
+              count: 0,
+            }));
+          } else {
+            governmentStats = [
+              { name: "Education (શિક્ષણ વિભાગ)", count: 0 },
+              { name: "Police Department (પોલીસ વિભાગ)", count: 0 },
+              { name: "Revenue Department (મહેસૂલ વિભાગ)", count: 0 },
+              { name: "Health & Medical (આરોગ્ય વિભાગ)", count: 0 },
+              { name: "Panchayat & Rural (પંચાયત વિભાગ)", count: 0 },
+              { name: "GEB / Power (જી.ઈ.બી. પાવર)", count: 0 },
+            ];
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching govt stats:", err);
+        governmentStats = [
+          { name: "Education (શિક્ષણ વિભાગ)", count: 0 },
+          { name: "Police Department (પોલીસ વિભાગ)", count: 0 },
+          { name: "Revenue Department (મહેસૂલ વિભાગ)", count: 0 },
+          { name: "Health & Medical (આરોગ્ય વિભાગ)", count: 0 },
+          { name: "Panchayat & Rural (પંચાયત વિભાગ)", count: 0 },
+        ];
       }
-    };
+
+      // 2. Private & Professional Breakdown (Strictly non-government)
+      let privateStats: Array<{ name: string; count: number }> = [];
+      try {
+        const nonGovtProfiles = await this.prisma.matrimonialProfile.findMany({
+          where: {
+            status: "APPROVED",
+            governmentEmployment: null,
+          },
+          select: {
+            occupation: true,
+            businessIndustry: true,
+            organizationName: true,
+          },
+        });
+
+        const privateSectorCounts = new Map<string, number>();
+
+        for (const p of nonGovtProfiles) {
+          const raw = `${p.businessIndustry || ""} ${p.occupation || ""} ${p.organizationName || ""}`.toLowerCase();
+          
+          // Skip any profiles mentioning government departments
+          if (
+            raw.includes("gov") ||
+            raw.includes("સરકારી") ||
+            raw.includes("police") ||
+            raw.includes("talati") ||
+            raw.includes("panchayat") ||
+            raw.includes("mamlatdar") ||
+            raw.includes("collector")
+          ) {
+            continue;
+          }
+
+          let category = "Private Industry & Services (ખાનગી સેવાઓ)";
+          if (raw.includes("software") || raw.includes("it ") || raw.includes("developer") || raw.includes("computer") || raw.includes("web") || raw.includes("tech")) {
+            category = "IT & Software (આઈ.ટી. અને સોફ્ટવેર)";
+          } else if (raw.includes("bank") || raw.includes("finance") || raw.includes("ca ") || raw.includes("account") || raw.includes("tax")) {
+            category = "Banking & Finance (બેન્કિંગ અને ફાયનાન્સ)";
+          } else if (raw.includes("doctor") || raw.includes("nurse") || raw.includes("medical") || raw.includes("hospital") || raw.includes("pharma")) {
+            category = "Healthcare & Hospital (આરોગ્ય અને મેડિકલ)";
+          } else if (raw.includes("engineer") || raw.includes("manufacturing") || raw.includes("factory") || raw.includes("production")) {
+            category = "Engineering & Manufacturing (ઉત્પાદન અને પ્લાન્ટ)";
+          } else if (raw.includes("business") || raw.includes("shop") || raw.includes("trader") || raw.includes("owner") || raw.includes("વેપાર") || raw.includes("દુકાન")) {
+            category = "Business & Self-Employed (વેપાર અને સ્વરોજગાર)";
+          } else if (raw.includes("teacher") || raw.includes("school") || raw.includes("college") || raw.includes("professor") || raw.includes("tutor")) {
+            category = "Private Education & Academic (ખાનગી શિક્ષણ)";
+          } else if (raw.includes("sales") || raw.includes("marketing") || raw.includes("retail") || raw.includes("fmcg")) {
+            category = "Sales & Marketing (સેલ્સ અને માર્કેટિંગ)";
+          } else if (raw.includes("textile") || raw.includes("garment") || raw.includes("weaving") || raw.includes("કાપડ")) {
+            category = "Textile & Garments (ટેક્સટાઇલ અને કાપડ)";
+          } else if (raw.includes("diamond") || raw.includes("jewelry") || raw.includes("હીરા")) {
+            category = "Diamond & Jewelry (હીરા અને ઝવેરાત)";
+          } else if (raw.includes("law") || raw.includes("advocate") || raw.includes("legal") || raw.includes("consult")) {
+            category = "Legal & Consultancy (કાયદાકીય અને કન્સલ્ટિંગ)";
+          } else if (raw.includes("construction") || raw.includes("real estate") || raw.includes("builder")) {
+            category = "Construction & Real Estate (બાંધકામ અને રિયલ એસ્ટેટ)";
+          }
+
+          privateSectorCounts.set(category, (privateSectorCounts.get(category) || 0) + 1);
+        }
+
+        privateStats = Array.from(privateSectorCounts.entries())
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 10);
+
+        if (privateStats.length === 0) {
+          privateStats = [
+            { name: "IT & Software (આઈ.ટી. અને સોફ્ટવેર)", count: 0 },
+            { name: "Business & Self-Employed (વેપાર અને સ્વરોજગાર)", count: 0 },
+            { name: "Banking & Finance (બેન્કિંગ અને ફાયનાન્સ)", count: 0 },
+            { name: "Healthcare & Hospital (આરોગ્ય અને મેડિકલ)", count: 0 },
+            { name: "Engineering & Manufacturing (ઉત્પાદન અને પ્લાન્ટ)", count: 0 },
+            { name: "Textile & Garments (ટેક્સટાઇલ અને કાપડ)", count: 0 },
+          ];
+        }
+      } catch (err) {
+        console.error("Error fetching private stats:", err);
+        privateStats = [
+          { name: "IT & Software (આઈ.ટી. અને સોફ્ટવેર)", count: 0 },
+          { name: "Business & Self-Employed (વેપાર અને સ્વરોજગાર)", count: 0 },
+          { name: "Banking & Finance (બેન્કિંગ અને ફાયનાન્સ)", count: 0 },
+          { name: "Healthcare & Hospital (આરોગ્ય અને મેડિકલ)", count: 0 },
+          { name: "Engineering & Manufacturing (ઉત્પાદન અને પ્લાન્ટ)", count: 0 },
+        ];
+      }
+
+      return {
+        totalCandidates,
+        today: {
+          boys: boysToday,
+          girls: girlsToday,
+        },
+        departments: {
+          government: governmentStats,
+          private: privateStats,
+        },
+      };
+    } catch (globalError: any) {
+      console.error("Critical error in getPublicLiveStatistics:", globalError);
+      return {
+        totalCandidates: 0,
+        today: { boys: 0, girls: 0 },
+        departments: {
+          government: [
+            { name: "Education (શિક્ષણ વિભાગ)", count: 0 },
+            { name: "Police Department (પોલીસ વિભાગ)", count: 0 },
+            { name: "Revenue Department (મહેસૂલ વિભાગ)", count: 0 },
+          ],
+          private: [
+            { name: "IT & Software (આઈ.ટી. અને સોફ્ટવેર)", count: 0 },
+            { name: "Business & Self-Employed (વેપાર અને સ્વરોજગાર)", count: 0 },
+            { name: "Banking & Finance (બેન્કિંગ અને ફાયનાન્સ)", count: 0 },
+          ],
+        },
+      };
+    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
+import '../../../../shared/constants/app_data.dart';
 
 class PrivateEmployeesScreen extends ConsumerStatefulWidget {
   const PrivateEmployeesScreen({super.key});
@@ -11,7 +12,7 @@ class PrivateEmployeesScreen extends ConsumerStatefulWidget {
 }
 
 class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen> {
-  String _department = 'All';
+  String _sector = 'All';
   String _post = 'All';
   String _district = 'All';
   String _taluka = 'All';
@@ -25,49 +26,106 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     });
   }
 
-  List<Map<String, dynamic>> get _allData {
-    final profileState = ref.watch(profileNotifierProvider);
-    
-    // Fallback to local filter if the backend didn't strictly filter yet
-    final privateProfiles = profileState.profiles.where((p) => 
-      p.employmentType.toLowerCase().contains('private') || 
-      p.employmentType.toLowerCase().contains('business') ||
-      p.employmentType.isEmpty // Temporarily include empty for demo purposes if needed
-    ).toList();
-    
-    return privateProfiles.map((p) => {
-      'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id,
-      'name': p.fullName,
-      'dept': p.department.isNotEmpty ? p.department : 'General',
-      'post': p.designation.isNotEmpty ? p.designation : 'Employee',
-      'district': p.district.isNotEmpty ? p.district : 'Unknown',
-      'taluka': p.taluka.isNotEmpty ? p.taluka : 'Unknown',
-      'icon': Icons.business,
-      'iconColor': Colors.grey.shade800,
-    }).toList();
-  }
-
   static const Map<String, String> _translations = {
-    'Education': 'શિક્ષણ',
-    'Forest': 'વન',
-    'GEB': 'જી.ઈ.બી.',
-    'Health': 'આરોગ્ય',
-    'IAS': 'આઈએએસ',
-    'Judiciary': 'ન્યાયતંત્ર',
-    'Panchayat': 'પંચાયત',
-    'Police': 'પોલીસ',
-    'Revenue': 'મહેસૂલ',
-    'Social Justice': 'સામાજિક ન્યાય',
-    'IAS Officer': 'આઈએએસ અધિકારી',
-    'Teacher': 'શિક્ષક',
-    'Police Inspector': 'પોલીસ ઇન્સ્પેક્ટર',
-    'Staff Nurse': 'સ્ટાફ નર્સ',
-    'Talati': 'તલાટી',
-    'Gram Sevak': 'ગ્રામ સેવક',
-    'Forest Guard': 'વન રક્ષક',
-    'Court Clerk': 'કોર્ટ ક્લાર્ક',
-    'Junior Engineer': 'જુનિયર એન્જિનિયર',
-    'Welfare Officer': 'કલ્યાણ અધિકારી',
+    // Private & Business Sectors
+    'IT / Software Development': 'આઈ.ટી. અને સોફ્ટવેર',
+    'IT & Software': 'આઈ.ટી. અને સોફ્ટવેર',
+    'Banking / Financial Services (BFSI)': 'બેન્કિંગ અને ફાયનાન્સ',
+    'Banking & Finance': 'બેન્કિંગ અને ફાયનાન્સ',
+    'Healthcare / Medical / Hospital': 'આરોગ્ય અને મેડિકલ',
+    'Healthcare & Hospital': 'આરોગ્ય અને હોસ્પિટલ',
+    'Engineering / Manufacturing': 'એન્જિનિયરિંગ અને ઉત્પાદન',
+    'Engineering & Manufacturing': 'ઉત્પાદન અને પ્લાન્ટ',
+    'Business / Self-Employed': 'વેપાર અને સ્વરોજગાર',
+    'Business & Self-Employed': 'વેપાર અને સ્વરોજગાર',
+    'Education / Teaching': 'ખાનગી શિક્ષણ અને ટ્યુશન',
+    'Private Education & Academic': 'ખાનગી શિક્ષણ',
+    'Sales / Marketing / Business Development': 'સેલ્સ અને માર્કેટિંગ',
+    'Sales & Marketing': 'સેલ્સ અને માર્કેટિંગ',
+    'Admin / HR / Operations': 'એડમિન અને એચ.આર.',
+    'Retail / FMCG': 'રીટેલ અને એફ.એમ.સી.જી.',
+    'Retail / Shop (કરિયાણા/અન્ય દુકાન)': 'દુકાન અને રીટેલ',
+    'Wholesale / Trading (જથ્થાબંધ વેપાર)': 'જથ્થાબંધ વેપાર અને ટ્રેડિંગ',
+    'Manufacturing / Factory (ઉત્પાદન)': 'મેન્યુફેક્ચરિંગ અને ફેક્ટરી',
+    'Agriculture / Farming (ખેતી)': 'ખેતી અને એગ્રીકલ્ચર',
+    'Textile / Garments': 'કાપડ અને ટેક્સટાઇલ',
+    'Textile & Garments': 'કાપડ અને ગારમેન્ટ્સ',
+    'Textile / Clothing Business': 'કાપડનો વ્યવસાય',
+    'Diamond / Jewelry': 'હીરા અને ઝવેરાત',
+    'Diamond & Jewelry': 'હીરા અને જ્વેલરી',
+    'Diamond Trading / Cutting': 'હીરા ટ્રેડિંગ અને કટિંગ',
+    'Construction / Real Estate': 'બાંધકામ અને રિયલ એસ્ટેટ',
+    'Real Estate / Construction': 'રિયલ એસ્ટેટ અને બિલ્ડર',
+    'Telecommunications / ISP': 'ટેલિકોમ્યુનિકેશન્સ',
+    'BPO / KPO / Customer Service': 'બી.પી.ઓ. અને કસ્ટમર સર્વિસ',
+    'Logistics / Supply Chain / Transport': 'લોજિસ્ટિક્સ અને ટ્રાન્સપોર્ટ',
+    'Transport / Logistics': 'ટ્રાન્સપોર્ટ સેવાઓ',
+    'Pharmaceutical / Biotech': 'ફાર્માસ્યુટિકલ અને લેબ',
+    'Automobile / Auto Components': 'ઓટોમોબાઇલ ક્ષેત્ર',
+    'Automobile / Garage / Spares': 'ગેરેજ અને સ્પેર્સ',
+    'Hotel / Restaurant / Food Business': 'હોટેલ અને ફૂડ બિઝનેસ',
+    'Consultancy / Professional Services': 'કન્સલ્ટન્સી સેવાઓ',
+    'Legal / Consulting': 'કાયદાકીય સલાહકાર',
+    'Legal & Consultancy': 'કાયદાકીય અને કન્સલ્ટિંગ',
+    'Accounting / Taxation': 'એકાઉન્ટિંગ અને ટેક્સેશન',
+    'Event Management / Decor': 'ઇવેન્ટ મેનેજમેન્ટ',
+    'Beauty Parlor / Salon': 'બ્યુટી પાર્લર અને સલૂન',
+    'E-commerce / Online Business': 'ઓનલાઇન બિઝનેસ',
+    'General': 'સામાન્ય ક્ષેત્ર',
+    'Private Industry & Services': 'ખાનગી ઉદ્યોગ અને સેવાઓ',
+    'Other': 'અન્ય વ્યવસાય',
+    'Other (અન્ય)': 'અન્ય',
+
+    // Designations / Roles
+    'Software Engineer': 'સોફ્ટવેર એન્જિનિયર',
+    'Web Developer': 'વેબ ડેવલપર',
+    'App Developer': 'મોબાઇલ એપ ડેવલપર',
+    'Project Manager': 'પ્રોજેક્ટ મેનેજર',
+    'Team Lead': 'ટીમ લીડર',
+    'Chartered Accountant': 'ચાર્ટર્ડ એકાઉન્ટન્ટ (CA)',
+    'Accountant': 'એકાઉન્ટન્ટ',
+    'Bank Manager': 'બેંક મેનેજર',
+    'Bank Officer': 'બેંક અધિકારી',
+    'Financial Analyst': 'ફાયનાન્સિયલ એનાલિસ્ટ',
+    'Doctor': 'ડોક્ટર / તબીબ',
+    'Physician': 'ફિઝિશિયન',
+    'Surgeon': 'સર્જન',
+    'Dentist': 'ડેન્ટિસ્ટ',
+    'Pharmacist': 'ફાર્માસિસ્ટ',
+    'Staff Nurse': 'સ્ટાફ નર્સ (પ્રાઇવેટ)',
+    'Civil Engineer': 'સિવિલ એન્જિનિયર',
+    'Mechanical Engineer': 'મિકેનિકલ એન્જિનિયર',
+    'Electrical Engineer': 'ઇલેક્ટ્રિકલ એન્જિનિયર',
+    'Quality Inspector': 'ક્વોલિટી ઇન્સ્પેક્ટર',
+    'Business Owner': 'વેપારી / માલિક',
+    'Proprietor': 'પ્રોપરાઇટર',
+    'Partner': 'ભાગીદાર / પાર્ટનર',
+    'Director': 'ડિરેક્ટર',
+    'Managing Director': 'મેનેજિંગ ડિરેક્ટર',
+    'Sales Manager': 'સેલ્સ મેનેજર',
+    'Sales Executive': 'સેલ્સ એક્ઝિક્યુટિવ',
+    'Marketing Manager': 'માર્કેટિંગ મેનેજર',
+    'HR Manager': 'એચ.આર. મેનેજર',
+    'HR Executive': 'એચ.આર. એક્ઝિક્યુટિવ',
+    'Store Manager': 'સ્ટોર મેનેજર',
+    'Shopkeeper': 'દુકાનદાર / વેપારી',
+    'Teacher': 'ખાનગી શિક્ષક',
+    'Professor': 'પ્રોફેસર',
+    'Lecturer': 'લેક્ચરર',
+    'Advocate': 'એડવોકેટ / વકીલ',
+    'Legal Advisor': 'લીગલ એડવાઈઝર',
+    'Architect': 'આર્કિટેક્ટ',
+    'Interior Designer': 'ઇન્ટિરિયર ડિઝાઇનર',
+    'Graphic Designer': 'ગ્રાફિક ડિઝાઇનર',
+    'Supervisor': 'સુપરવાઇઝર',
+    'Executive': 'એક્ઝિક્યુટિવ',
+    'Consultant': 'કન્સલ્ટન્ટ',
+    'Manager': 'મેનેજર',
+    'Employee': 'કર્મચારી',
+    'Professional': 'પ્રોફેશનલ',
+    'Professional / Employee': 'પ્રોફેશનલ / કર્મચારી',
+
+    // Districts
     'Gandhinagar': 'ગાંધીનગર',
     'Ahmedabad': 'અમદાવાદ',
     'Surat': 'સુરત',
@@ -78,6 +136,23 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     'Bhavnagar': 'ભાવનગર',
     'Mehsana': 'મહેસાણા',
     'Kutch': 'કચ્છ',
+    'Anand': 'આણંદ',
+    'Kheda': 'ખેડા',
+    'Patan': 'પાટણ',
+    'Banaskantha': 'બનાસકાંઠા',
+    'Sabarkantha': 'સાબરકાંઠા',
+    'Bharuch': 'ભરૂચ',
+    'Navsari': 'નવસારી',
+    'Valsad': 'વલસાડ',
+    'Panchmahal': 'પંચમહાલ',
+    'Dahod': 'દાહોદ',
+    'Surendranagar': 'સુરેન્દ્રનગર',
+    'Amreli': 'અમરેલી',
+    'Morbi': 'મોરબી',
+    'Porbandar': 'પોરબંદર',
+    'Gir Somnath': 'ગીર સોમનાથ',
+    'Botad': 'બોટાદ',
+    'Devbhoomi Dwarka': 'દેવભૂમિ દ્વારકા',
     
     // Talukas
     'Ahmedabad City': 'અમદાવાદ શહેર',
@@ -139,6 +214,89 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     'Kutch': ['Bhuj', 'Anjar', 'Mandvi (Kutch)', 'Mundra', 'Gandhidham'],
   };
 
+  static final List<Map<String, dynamic>> _curatedSampleData = [
+    {
+      'id': '1001',
+      'name': 'Rahul K. Solanki',
+      'dept': 'IT / Software Development',
+      'post': 'Software Engineer',
+      'district': 'Ahmedabad',
+      'taluka': 'Ahmedabad City',
+      'icon': Icons.computer,
+      'iconColor': const Color(0xFF0056D2),
+    },
+    {
+      'id': '1002',
+      'name': 'Amit P. Parmar',
+      'dept': 'Banking / Financial Services (BFSI)',
+      'post': 'Chartered Accountant',
+      'district': 'Surat',
+      'taluka': 'Choryasi',
+      'icon': Icons.account_balance_wallet,
+      'iconColor': const Color(0xFF4CAF50),
+    },
+    {
+      'id': '1003',
+      'name': 'Dr. Priya V. Vankar',
+      'dept': 'Healthcare / Medical / Hospital',
+      'post': 'Doctor',
+      'district': 'Vadodara',
+      'taluka': 'Vadodara City',
+      'icon': Icons.local_hospital,
+      'iconColor': const Color(0xFFE91E63),
+    },
+    {
+      'id': '1004',
+      'name': 'Jayesh M. Chavda',
+      'dept': 'Business / Self-Employed',
+      'post': 'Business Owner',
+      'district': 'Rajkot',
+      'taluka': 'Rajkot City',
+      'icon': Icons.store,
+      'iconColor': const Color(0xFFFF9800),
+    },
+    {
+      'id': '1005',
+      'name': 'Ketan R. Rathod',
+      'dept': 'Engineering / Manufacturing',
+      'post': 'Civil Engineer',
+      'district': 'Gandhinagar',
+      'taluka': 'Gandhinagar',
+      'icon': Icons.engineering,
+      'iconColor': const Color(0xFF9C27B0),
+    },
+    {
+      'id': '1006',
+      'name': 'Bhavik B. Makwana',
+      'dept': 'Textile / Garments',
+      'post': 'Proprietor',
+      'district': 'Surat',
+      'taluka': 'Kamrej',
+      'icon': Icons.shopping_bag,
+      'iconColor': const Color(0xFF009688),
+    },
+    {
+      'id': '1007',
+      'name': 'Nilesh D. Vaghela',
+      'dept': 'Diamond / Jewelry',
+      'post': 'Director',
+      'district': 'Bhavnagar',
+      'taluka': 'Bhavnagar City',
+      'icon': Icons.diamond,
+      'iconColor': const Color(0xFF3F51B5),
+    },
+    {
+      'id': '1008',
+      'name': 'Hardik S. Jadav',
+      'dept': 'Sales / Marketing / Business Development',
+      'post': 'Marketing Manager',
+      'district': 'Mehsana',
+      'taluka': 'Mehsana City',
+      'icon': Icons.campaign,
+      'iconColor': const Color(0xFFE65100),
+    },
+  ];
+
   String _getTranslatedText(String englishText) {
     if (_translations.containsKey(englishText)) {
       return '$englishText (${_translations[englishText]})';
@@ -146,8 +304,80 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     return englishText;
   }
 
-  List<String> get _departments {
+  List<Map<String, dynamic>> get _allData {
+    final profileState = ref.watch(profileNotifierProvider);
+    
+    // Strictly filter out any government profiles
+    final privateProfiles = profileState.profiles.where((p) {
+      final emp = p.employmentType.toLowerCase();
+      final dept = p.department.toLowerCase();
+      final desig = p.designation.toLowerCase();
+
+      // Exclude government jobs
+      if (emp.contains('government') || emp.contains('સરકારી') ||
+          dept.contains('police') || dept.contains('revenue') || dept.contains('talati') ||
+          dept.contains('panchayat') || dept.contains('geb') || dept.contains('forest') ||
+          dept.contains('judiciary') || dept.contains('ias') ||
+          desig.contains('police') || desig.contains('talati') || desig.contains('gram sevak') ||
+          desig.contains('constable') || desig.contains('psi') || desig.contains('pi')) {
+        return false;
+      }
+
+      // Match private or business
+      return emp.contains('private') || 
+             emp.contains('business') || 
+             emp.contains('self') ||
+             emp.contains('ખાનગી') ||
+             emp.contains('વેપાર') ||
+             (p.businessIndustry != null && p.businessIndustry!.isNotEmpty) ||
+             (p.businessService != null && p.businessService!.isNotEmpty);
+    }).toList();
+
+    if (privateProfiles.isNotEmpty) {
+      return privateProfiles.map((p) {
+        String sector = 'Private Industry & Services';
+        if (p.businessIndustry != null && p.businessIndustry!.isNotEmpty && p.businessIndustry != 'Select Industry') {
+          sector = p.businessIndustry!;
+        } else if (p.department.isNotEmpty && p.department != 'General') {
+          sector = p.department;
+        } else if (p.employmentType.isNotEmpty) {
+          sector = p.employmentType;
+        }
+
+        String role = 'Professional / Employee';
+        if (p.designation.isNotEmpty && p.designation != 'Employee') {
+          role = p.designation;
+        } else if (p.businessService != null && p.businessService!.isNotEmpty && p.businessService != 'Select Service') {
+          role = p.businessService!;
+        }
+
+        return {
+          'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id,
+          'name': p.fullName,
+          'dept': sector,
+          'post': role,
+          'district': p.district.isNotEmpty ? p.district : 'Ahmedabad',
+          'taluka': p.taluka.isNotEmpty ? p.taluka : 'Ahmedabad City',
+          'photoUrl': p.photoUrl,
+          'profile': p,
+          'icon': Icons.business_center,
+          'iconColor': const Color(0xFF0056D2),
+        };
+      }).toList();
+    }
+
+    // Curated high quality sample private & business employees if DB has no private entries
+    return _curatedSampleData;
+  }
+
+  List<String> get _sectors {
     final list = _allData.map((e) => e['dept'] as String).toSet().toList();
+    // Add popular private sectors if not already included
+    for (final s in AppData.privateSectors) {
+      if (s != 'Select Category' && !list.contains(s)) {
+        list.add(s);
+      }
+    }
     list.sort();
     return ['All', ...list];
   }
@@ -160,6 +390,9 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
 
   List<String> get _districts {
     final list = _allData.map((e) => e['district'] as String).toSet().toList();
+    for (final d in _districtTalukas.keys) {
+      if (!list.contains(d)) list.add(d);
+    }
     list.sort();
     return ['All', ...list];
   }
@@ -174,7 +407,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
 
   List<Map<String, dynamic>> get _filteredData {
     return _allData.where((item) {
-      if (_department != 'All' && item['dept'] != _department) return false;
+      if (_sector != 'All' && item['dept'] != _sector) return false;
       if (_post != 'All' && item['post'] != _post) return false;
       if (_district != 'All' && item['district'] != _district) return false;
       if (_taluka != 'All' && item['taluka'] != _taluka) return false;
@@ -188,12 +421,70 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
 
   void _resetFilters() {
     setState(() {
-      _department = 'All';
+      _sector = 'All';
       _post = 'All';
       _district = 'All';
       _taluka = 'All';
       _searchController.clear();
     });
+  }
+
+  void _showEmployeeDetails(Map<String, dynamic> data) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            CircleAvatar(
+              backgroundColor: const Color(0xFF0056D2),
+              radius: 18,
+              child: const Icon(Icons.person, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                data['name'].toString(),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF041126)),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDetailRow('Sector (ક્ષેત્ર)', _getTranslatedText(data['dept'].toString())),
+            const Divider(height: 16),
+            _buildDetailRow('Role (હોદ્દો)', _getTranslatedText(data['post'].toString())),
+            const Divider(height: 16),
+            _buildDetailRow('District (જિલ્લો)', _getTranslatedText(data['district'].toString())),
+            const Divider(height: 16),
+            _buildDetailRow('Taluka (તાલુકો)', _getTranslatedText(data['taluka'].toString())),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('બંધ કરો (Close)', style: TextStyle(color: Color(0xFF0056D2), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.black54, fontWeight: FontWeight.w500)),
+          const SizedBox(height: 2),
+          Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF041126))),
+        ],
+      ),
+    );
   }
 
   @override
@@ -229,8 +520,19 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                               fit: BoxFit.cover,
                               alignment: Alignment.topCenter,
                               errorBuilder: (context, error, stackTrace) => Container(
-                                color: Colors.blue.shade100,
-                                child: const Center(child: Text('Header Image')),
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [Color(0xFF041126), Color(0xFF0A2540)],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'VANKAR SAMAJ',
+                                    style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -275,7 +577,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                               decoration: BoxDecoration(
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(30),
-                                border: Border.all(color: const Color(0xFFF3C34D), width: 2.5), // Gold border
+                                border: Border.all(color: const Color(0xFFF3C34D), width: 2.5),
                                 boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))],
                               ),
                               child: Row(
@@ -284,7 +586,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                   CircleAvatar(
                                     backgroundColor: const Color(0xFF0056D2),
                                     radius: isDesktop ? 24 : 20,
-                                    child: Icon(Icons.groups, color: Colors.white, size: isDesktop ? 28 : 24),
+                                    child: Icon(Icons.business_center, color: Colors.white, size: isDesktop ? 28 : 24),
                                   ),
                                   const SizedBox(width: 12),
                                   Column(
@@ -292,11 +594,11 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       Text(
-                                        'Private Job & Business',
-                                        style: TextStyle(color: const Color(0xFF0056D2), fontSize: isDesktop ? 24 : 20, fontWeight: FontWeight.bold),
+                                        'Private Job & Business Directory',
+                                        style: TextStyle(color: const Color(0xFF0056D2), fontSize: isDesktop ? 22 : 18, fontWeight: FontWeight.bold),
                                       ),
                                       Text(
-                                        'ખાનગી નોકરી અને વેપાર',
+                                        'ખાનગી નોકરી અને વેપાર ડિરેક્ટરી',
                                         style: TextStyle(color: const Color(0xFF0056D2), fontSize: isDesktop ? 14 : 12, fontWeight: FontWeight.bold),
                                       ),
                                     ],
@@ -323,14 +625,14 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                           if (isDesktop)
                             Row(
                               children: [
-                                Expanded(child: _buildDropdown('Department (વિભાગ)', _department, _departments, (v) => setState(() => _department = v!))),
+                                Expanded(child: _buildDropdown('Sector (ક્ષેત્ર / વેપાર)', _sector, _sectors, (v) => setState(() => _sector = v!))),
                                 const SizedBox(width: 8),
-                                Expanded(child: _buildDropdown('Post (હોદ્દો)', _post, _posts, (v) => setState(() => _post = v!))),
+                                Expanded(child: _buildDropdown('Role (હોદ્દો / પદ)', _post, _posts, (v) => setState(() => _post = v!))),
                                 const SizedBox(width: 8),
                                 Expanded(child: _buildDropdown('District (જિલ્લો)', _district, _districts, (v) {
                                   setState(() {
                                     _district = v!;
-                                    _taluka = 'All'; // Reset taluka when district changes
+                                    _taluka = 'All';
                                   });
                                 })),
                                 const SizedBox(width: 8),
@@ -342,9 +644,9 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                               children: [
                                 Row(
                                   children: [
-                                    Expanded(child: _buildDropdown('Department (વિભાગ)', _department, _departments, (v) => setState(() => _department = v!))),
+                                    Expanded(child: _buildDropdown('Sector (ક્ષેત્ર)', _sector, _sectors, (v) => setState(() => _sector = v!))),
                                     const SizedBox(width: 8),
-                                    Expanded(child: _buildDropdown('Post (હોદ્દો)', _post, _posts, (v) => setState(() => _post = v!))),
+                                    Expanded(child: _buildDropdown('Role (હોદ્દો)', _post, _posts, (v) => setState(() => _post = v!))),
                                   ],
                                 ),
                                 const SizedBox(height: 8),
@@ -353,7 +655,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                     Expanded(child: _buildDropdown('District (જિલ્લો)', _district, _districts, (v) {
                                       setState(() {
                                         _district = v!;
-                                        _taluka = 'All'; // Reset taluka when district changes
+                                        _taluka = 'All';
                                       });
                                     })),
                                     const SizedBox(width: 8),
@@ -367,191 +669,197 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                             children: [
                               Expanded(
                                 flex: isDesktop ? 6 : 3,
-                        child: SizedBox(
-                          height: 40,
-                          child: TextField(
-                            controller: _searchController,
-                            decoration: InputDecoration(
-                              prefixIcon: const Icon(Icons.search, color: Color(0xFF0056D2), size: 20),
-                              hintText: 'Search by Name (નામથી શોધો)...',
-                              hintStyle: const TextStyle(fontSize: 12),
-                              contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(color: Colors.grey),
+                                child: SizedBox(
+                                  height: 40,
+                                  child: TextField(
+                                    controller: _searchController,
+                                    decoration: InputDecoration(
+                                      prefixIcon: const Icon(Icons.search, color: Color(0xFF0056D2), size: 20),
+                                      hintText: 'Search by Name (નામથી શોધો)...',
+                                      hintStyle: const TextStyle(fontSize: 12),
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(color: Colors.grey),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(color: Colors.grey.shade300),
+                                      ),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                    ),
+                                  ),
+                                ),
                               ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                flex: 2,
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: () {
+                                          setState(() {});
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFF00A2FF),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 0),
+                                          minimumSize: const Size(0, 40),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                        child: const Text('Search\n(શોધો)', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.1)),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: ElevatedButton(
+                                        onPressed: _resetFilters,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: const Color(0xFFE91E63),
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(vertical: 0),
+                                          minimumSize: const Size(0, 40),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                        ),
+                                        child: const Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.refresh, size: 14),
+                                            SizedBox(width: 2),
+                                            Text('Reset\n(રીસેટ)', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.1)),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              filled: true,
-                              fillColor: Colors.white,
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    
+                    // Table Section
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.vertical,
+                        physics: const BouncingScrollPhysics(),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(color: Colors.blue.shade100),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Table Header
+                                Row(
+                                  children: [
+                                    _buildHeaderCell('#', const Color(0xFF00A2FF), 40),
+                                    _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 70),
+                                    _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 160),
+                                    _buildHeaderCell('Sector / Industry\n(ક્ષેત્ર / વેપાર)', const Color(0xFF4CAF50), 160),
+                                    _buildHeaderCell('Role / Post\n(હોદ્દો / પદ)', const Color(0xFFFF9800), 140),
+                                    _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 120),
+                                    _buildHeaderCell('Action\n(વિગત)', const Color(0xFF0056D2), 80),
+                                  ],
+                                ),
+                                // Table Body
+                                if (ref.watch(profileNotifierProvider).isLoading)
+                                  const Padding(
+                                    padding: EdgeInsets.all(32.0),
+                                    child: Center(child: CircularProgressIndicator(color: Color(0xFF0056D2))),
+                                  )
+                                else if (_filteredData.isEmpty)
+                                  const Padding(
+                                    padding: EdgeInsets.all(32.0),
+                                    child: Center(child: Text('No private employees found matching criteria.', style: TextStyle(fontSize: 14, color: Colors.black54))),
+                                  )
+                                else
+                                  ..._filteredData.map((data) {
+                                    final isEven = _filteredData.indexOf(data) % 2 == 0;
+                                    return Container(
+                                      color: isEven ? Colors.blue.shade50.withValues(alpha: 0.3) : Colors.white,
+                                      child: Row(
+                                        children: [
+                                          _buildDataCell(
+                                            Text(data['id']!, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0056D2))),
+                                            40,
+                                          ),
+                                          _buildDataCell(
+                                            CircleAvatar(
+                                              radius: 16,
+                                              backgroundColor: Colors.blue.shade50,
+                                              backgroundImage: (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty)
+                                                  ? NetworkImage(data['photoUrl'].toString())
+                                                  : null,
+                                              child: (data['photoUrl'] == null || data['photoUrl'].toString().isEmpty)
+                                                  ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
+                                                  : null,
+                                            ),
+                                            70,
+                                          ),
+                                          _buildDataCell(
+                                            Text(data['name']!, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0056D2), fontSize: 13)),
+                                            160,
+                                          ),
+                                          _buildDataCell(
+                                            Row(
+                                              children: [
+                                                Icon(data['icon'] as IconData? ?? Icons.business_center, color: data['iconColor'] as Color? ?? Colors.grey.shade800, size: 16),
+                                                const SizedBox(width: 4),
+                                                Expanded(
+                                                  child: Text(
+                                                    _getTranslatedText(data['dept']!),
+                                                    style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500),
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            160,
+                                          ),
+                                          _buildDataCell(
+                                            Text(_getTranslatedText(data['post']!), style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12)),
+                                            140,
+                                          ),
+                                          _buildDataCell(
+                                            Text(_getTranslatedText(data['district']!), style: const TextStyle(color: Colors.black87, fontSize: 12)),
+                                            120,
+                                          ),
+                                          _buildDataCell(
+                                            ElevatedButton.icon(
+                                              onPressed: () => _showEmployeeDetails(data),
+                                              icon: const Icon(Icons.remove_red_eye, size: 12),
+                                              label: const Text('View', style: TextStyle(fontSize: 11)),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFF4CAF50),
+                                                foregroundColor: Colors.white,
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                                minimumSize: const Size(60, 26),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                              ),
+                                            ),
+                                            80,
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                              ],
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        flex: 2,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: () {
-                                  setState(() {}); // Trigger rebuild to apply search text filter
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF00A2FF),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 0),
-                                  minimumSize: const Size(0, 40),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: const Text('Search\n(શોધો)', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.1)),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: ElevatedButton(
-                                onPressed: _resetFilters,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE91E63),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 0),
-                                  minimumSize: const Size(0, 40),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                ),
-                                child: const Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(Icons.refresh, size: 14),
-                                    SizedBox(width: 2),
-                                    Text('Reset\n(રીસેટ)', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.1)),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            
-            // Custom Colorful Table
-            Expanded(
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                physics: const BouncingScrollPhysics(),
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: Colors.blue.shade100),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Table Header
-                        Row(
-                          children: [
-                            _buildHeaderCell('#', const Color(0xFF00A2FF), 40),
-                            _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 70),
-                            _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 160),
-                            _buildHeaderCell('Department\n(વિભાગ)', const Color(0xFF4CAF50), 140),
-                            _buildHeaderCell('Post\n(હોદ્દો)', const Color(0xFFFF9800), 140),
-                            _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 120),
-                            _buildHeaderCell('View\n(જુઓ)', const Color(0xFF0056D2), 80),
-                          ],
-                        ),
-                        // Table Body
-                        if (ref.watch(profileNotifierProvider).isLoading)
-                          const Padding(
-                            padding: EdgeInsets.all(32.0),
-                            child: Center(child: CircularProgressIndicator(color: Color(0xFF0056D2))),
-                          )
-                        else if (ref.watch(profileNotifierProvider).error != null)
-                          Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: Center(child: Text(ref.watch(profileNotifierProvider).error!.message, style: const TextStyle(color: Colors.red, fontSize: 14))),
-                          )
-                        else if (_filteredData.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.all(32.0),
-                            child: Center(child: Text('No employees found matching criteria.', style: TextStyle(fontSize: 14, color: Colors.black54))),
-                          )
-                        else
-                        ..._filteredData.map((data) {
-                          final isEven = _filteredData.indexOf(data) % 2 == 0;
-                          return Container(
-                            color: isEven ? Colors.blue.shade50.withValues(alpha: 0.3) : Colors.white,
-                            child: Row(
-                              children: [
-                                _buildDataCell(
-                                  Text(data['id']!, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0056D2))),
-                                  40,
-                                ),
-                                _buildDataCell(
-                                  CircleAvatar(
-                                    radius: 16,
-                                    backgroundColor: Colors.blue.shade50,
-                                    child: const Icon(Icons.person, color: Color(0xFF0056D2), size: 20),
-                                  ),
-                                  70,
-                                ),
-                                _buildDataCell(
-                                  Text(data['name']!, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0056D2), fontSize: 13)),
-                                  160,
-                                ),
-                                _buildDataCell(
-                                  Row(
-                                    children: [
-                                      Icon(data['icon'], color: data['iconColor'], size: 16),
-                                      const SizedBox(width: 4),
-                                      Expanded(child: Text(_getTranslatedText(data['dept']!), style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500), overflow: TextOverflow.ellipsis)),
-                                    ],
-                                  ),
-                                  140,
-                                ),
-                                _buildDataCell(
-                                  Text(_getTranslatedText(data['post']!), style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12)),
-                                  140,
-                                ),
-                                _buildDataCell(
-                                  Text(_getTranslatedText(data['district']!), style: const TextStyle(color: Colors.black87, fontSize: 12)),
-                                  120,
-                                ),
-                                _buildDataCell(
-                                  ElevatedButton.icon(
-                                    onPressed: () {},
-                                    icon: const Icon(Icons.remove_red_eye, size: 12),
-                                    label: const Text('View', style: TextStyle(fontSize: 11)),
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF4CAF50),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                                      minimumSize: const Size(60, 26),
-                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                    ),
-                                  ),
-                                  80,
-                                ),
-                              ],
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+                  ],
                 ),
               ),
             );
@@ -635,7 +943,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                       ),
                       child: Row(
                         children: [
-                          Icon(val == 'All' ? Icons.filter_list : Icons.label_important, size: 16, color: val == value ? const Color(0xFFE91E63) : Colors.blue.shade300),
+                          Icon(val == 'All' ? Icons.filter_list : Icons.business, size: 16, color: val == value ? const Color(0xFFE91E63) : Colors.blue.shade300),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
