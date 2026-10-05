@@ -363,6 +363,7 @@ cp -r "$PROJECT_ROOT/application/build/web/"* "${APP_WEB_ROOT}_tmp/"
 DEPLOY_TS=$(date +%s)
 echo "Injecting cache-buster timestamp: $DEPLOY_TS ..."
 sed -i "s/flutter_bootstrap\.js[^\"']*\"/flutter_bootstrap.js?v=$DEPLOY_TS\"/g" "${APP_WEB_ROOT}_tmp/index.html" || true
+sed -i "s/main\.dart\.js[^\"']*/main.dart.js?v=$DEPLOY_TS/g" "${APP_WEB_ROOT}_tmp/flutter_bootstrap.js" || true
 rm -f "${APP_WEB_ROOT}_tmp/flutter_service_worker.js"
 
 # Generate robust root .htaccess
