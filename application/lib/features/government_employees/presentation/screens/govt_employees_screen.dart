@@ -5,7 +5,6 @@ import '../../data/models/govt_employee_model.dart';
 import '../../data/models/govt_employee_query.dart';
 import '../../providers/govt_employees_provider.dart';
 import '../../../../core/network/api_failure.dart';
-import '../../../../shared/constants/app_data.dart';
 import '../../../profile/providers/master_data_provider.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
@@ -26,14 +25,18 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   String? _selectedDistrictId;
   String? _selectedGender;
 
-  // Employment type tab: 0 = STATE_GOVT, 1 = CENTRAL_GOVT
-  String get _employmentTypeFilter =>
-      (_tabController?.index ?? 0) == 0 ? 'STATE_GOVT' : 'CENTRAL_GOVT';
+  // Employment type tab: 0 = All (null), 1 = STATE_GOVT, 2 = CENTRAL_GOVT
+  String? get _employmentTypeFilter {
+    final idx = _tabController?.index ?? 0;
+    if (idx == 1) return 'STATE_GOVT';
+    if (idx == 2) return 'CENTRAL_GOVT';
+    return null;
+  }
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
     _tabController!.addListener(() {
       if (!_tabController!.indexIsChanging) {
         _resetFiltersAndReload();
@@ -56,7 +59,9 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       _selectedGender = null;
       _searchController.clear();
     });
-    ref.read(govtEmployeesProvider.notifier).resetFilters();
+    ref.read(govtEmployeesProvider.notifier).applyFilter(
+      GovtEmployeeQuery(employmentType: _employmentTypeFilter),
+    );
   }
 
   void _applyCurrentFilters() {
@@ -66,6 +71,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       departmentId: _selectedDepartmentId,
       designationId: _selectedDesignationId,
       districtId: _selectedDistrictId,
+      employmentType: _employmentTypeFilter,
     );
     ref.read(govtEmployeesProvider.notifier).applyFilter(query);
   }
@@ -221,6 +227,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
             const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
         indicatorWeight: 3,
         tabs: const [
+          Tab(text: 'All (તમામ સરકારી)'),
           Tab(text: 'Gujarat Gov (ગુજરાત સરકાર)'),
           Tab(text: 'Central Gov (કેન્દ્ર સરકાર)'),
         ],

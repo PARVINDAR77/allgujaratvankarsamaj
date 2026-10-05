@@ -11,6 +11,7 @@ class GovtEmployeeQuery {
   final String? talukaId;
   final String? stateId;
   final String? maritalStatus;
+  final String? employmentType;
   final String? sortBy;
   final String? sortOrder;
 
@@ -25,6 +26,7 @@ class GovtEmployeeQuery {
     this.talukaId,
     this.stateId,
     this.maritalStatus,
+    this.employmentType,
     this.sortBy,
     this.sortOrder,
   });
@@ -40,6 +42,7 @@ class GovtEmployeeQuery {
     String? talukaId,
     String? stateId,
     String? maritalStatus,
+    String? employmentType,
     String? sortBy,
     String? sortOrder,
     bool clearSearch = false,
@@ -48,6 +51,7 @@ class GovtEmployeeQuery {
     bool clearDesignationId = false,
     bool clearDistrictId = false,
     bool clearTalukaId = false,
+    bool clearEmploymentType = false,
   }) {
     return GovtEmployeeQuery(
       page: page ?? this.page,
@@ -60,6 +64,7 @@ class GovtEmployeeQuery {
       talukaId: clearTalukaId ? null : (talukaId ?? this.talukaId),
       stateId: stateId ?? this.stateId,
       maritalStatus: maritalStatus ?? this.maritalStatus,
+      employmentType: clearEmploymentType ? null : (employmentType ?? this.employmentType),
       sortBy: sortBy ?? this.sortBy,
       sortOrder: sortOrder ?? this.sortOrder,
     );
@@ -79,6 +84,7 @@ class GovtEmployeeQuery {
     if (talukaId != null && talukaId!.isNotEmpty) params['talukaId'] = talukaId;
     if (stateId != null && stateId!.isNotEmpty) params['stateId'] = stateId;
     if (maritalStatus != null && maritalStatus!.isNotEmpty) params['maritalStatus'] = maritalStatus;
+    if (employmentType != null && employmentType!.isNotEmpty) params['employmentType'] = employmentType;
     if (sortBy != null && sortBy!.isNotEmpty) params['sortBy'] = sortBy;
     if (sortOrder != null && sortOrder!.isNotEmpty) params['sortOrder'] = sortOrder;
     return params;

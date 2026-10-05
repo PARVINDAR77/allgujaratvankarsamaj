@@ -18,7 +18,11 @@ import {
   CreateDepartmentDto,
   CreateDesignationDto,
 } from "./dto/government-employees.dto";
-import { GovtVerificationStatus } from "@prisma/client";
+import {
+  GovtVerificationStatus,
+  GovtEmploymentType,
+  ProfileStatus,
+} from "@prisma/client";
 
 @Injectable()
 export class GovernmentEmployeesService {
@@ -453,26 +457,100 @@ export class GovernmentEmployeesService {
   }
 
   // ==========================================
+  // SYNC MISSING GOVT EMPLOYEES FROM PROFILES
+  // ==========================================
+
+  async syncMissingGovtEmployees() {
+    try {
+      const govtProfiles = await this.prisma.matrimonialProfile.findMany({
+        where: {
+          governmentEmployment: null,
+          OR: [
+            { occupation: { contains: "Gov" } },
+            { occupation: { contains: "સરકારી" } },
+            { organizationName: { contains: "Gov" } },
+            { organizationName: { contains: "સરકારી" } },
+            { occupation: { contains: "State" } },
+            { occupation: { contains: "Central" } },
+            { organizationName: { contains: "State" } },
+            { organizationName: { contains: "Central" } },
+          ],
+        },
+      });
+
+      for (const p of govtProfiles) {
+        const occ = (p.occupation || "").toLowerCase();
+        const org = (p.organizationName || "").toLowerCase();
+        let empType: GovtEmploymentType = GovtEmploymentType.STATE_GOVT;
+        if (
+          org.includes("central") ||
+          org.includes("કેન્દ્ર") ||
+          occ.includes("central") ||
+          occ.includes("કેન્દ્ર")
+        ) {
+          empType = GovtEmploymentType.CENTRAL_GOVT;
+        } else if (
+          org.includes("psu") ||
+          org.includes("public") ||
+          org.includes("જાહેર") ||
+          occ.includes("psu")
+        ) {
+          empType = GovtEmploymentType.PSU;
+        }
+
+        const officeLoc =
+          p.city || p.state || p.nativePlace || p.organizationName || "Gujarat";
+
+        await this.prisma.governmentEmployment.create({
+          data: {
+            profileId: p.id,
+            employmentType: empType,
+            officeLocation: officeLoc,
+            verificationStatus: GovtVerificationStatus.VERIFIED,
+            isActive: true,
+            isFeatured: p.isFeatured || false,
+          },
+        });
+        this.logger.log(
+          `Auto-synced government profile: ${p.firstName} ${p.lastName} (${p.id})`,
+        );
+      }
+    } catch (err: any) {
+      this.logger.warn(
+        `syncMissingGovtEmployees warning: ${err?.message || err}`,
+      );
+    }
+  }
+
+  // ==========================================
   // PUBLIC MEMBER SEARCH & LISTING
   // ==========================================
 
   async searchPublicGovtEmployees(query: GovtEmployeeSearchQueryDto) {
+    await this.syncMissingGovtEmployees();
+
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.min(50, Math.max(1, Number(query.limit) || 20));
     const skip = (page - 1) * limit;
 
     try {
-      // Import utilities inside or at top of file (we will add imports at the top)
-      // but for now we can dynamically or locally use the generated query
-
       // Base condition for government employee specific rules
       const whereCondition: any = {
-        verificationStatus: GovtVerificationStatus.VERIFIED,
         isActive: true,
+        verificationStatus: {
+          in: [GovtVerificationStatus.VERIFIED, GovtVerificationStatus.PENDING],
+        },
         profile: {
-          status: "APPROVED",
+          status: {
+            not: ProfileStatus.REJECTED,
+          },
         },
       };
+
+      if (query.employmentType && query.employmentType !== "ALL") {
+        whereCondition.employmentType =
+          query.employmentType as GovtEmploymentType;
+      }
 
       if (query.departmentId) {
         whereCondition.departmentId = query.departmentId;
@@ -486,7 +564,11 @@ export class GovernmentEmployeesService {
         whereCondition.OR = [
           { profile: { firstName: { contains: query.search } } },
           { profile: { lastName: { contains: query.search } } },
+          { profile: { organizationName: { contains: query.search } } },
+          { profile: { designation: { contains: query.search } } },
           { officeLocation: { contains: query.search } },
+          { department: { name: { contains: query.search } } },
+          { designation: { name: { contains: query.search } } },
         ];
       }
 
@@ -506,7 +588,6 @@ export class GovernmentEmployeesService {
       if (query.maritalStatus) {
         whereCondition.profile.maritalStatus = query.maritalStatus;
       }
-      // Note: Age filtering logic is similar to BaseProfileQueryBuilder
 
       const [items, total] = await Promise.all([
         this.prisma.governmentEmployment.findMany({
@@ -566,13 +647,16 @@ export class GovernmentEmployeesService {
   }
 
   async getFeaturedGovtEmployees() {
+    await this.syncMissingGovtEmployees();
     try {
       const items = await this.prisma.governmentEmployment.findMany({
         where: {
           isFeatured: true,
-          verificationStatus: GovtVerificationStatus.VERIFIED,
           isActive: true,
-          profile: { status: "APPROVED" },
+          verificationStatus: {
+            in: [GovtVerificationStatus.VERIFIED, GovtVerificationStatus.PENDING],
+          },
+          profile: { status: { not: ProfileStatus.REJECTED } },
         },
         take: 10,
         include: {
@@ -633,6 +717,7 @@ export class GovernmentEmployeesService {
   // ==========================================
 
   async getAdminGovtEmployees(page = 1, limit = 20, status?: string) {
+    await this.syncMissingGovtEmployees();
     const skip = (page - 1) * limit;
     const whereCondition: any = {};
     if (status && status !== "ALL") {
@@ -663,6 +748,7 @@ export class GovernmentEmployeesService {
 
     return {
       data: items,
+      items: items,
       meta: {
         page,
         limit,
@@ -892,6 +978,26 @@ export class GovernmentEmployeesService {
     const currentYear = new Date().getFullYear();
     const calculatedAge = birthYear ? currentYear - birthYear : null;
 
+    const deptName =
+      emp.department?.name ||
+      p.organizationName ||
+      (emp.employmentType === "CENTRAL_GOVT"
+        ? "Central Government"
+        : "State Government");
+
+    const deptGujarati =
+      emp.department?.gujaratiName ||
+      p.organizationName ||
+      (emp.employmentType === "CENTRAL_GOVT"
+        ? "કેન્દ્ર સરકાર"
+        : "રાજ્ય સરકાર");
+
+    const desigName =
+      emp.designation?.name || p.designation || "Officer / Employee";
+
+    const desigGujarati =
+      emp.designation?.gujaratiName || p.designation || "સરકારી કર્મચારી";
+
     return {
       id: emp.id,
       profileId: p.id,
@@ -902,18 +1008,22 @@ export class GovernmentEmployeesService {
       education: p.education || "Graduate",
       maritalStatus: p.maritalStatus || "NEVER_MARRIED",
       photoUrl: p.photoUrl || null,
-      districtName: p.district?.name || p.district?.gujaratiName || null,
-      talukaName: p.taluka?.name || p.taluka?.gujaratiName || null,
+      districtName:
+        p.district?.name || p.district?.gujaratiName || p.state || null,
+      talukaName:
+        p.taluka?.name || p.taluka?.gujaratiName || p.city || null,
       employmentType: emp.employmentType,
-      departmentName: emp.department?.name || "Government Department",
-      departmentGujaratiName: emp.department?.gujaratiName || "સરકારી વિભાગ",
-      designationName: emp.designation?.name || "Officer / Employee",
-      designationGujaratiName:
-        emp.designation?.gujaratiName || "સરકારી કર્મચારી",
-      officeLocation: emp.officeLocation || null,
+      departmentName: deptName,
+      departmentGujaratiName: deptGujarati,
+      designationName: desigName,
+      designationGujaratiName: desigGujarati,
+      officeLocation:
+        emp.officeLocation || p.city || p.nativePlace || p.state || null,
       joiningYear: emp.joiningYear || null,
-      isVerified: true,
-      isFeatured: emp.isFeatured || false,
+      isVerified:
+        emp.verificationStatus === GovtVerificationStatus.VERIFIED ||
+        p.isVerified === true,
+      isFeatured: emp.isFeatured || p.isFeatured || false,
     };
   }
 }

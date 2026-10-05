@@ -66,7 +66,7 @@ export default function GovernmentEmployeesAdminPage() {
       const listRes = await fetch(`${API_BASE}/admin/government-employees?page=${page}&limit=10&status=${statusFilter}`, { headers });
       if (listRes.ok) {
         const listData = await listRes.json();
-        setProfiles(listData.items || []);
+        setProfiles(listData.data || listData.items || []);
         setTotalPages(listData.meta?.totalPages || 1);
       }
     } catch (err) {
@@ -281,11 +281,11 @@ export default function GovernmentEmployeesAdminPage() {
                           </div>
                         </td>
                         <td style={{ padding: "20px 24px" }}>
-                          <div style={{ color: "#FFFFFF", fontWeight: "700", fontSize: "13px" }}>{p.department?.name || "Dept Unspecified"}</div>
-                          <div style={{ fontSize: "12px", color: "#D4AF37", marginTop: "2px", fontWeight: 600 }}>{p.designation?.name || p.employmentType}</div>
+                          <div style={{ color: "#FFFFFF", fontWeight: "700", fontSize: "13px" }}>{p.department?.name || (p.profile as any)?.organizationName || "Dept Unspecified"}</div>
+                          <div style={{ fontSize: "12px", color: "#D4AF37", marginTop: "2px", fontWeight: 600 }}>{p.designation?.name || (p.profile as any)?.designation || p.employmentType}</div>
                         </td>
                         <td style={{ padding: "20px 24px", fontSize: "13px", color: "#E2E8F0", fontWeight: 600 }}>
-                          {p.officeLocation || p.profile?.district?.name || "Gujarat"}
+                          {p.officeLocation || p.profile?.district?.name || (p.profile as any)?.state || "Gujarat"}
                         </td>
                         <td style={{ padding: "20px 24px" }}>
                           <span style={{

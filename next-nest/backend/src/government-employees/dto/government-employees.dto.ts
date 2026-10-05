@@ -94,6 +94,11 @@ export class GovtEmployeeSearchQueryDto extends BaseProfileQueryDto {
   @IsOptional()
   @IsString()
   designationId?: string;
+
+  @ApiPropertyOptional({ example: "STATE_GOVT" })
+  @IsOptional()
+  @IsString()
+  employmentType?: string;
 }
 
 export class AdminVerifyGovtEmpDto {

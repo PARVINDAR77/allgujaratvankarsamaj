@@ -100,9 +100,73 @@ export class PrismaService
         WHERE \`email\` IN ('admin@vankarsamaj.org', 'admin@vankarsamaj.com', 'panjabiparvindar77@gmail.com');
       `);
 
+      await this.syncGovernmentEmployeesFromProfiles();
+
       this.logger.log("Schema auto-migration check completed successfully");
     } catch (migrationErr: any) {
       this.logger.warn(`Schema auto-migration notice: ${migrationErr.message}`);
+    }
+  }
+
+  async syncGovernmentEmployeesFromProfiles() {
+    try {
+      const govtProfiles = await this.$queryRawUnsafe<any[]>(`
+        SELECT p.id, p.first_name, p.last_name, p.occupation, p.organization_name, p.designation, p.city, p.state, p.native_place, p.is_featured, p.is_verified, p.status, g.id AS govt_id
+        FROM matrimonial_profiles p
+        LEFT JOIN government_employments g ON g.profile_id = p.id
+        WHERE (
+          LOWER(COALESCE(p.occupation, '')) LIKE '%gov%' OR COALESCE(p.occupation, '') LIKE '%સરકારી%'
+          OR LOWER(COALESCE(p.organization_name, '')) LIKE '%gov%' OR COALESCE(p.organization_name, '') LIKE '%સરકારી%'
+          OR LOWER(COALESCE(p.occupation, '')) LIKE '%central%' OR COALESCE(p.occupation, '') LIKE '%કેન્દ્ર%'
+          OR LOWER(COALESCE(p.organization_name, '')) LIKE '%central%' OR COALESCE(p.organization_name, '') LIKE '%કેન્દ્ર%'
+          OR LOWER(COALESCE(p.occupation, '')) LIKE '%state%' OR COALESCE(p.occupation, '') LIKE '%રાજ્ય%'
+          OR LOWER(COALESCE(p.organization_name, '')) LIKE '%state%' OR COALESCE(p.organization_name, '') LIKE '%રાજ્ય%'
+        );
+      `);
+
+      if (govtProfiles && govtProfiles.length > 0) {
+        for (const p of govtProfiles) {
+          const occ = (p.occupation || "").toLowerCase();
+          const org = (p.organization_name || "").toLowerCase();
+          let empType = "STATE_GOVT";
+          if (
+            org.includes("central") ||
+            org.includes("કેન્દ્ર") ||
+            occ.includes("central") ||
+            occ.includes("કેન્દ્ર")
+          ) {
+            empType = "CENTRAL_GOVT";
+          } else if (
+            org.includes("psu") ||
+            org.includes("public") ||
+            org.includes("જાહેર") ||
+            occ.includes("psu")
+          ) {
+            empType = "PSU";
+          }
+
+          const officeLoc = p.city || p.state || p.native_place || p.organization_name || "Gujarat";
+          const isFeatured = p.is_featured ? 1 : 0;
+
+          if (!p.govt_id) {
+            const newId = `gov-${p.id}`;
+            await this.$executeRawUnsafe(`
+              INSERT INTO government_employments (
+                id, profile_id, employment_type, office_location, verification_status, is_active, is_featured, created_at, updated_at
+              ) VALUES (?, ?, ?, ?, 'VERIFIED', 1, ?, NOW(), NOW());
+            `, newId, p.id, empType, officeLoc, isFeatured);
+            this.logger.log(`Created government_employments record for profile: ${p.first_name} ${p.last_name} (${p.id})`);
+          } else {
+            await this.$executeRawUnsafe(`
+              UPDATE government_employments
+              SET verification_status = 'VERIFIED', is_active = 1, employment_type = ?, office_location = ?
+              WHERE profile_id = ?;
+            `, empType, officeLoc, p.id);
+          }
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(`Government employee profile sync warning: ${err?.message || err}`);
     }
   }
 

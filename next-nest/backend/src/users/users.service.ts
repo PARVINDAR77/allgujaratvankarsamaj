@@ -281,6 +281,15 @@ export class UsersService {
         },
       });
 
+      // Also update any government employment status for this profile
+      await tx.governmentEmployment.updateMany({
+        where: { profileId },
+        data: {
+          verificationStatus: isApproved ? "VERIFIED" : "REJECTED",
+          isActive: isApproved,
+        },
+      });
+
       await tx.adminAuditLog.create({
         data: {
           adminId,
@@ -311,6 +320,11 @@ export class UsersService {
 
       const updatedProfile = await tx.matrimonialProfile.update({
         where: { id: profileId },
+        data: { isFeatured },
+      });
+
+      await tx.governmentEmployment.updateMany({
+        where: { profileId },
         data: { isFeatured },
       });
 

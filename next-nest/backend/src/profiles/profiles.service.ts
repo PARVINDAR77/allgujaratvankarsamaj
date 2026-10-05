@@ -11,6 +11,8 @@ import {
   MatrimonialProfile,
   ProfileStatus,
   VerificationStatus,
+  GovtEmploymentType,
+  GovtVerificationStatus,
 } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProfileDto } from "./dto/create-profile.dto";
@@ -236,6 +238,7 @@ export class ProfilesService {
       }
 
       await this.syncSamajServicePerson(userId, profile);
+      await this.syncGovernmentEmployment(profile);
       return profile;
     } catch (err: any) {
       if (err instanceof ConflictException) throw err;
@@ -433,6 +436,7 @@ export class ProfilesService {
         data: updateData,
       });
       await this.syncSamajServicePerson(userId, updatedProfile);
+      await this.syncGovernmentEmployment(updatedProfile);
       return updatedProfile;
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
@@ -633,7 +637,13 @@ export class ProfilesService {
     if (query.occupationCategory) {
       // Handle occupation categories
       if (query.occupationCategory.toUpperCase() === "GOVERNMENT") {
-        where.governmentEmployment = { isNot: null };
+        where.OR = [
+          { governmentEmployment: { isNot: null } },
+          { occupation: { contains: "Gov" } },
+          { occupation: { contains: "સરકારી" } },
+          { organizationName: { contains: "Gov" } },
+          { organizationName: { contains: "સરકારી" } },
+        ];
       } else {
         where.occupation = { contains: query.occupationCategory };
       }
@@ -754,5 +764,81 @@ export class ProfilesService {
     await this.prisma.samajServicePerson.deleteMany({
       where: { userId },
     });
+  }
+
+  private async syncGovernmentEmployment(profile: any) {
+    try {
+      if (!profile || !profile.id) return;
+      const occ = (profile.occupation || "").toLowerCase();
+      const org = (profile.organizationName || "").toLowerCase();
+
+      const isGov =
+        occ.includes("gov") ||
+        occ.includes("સરકારી") ||
+        org.includes("gov") ||
+        org.includes("સરકારી") ||
+        occ.includes("state") ||
+        occ.includes("central") ||
+        org.includes("state") ||
+        org.includes("central");
+
+      if (isGov) {
+        let empType: GovtEmploymentType = GovtEmploymentType.STATE_GOVT;
+        if (
+          org.includes("central") ||
+          org.includes("કેન્દ્ર") ||
+          occ.includes("central") ||
+          occ.includes("કેન્દ્ર")
+        ) {
+          empType = GovtEmploymentType.CENTRAL_GOVT;
+        } else if (
+          org.includes("psu") ||
+          org.includes("public") ||
+          org.includes("જાહેર") ||
+          occ.includes("psu")
+        ) {
+          empType = GovtEmploymentType.PSU;
+        }
+
+        const officeLoc =
+          profile.city ||
+          profile.state ||
+          profile.nativePlace ||
+          profile.organizationName ||
+          "Gujarat";
+
+        const existingGov = await this.prisma.governmentEmployment.findUnique({
+          where: { profileId: profile.id },
+        });
+
+        if (existingGov) {
+          await this.prisma.governmentEmployment.update({
+            where: { id: existingGov.id },
+            data: {
+              employmentType: empType,
+              officeLocation: officeLoc,
+              verificationStatus: GovtVerificationStatus.VERIFIED,
+              isActive: true,
+              isFeatured: profile.isFeatured || false,
+            },
+          });
+        } else {
+          await this.prisma.governmentEmployment.create({
+            data: {
+              profileId: profile.id,
+              employmentType: empType,
+              officeLocation: officeLoc,
+              verificationStatus: GovtVerificationStatus.VERIFIED,
+              isActive: true,
+              isFeatured: profile.isFeatured || false,
+            },
+          });
+        }
+      }
+    } catch (err: any) {
+      this.logger.warn(
+        `Failed to sync government employment for profile ${profile?.id}: ${err?.message || err}`,
+      );
+    }
   }
 }
