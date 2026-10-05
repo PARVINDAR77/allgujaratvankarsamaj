@@ -61,6 +61,48 @@ class ProfileModel {
 
   String get fullName => '$firstName $lastName';
 
+  bool get isFemale {
+    final s = gender.toUpperCase();
+    return s.contains('FEMALE') ||
+        s.contains('WOMAN') ||
+        s.contains('GIRL') ||
+        s.contains('સ્ત્રી') ||
+        s.contains('કન્યા') ||
+        s.contains('BRIDE');
+  }
+
+  bool get isMale => !isFemale;
+
+  String get displayGender => isFemale ? 'Female (સ્ત્રી)' : 'Male (પુરુષ)';
+
+  static String normalizeGenderToDisplay(dynamic val) {
+    if (val == null) return 'Male (પુરુષ)';
+    final s = val.toString().toUpperCase();
+    if (s.contains('FEMALE') ||
+        s.contains('WOMAN') ||
+        s.contains('GIRL') ||
+        s.contains('સ્ત્રી') ||
+        s.contains('કન્યા') ||
+        s.contains('BRIDE')) {
+      return 'Female (સ્ત્રી)';
+    }
+    return 'Male (પુરુષ)';
+  }
+
+  static String normalizeGenderToApi(dynamic val) {
+    if (val == null) return 'MALE';
+    final s = val.toString().toUpperCase();
+    if (s.contains('FEMALE') ||
+        s.contains('WOMAN') ||
+        s.contains('GIRL') ||
+        s.contains('સ્ત્રી') ||
+        s.contains('કન્યા') ||
+        s.contains('BRIDE')) {
+      return 'FEMALE';
+    }
+    return 'MALE';
+  }
+
   String? get fullPhotoUrl {
     if (photoUrl == null || photoUrl!.trim().isEmpty) return null;
     final clean = photoUrl!.trim();
@@ -75,7 +117,7 @@ class ProfileModel {
       firstName: json['firstName'] as String,
       lastName: json['lastName'] as String,
       photoUrl: (json['photoUrl'] ?? json['photo_url']) as String?,
-      gender: json['gender'] as String? ?? 'Male (પુરુષ)',
+      gender: normalizeGenderToDisplay(json['gender']),
       maritalStatus: json['maritalStatus'] as String? ?? 'Never Married (અપરિણીત)',
       dateOfBirth: json['dateOfBirth'] as String? ?? '',
       education: json['education'] as String? ?? '',
@@ -100,7 +142,7 @@ class ProfileModel {
       'firstName': firstName,
       'lastName': lastName,
       'photoUrl': photoUrl,
-      'gender': gender.contains('Male') ? 'MALE' : 'FEMALE',
+      'gender': normalizeGenderToApi(gender),
       'maritalStatus': maritalStatus.contains('Divorced') ? 'DIVORCED' : (maritalStatus.contains('Widow') ? 'WIDOWED' : (maritalStatus.contains('Awaiting') ? 'SEPARATED' : 'NEVER_MARRIED')),
       'dateOfBirth': dateOfBirth, 
       'education': education,

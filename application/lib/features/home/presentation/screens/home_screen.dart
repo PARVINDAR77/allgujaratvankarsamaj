@@ -426,7 +426,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.go('/search'),
+                      onTap: () => context.go('/search?lookingFor=Groom'),
                     ),
                   ),
                 ),

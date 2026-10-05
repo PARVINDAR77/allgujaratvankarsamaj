@@ -22,6 +22,8 @@ import {
   SortOrder,
   ProfileSortField,
 } from "./dto/profile-query.dto";
+import { SearchQueryDto } from "./dto/search-query.dto";
+import { normalizeGender, normalizeMaritalStatus } from "./dto/normalize-profile.helper";
 import { v4 as uuidv4 } from "uuid";
 
 export interface CompletenessResult {
@@ -112,8 +114,8 @@ export class ProfilesService {
   }
 
   async createProfile(userId: string, dto: CreateProfileDto) {
-    const gender = dto.gender || Gender.MALE;
-    const maritalStatus = dto.maritalStatus || MaritalStatus.NEVER_MARRIED;
+    const gender = normalizeGender(dto.gender) || dto.gender || Gender.MALE;
+    const maritalStatus = normalizeMaritalStatus(dto.maritalStatus) || dto.maritalStatus || MaritalStatus.NEVER_MARRIED;
     const dob = dto.dateOfBirth
       ? new Date(dto.dateOfBirth)
       : new Date(1995, 0, 1);
@@ -378,9 +380,9 @@ export class ProfilesService {
       if (dto.lastName !== undefined) updateData.lastName = dto.lastName.trim();
       if (dto.dateOfBirth !== undefined)
         updateData.dateOfBirth = new Date(dto.dateOfBirth);
-      if (dto.gender !== undefined) updateData.gender = dto.gender;
+      if (dto.gender !== undefined) updateData.gender = normalizeGender(dto.gender) || dto.gender;
       if (dto.maritalStatus !== undefined)
-        updateData.maritalStatus = dto.maritalStatus;
+        updateData.maritalStatus = normalizeMaritalStatus(dto.maritalStatus) || dto.maritalStatus;
       if (dto.religion !== undefined)
         updateData.religion = dto.religion ? dto.religion.trim() : null;
       if (dto.caste !== undefined)
@@ -586,39 +588,49 @@ export class ProfilesService {
     const limit = Number(query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const where: Prisma.MatrimonialProfileWhereInput = {
-      // By default, only show active and approved profiles for public listings.
-      // (This should be configurable if called from Admin APIs, but we assume public here).
-      status: ProfileStatus.APPROVED,
-    };
+    const where: Prisma.MatrimonialProfileWhereInput = {};
 
-    if (query.gender) {
-      where.gender = query.gender;
-    }
-
+    // By default, show active approved and pending profiles so new candidate profiles appear immediately
     if (query.status) {
       where.status = query.status;
+    } else {
+      where.status = {
+        in: [ProfileStatus.APPROVED, ProfileStatus.PENDING],
+      };
+    }
+
+    // Resolve gender strictly: explicit gender or lookingFor
+    const resolvedGender =
+      query.gender || (query.lookingFor ? normalizeGender(query.lookingFor) : undefined);
+    if (resolvedGender) {
+      where.gender = resolvedGender;
+    }
+
+    if (query.maritalStatus) {
+      where.maritalStatus = query.maritalStatus;
     }
 
     // Age filtering based on date of birth
-    if (query.ageMin || query.ageMax) {
+    const minAge = query.ageMin ?? (query as any).ageFrom;
+    const maxAge = query.ageMax ?? (query as any).ageTo;
+    if (minAge || maxAge) {
       const today = new Date();
       where.dateOfBirth = {};
 
-      if (query.ageMin) {
+      if (minAge) {
         // If min age is 20, they must be born BEFORE (today - 20 years)
         const maxDate = new Date(
-          today.getFullYear() - query.ageMin,
+          today.getFullYear() - minAge,
           today.getMonth(),
           today.getDate(),
         );
         where.dateOfBirth.lte = maxDate;
       }
 
-      if (query.ageMax) {
+      if (maxAge) {
         // If max age is 30, they must be born AFTER (today - 31 years)
         const minDate = new Date(
-          today.getFullYear() - query.ageMax - 1,
+          today.getFullYear() - maxAge - 1,
           today.getMonth(),
           today.getDate(),
         );
@@ -634,31 +646,72 @@ export class ProfilesService {
       where.talukaId = query.talukaId;
     }
 
+    if ((query as any).parganaId) {
+      where.parganaId = (query as any).parganaId;
+    }
+
+    const andConditions: Prisma.MatrimonialProfileWhereInput[] = [];
+
     if (query.occupationCategory) {
       // Handle occupation categories
       if (query.occupationCategory.toUpperCase() === "GOVERNMENT") {
-        where.OR = [
-          { governmentEmployment: { isNot: null } },
-          { occupation: { contains: "Gov" } },
-          { occupation: { contains: "સરકારી" } },
-          { organizationName: { contains: "Gov" } },
-          { organizationName: { contains: "સરકારી" } },
-        ];
+        andConditions.push({
+          OR: [
+            { governmentEmployment: { isNot: null } },
+            { occupation: { contains: "Gov" } },
+            { occupation: { contains: "સરકારી" } },
+            { organizationName: { contains: "Gov" } },
+            { organizationName: { contains: "સરકારી" } },
+          ],
+        });
       } else {
-        where.occupation = { contains: query.occupationCategory };
+        andConditions.push({
+          occupation: { contains: query.occupationCategory },
+        });
       }
     }
 
     // Keyword search across multiple fields
-    if (query.search) {
-      where.OR = [
-        { firstName: { contains: query.search } },
-        { lastName: { contains: query.search } },
-        { city: { contains: query.search } },
-        { occupation: { contains: query.search } },
-        { organizationName: { contains: query.search } },
-        { designation: { contains: query.search } },
-      ];
+    const searchTerm = query.search || (query as any).keyword;
+    if (searchTerm && searchTerm.trim() !== "") {
+      const term = searchTerm.trim();
+      andConditions.push({
+        OR: [
+          { firstName: { contains: term } },
+          { lastName: { contains: term } },
+          { city: { contains: term } },
+          { occupation: { contains: term } },
+          { organizationName: { contains: term } },
+          { designation: { contains: term } },
+          { nativePlace: { contains: term } },
+          { education: { contains: term } },
+        ],
+      });
+    }
+
+    const pargana = (query as any).pargana;
+    if (pargana && pargana.trim() !== "") {
+      andConditions.push({
+        nativePlace: { contains: pargana.trim() },
+      });
+    }
+
+    const city = (query as any).city;
+    if (city && city.trim() !== "") {
+      andConditions.push({
+        city: { contains: city.trim() },
+      });
+    }
+
+    const education = (query as any).education;
+    if (education && education.trim() !== "") {
+      andConditions.push({
+        education: { contains: education.trim() },
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
     }
 
     // Sort order
@@ -708,6 +761,51 @@ export class ProfilesService {
         total,
         totalPages: Math.ceil(total / limit),
       },
+    };
+  }
+
+  async searchProfiles(query: SearchQueryDto) {
+    const baseQuery: BaseProfileQueryDto = {
+      ...query,
+      ageMin: query.ageMin ?? query.ageFrom,
+      ageMax: query.ageMax ?? query.ageTo,
+      search: query.search || query.keyword,
+    };
+    const result = await this.getProfiles(baseQuery);
+
+    const formattedProfiles = result.items.map((p) => {
+      let age = 25;
+      if (p.dateOfBirth) {
+        const diff = Date.now() - new Date(p.dateOfBirth).getTime();
+        const calculatedAge = Math.floor(
+          diff / (365.25 * 24 * 3600 * 1000),
+        );
+        if (calculatedAge >= 18 && calculatedAge <= 100) {
+          age = calculatedAge;
+        }
+      }
+      return {
+        id: p.id,
+        fullName: `${p.firstName} ${p.lastName}`.trim(),
+        firstName: p.firstName,
+        lastName: p.lastName,
+        gender: p.gender,
+        age,
+        height: "5'6\"",
+        pargana: p.nativePlace || "Gujarat",
+        city: p.city || "Ahmedabad",
+        education: p.education || "Graduate",
+        occupation: p.occupation || p.designation || "Service",
+        maritialStatus: p.maritalStatus || "Unmarried",
+        isVerified: p.isVerified || false,
+        photoUrl: p.photoUrl,
+      };
+    });
+
+    return {
+      profiles: formattedProfiles,
+      items: result.items,
+      meta: result.meta,
     };
   }
 

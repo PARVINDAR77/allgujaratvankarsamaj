@@ -1,12 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 interface ProfileResult {
   id: string;
   fullName: string;
+  gender?: string;
   age: number;
   height: string;
   pargana: string;
@@ -15,9 +17,11 @@ interface ProfileResult {
   occupation: string;
   maritialStatus: string;
   isVerified: boolean;
+  photoUrl?: string | null;
 }
 
-export default function SearchPage() {
+function SearchContent() {
+  const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
     lookingFor: "Bride (કન્યા)",
     maritalStatus: "Unmarried (અવિકસિત / અવિવાહિત)",
@@ -40,6 +44,39 @@ export default function SearchPage() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ProfileResult[] | null>(null);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const lookingForParam = searchParams?.get("lookingFor");
+    const parganaParam = searchParams?.get("pargana");
+    if (lookingForParam || parganaParam) {
+      setFormData((prev) => {
+        let newLookingFor = prev.lookingFor;
+        if (lookingForParam) {
+          const lfp = lookingForParam.toLowerCase();
+          if (
+            lfp.includes("groom") ||
+            lfp.includes("boy") ||
+            lfp.includes("વર") ||
+            lfp.includes("પુરુષ")
+          ) {
+            newLookingFor = "Groom (વર)";
+          } else if (
+            lfp.includes("bride") ||
+            lfp.includes("girl") ||
+            lfp.includes("કન્યા") ||
+            lfp.includes("સ્ત્રી")
+          ) {
+            newLookingFor = "Bride (કન્યા)";
+          }
+        }
+        return {
+          ...prev,
+          lookingFor: newLookingFor,
+          ...(parganaParam ? { pargana: parganaParam } : {}),
+        };
+      });
+    }
+  }, [searchParams]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -72,58 +109,61 @@ export default function SearchPage() {
     setLoading(true);
     try {
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
-      const response = await fetch(`${apiBase}/profile/search-query`, {
+      const isLookingForGroom =
+        formData.lookingFor.includes("Groom") ||
+        formData.lookingFor.includes("વર") ||
+        formData.lookingFor.includes("પુરુષ");
+      const targetGender = isLookingForGroom ? "MALE" : "FEMALE";
+
+      const payload = {
+        ...formData,
+        gender: targetGender,
+        lookingFor: isLookingForGroom ? "Groom" : "Bride",
+      };
+
+      const response = await fetch(`${apiBase}/profiles/search-query`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
         const data = await response.json();
-        setResults(data.profiles || data || []);
+        const profilesList = data.profiles || data.items || data || [];
+        setResults(profilesList);
       } else {
-        setResults([
-          {
-            id: "1",
-            fullName: "Priya Vankar",
-            age: 24,
-            height: "5'4\"",
-            pargana: formData.pargana,
-            city: formData.city,
-            education: formData.education,
-            occupation: "Software Engineer",
-            maritialStatus: "Unmarried",
-            isVerified: true,
-          },
-          {
-            id: "2",
-            fullName: "Rahul Vankar",
-            age: 27,
-            height: "5'9\"",
-            pargana: formData.pargana,
-            city: formData.city,
-            education: "M.Tech / Engineer",
-            occupation: "Govt Officer",
-            maritialStatus: "Unmarried",
-            isVerified: true,
-          },
-        ]);
+        // Direct query to GET /profiles
+        const getUrl = `${apiBase}/profiles?gender=${targetGender}&limit=50${
+          formData.keyword ? `&search=${encodeURIComponent(formData.keyword)}` : ""
+        }`;
+        const getRes = await fetch(getUrl);
+        if (getRes.ok) {
+          const getData = await getRes.json();
+          const items = getData.items || [];
+          const mapped = items.map((p: any) => ({
+            id: p.id,
+            fullName: `${p.firstName} ${p.lastName}`.trim(),
+            gender: p.gender,
+            age: p.dateOfBirth
+              ? Math.floor((Date.now() - new Date(p.dateOfBirth).getTime()) / (365.25 * 24 * 3600 * 1000))
+              : 25,
+            height: "5'6\"",
+            pargana: p.nativePlace || formData.pargana,
+            city: p.city || formData.city,
+            education: p.education || formData.education,
+            occupation: p.occupation || p.designation || "Service",
+            maritialStatus: p.maritalStatus || "Unmarried",
+            isVerified: p.isVerified || false,
+            photoUrl: p.photoUrl,
+          }));
+          setResults(mapped);
+        } else {
+          setResults([]);
+        }
       }
-    } catch {
-      setResults([
-        {
-          id: "1",
-          fullName: "Priya Vankar",
-          age: 24,
-          height: "5'4\"",
-          pargana: formData.pargana,
-          city: formData.city,
-          education: formData.education,
-          occupation: "Software Engineer",
-          maritialStatus: "Unmarried",
-          isVerified: true,
-        },
-      ]);
+    } catch (err) {
+      console.error("Search query failed:", err);
+      setResults([]);
     } finally {
       setLoading(false);
       setShowModal(true);
@@ -403,7 +443,16 @@ export default function SearchPage() {
                     className="p-4 bg-[#070c18] border border-[#c9a227]/40 rounded-xl space-y-1.5 hover:border-[#FFE066] transition-all"
                   >
                     <div className="flex justify-between items-center">
-                      <h4 className="font-bold text-white text-base">{profile.fullName}</h4>
+                      <div>
+                        <h4 className="font-bold text-white text-base">{profile.fullName}</h4>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold inline-block mt-0.5 ${
+                          profile.gender === 'FEMALE' 
+                            ? 'bg-pink-900/60 border border-pink-400 text-pink-200' 
+                            : 'bg-blue-900/60 border border-blue-400 text-blue-200'
+                        }`}>
+                          {profile.gender === 'FEMALE' ? '👰 કન્યા (Bride / Female)' : '👨 વર (Groom / Male)'}
+                        </span>
+                      </div>
                       {profile.isVerified && (
                         <span className="text-[10px] bg-emerald-900/80 border border-emerald-400 text-emerald-200 px-2.5 py-0.5 rounded-full font-bold">
                           ✓ Verified Profile
@@ -443,5 +492,19 @@ export default function SearchPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-[#070c18] text-white flex items-center justify-center font-cinzel">
+          Loading Search...
+        </div>
+      }
+    >
+      <SearchContent />
+    </Suspense>
   );
 }

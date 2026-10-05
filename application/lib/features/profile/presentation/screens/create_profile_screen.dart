@@ -155,7 +155,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       firstName: _firstName.isNotEmpty ? _firstName : 'New',
       lastName: _lastName.isNotEmpty ? _lastName : 'User',
       photoUrl: uploadedPhotoUrl,
-      gender: _gender ?? 'Male (પુરુષ)',
+      gender: ProfileModel.normalizeGenderToDisplay(_gender),
       maritalStatus: _maritalStatus ?? 'Never Married (અપરિણીત)',
       dateOfBirth: _dob ?? '2000-01-01',
       education: _education == 'Other Qualification (અન્ય)' ? _customEducation : (_education != 'Select Degree' ? _education : 'Not Specified'),

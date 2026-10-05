@@ -69,7 +69,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
               spacing: 8,
               children: [
                 _buildChoiceChip('All', _currentQuery.gender == null, () {
-                  setState(() => _currentQuery = _currentQuery.copyWith(gender: null));
+                  setState(() => _currentQuery = _currentQuery.copyWith(clearGender: true));
                 }),
                 _buildChoiceChip('Male', _currentQuery.gender == 'MALE', () {
                   setState(() => _currentQuery = _currentQuery.copyWith(gender: 'MALE'));

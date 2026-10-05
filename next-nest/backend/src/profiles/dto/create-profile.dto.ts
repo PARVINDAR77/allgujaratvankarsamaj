@@ -10,6 +10,7 @@ import {
   MaxLength,
 } from "class-validator";
 import { IsMinAge } from "../../common/validators/is-min-age.validator";
+import { normalizeGender, normalizeMaritalStatus } from "./normalize-profile.helper";
 
 export class CreateProfileDto {
   @ApiProperty({
@@ -54,6 +55,8 @@ export class CreateProfileDto {
     example: Gender.MALE,
   })
   @IsOptional()
+  @Transform(({ value }) => normalizeGender(value) || value)
+  @IsEnum(Gender)
   gender?: Gender;
 
   @ApiProperty({
@@ -62,6 +65,8 @@ export class CreateProfileDto {
     example: MaritalStatus.NEVER_MARRIED,
   })
   @IsOptional()
+  @Transform(({ value }) => normalizeMaritalStatus(value) || value)
+  @IsEnum(MaritalStatus)
   maritalStatus?: MaritalStatus;
 
   @ApiPropertyOptional({

@@ -1,3 +1,5 @@
+import 'profile_model.dart';
+
 class ProfileQueryModel {
   final int page;
   final int limit;
@@ -33,29 +35,32 @@ class ProfileQueryModel {
     int? page,
     int? limit,
     String? gender,
+    bool clearGender = false,
     int? ageMin,
     int? ageMax,
+    bool clearAge = false,
     String? districtId,
     String? talukaId,
     String? occupationCategory,
     String? verification,
     String? status,
     String? search,
+    bool clearSearch = false,
     String? sortBy,
     String? sortOrder,
   }) {
     return ProfileQueryModel(
       page: page ?? this.page,
       limit: limit ?? this.limit,
-      gender: gender ?? this.gender,
-      ageMin: ageMin ?? this.ageMin,
-      ageMax: ageMax ?? this.ageMax,
+      gender: clearGender ? null : (gender ?? this.gender),
+      ageMin: clearAge ? null : (ageMin ?? this.ageMin),
+      ageMax: clearAge ? null : (ageMax ?? this.ageMax),
       districtId: districtId ?? this.districtId,
       talukaId: talukaId ?? this.talukaId,
       occupationCategory: occupationCategory ?? this.occupationCategory,
       verification: verification ?? this.verification,
       status: status ?? this.status,
-      search: search ?? this.search,
+      search: clearSearch ? null : (search ?? this.search),
       sortBy: sortBy ?? this.sortBy,
       sortOrder: sortOrder ?? this.sortOrder,
     );
@@ -65,7 +70,8 @@ class ProfileQueryModel {
     final map = <String, dynamic>{
       'page': page,
       'limit': limit,
-      if (gender != null) 'gender': gender,
+      if (gender != null && gender!.isNotEmpty)
+        'gender': ProfileModel.normalizeGenderToApi(gender),
       if (ageMin != null) 'ageMin': ageMin,
       if (ageMax != null) 'ageMax': ageMax,
       if (districtId != null) 'districtId': districtId,

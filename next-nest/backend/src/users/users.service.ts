@@ -8,6 +8,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { User, Role, Status, Gender, ProfileStatus, VerificationStatus } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
+import { normalizeGender } from "../profiles/dto/normalize-profile.helper";
 
 @Injectable()
 export class UsersService {
@@ -45,12 +46,13 @@ export class UsersService {
   }): Promise<User> {
     const normalizedEmail =
       data.email?.toLowerCase().trim() || `${uuidv4()}@vankar.org`;
+    const resolvedGender = normalizeGender(data.gender);
     const user = await this.prisma.user.create({
       data: {
         email: normalizedEmail,
         phone: data.phone,
         name: data.name,
-        gender: data.gender as Gender | undefined,
+        gender: resolvedGender,
         passwordHash: data.passwordHash,
         role: data.role || Role.USER,
         status: data.status || Status.ACTIVE,

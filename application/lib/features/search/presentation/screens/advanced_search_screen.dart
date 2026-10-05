@@ -321,12 +321,13 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                           }
 
                           // Perform the search
+                          final keyword = _idSearchController.text.trim();
                           ref.read(profileNotifierProvider.notifier).updateFilters(
+                            search: keyword.isNotEmpty ? keyword : null,
                             gender: gender,
                             minAge: minAge,
                             maxAge: maxAge,
                             occupationCategory: occCat,
-                            // districtId, etc. can be added if we map them
                           );
 
                           // Simulate search and navigate to matches

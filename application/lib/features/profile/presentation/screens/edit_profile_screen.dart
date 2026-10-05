@@ -242,7 +242,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Male (પુરુષ)',
                 Icons.people_alt_outlined,
                 ['Male (પુરુષ)', 'Female (સ્ત્રી)'],
-                value: _gender,
+                value: _gender ?? profile.displayGender,
                 onChanged: (v) => setState(() => _gender = v),
               ),
               _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)']),
@@ -422,7 +422,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 onPressed: () async {
                   try {
                     final updateData = <String, dynamic>{};
-                    if (_gender != null) updateData['gender'] = _gender!.contains('Male') ? 'MALE' : 'FEMALE';
+                    final selectedGender = _gender ?? profile.displayGender;
+                    updateData['gender'] = ProfileModel.normalizeGenderToApi(selectedGender);
                     if (_maritalStatus != null) updateData['maritalStatus'] = _maritalStatus!.contains('Divorced') ? 'DIVORCED' : (_maritalStatus!.contains('Widow') ? 'WIDOWED' : (_maritalStatus!.contains('Awaiting') ? 'SEPARATED' : 'NEVER_MARRIED'));
                     if (_casteCategory != null) updateData['caste'] = _casteCategory;
                     if (_dob != null) updateData['dateOfBirth'] = _dob;

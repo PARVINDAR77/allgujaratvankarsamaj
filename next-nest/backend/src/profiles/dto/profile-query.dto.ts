@@ -1,7 +1,8 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import { IsEnum, IsInt, IsOptional, IsString, Min } from "class-validator";
-import { Gender, ProfileStatus, VerificationStatus } from "@prisma/client";
+import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "@prisma/client";
+import { normalizeGender, normalizeMaritalStatus } from "./normalize-profile.helper";
 
 export enum SortOrder {
   ASC = "asc",
@@ -35,8 +36,20 @@ export class BaseProfileQueryDto {
 
   @ApiPropertyOptional({ description: "Filter by gender", enum: Gender })
   @IsOptional()
+  @Transform(({ value }) => normalizeGender(value))
   @IsEnum(Gender)
   gender?: Gender;
+
+  @ApiPropertyOptional({ description: "Filter by lookingFor (e.g. Groom / Bride)" })
+  @IsOptional()
+  @IsString()
+  lookingFor?: string;
+
+  @ApiPropertyOptional({ description: "Filter by marital status", enum: MaritalStatus })
+  @IsOptional()
+  @Transform(({ value }) => normalizeMaritalStatus(value))
+  @IsEnum(MaritalStatus)
+  maritalStatus?: MaritalStatus;
 
   @ApiPropertyOptional({ description: "Minimum age" })
   @IsOptional()
@@ -90,6 +103,48 @@ export class BaseProfileQueryDto {
   @IsOptional()
   @IsString()
   search?: string;
+
+  @ApiPropertyOptional({ description: "Keyword search alias" })
+  @IsOptional()
+  @IsString()
+  keyword?: string;
+
+  @ApiPropertyOptional({ description: "Pargana ID filter" })
+  @IsOptional()
+  @IsString()
+  parganaId?: string;
+
+  @ApiPropertyOptional({ description: "Pargana name filter" })
+  @IsOptional()
+  @IsString()
+  pargana?: string;
+
+  @ApiPropertyOptional({ description: "City filter" })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({ description: "Education filter" })
+  @IsOptional()
+  @IsString()
+  education?: string;
+
+  @ApiPropertyOptional({ description: "Occupation filter" })
+  @IsOptional()
+  @IsString()
+  occupation?: string;
+
+  @ApiPropertyOptional({ description: "Age from (alias for ageMin)" })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  ageFrom?: number;
+
+  @ApiPropertyOptional({ description: "Age to (alias for ageMax)" })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  ageTo?: number;
 
   @ApiPropertyOptional({
     description: "Field to sort by",

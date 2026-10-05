@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 import {
   IsEnum,
   IsIn,
@@ -11,6 +11,7 @@ import {
 } from "class-validator";
 import { Gender, MaritalStatus, VerificationStatus } from "@prisma/client";
 import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto";
+import { normalizeGender, normalizeMaritalStatus } from "./normalize-profile.helper";
 
 const ALLOWED_SORT_FIELDS = [
   "createdAt",
@@ -30,8 +31,14 @@ export class BaseProfileQueryDto extends PaginationQueryDto {
 
   @ApiPropertyOptional({ enum: Gender })
   @IsOptional()
+  @Transform(({ value }) => normalizeGender(value))
   @IsEnum(Gender)
   gender?: Gender;
+
+  @ApiPropertyOptional({ description: "Looking for (e.g. Groom / Bride)" })
+  @IsOptional()
+  @IsString()
+  lookingFor?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

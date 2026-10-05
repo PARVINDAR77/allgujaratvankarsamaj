@@ -250,9 +250,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/advanced-search',
                 name: 'advanced-search',
                 builder: (context, state) {
-                  return const UniversalListingScreen(
+                  final query = state.extra as ProfileQueryModel? ?? const ProfileQueryModel();
+                  return UniversalListingScreen(
                     title: 'Matrimonial Profiles',
-                    initialQuery: ProfileQueryModel(),
+                    initialQuery: query,
                   );
                 },
               ),

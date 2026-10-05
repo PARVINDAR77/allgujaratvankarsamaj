@@ -51,13 +51,43 @@ class ProfileCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      profile.fullName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF0056D2),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            profile.fullName,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0056D2),
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: profile.isFemale
+                                ? const Color(0xFFFCE4EC)
+                                : const Color(0xFFE3F2FD),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: profile.isFemale
+                                  ? const Color(0xFFF06292)
+                                  : const Color(0xFF64B5F6),
+                            ),
+                          ),
+                          child: Text(
+                            profile.isFemale ? '👰 Bride (કન્યા)' : '👨 Groom (વર)',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: profile.isFemale
+                                  ? const Color(0xFFC2185B)
+                                  : const Color(0xFF1976D2),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 4),
                     _buildInfoRow(

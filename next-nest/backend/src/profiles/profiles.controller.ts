@@ -22,12 +22,13 @@ import { Public } from "../auth/decorators/public.decorator";
 import { CreateProfileDto } from "./dto/create-profile.dto";
 import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { BaseProfileQueryDto } from "./dto/profile-query.dto";
+import { SearchQueryDto } from "./dto/search-query.dto";
 import { ProfilesService } from "./profiles.service";
 
 @ApiTags("Matrimonial Profile")
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
-@Controller("profiles")
+@Controller(["profiles", "profile"])
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
@@ -36,6 +37,21 @@ export class ProfilesController {
   @ApiOperation({ summary: "List and search matrimonial candidate profiles" })
   async getProfiles(@Query() query: BaseProfileQueryDto) {
     return this.profilesService.getProfiles(query);
+  }
+
+  @Public()
+  @Post("search-query")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Search candidate profiles with detailed query (POST)" })
+  async searchQueryPost(@Body() query: SearchQueryDto) {
+    return this.profilesService.searchProfiles(query);
+  }
+
+  @Public()
+  @Get("search-query")
+  @ApiOperation({ summary: "Search candidate profiles with detailed query (GET)" })
+  async searchQueryGet(@Query() query: SearchQueryDto) {
+    return this.profilesService.searchProfiles(query);
   }
 
   @Get("reference-data")
