@@ -5,8 +5,7 @@ import 'package:intl/intl.dart';
 import '../providers/notifications_provider.dart';
 
 void showNotificationsDialog(BuildContext context, WidgetRef ref) {
-  // Refresh notifications from server and mark all as read
-  ref.read(notificationsProvider.notifier).refresh();
+  // Mark existing notifications as read immediately so badge clears instantly
   ref.read(notificationsProvider.notifier).markAllAsRead();
 
   showDialog(
@@ -15,8 +14,24 @@ void showNotificationsDialog(BuildContext context, WidgetRef ref) {
   );
 }
 
-class _NotificationsDialogContent extends ConsumerWidget {
+class _NotificationsDialogContent extends ConsumerStatefulWidget {
   const _NotificationsDialogContent();
+
+  @override
+  ConsumerState<_NotificationsDialogContent> createState() => _NotificationsDialogContentState();
+}
+
+class _NotificationsDialogContentState extends ConsumerState<_NotificationsDialogContent> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(notificationsProvider.notifier).refresh();
+      if (mounted) {
+        ref.read(notificationsProvider.notifier).markAllAsRead();
+      }
+    });
+  }
 
   String _formatTime(DateTime time) {
     final now = DateTime.now();
@@ -36,7 +51,7 @@ class _NotificationsDialogContent extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final notifications = ref.watch(notificationsProvider);
 
     return Dialog(
@@ -157,6 +172,7 @@ class _NotificationsDialogContent extends ConsumerWidget {
                         return InkWell(
                           borderRadius: BorderRadius.circular(12),
                           onTap: () {
+                            ref.read(notificationsProvider.notifier).markAsRead(notif.id);
                             if (notif.route != null && notif.route!.isNotEmpty) {
                               Navigator.pop(context);
                               context.push(notif.route!);

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,15 +39,26 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObserver {
+  Timer? _notificationTimer;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(notificationsProvider.notifier).refresh();
+    });
+    // Poll for live broadcast notifications every 45 seconds
+    _notificationTimer = Timer.periodic(const Duration(seconds: 45), (_) {
+      if (mounted) {
+        ref.read(notificationsProvider.notifier).refresh();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _notificationTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -57,6 +69,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
       // Invalidate the providers on resume so they fetch fresh data
       ref.invalidate(advertisementsProvider);
       ref.invalidate(homeButtonsProvider);
+      ref.read(notificationsProvider.notifier).refresh();
     }
   }
 
@@ -357,61 +370,120 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   ),
                 ),
 
-                // Top-Right Notification Bell Icon (🔔)
+                // Top-Right Live Notification Bell (🔔)
                 Positioned(
                   left: sx(910),
-                  top: sy(30),
+                  top: sy(20),
                   width: sw(150),
-                  height: sh(90),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned.fill(
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(45),
-                            onTap: () => showNotificationsDialog(context, ref),
-                          ),
-                        ),
-                      ),
-                      if (unreadNotificationCount > 0)
-                        Positioned(
-                          right: sw(16),
-                          top: sy(4),
-                          child: IgnorePointer(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                              constraints: BoxConstraints(
-                                minWidth: sw(32).clamp(18.0, 26.0),
-                                minHeight: sh(32).clamp(18.0, 26.0),
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFE53935),
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 1.5),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black45,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2),
+                  height: sh(110),
+                  child: Center(
+                    child: Builder(
+                      builder: (context) {
+                        final bellSize = (sw(120) < sh(100) ? sw(120) : sh(100)).clamp(46.0, 56.0);
+                        return SizedBox(
+                          width: bellSize,
+                          height: bellSize,
+                          child: Stack(
+                            clipBehavior: Clip.none,
+                            alignment: Alignment.center,
+                            children: [
+                              // Golden Circle Bell Button
+                              Material(
+                                color: Colors.transparent,
+                                shape: const CircleBorder(),
+                                clipBehavior: Clip.antiAlias,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(bellSize / 2),
+                                  splashColor: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                                  highlightColor: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                  onTap: () => showNotificationsDialog(context, ref),
+                                  child: Container(
+                                    width: bellSize,
+                                    height: bellSize,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: const RadialGradient(
+                                        center: Alignment(0.0, -0.2),
+                                        radius: 0.85,
+                                        colors: [
+                                          Color(0xFF0F2B52),
+                                          Color(0xFF030D1C),
+                                        ],
+                                      ),
+                                      border: Border.all(
+                                        color: const Color(0xFFD4AF37),
+                                        width: 2.0,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                                          blurRadius: 8,
+                                          spreadRadius: 1,
+                                        ),
+                                        const BoxShadow(
+                                          color: Colors.black54,
+                                          blurRadius: 4,
+                                          offset: Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Center(
+                                      child: Icon(
+                                        unreadNotificationCount > 0
+                                            ? Icons.notifications_active
+                                            : Icons.notifications,
+                                        color: const Color(0xFFFFD700),
+                                        size: bellSize * 0.54,
+                                      ),
+                                    ),
                                   ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              child: Text(
-                                unreadNotificationCount > 99 ? '99+' : '$unreadNotificationCount',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.0,
                                 ),
                               ),
-                            ),
+
+                              // Real-Time Dynamic Unread Badge (Appears ONLY when unread > 0)
+                              if (unreadNotificationCount > 0)
+                                Positioned(
+                                  right: -2,
+                                  top: -2,
+                                  child: IgnorePointer(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                      constraints: const BoxConstraints(
+                                        minWidth: 20,
+                                        minHeight: 20,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE53935),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(color: Colors.white, width: 1.5),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            color: Colors.black54,
+                                            blurRadius: 4,
+                                            offset: Offset(0, 2),
+                                          ),
+                                        ],
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        unreadNotificationCount > 99
+                                            ? '99+'
+                                            : '$unreadNotificationCount',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
-                        ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
                 ),
 
