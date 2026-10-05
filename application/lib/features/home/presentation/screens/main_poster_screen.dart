@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../features/advertisements/providers/advertisements_provider.dart';
+import '../providers/notifications_provider.dart';
+import '../widgets/notifications_dialog.dart';
 class MainPosterScreen extends ConsumerStatefulWidget {
   const MainPosterScreen({super.key});
 
@@ -31,88 +33,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
     }
   }
 
-  void _showNotificationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF041126),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.notifications_active, color: Color(0xFFD4AF37)),
-            SizedBox(width: 8),
-            Text(
-              'સૂચનાઓ (Notifications)',
-              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('• ૫ નવી સંબંધ પ્રોફાઈલ ઉપલબ્ધ છે.', style: TextStyle(color: Colors.white70)),
-            SizedBox(height: 6),
-            Text('• તમારા પરગણામાં ૧૨ નવી મેચ મળી.', style: TextStyle(color: Colors.white70)),
-            SizedBox(height: 6),
-            Text('• પ્રોફાઈલ ચકાસણી સફળ થઈ.', style: TextStyle(color: Colors.white70)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK', style: TextStyle(color: Color(0xFFD4AF37))),
-          ),
-        ],
-      ),
-    );
-  }
 
-  void _showCategoryModal(BuildContext context, String title, String details, IconData icon, Color color) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF041126),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-              child: Icon(icon, color: Colors.white, size: 32),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              details,
-              textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(ctx),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFD4AF37),
-                foregroundColor: Colors.black,
-              ),
-              child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _showImageModal(BuildContext context, String imagePath) {
     showDialog(
@@ -154,9 +75,8 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
 
   @override
   Widget build(BuildContext context) {
+    final unreadNotificationCount = ref.watch(unreadNotificationCountProvider);
     final size = MediaQuery.of(context).size;
-    final padding = MediaQuery.paddingOf(context);
-    final availableHeight = size.height - padding.top - padding.bottom;
     final isMobile = size.width < 600;
 
     return Scaffold(
@@ -208,12 +128,55 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                             top: h * 0.015,
                             width: w * 0.14,
                             height: h * 0.045,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(30),
-                                onTap: () => _showNotificationDialog(context),
-                              ),
+                            child: Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Positioned.fill(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(30),
+                                      onTap: () => showNotificationsDialog(context, ref),
+                                    ),
+                                  ),
+                                ),
+                                if (unreadNotificationCount > 0)
+                                  Positioned(
+                                    right: 4,
+                                    top: 2,
+                                    child: IgnorePointer(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                        constraints: const BoxConstraints(
+                                          minWidth: 20,
+                                          minHeight: 20,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFE53935),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(color: Colors.white, width: 1.5),
+                                          boxShadow: const [
+                                            BoxShadow(
+                                              color: Colors.black45,
+                                              blurRadius: 4,
+                                              offset: Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          unreadNotificationCount > 99 ? '99+' : '$unreadNotificationCount',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            height: 1.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
                           ),
 

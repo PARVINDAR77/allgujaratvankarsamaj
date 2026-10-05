@@ -3,8 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../features/advertisements/providers/advertisements_provider.dart';
-import '../providers/view_badge.dart';
+import '../providers/notifications_provider.dart';
 import '../providers/views_provider.dart';
+import '../widgets/notifications_dialog.dart';
 
 final homeButtonsProvider = FutureProvider<List<dynamic>>((ref) async {
   try {
@@ -49,45 +50,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     }
   }
 
-  void _showNotificationDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF041126),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.notifications_active, color: Color(0xFFD4AF37)),
-            SizedBox(width: 8),
-            Text(
-              'સૂચનાઓ (Notifications)',
-              style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('• ૫ નવી સંબંધ પ્રોફાઈલ ઉપલબ્ધ છે.', style: TextStyle(color: Colors.white70)),
-            SizedBox(height: 6),
-            Text('• તમારા પરગણામાં ૧૨ નવી મેચ મળી.', style: TextStyle(color: Colors.white70)),
-            SizedBox(height: 6),
-            Text('• પ્રોફાઈલ ચકાસણી સફળ થઈ.', style: TextStyle(color: Colors.white70)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('OK', style: TextStyle(color: Color(0xFFD4AF37))),
-          ),
-        ],
-      ),
-    );
-  }
 
   void _showMenuDialog(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
@@ -246,6 +208,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
 
   @override
   Widget build(BuildContext context) {
+    final unreadNotificationCount = ref.watch(unreadNotificationCountProvider);
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: LayoutBuilder(
@@ -316,12 +279,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   top: sy(30),
                   width: sw(150),
                   height: sh(90),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(45),
-                      onTap: () => _showNotificationDialog(context),
-                    ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Positioned.fill(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(45),
+                            onTap: () => showNotificationsDialog(context, ref),
+                          ),
+                        ),
+                      ),
+                      if (unreadNotificationCount > 0)
+                        Positioned(
+                          right: sw(16),
+                          top: sy(4),
+                          child: IgnorePointer(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              constraints: BoxConstraints(
+                                minWidth: sw(32).clamp(18.0, 26.0),
+                                minHeight: sh(32).clamp(18.0, 26.0),
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE53935),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 1.5),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black45,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              alignment: Alignment.center,
+                              child: Text(
+                                unreadNotificationCount > 99 ? '99+' : '$unreadNotificationCount',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1.0,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
 
