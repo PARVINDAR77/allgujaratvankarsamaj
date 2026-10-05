@@ -1202,4 +1202,157 @@ export class ProfilesService {
       );
     }
   }
+
+  async getFamilyDirectory(search?: string) {
+    const where: Prisma.MatrimonialProfileWhereInput = {
+      status: "APPROVED",
+    };
+
+    if (search && search.trim() !== "") {
+      const term = search.trim();
+      where.OR = [
+        { lastName: { contains: term } },
+        { firstName: { contains: term } },
+        { fatherName: { contains: term } },
+        { motherName: { contains: term } },
+        { mamasVillage: { contains: term } },
+        { nativePlace: { contains: term } },
+        { city: { contains: term } },
+        { state: { contains: term } },
+      ];
+    }
+
+    try {
+      const profiles = await this.prisma.matrimonialProfile.findMany({
+        where,
+        orderBy: { updatedAt: "desc" },
+        take: 100,
+        include: {
+          user: {
+            select: { phone: true, email: true },
+          },
+          district: true,
+          taluka: true,
+          pargana: true,
+        },
+      });
+
+      return profiles.map((p) => {
+        const surnameEng = p.lastName || "Vankar";
+        const surnameGuj = this.translateSurnameGuj(surnameEng);
+        const cityEng = p.city || p.district?.name || p.state || "Gujarat";
+        const cityGuj = p.district?.gujaratiName || this.translateCityGuj(cityEng);
+        const mosal = p.mamasVillage || p.nativePlace || "Gujarat";
+        const details = `મોસાળ: ${mosal} | Masal: ${mosal}`;
+
+        return {
+          id: p.id,
+          nameGuj: `${surnameGuj} પરિવાર`,
+          nameEng: `${surnameEng} Family`,
+          surname: surnameEng,
+          cityGuj,
+          cityEng,
+          details,
+          mosal,
+          nativePlace: p.nativePlace || cityEng,
+          pargana: p.pargana?.name || p.pargana?.gujaratiName || "",
+          district: p.district?.name || p.state || "",
+          taluka: p.taluka?.name || "",
+          fatherName: p.fatherName || "",
+          fatherOccupation: p.fatherOccupation || "",
+          fatherContact: p.fatherContact || p.user?.phone || "",
+          motherName: p.motherName || "",
+          motherOccupation: p.motherOccupation || "",
+          guardianContact: p.guardianContact || "",
+          siblings: p.siblings || "",
+          address: p.addressLine || "",
+          pincode: p.pincode || "",
+          candidateName: `${p.firstName} ${p.lastName}`.trim(),
+          candidateGender: p.gender,
+          candidateAge: p.dateOfBirth
+            ? Math.floor((Date.now() - new Date(p.dateOfBirth).getTime()) / (365.25 * 24 * 3600 * 1000))
+            : 25,
+          candidateEducation: p.education || "",
+          candidateOccupation: p.occupation || p.designation || "",
+          photoUrl: p.photoUrl || "",
+          isVerified: p.isVerified || false,
+        };
+      });
+    } catch (err: any) {
+      this.logger.warn(`Failed to fetch family directory: ${err?.message || err}`);
+      return [];
+    }
+  }
+
+  private translateSurnameGuj(name: string): string {
+    const map: Record<string, string> = {
+      Kapadiya: "કપડીયા",
+      Vankar: "વાંકર",
+      Solanki: "સોલંકી",
+      Chauhan: "ચૌહાણ",
+      Patel: "પટેલ",
+      Parmar: "પરમાર",
+      Makwana: "મકવાણા",
+      Rathod: "રાઠોડ",
+      Jadav: "જાદવ",
+      Vaghela: "વાઘેલા",
+      Gohel: "ગોહેલ",
+      Chavda: "ચાવડા",
+      Maru: "મારુ",
+      Dabhi: "ડાભી",
+      Rohit: "રોહિત",
+      Shrimali: "શ્રીમાળી",
+      Baraiya: "બારૈયા",
+      Tank: "ટાંક",
+      Bhati: "ભાટી",
+      Vegda: "વેગડા",
+      Purani: "પુરાણી",
+      Maheria: "મહેરિયા",
+      Rentiya: "રેંટિયા",
+      Patil: "પાટીલ",
+    };
+    for (const key of Object.keys(map)) {
+      if (name.toLowerCase().includes(key.toLowerCase())) {
+        return map[key];
+      }
+    }
+    return name;
+  }
+
+  private translateCityGuj(city: string): string {
+    const map: Record<string, string> = {
+      Ahmedabad: "અમદાવાદ",
+      Surat: "સુરત",
+      Vadodara: "વડોદરા",
+      Rajkot: "રાજકોટ",
+      Bhavnagar: "ભાવનગર",
+      Jamnagar: "જામનગર",
+      Junagadh: "જૂનાગઢ",
+      Gandhinagar: "ગાંધીનગર",
+      Himatnagar: "હિંમતનગર",
+      Patan: "પાટણ",
+      Mehsana: "મહેસાણા",
+      Idar: "ઈડર",
+      Unjha: "ઊંઝા",
+      Navsari: "નવસારી",
+      Anand: "આણંદ",
+      Nadiad: "નડિયાદ",
+      Bharuch: "ભરૂચ",
+      Valsad: "વલસાડ",
+      Kutch: "કચ્છ",
+      Bhuj: "ભુજ",
+      Surendranagar: "સુરેન્દ્રનગર",
+      Morbi: "મોરબી",
+      Amreli: "અમરેલી",
+      Porbandar: "પોરબંદર",
+      Palanpur: "પાલનપુર",
+      Godhra: "ગોધરા",
+    };
+    for (const key of Object.keys(map)) {
+      if (city.toLowerCase().includes(key.toLowerCase())) {
+        return map[key];
+      }
+    }
+    return city;
+  }
 }

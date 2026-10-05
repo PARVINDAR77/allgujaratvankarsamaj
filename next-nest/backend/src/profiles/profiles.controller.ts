@@ -54,6 +54,13 @@ export class ProfilesController {
     return this.profilesService.searchProfiles(query);
   }
 
+  @Public()
+  @Get("family-directory")
+  @ApiOperation({ summary: "Get live family directory aggregated from profiles" })
+  async getFamilyDirectory(@Query("search") search?: string) {
+    return this.profilesService.getFamilyDirectory(search);
+  }
+
   @Get("reference-data")
   @ApiOperation({
     summary: "Get profile static reference options (gender, maritalStatus)",
