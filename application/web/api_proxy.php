@@ -13,11 +13,21 @@ $lock_file = sys_get_temp_dir() . '/vankar_backend_spawn.lock';
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $uri = $_SERVER['REQUEST_URI'] ?? '/api/v1';
 
-// Always allow CORS for mobile and web apps
-header('Access-Control-Allow-Origin: *');
+// Dynamic CORS handling compatible with withCredentials=true
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+$reqHeaders = $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] ?? 'Authorization, Content-Type, Accept, Origin, X-Requested-With, X-Request-ID, Cache-Control, Pragma';
+
+if (!empty($origin)) {
+    header("Access-Control-Allow-Origin: $origin");
+    header("Access-Control-Allow-Credentials: true");
+    header("Vary: Origin");
+} else {
+    header("Access-Control-Allow-Origin: *");
+}
+
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Authorization, Content-Type, Accept, Origin, X-Requested-With, X-Request-ID');
-header('Access-Control-Allow-Credentials: true');
+header("Access-Control-Allow-Headers: $reqHeaders");
+header('Access-Control-Max-Age: 86400');
 
 // 1. Immediate CORS Preflight response
 if ($method === 'OPTIONS') {
@@ -157,7 +167,9 @@ foreach ($header_lines as $line) {
     if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/', $line, $matches)) {
         http_response_code((int)$matches[1]);
     } else {
-        if (stripos(trim($line), 'Transfer-Encoding:') === 0) continue;
+        $trimLine = trim($line);
+        if (stripos($trimLine, 'Transfer-Encoding:') === 0) continue;
+        if (stripos($trimLine, 'Access-Control-') === 0) continue;
         header($line, true);
     }
 }
