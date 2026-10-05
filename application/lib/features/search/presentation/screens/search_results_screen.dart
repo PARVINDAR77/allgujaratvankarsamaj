@@ -184,9 +184,79 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Text('DOB: ${profile.displayDob} | જાતિ: ${profile.displayGender}', style: const TextStyle(color: Colors.black87, fontSize: 13)),
-                    Text('Location: ${profile.displayLocation}', style: const TextStyle(color: Colors.black87)),
-                    Text('Profession: ${profile.displayProfession}', style: const TextStyle(color: Colors.black87)),
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Text(
+                            'ID: ${profile.id}',
+                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0056D2)),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '${profile.age != null ? "${profile.age} Yrs • " : ""}${profile.maritalStatus}',
+                            style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    if (profile.education.isNotEmpty && profile.education != 'Not Specified')
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.school, size: 14, color: Colors.black54),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                profile.education,
+                                style: const TextStyle(color: Colors.black87, fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Row(
+                      children: [
+                        const Icon(Icons.work, size: 14, color: Colors.black54),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            '${profile.displayProfession}${profile.annualIncome != null ? " • ${profile.annualIncome}" : ""}',
+                            style: const TextStyle(color: Colors.black87, fontSize: 12),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Colors.black54),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            profile.displayLocation,
+                            style: const TextStyle(color: Colors.black87, fontSize: 12),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                     const SizedBox(height: 12),
                     Row(
                       children: [

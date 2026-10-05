@@ -247,4 +247,139 @@ export class CreateProfileDto {
   @IsOptional()
   @IsString()
   businessService?: string;
+
+  @ApiPropertyOptional({
+    description: "Candidate profile custom or generated ID (e.g. VNK12345)",
+    example: "VNK12345",
+  })
+  @IsOptional()
+  @IsString()
+  id?: string;
+
+  @ApiPropertyOptional({
+    description: "Blood group",
+    example: "B+",
+  })
+  @IsOptional()
+  @IsString()
+  bloodGroup?: string;
+
+  @ApiPropertyOptional({
+    description: "Whether the candidate is Vankar",
+    example: true,
+  })
+  @IsOptional()
+  isVankar?: boolean;
+
+  @ApiPropertyOptional({
+    description: "Annual / Yearly income range",
+    example: "5 to 10 Lakhs",
+  })
+  @IsOptional()
+  @IsString()
+  annualIncome?: string;
+
+  @ApiPropertyOptional({
+    description: "Father's full name",
+    example: "Rameshbhai Parmar",
+  })
+  @IsOptional()
+  @IsString()
+  fatherName?: string;
+
+  @ApiPropertyOptional({
+    description: "Father's occupation",
+    example: "Government Officer",
+  })
+  @IsOptional()
+  @IsString()
+  fatherOccupation?: string;
+
+  @ApiPropertyOptional({
+    description: "Father's contact number",
+    example: "9876543210",
+  })
+  @IsOptional()
+  @IsString()
+  fatherContact?: string;
+
+  @ApiPropertyOptional({
+    description: "Mother's full name",
+    example: "Shilpaben Parmar",
+  })
+  @IsOptional()
+  @IsString()
+  motherName?: string;
+
+  @ApiPropertyOptional({
+    description: "Mother's occupation",
+    example: "Homemaker",
+  })
+  @IsOptional()
+  @IsString()
+  motherOccupation?: string;
+
+  @ApiPropertyOptional({
+    description: "Guardian's contact number",
+    example: "9876543210",
+  })
+  @IsOptional()
+  @IsString()
+  guardianContact?: string;
+
+  @ApiPropertyOptional({
+    description: "Brothers and sisters details",
+    example: "1 Brother (Married), 1 Sister",
+  })
+  @IsOptional()
+  @IsString()
+  siblings?: string;
+
+  @ApiPropertyOptional({
+    description: "Mama's village / Mosal",
+    example: "Mehsana",
+  })
+  @IsOptional()
+  @IsString()
+  mamasVillage?: string;
+
+  @ApiPropertyOptional({
+    description: "Flat / House / Area address",
+    example: "B-204, Shivalik Residency, Chandkheda",
+  })
+  @IsOptional()
+  @IsString()
+  addressLine?: string;
+
+  @ApiPropertyOptional({
+    description: "Pincode / Zip Code",
+    example: "382424",
+  })
+  @IsOptional()
+  @IsString()
+  pincode?: string;
+
+  @ApiPropertyOptional({
+    description: "WhatsApp or alternate phone number",
+    example: "9876543210",
+  })
+  @IsOptional()
+  @IsString()
+  altPhone?: string;
+
+  @ApiPropertyOptional({
+    description: "Contact email address",
+    example: "candidate@gmail.com",
+  })
+  @IsOptional()
+  @IsString()
+  contactEmail?: string;
+
+  @ApiPropertyOptional({
+    description: "Mother tongue",
+    example: "Gujarati (ગુજરાતી)",
+  })
+  @IsOptional()
+  @IsString()
+  motherTongue?: string;
 }

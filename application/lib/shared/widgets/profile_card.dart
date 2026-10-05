@@ -88,24 +88,47 @@ class ProfileCard extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        _buildInfoRow(
-                          Icons.cake_outlined,
-                          profile.displayDob,
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.shade50,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(color: Colors.blue.shade200),
+                              ),
+                              child: Text(
+                                'ID: ${profile.id}',
+                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0056D2)),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                '${profile.age != null ? "${profile.age} Yrs • " : ""}${profile.maritalStatus}',
+                                style: const TextStyle(fontSize: 11, color: Colors.black87, fontWeight: FontWeight.w500),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                         const SizedBox(height: 4),
+                        if (profile.education.isNotEmpty && profile.education != 'Not Specified') ...[
+                          _buildInfoRow(Icons.school, profile.education),
+                          const SizedBox(height: 4),
+                        ],
                         _buildInfoRow(
                           Icons.work, 
-                          employmentStr.isEmpty ? 'Not Specified' : employmentStr
+                          employmentStr.isEmpty 
+                              ? 'Not Specified' 
+                              : (profile.annualIncome != null ? '$employmentStr • ${profile.annualIncome}' : employmentStr),
                         ),
                         const SizedBox(height: 4),
                         _buildInfoRow(
                           Icons.location_on, 
-                          locationStr.isEmpty ? 'Location Not Specified' : locationStr
+                          locationStr.isEmpty ? 'Location Not Specified' : locationStr,
                         ),
-                        if (profile.education.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          _buildInfoRow(Icons.school, profile.education),
-                        ],
                       ],
                     ),
                   ),

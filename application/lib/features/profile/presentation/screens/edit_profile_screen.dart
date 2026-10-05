@@ -40,6 +40,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _casteCategory;
   String? _dob;
   String _religion = 'Select Religion';
+  bool _isPhysicallyDisabled = false;
+  String? _pwbdCategory;
+  bool _isAbroad = false;
+  String? _abroadCountry;
+  bool _isInitialized = false;
   
   String? _firstName;
   String? _lastName;
@@ -143,6 +148,47 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
           error: (err, stack) => Center(child: Text('Failed to load profile details: $err')),
           data: (profile) {
+            if (!_isInitialized && profile.id != 'NEW') {
+              _isInitialized = true;
+              _gender = profile.displayGender;
+              _maritalStatus = profile.maritalStatus;
+              _bloodGroup = profile.bloodGroup;
+              _isVankar = profile.isVankar == true ? 'Yes (હા)' : 'No (ના)';
+              _religion = (profile.religion != null && profile.religion!.isNotEmpty) ? profile.religion! : 'Hindu (હિન્દુ)';
+              _casteCategory = profile.caste;
+              _dob = profile.dateOfBirth;
+              _isPhysicallyDisabled = profile.isPhysicallyDisabled ?? false;
+              _pwbdCategory = profile.pwbdCategory;
+              _isAbroad = profile.isAbroad ?? false;
+              _abroadCountry = profile.abroadCountry;
+              _firstName = profile.firstName;
+              _lastName = profile.lastName;
+              _mobileNumber = profile.contactPhone;
+              _emailAddress = profile.contactEmail;
+              _whatsappNumber = profile.altPhone;
+              _houseNumber = profile.addressLine;
+              _city = profile.taluka;
+              _district = profile.district;
+              _country = profile.country ?? 'India';
+              _pincode = profile.pincode;
+              _pargana = profile.pargana.isNotEmpty ? profile.pargana : 'Select Pargana';
+              _nativePlace = profile.nativePlace;
+              _education = profile.education.isNotEmpty ? profile.education : 'Select Degree';
+              _employmentType = profile.employmentType.isNotEmpty ? profile.employmentType : 'Government Sector (સરકારી નોકરી / સેકટર)';
+              _department = profile.department;
+              _designation = profile.designation;
+              _yearlyIncome = profile.annualIncome ?? 'Select Income';
+              _fatherName = profile.fatherName;
+              _fatherOccupation = profile.fatherOccupation;
+              _fatherContact = profile.fatherContact;
+              _motherName = profile.motherName;
+              _motherOccupation = profile.motherOccupation;
+              _guardianContact = profile.guardianContact;
+              _siblings = profile.siblings;
+              _mamasVillage = profile.mamasVillage;
+              _aboutMe = profile.about;
+            }
+
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -227,11 +273,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   // Personal Details Section
                   _buildSectionHeader(Icons.person_outline, 'Personal Details (અંગત માહિતી)'),
                   const SizedBox(height: 16),
-                  _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined, initialValue: profile.firstName, onChanged: (v) => _firstName = v),
-                  _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, initialValue: profile.lastName, onChanged: (v) => _lastName = v),
+                  _buildTextField('First Name (પ્રથમ નામ) *', 'Enter First Name (પ્રથમ નામ)', Icons.badge_outlined, initialValue: _firstName ?? profile.firstName, onChanged: (v) => _firstName = v),
+                  _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, initialValue: _lastName ?? profile.lastName, onChanged: (v) => _lastName = v),
               _buildTextField(
                 'Date of Birth *',
-                _dob ?? 'Tap to select date of birth',
+                _dob ?? (profile.dateOfBirth.isNotEmpty ? profile.dateOfBirth : 'Tap to select date of birth'),
                 Icons.cake_outlined,
                 isDropdown: true,
                 readOnly: true,
@@ -245,37 +291,121 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 value: _gender ?? profile.displayGender,
                 onChanged: (v) => setState(() => _gender = v),
               ),
-              _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)']),
-              _buildDropdownField('Blood Group (બ્લડ ગ્રુપ)', 'Select Blood Group', Icons.water_drop_outlined, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)']),
-              _buildDropdownField('Are you Vankar? (તમે વણકર છો?) *', 'Yes (હા)', Icons.verified_user_outlined, ['Yes (હા)', 'No (ના)']),
+              _buildDropdownField(
+                'Marital Status (વૈવાહિક સ્થિતિ) *',
+                'Never Married (અપરિણીત)',
+                Icons.favorite_border,
+                ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'],
+                value: _maritalStatus ?? profile.maritalStatus,
+                onChanged: (v) => setState(() => _maritalStatus = v),
+              ),
+              _buildDropdownField(
+                'Blood Group (બ્લડ ગ્રુપ)',
+                'Select Blood Group',
+                Icons.water_drop_outlined,
+                ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)'],
+                value: _bloodGroup ?? profile.bloodGroup,
+                onChanged: (v) => setState(() => _bloodGroup = v),
+              ),
+              _buildDropdownField(
+                'Are you Vankar? (તમે વણકર છો?) *',
+                'Yes (હા)',
+                Icons.verified_user_outlined,
+                ['Yes (હા)', 'No (ના)'],
+                value: _isVankar ?? (profile.isVankar == true ? 'Yes (હા)' : 'No (ના)'),
+                onChanged: (v) => setState(() => _isVankar = v),
+              ),
+              _buildDropdownField(
+                'Physically Disabled? (શું તમે શારીરિક રીતે દિવ્યાંગ છો?) *',
+                'No (ના)',
+                Icons.accessible_outlined,
+                ['Yes (હા)', 'No (ના)'],
+                value: _isPhysicallyDisabled ? 'Yes (હા)' : 'No (ના)',
+                onChanged: (v) => setState(() {
+                  _isPhysicallyDisabled = v == 'Yes (હા)';
+                  if (!_isPhysicallyDisabled) _pwbdCategory = null;
+                }),
+              ),
+              if (_isPhysicallyDisabled)
+                _buildDropdownField(
+                  'PwBD Category (દિવ્યાંગતાનો પ્રકાર) *',
+                  'Select Category',
+                  Icons.wheelchair_pickup_outlined,
+                  [
+                    'VI - Visual Impairment (દૃષ્ટિ દિવ્યાંગતા)',
+                    'HI - Hearing Impairment (શ્રવણ દિવ્યાંગતા)',
+                    'LD - Locomotor Disability (હલનચલન સંબંધિત દિવ્યાંગતા)',
+                    'MD - Multiple Disabilities (બહુવિધ દિવ્યાંગતા)',
+                    'B - Blindness (અંધત્વ)',
+                    'LV - Low Vision (ઓછી દૃષ્ટિ)',
+                    'D - Deaf (બહેરાશ)',
+                    'HH - Hard of Hearing (સાંભળવામાં તકલીફ)',
+                    'OA - One Arm Affected (એક હાથથી દિવ્યાંગતા)',
+                    'OL - One Leg Affected (એક પગથી દિવ્યાંગતા)',
+                    'BA - Both Arms Affected (બંને હાથથી દિવ્યાંગતા)',
+                    'BL - Both Legs Affected (બંને પગથી દિવ્યાંગતા)',
+                    'OAL - One Arm and One Leg Affected (એક હાથ અને એક પગથી દિવ્યાંગતા)',
+                    'CP - Cerebral Palsy (સેરેબ્રલ પાલ્સી)',
+                  ],
+                  value: _pwbdCategory ?? profile.pwbdCategory,
+                  onChanged: (v) => setState(() => _pwbdCategory = v),
+                ),
               _buildDropdownField(
                 'Religion (ધર્મ) *',
                 'Select Religion (ધર્મ પસંદ કરો)',
                 Icons.settings_brightness,
                 masterData.religionOptions,
-                value: masterData.religionOptions.contains(_religion) ? _religion : 'Select Religion',
+                value: masterData.religionOptions.contains(_religion) ? _religion : (masterData.religionOptions.contains(profile.religion) ? profile.religion : 'Select Religion'),
                 onChanged: (v) => setState(() => _religion = v ?? 'Select Religion'),
               ),
-              _buildDropdownField('Caste Category (જ્ઞાતિ પસંદ કરો) *', 'Hindu-vankar (હિન્દુ-વણકર)', Icons.groups_outlined, ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)']),
+              _buildDropdownField(
+                'Caste Category (જ્ઞાતિ પસંદ કરો) *',
+                'Hindu-vankar (હિન્દુ-વણકર)',
+                Icons.groups_outlined,
+                ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)'],
+                value: _casteCategory ?? profile.caste,
+                onChanged: (v) => setState(() => _casteCategory = v),
+              ),
 
               const SizedBox(height: 24),
               // Contact Details Section
               _buildSectionHeader(Icons.phone_android, 'Contact Details (સંપર્ક માહિતી)'),
               const SizedBox(height: 16),
-              _buildTextField('Mobile Number (મોબાઈલ નંબર - 10 અંક) *', 'Enter Mobile Number (મોબાઈલ નંબર - 10 અંક)', Icons.phone_android, onChanged: (v) => _mobileNumber = v),
-              _buildTextField('Email Address (ઈમેઈલ સરનામું) *', 'Enter Email Address (ઈમેઈલ સરનામું)', Icons.email_outlined, onChanged: (v) => _emailAddress = v),
-              _buildTextField('WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)', 'Enter WhatsApp / Alt Phone...', Icons.chat_bubble_outline, onChanged: (v) => _whatsappNumber = v),
+              _buildTextField('Mobile Number (મોબાઈલ નંબર - 10 અંક) *', 'Enter Mobile Number (મોબાઈલ નંબર - 10 અંક)', Icons.phone_android, initialValue: _mobileNumber ?? profile.contactPhone, onChanged: (v) => _mobileNumber = v),
+              _buildTextField('Email Address (ઈમેઈલ સરનામું) *', 'Enter Email Address (ઈમેઈલ સરનામું)', Icons.email_outlined, initialValue: _emailAddress ?? profile.contactEmail, onChanged: (v) => _emailAddress = v),
+              _buildTextField('WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)', 'Enter WhatsApp / Alt Phone...', Icons.chat_bubble_outline, initialValue: _whatsappNumber ?? profile.altPhone, onChanged: (v) => _whatsappNumber = v),
 
               const SizedBox(height: 24),
               // Location & Address Section
               _buildSectionHeader(Icons.location_on_outlined, 'Location & Address (રહેઠાણનું સરનામું)'),
               const SizedBox(height: 16),
-              _buildTextField('Flat / House / Building Name & No. (મકાન / બિલ્ડિંગ નંબર)', 'Enter Flat / House / Building Name & No...', Icons.domain, onChanged: (v) => _houseNumber = v),
-              _buildTextField('Area / Society / Landmark (સોસાયટી / વિસ્તાર / લેન્ડમાર્ક)', 'Enter Area / Society / Landmark...', Icons.explore_outlined, onChanged: (v) => _area = v),
-              _buildTextField('City / Taluka (શહેર / તાલુકો) *', 'Enter City / Taluka (શહેર / તાલુકો)', Icons.location_city, initialValue: profile.taluka, onChanged: (v) => _city = v),
-              _buildTextField('District & State (જિલ્લો અને રાજ્ય) *', 'Enter District & State (જિલ્લો અને રાજ્ય)', Icons.map_outlined, initialValue: profile.district, onChanged: (v) => _district = v),
-              _buildTextField('Country (દેશ) *', 'Enter Country (દેશ)', Icons.public, onChanged: (v) => _country = v),
-              _buildTextField('Pincode / Zip Code (પીનકોડ)', 'Enter Pincode / Zip Code (પીનકોડ)', Icons.markunread_mailbox_outlined, onChanged: (v) => _pincode = v),
+              _buildTextField('Flat / House / Building Name & No. (મકાન / બિલ્ડિંગ નંબર)', 'Enter Flat / House / Building Name & No...', Icons.domain, initialValue: _houseNumber ?? profile.addressLine, onChanged: (v) => _houseNumber = v),
+              _buildTextField('Area / Society / Landmark (સોસાયટી / વિસ્તાર / લેન્ડમાર્ક)', 'Enter Area / Society / Landmark...', Icons.explore_outlined, initialValue: _area, onChanged: (v) => _area = v),
+              _buildTextField('City / Taluka (શહેર / તાલુકો) *', 'Enter City / Taluka (શહેર / તાલુકો)', Icons.location_city, initialValue: _city ?? profile.taluka, onChanged: (v) => _city = v),
+              _buildTextField('District & State (જિલ્લો અને રાજ્ય) *', 'Enter District & State (જિલ્લો અને રાજ્ય)', Icons.map_outlined, initialValue: _district ?? profile.district, onChanged: (v) => _district = v),
+              _buildDropdownField(
+                'Which Pargana you have? (તમારું પરગણું કયું છે?) *', 
+                'Select Pargana', 
+                Icons.account_tree_outlined, 
+                ['Select Pargana', '7 Pargana (૭ પરગણા)', '22 Pargana (૨૨ પરગણા)', '24 Pargana / Chovisey (ચોવીસી)', '42 Pargana (૪૨ પરગણા)', 'Other (અન્ય)'],
+                value: ['Select Pargana', '7 Pargana (૭ પરગણા)', '22 Pargana (૨૨ પરગણા)', '24 Pargana / Chovisey (ચોવીસી)', '42 Pargana (૪૨ પરગણા)', 'Other (અન્ય)'].contains(_pargana) ? _pargana : 'Select Pargana',
+                onChanged: (v) => setState(() => _pargana = v ?? _pargana),
+              ),
+              _buildDropdownField('Are you studying or living abroad? (શું તમે વિદેશમાં અભ્યાસ કરો છો કે રહો છો?) *', 'No (ના)', Icons.flight_takeoff, ['Yes (હા)', 'No (ના)'], value: _isAbroad ? 'Yes (હા)' : 'No (ના)', onChanged: (v) => setState(() {
+                _isAbroad = v == 'Yes (હા)';
+                if (!_isAbroad) _abroadCountry = null;
+              })),
+              if (_isAbroad)
+                _buildDropdownField(
+                  'In which country? (કયા દેશમાં?) *',
+                  'Select Country (દેશ પસંદ કરો)',
+                  Icons.public,
+                  masterData.abroadCountries,
+                  value: masterData.abroadCountries.contains(_abroadCountry) ? _abroadCountry : 'Select Country (દેશ પસંદ કરો)',
+                  onChanged: (v) => setState(() => _abroadCountry = v),
+                ),
+              _buildTextField('Country (દેશ) *', 'Enter Country (દેશ)', Icons.public, initialValue: _country ?? profile.country, onChanged: (v) => _country = v),
+              _buildTextField('Pincode / Zip Code (પીનકોડ)', 'Enter Pincode / Zip Code (પીનકોડ)', Icons.markunread_mailbox_outlined, initialValue: _pincode ?? profile.pincode, onChanged: (v) => _pincode = v),
 
               const SizedBox(height: 24),
               // Career & Employment Details Section
@@ -400,21 +530,21 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               // Family Details Section
               _buildSectionHeader(Icons.family_restroom, 'Family Details (પરિવારની વિગતો અને વાલીનો સંપર્ક)'),
               const SizedBox(height: 16),
-              _buildTextField('Father\'s Name (પિતાનું નામ) *', 'Enter Father\'s Name (પિતાનું નામ)', Icons.person_outline, onChanged: (v) => _fatherName = v),
-              _buildTextField('Father\'s Occupation (પિતાનો વ્યવસાય)', 'Enter Father\'s Occupation (પિતાનો વ્યવસાય)', Icons.work_outline, onChanged: (v) => _fatherOccupation = v),
-              _buildTextField('Father\'s Contact Number (પિતાનો ફોન નંબર - 10 અંક)', 'Enter Father\'s Contact Number...', Icons.phone, onChanged: (v) => _fatherContact = v),
-              _buildTextField('Mother\'s Name (માતાનું નામ) *', 'Enter Mother\'s Name (માતાનું નામ)', Icons.face_3_outlined, onChanged: (v) => _motherName = v),
-              _buildTextField('Mother\'s Occupation (માતાનો વ્યવસાય)', 'Enter Mother\'s Occupation (માતાનો વ્યવસાય)', Icons.work_outline, onChanged: (v) => _motherOccupation = v),
-              _buildTextField('Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)', 'Enter Guardian Contact Number...', Icons.contact_phone_outlined, onChanged: (v) => _guardianContact = v),
-              _buildTextField('Brothers & Sisters (ભાઈ-બહેનની વિગત)', 'Enter Brothers & Sisters (ભાઈ-બહેનની વિગત)', Icons.groups_outlined, onChanged: (v) => _siblings = v),
-              _buildTextField('Mama\'s Village / Mosal (મોસાળ / મોસાળનું ગામ)', 'Enter Mama\'s Village / Mosal...', Icons.holiday_village_outlined, onChanged: (v) => _mamasVillage = v),
-              _buildTextField('Native Place (મૂળ વતન / પરગણું)', 'Enter Native Place (મૂળ વતન / પરગણું)', Icons.home_work_outlined, initialValue: profile.pargana, onChanged: (v) => _nativePlace = v),
+              _buildTextField('Father\'s Name (પિતાનું નામ) *', 'Enter Father\'s Name (પિતાનું નામ)', Icons.person_outline, initialValue: _fatherName ?? profile.fatherName, onChanged: (v) => _fatherName = v),
+              _buildTextField('Father\'s Occupation (પિતાનો વ્યવસાય)', 'Enter Father\'s Occupation (પિતાનો વ્યવસાય)', Icons.work_outline, initialValue: _fatherOccupation ?? profile.fatherOccupation, onChanged: (v) => _fatherOccupation = v),
+              _buildTextField('Father\'s Contact Number (પિતાનો ફોન નંબર - 10 અંક)', 'Enter Father\'s Contact Number...', Icons.phone, initialValue: _fatherContact ?? profile.fatherContact, onChanged: (v) => _fatherContact = v),
+              _buildTextField('Mother\'s Name (માતાનું નામ) *', 'Enter Mother\'s Name (માતાનું નામ)', Icons.face_3_outlined, initialValue: _motherName ?? profile.motherName, onChanged: (v) => _motherName = v),
+              _buildTextField('Mother\'s Occupation (માતાનો વ્યવસાય)', 'Enter Mother\'s Occupation (માતાનો વ્યવસાય)', Icons.work_outline, initialValue: _motherOccupation ?? profile.motherOccupation, onChanged: (v) => _motherOccupation = v),
+              _buildTextField('Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)', 'Enter Guardian Contact Number...', Icons.contact_phone_outlined, initialValue: _guardianContact ?? profile.guardianContact, onChanged: (v) => _guardianContact = v),
+              _buildTextField('Brothers & Sisters (ભાઈ-બહેનની વિગત)', 'Enter Brothers & Sisters (ભાઈ-બહેનની વિગત)', Icons.groups_outlined, initialValue: _siblings ?? profile.siblings, onChanged: (v) => _siblings = v),
+              _buildTextField('Mama\'s Village / Mosal (મોસાળ / મોસાળનું ગામ)', 'Enter Mama\'s Village / Mosal...', Icons.holiday_village_outlined, initialValue: _mamasVillage ?? profile.mamasVillage, onChanged: (v) => _mamasVillage = v),
+              _buildTextField('Native Place (મૂળ વતન / પરગણું)', 'Enter Native Place (મૂળ વતન / પરગણું)', Icons.home_work_outlined, initialValue: _nativePlace ?? (profile.nativePlace ?? profile.pargana), onChanged: (v) => _nativePlace = v),
 
               const SizedBox(height: 24),
               // About Me Section
               _buildSectionHeader(Icons.info_outline, 'About Me (પોતાના વિશે વિશેષ માહિતી)'),
               const SizedBox(height: 16),
-              _buildTextField('Tell us about yourself (વધારાની વિગતો)', 'Enter Tell us about yourself (વધારાની વિગતો)', Icons.notes, isMultiline: true, onChanged: (v) => _aboutMe = v),
+              _buildTextField('Tell us about yourself (વધારાની વિગતો)', 'Enter Tell us about yourself (વધારાની વિગતો)', Icons.notes, isMultiline: true, initialValue: _aboutMe ?? profile.about, onChanged: (v) => _aboutMe = v),
 
               const SizedBox(height: 32),
               // Submit Button
@@ -428,10 +558,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_casteCategory != null) updateData['caste'] = _casteCategory;
                     if (_dob != null) updateData['dateOfBirth'] = _dob;
                     if (_religion != 'Select Religion') updateData['religion'] = _religion;
+                    if (_bloodGroup != null && _bloodGroup != 'Select Blood Group') updateData['bloodGroup'] = _bloodGroup;
+                    if (_isVankar != null) updateData['isVankar'] = _isVankar == 'Yes (હા)';
                     if (_education != 'Select Degree') updateData['education'] = _education;
                     if (_employmentType != 'Select Sector') updateData['occupation'] = _employmentType;
                     if (_department != 'Select Department') updateData['organizationName'] = _department;
                     if (_pargana != 'Select Pargana') updateData['nativePlace'] = _pargana;
+                    if (_yearlyIncome != 'Select Income') updateData['annualIncome'] = _yearlyIncome;
                     if (_employmentType.contains('Business')) {
                       updateData['businessIndustry'] = _businessIndustry != 'Select Industry' ? _businessIndustry : profile.businessIndustry;
                       updateData['businessService'] = _businessService != 'Select Service' ? _businessService : profile.businessService;
@@ -447,6 +580,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_nativePlace != null) updateData['nativePlace'] = _nativePlace;
                     if (_designation != null) updateData['designation'] = _designation;
                     if (_country != null) updateData['country'] = _country;
+                    if (_houseNumber != null) updateData['addressLine'] = _houseNumber;
+                    if (_pincode != null) updateData['pincode'] = _pincode;
+                    if (_mobileNumber != null) updateData['contactPhone'] = _mobileNumber;
+                    if (_whatsappNumber != null) updateData['altPhone'] = _whatsappNumber;
+                    if (_emailAddress != null) updateData['contactEmail'] = _emailAddress;
+                    if (_fatherName != null) updateData['fatherName'] = _fatherName;
+                    if (_fatherOccupation != null) updateData['fatherOccupation'] = _fatherOccupation;
+                    if (_fatherContact != null) updateData['fatherContact'] = _fatherContact;
+                    if (_motherName != null) updateData['motherName'] = _motherName;
+                    if (_motherOccupation != null) updateData['motherOccupation'] = _motherOccupation;
+                    if (_guardianContact != null) updateData['guardianContact'] = _guardianContact;
+                    if (_siblings != null) updateData['siblings'] = _siblings;
+                    if (_mamasVillage != null) updateData['mamasVillage'] = _mamasVillage;
+                    updateData['isPhysicallyDisabled'] = _isPhysicallyDisabled;
+                    if (_pwbdCategory != null) updateData['pwbdCategory'] = _pwbdCategory;
+                    updateData['isAbroad'] = _isAbroad;
+                    if (_abroadCountry != null) updateData['abroadCountry'] = _abroadCountry;
                     if (_aboutMe != null) updateData['about'] = _aboutMe;
 
                     if (_profileImageBytes != null) {
@@ -628,7 +778,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Container(

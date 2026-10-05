@@ -128,88 +128,101 @@ export class ProfilesService {
 
       let profile: MatrimonialProfile;
 
+      const profilePayload = {
+        firstName: (dto.firstName || "User").trim(),
+        lastName: (dto.lastName || "User").trim(),
+        dateOfBirth: validDob,
+        gender: gender,
+        maritalStatus: maritalStatus,
+        religion: dto.religion ? dto.religion.trim() : null,
+        caste: dto.caste ? dto.caste.trim() : null,
+        city: dto.city ? dto.city.trim() : null,
+        state: dto.state ? dto.state.trim() : null,
+        country: dto.country ? dto.country.trim() : null,
+        education: dto.education ? dto.education.trim() : null,
+        occupation: dto.occupation ? dto.occupation.trim() : null,
+        organizationName: dto.organizationName
+          ? dto.organizationName.trim()
+          : null,
+        designation: dto.designation ? dto.designation.trim() : null,
+        nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
+        about: dto.about ? dto.about.trim() : null,
+        photoUrl: dto.photoUrl ?? null,
+        isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
+        pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
+        isAbroad: dto.isAbroad ?? false,
+        abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
+        businessIndustry: dto.businessIndustry
+          ? dto.businessIndustry.trim()
+          : null,
+        businessService: dto.businessService
+          ? dto.businessService.trim()
+          : null,
+        bloodGroup: dto.bloodGroup ? dto.bloodGroup.trim() : null,
+        isVankar: dto.isVankar ?? true,
+        annualIncome: dto.annualIncome ? dto.annualIncome.trim() : null,
+        fatherName: dto.fatherName ? dto.fatherName.trim() : null,
+        fatherOccupation: dto.fatherOccupation ? dto.fatherOccupation.trim() : null,
+        fatherContact: dto.fatherContact ? dto.fatherContact.trim() : null,
+        motherName: dto.motherName ? dto.motherName.trim() : null,
+        motherOccupation: dto.motherOccupation ? dto.motherOccupation.trim() : null,
+        guardianContact: dto.guardianContact ? dto.guardianContact.trim() : null,
+        siblings: dto.siblings ? dto.siblings.trim() : null,
+        mamasVillage: dto.mamasVillage ? dto.mamasVillage.trim() : null,
+        addressLine: dto.addressLine ? dto.addressLine.trim() : null,
+        pincode: dto.pincode ? dto.pincode.trim() : null,
+        altPhone: dto.altPhone ? dto.altPhone.trim() : null,
+        contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
+        motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
+      };
+
       if (existingProfile) {
         profile = await this.prisma.matrimonialProfile.update({
           where: { id: existingProfile.id },
           data: {
-            firstName: (dto.firstName || existingProfile.firstName).trim(),
-            lastName: (dto.lastName || existingProfile.lastName).trim(),
-            dateOfBirth: validDob,
-            gender: gender,
-            maritalStatus: maritalStatus,
-            religion: dto.religion ? dto.religion.trim() : existingProfile.religion,
-            caste: dto.caste ? dto.caste.trim() : existingProfile.caste,
-            city: dto.city ? dto.city.trim() : existingProfile.city,
-            state: dto.state ? dto.state.trim() : existingProfile.state,
-            country: dto.country ? dto.country.trim() : existingProfile.country,
-            education: dto.education ? dto.education.trim() : existingProfile.education,
-            occupation: dto.occupation ? dto.occupation.trim() : existingProfile.occupation,
-            organizationName: dto.organizationName
-              ? dto.organizationName.trim()
-              : existingProfile.organizationName,
-            designation: dto.designation
-              ? dto.designation.trim()
-              : existingProfile.designation,
-            nativePlace: dto.nativePlace
-              ? dto.nativePlace.trim()
-              : existingProfile.nativePlace,
-            about: dto.about ? dto.about.trim() : existingProfile.about,
-            photoUrl: dto.photoUrl ?? existingProfile.photoUrl,
-            isPhysicallyDisabled: dto.isPhysicallyDisabled ?? existingProfile.isPhysicallyDisabled,
-            pwbdCategory: dto.pwbdCategory
-              ? dto.pwbdCategory.trim()
-              : existingProfile.pwbdCategory,
-            isAbroad: dto.isAbroad ?? existingProfile.isAbroad,
-            abroadCountry: dto.abroadCountry
-              ? dto.abroadCountry.trim()
-              : existingProfile.abroadCountry,
-            businessIndustry: dto.businessIndustry
-              ? dto.businessIndustry.trim()
-              : existingProfile.businessIndustry,
-            businessService: dto.businessService
-              ? dto.businessService.trim()
-              : existingProfile.businessService,
+            ...profilePayload,
+            firstName: dto.firstName ? dto.firstName.trim() : existingProfile.firstName,
+            lastName: dto.lastName ? dto.lastName.trim() : existingProfile.lastName,
+            religion: dto.religion !== undefined ? (dto.religion ? dto.religion.trim() : null) : existingProfile.religion,
+            caste: dto.caste !== undefined ? (dto.caste ? dto.caste.trim() : null) : existingProfile.caste,
+            city: dto.city !== undefined ? (dto.city ? dto.city.trim() : null) : existingProfile.city,
+            state: dto.state !== undefined ? (dto.state ? dto.state.trim() : null) : existingProfile.state,
+            country: dto.country !== undefined ? (dto.country ? dto.country.trim() : null) : existingProfile.country,
+            education: dto.education !== undefined ? (dto.education ? dto.education.trim() : null) : existingProfile.education,
+            occupation: dto.occupation !== undefined ? (dto.occupation ? dto.occupation.trim() : null) : existingProfile.occupation,
+            organizationName: dto.organizationName !== undefined ? (dto.organizationName ? dto.organizationName.trim() : null) : existingProfile.organizationName,
+            designation: dto.designation !== undefined ? (dto.designation ? dto.designation.trim() : null) : existingProfile.designation,
+            nativePlace: dto.nativePlace !== undefined ? (dto.nativePlace ? dto.nativePlace.trim() : null) : existingProfile.nativePlace,
+            about: dto.about !== undefined ? (dto.about ? dto.about.trim() : null) : existingProfile.about,
+            photoUrl: dto.photoUrl !== undefined ? dto.photoUrl : existingProfile.photoUrl,
             status: ProfileStatus.PENDING,
             isVerified: false,
           },
         });
       } else {
+        const customId = dto.id && dto.id.trim().length > 0 ? dto.id.trim() : undefined;
         profile = await this.prisma.matrimonialProfile.create({
           data: {
+            ...(customId ? { id: customId } : {}),
             userId,
-            firstName: (dto.firstName || "User").trim(),
-            lastName: (dto.lastName || "User").trim(),
-            dateOfBirth: validDob,
-            gender: gender,
-            maritalStatus: maritalStatus,
-            religion: dto.religion ? dto.religion.trim() : null,
-            caste: dto.caste ? dto.caste.trim() : null,
-            city: dto.city ? dto.city.trim() : null,
-            state: dto.state ? dto.state.trim() : null,
-            country: dto.country ? dto.country.trim() : null,
-            education: dto.education ? dto.education.trim() : null,
-            occupation: dto.occupation ? dto.occupation.trim() : null,
-            organizationName: dto.organizationName
-              ? dto.organizationName.trim()
-              : null,
-            designation: dto.designation ? dto.designation.trim() : null,
-            nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
-            about: dto.about ? dto.about.trim() : null,
-            photoUrl: dto.photoUrl ?? null,
-            isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
-            pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
-            isAbroad: dto.isAbroad ?? false,
-            abroadCountry: dto.abroadCountry ? dto.abroadCountry.trim() : null,
-            businessIndustry: dto.businessIndustry
-              ? dto.businessIndustry.trim()
-              : null,
-            businessService: dto.businessService
-              ? dto.businessService.trim()
-              : null,
+            ...profilePayload,
             status: ProfileStatus.PENDING,
             isVerified: false,
           },
         });
+      }
+
+      // Also sync user phone/email if user provided contact details
+      if (dto.altPhone || dto.contactEmail) {
+        try {
+          const userUpdates: any = {};
+          if (dto.altPhone) userUpdates.phone = dto.altPhone.trim();
+          if (dto.contactEmail) userUpdates.email = dto.contactEmail.trim();
+          await this.prisma.user.update({
+            where: { id: userId },
+            data: userUpdates,
+          });
+        } catch (_) {}
       }
 
       // Automatically register a VerificationRequest for Admin Review queue
@@ -283,6 +296,22 @@ export class ProfilesService {
         businessService: dto.businessService
           ? dto.businessService.trim()
           : null,
+        bloodGroup: dto.bloodGroup ? dto.bloodGroup.trim() : null,
+        isVankar: dto.isVankar ?? true,
+        annualIncome: dto.annualIncome ? dto.annualIncome.trim() : null,
+        fatherName: dto.fatherName ? dto.fatherName.trim() : null,
+        fatherOccupation: dto.fatherOccupation ? dto.fatherOccupation.trim() : null,
+        fatherContact: dto.fatherContact ? dto.fatherContact.trim() : null,
+        motherName: dto.motherName ? dto.motherName.trim() : null,
+        motherOccupation: dto.motherOccupation ? dto.motherOccupation.trim() : null,
+        guardianContact: dto.guardianContact ? dto.guardianContact.trim() : null,
+        siblings: dto.siblings ? dto.siblings.trim() : null,
+        mamasVillage: dto.mamasVillage ? dto.mamasVillage.trim() : null,
+        addressLine: dto.addressLine ? dto.addressLine.trim() : null,
+        pincode: dto.pincode ? dto.pincode.trim() : null,
+        altPhone: dto.altPhone ? dto.altPhone.trim() : null,
+        contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
+        motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
         stateId: null,
         districtId: null,
         talukaId: null,
@@ -343,9 +372,42 @@ export class ProfilesService {
 
   async getProfileById(id: string) {
     try {
-      const profile = await this.prisma.matrimonialProfile.findUnique({
+      let profile = await this.prisma.matrimonialProfile.findUnique({
         where: { id },
+        include: {
+          user: {
+            select: { phone: true, email: true },
+          },
+          governmentEmployment: {
+            include: {
+              department: true,
+              designation: true,
+            },
+          },
+        },
       });
+
+      if (!profile) {
+        profile = await this.prisma.matrimonialProfile.findFirst({
+          where: {
+            OR: [
+              { id },
+              { userId: id },
+            ],
+          },
+          include: {
+            user: {
+              select: { phone: true, email: true },
+            },
+            governmentEmployment: {
+              include: {
+                department: true,
+                designation: true,
+              },
+            },
+          },
+        });
+      }
 
       if (!profile) {
         throw new NotFoundException("Profile not found");
@@ -355,7 +417,7 @@ export class ProfilesService {
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
       const profile = Array.from(this.memoryProfiles.values()).find(
-        (p) => p.id === id,
+        (p) => p.id === id || p.userId === id,
       );
       if (!profile) {
         throw new NotFoundException("Profile not found");
@@ -433,10 +495,67 @@ export class ProfilesService {
           ? dto.businessService.trim()
           : null;
 
+      if (dto.bloodGroup !== undefined)
+        updateData.bloodGroup = dto.bloodGroup ? dto.bloodGroup.trim() : null;
+      if (dto.isVankar !== undefined)
+        updateData.isVankar = dto.isVankar;
+      if (dto.annualIncome !== undefined)
+        updateData.annualIncome = dto.annualIncome ? dto.annualIncome.trim() : null;
+      if (dto.fatherName !== undefined)
+        updateData.fatherName = dto.fatherName ? dto.fatherName.trim() : null;
+      if (dto.fatherOccupation !== undefined)
+        updateData.fatherOccupation = dto.fatherOccupation ? dto.fatherOccupation.trim() : null;
+      if (dto.fatherContact !== undefined)
+        updateData.fatherContact = dto.fatherContact ? dto.fatherContact.trim() : null;
+      if (dto.motherName !== undefined)
+        updateData.motherName = dto.motherName ? dto.motherName.trim() : null;
+      if (dto.motherOccupation !== undefined)
+        updateData.motherOccupation = dto.motherOccupation ? dto.motherOccupation.trim() : null;
+      if (dto.guardianContact !== undefined)
+        updateData.guardianContact = dto.guardianContact ? dto.guardianContact.trim() : null;
+      if (dto.siblings !== undefined)
+        updateData.siblings = dto.siblings ? dto.siblings.trim() : null;
+      if (dto.mamasVillage !== undefined)
+        updateData.mamasVillage = dto.mamasVillage ? dto.mamasVillage.trim() : null;
+      if (dto.addressLine !== undefined)
+        updateData.addressLine = dto.addressLine ? dto.addressLine.trim() : null;
+      if (dto.pincode !== undefined)
+        updateData.pincode = dto.pincode ? dto.pincode.trim() : null;
+      if (dto.altPhone !== undefined)
+        updateData.altPhone = dto.altPhone ? dto.altPhone.trim() : null;
+      if (dto.contactEmail !== undefined)
+        updateData.contactEmail = dto.contactEmail ? dto.contactEmail.trim() : null;
+      if (dto.motherTongue !== undefined)
+        updateData.motherTongue = dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)";
+
       const updatedProfile = await this.prisma.matrimonialProfile.update({
         where: { userId },
         data: updateData,
+        include: {
+          user: {
+            select: { phone: true, email: true },
+          },
+          governmentEmployment: {
+            include: {
+              department: true,
+              designation: true,
+            },
+          },
+        },
       });
+
+      if (dto.altPhone || dto.contactEmail) {
+        try {
+          const userUpdates: any = {};
+          if (dto.altPhone) userUpdates.phone = dto.altPhone.trim();
+          if (dto.contactEmail) userUpdates.email = dto.contactEmail.trim();
+          await this.prisma.user.update({
+            where: { id: userId },
+            data: userUpdates,
+          });
+        } catch (_) {}
+      }
+
       await this.syncSamajServicePerson(userId, updatedProfile);
       await this.syncGovernmentEmployment(updatedProfile);
       return updatedProfile;
@@ -559,6 +678,98 @@ export class ProfilesService {
               ? dto.businessService.trim()
               : null
             : existing.businessService,
+        bloodGroup:
+          dto.bloodGroup !== undefined
+            ? dto.bloodGroup
+              ? dto.bloodGroup.trim()
+              : null
+            : existing.bloodGroup,
+        isVankar:
+          dto.isVankar !== undefined ? dto.isVankar : existing.isVankar,
+        annualIncome:
+          dto.annualIncome !== undefined
+            ? dto.annualIncome
+              ? dto.annualIncome.trim()
+              : null
+            : existing.annualIncome,
+        fatherName:
+          dto.fatherName !== undefined
+            ? dto.fatherName
+              ? dto.fatherName.trim()
+              : null
+            : existing.fatherName,
+        fatherOccupation:
+          dto.fatherOccupation !== undefined
+            ? dto.fatherOccupation
+              ? dto.fatherOccupation.trim()
+              : null
+            : existing.fatherOccupation,
+        fatherContact:
+          dto.fatherContact !== undefined
+            ? dto.fatherContact
+              ? dto.fatherContact.trim()
+              : null
+            : existing.fatherContact,
+        motherName:
+          dto.motherName !== undefined
+            ? dto.motherName
+              ? dto.motherName.trim()
+              : null
+            : existing.motherName,
+        motherOccupation:
+          dto.motherOccupation !== undefined
+            ? dto.motherOccupation
+              ? dto.motherOccupation.trim()
+              : null
+            : existing.motherOccupation,
+        guardianContact:
+          dto.guardianContact !== undefined
+            ? dto.guardianContact
+              ? dto.guardianContact.trim()
+              : null
+            : existing.guardianContact,
+        siblings:
+          dto.siblings !== undefined
+            ? dto.siblings
+              ? dto.siblings.trim()
+              : null
+            : existing.siblings,
+        mamasVillage:
+          dto.mamasVillage !== undefined
+            ? dto.mamasVillage
+              ? dto.mamasVillage.trim()
+              : null
+            : existing.mamasVillage,
+        addressLine:
+          dto.addressLine !== undefined
+            ? dto.addressLine
+              ? dto.addressLine.trim()
+              : null
+            : existing.addressLine,
+        pincode:
+          dto.pincode !== undefined
+            ? dto.pincode
+              ? dto.pincode.trim()
+              : null
+            : existing.pincode,
+        altPhone:
+          dto.altPhone !== undefined
+            ? dto.altPhone
+              ? dto.altPhone.trim()
+              : null
+            : existing.altPhone,
+        contactEmail:
+          dto.contactEmail !== undefined
+            ? dto.contactEmail
+              ? dto.contactEmail.trim()
+              : null
+            : existing.contactEmail,
+        motherTongue:
+          dto.motherTongue !== undefined
+            ? dto.motherTongue
+              ? dto.motherTongue.trim()
+              : "Gujarati (ગુજરાતી)"
+            : existing.motherTongue,
         updatedAt: new Date(),
       };
       this.memoryProfiles.set(userId, updated);
@@ -677,14 +888,23 @@ export class ProfilesService {
       const term = searchTerm.trim();
       andConditions.push({
         OR: [
+          { id: { contains: term } },
           { firstName: { contains: term } },
           { lastName: { contains: term } },
           { city: { contains: term } },
+          { state: { contains: term } },
           { occupation: { contains: term } },
           { organizationName: { contains: term } },
           { designation: { contains: term } },
           { nativePlace: { contains: term } },
           { education: { contains: term } },
+          { fatherName: { contains: term } },
+          { motherName: { contains: term } },
+          { mamasVillage: { contains: term } },
+          { annualIncome: { contains: term } },
+          { bloodGroup: { contains: term } },
+          { religion: { contains: term } },
+          { caste: { contains: term } },
         ],
       });
     }
@@ -743,6 +963,12 @@ export class ProfilesService {
         skip,
         take: limit,
         include: {
+          user: {
+            select: {
+              phone: true,
+              email: true,
+            },
+          },
           governmentEmployment: {
             include: {
               department: true,
@@ -773,7 +999,7 @@ export class ProfilesService {
     };
     const result = await this.getProfiles(baseQuery);
 
-    const formattedProfiles = result.items.map((p) => {
+    const formattedProfiles = result.items.map((p: any) => {
       let age = 25;
       if (p.dateOfBirth) {
         const diff = Date.now() - new Date(p.dateOfBirth).getTime();
@@ -791,14 +1017,51 @@ export class ProfilesService {
         lastName: p.lastName,
         gender: p.gender,
         age,
+        dateOfBirth: p.dateOfBirth,
         height: "5'6\"",
         pargana: p.nativePlace || "Gujarat",
+        nativePlace: p.nativePlace,
         city: p.city || "Ahmedabad",
+        state: p.state || "Gujarat",
+        district: p.state,
+        country: p.country || "India",
         education: p.education || "Graduate",
         occupation: p.occupation || p.designation || "Service",
+        employmentType: p.occupation,
+        organizationName: p.organizationName,
+        department: p.organizationName,
+        designation: p.designation,
+        maritalStatus: p.maritalStatus || "NEVER_MARRIED",
         maritialStatus: p.maritalStatus || "Unmarried",
         isVerified: p.isVerified || false,
         photoUrl: p.photoUrl,
+        about: p.about,
+        religion: p.religion,
+        caste: p.caste,
+        subcaste: p.subcaste,
+        bloodGroup: p.bloodGroup,
+        isVankar: p.isVankar,
+        annualIncome: p.annualIncome,
+        fatherName: p.fatherName,
+        fatherOccupation: p.fatherOccupation,
+        fatherContact: p.fatherContact,
+        motherName: p.motherName,
+        motherOccupation: p.motherOccupation,
+        guardianContact: p.guardianContact,
+        siblings: p.siblings,
+        mamasVillage: p.mamasVillage,
+        addressLine: p.addressLine,
+        pincode: p.pincode,
+        altPhone: p.altPhone,
+        contactEmail: p.contactEmail,
+        motherTongue: p.motherTongue,
+        isPhysicallyDisabled: p.isPhysicallyDisabled,
+        pwbdCategory: p.pwbdCategory,
+        isAbroad: p.isAbroad,
+        abroadCountry: p.abroadCountry,
+        businessIndustry: p.businessIndustry,
+        businessService: p.businessService,
+        user: p.user,
       };
     });
 

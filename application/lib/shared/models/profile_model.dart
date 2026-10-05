@@ -8,17 +8,23 @@ class ProfileModel {
   final String gender;
   final String maritalStatus;
   final String dateOfBirth;
+  final String? bloodGroup;
+  final bool? isVankar;
+  final String? motherTongue;
 
   // Employment & Education
   final String education;
   final String employmentType;
   final String department;
   final String designation;
+  final String? annualIncome;
 
   // Location
   final String district;
   final String taluka;
   final String pargana;
+  final String? addressLine;
+  final String? pincode;
 
   // Verification (Prisma: is_verified Boolean @default(false))
   final bool? isVerified;
@@ -34,6 +40,21 @@ class ProfileModel {
   // Business
   final String? businessIndustry;
   final String? businessService;
+
+  // Family Details
+  final String? fatherName;
+  final String? fatherOccupation;
+  final String? fatherContact;
+  final String? motherName;
+  final String? motherOccupation;
+  final String? guardianContact;
+  final String? siblings;
+  final String? mamasVillage;
+
+  // Contact Details
+  final String? contactPhone;
+  final String? altPhone;
+  final String? contactEmail;
 
   // Additional database fields
   final String? about;
@@ -53,13 +74,19 @@ class ProfileModel {
     required this.gender,
     required this.maritalStatus,
     required this.dateOfBirth,
+    this.bloodGroup,
+    this.isVankar = true,
+    this.motherTongue = 'Gujarati (ગુજરાતી)',
     required this.education,
     required this.employmentType,
     required this.department,
     required this.designation,
+    this.annualIncome,
     required this.district,
     required this.taluka,
     required this.pargana,
+    this.addressLine,
+    this.pincode,
     this.isVerified,
     this.isPhysicallyDisabled,
     this.pwbdCategory,
@@ -67,6 +94,17 @@ class ProfileModel {
     this.abroadCountry,
     this.businessIndustry,
     this.businessService,
+    this.fatherName,
+    this.fatherOccupation,
+    this.fatherContact,
+    this.motherName,
+    this.motherOccupation,
+    this.guardianContact,
+    this.siblings,
+    this.mamasVillage,
+    this.contactPhone,
+    this.altPhone,
+    this.contactEmail,
     this.about,
     this.religion,
     this.caste,
@@ -174,7 +212,7 @@ class ProfileModel {
     addPart(pargana.isNotEmpty ? pargana : nativePlace);
     addPart(taluka.isNotEmpty ? taluka : city);
     addPart(district.isNotEmpty ? district : state);
-    if (country != null && country != 'India') {
+    if (country != null && country != 'India' && country!.isNotEmpty) {
       addPart(country);
     }
     return parts.isEmpty ? 'Not specified' : parts.join(', ');
@@ -207,21 +245,35 @@ class ProfileModel {
     final rawDepartment = extractString(json['department'] ?? json['organizationName'] ?? json['organization_name']);
     final rawDesignation = extractString(json['designation']);
 
+    // Extract user contact if nested
+    String? userPhone;
+    String? userEmail;
+    if (json['user'] is Map) {
+      userPhone = json['user']['phone']?.toString();
+      userEmail = json['user']['email']?.toString();
+    }
+
     return ProfileModel(
       id: (json['id'] ?? '').toString(),
       firstName: (json['firstName'] ?? json['first_name'] ?? '').toString(),
       lastName: (json['lastName'] ?? json['last_name'] ?? '').toString(),
       photoUrl: (json['photoUrl'] ?? json['photo_url']) as String?,
       gender: normalizeGenderToDisplay(json['gender']),
-      maritalStatus: (json['maritalStatus'] ?? json['marital_status'] ?? 'Never Married (અપરિણીત)').toString(),
+      maritalStatus: (json['maritalStatus'] ?? json['marital_status'] ?? json['maritialStatus'] ?? 'Never Married (અપરિણીત)').toString(),
       dateOfBirth: (json['dateOfBirth'] ?? json['date_of_birth'] ?? '').toString(),
+      bloodGroup: (json['bloodGroup'] ?? json['blood_group'])?.toString(),
+      isVankar: (json['isVankar'] ?? json['is_vankar']) as bool? ?? true,
+      motherTongue: (json['motherTongue'] ?? json['mother_tongue'])?.toString() ?? 'Gujarati (ગુજરાતી)',
       education: (json['education'] ?? '').toString(),
       employmentType: rawEmployment,
       department: rawDepartment,
       designation: rawDesignation,
+      annualIncome: (json['annualIncome'] ?? json['annual_income'] ?? json['yearlyIncome'] ?? json['income'])?.toString(),
       district: rawDistrict,
       taluka: rawTaluka,
       pargana: rawPargana,
+      addressLine: (json['addressLine'] ?? json['address_line'] ?? json['address'])?.toString(),
+      pincode: (json['pincode'])?.toString(),
       isVerified: (json['isVerified'] ?? json['is_verified']) as bool?,
       isPhysicallyDisabled: (json['isPhysicallyDisabled'] ?? json['is_physically_disabled']) as bool?,
       pwbdCategory: (json['pwbdCategory'] ?? json['pwbd_category']) as String?,
@@ -229,6 +281,17 @@ class ProfileModel {
       abroadCountry: (json['abroadCountry'] ?? json['abroad_country']) as String?,
       businessIndustry: (json['businessIndustry'] ?? json['business_industry']) as String?,
       businessService: (json['businessService'] ?? json['business_service']) as String?,
+      fatherName: (json['fatherName'] ?? json['father_name'])?.toString(),
+      fatherOccupation: (json['fatherOccupation'] ?? json['father_occupation'])?.toString(),
+      fatherContact: (json['fatherContact'] ?? json['father_contact'] ?? json['fatherPhone'])?.toString(),
+      motherName: (json['motherName'] ?? json['mother_name'])?.toString(),
+      motherOccupation: (json['motherOccupation'] ?? json['mother_occupation'])?.toString(),
+      guardianContact: (json['guardianContact'] ?? json['guardian_contact'])?.toString(),
+      siblings: (json['siblings'] ?? json['brothersSisters'])?.toString(),
+      mamasVillage: (json['mamasVillage'] ?? json['mamas_village'] ?? json['mosal'])?.toString(),
+      contactPhone: (json['contactPhone'] ?? json['phone'] ?? userPhone ?? json['altPhone'] ?? json['alt_phone'])?.toString(),
+      altPhone: (json['altPhone'] ?? json['alt_phone'] ?? json['whatsapp'])?.toString(),
+      contactEmail: (json['contactEmail'] ?? json['contact_email'] ?? userEmail)?.toString(),
       about: (json['about']) as String?,
       religion: (json['religion']) as String?,
       caste: (json['caste']) as String?,
@@ -242,6 +305,7 @@ class ProfileModel {
 
   Map<String, dynamic> toJson() {
     final map = <String, dynamic>{
+      if (id.isNotEmpty && !id.startsWith('NEW')) 'id': id,
       'firstName': firstName,
       'lastName': lastName,
       'photoUrl': photoUrl,
@@ -256,10 +320,13 @@ class ProfileModel {
       'occupation': employmentType,
       'organizationName': department,
       'designation': designation,
+      'annualIncome': annualIncome,
       'nativePlace': pargana.isNotEmpty ? pargana : nativePlace,
       'city': taluka.isNotEmpty ? taluka : city,
       'state': district.isNotEmpty ? district : state,
       'country': country ?? 'India',
+      'addressLine': addressLine,
+      'pincode': pincode,
       'isPhysicallyDisabled': isPhysicallyDisabled,
       'pwbdCategory': pwbdCategory,
       'isAbroad': isAbroad,
@@ -270,6 +337,19 @@ class ProfileModel {
       'religion': religion,
       'caste': caste,
       'subcaste': subcaste,
+      'bloodGroup': bloodGroup,
+      'isVankar': isVankar,
+      'motherTongue': motherTongue,
+      'fatherName': fatherName,
+      'fatherOccupation': fatherOccupation,
+      'fatherContact': fatherContact,
+      'motherName': motherName,
+      'motherOccupation': motherOccupation,
+      'guardianContact': guardianContact,
+      'siblings': siblings,
+      'mamasVillage': mamasVillage,
+      'altPhone': altPhone,
+      'contactEmail': contactEmail,
     };
 
     return map;

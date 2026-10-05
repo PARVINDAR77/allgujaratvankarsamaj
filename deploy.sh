@@ -237,6 +237,22 @@ ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`is_abroad\` tiny
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`abroad_country\` varchar(191) DEFAULT NULL;
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`business_industry\` varchar(191) DEFAULT NULL;
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`business_service\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`blood_group\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`is_vankar\` tinyint(1) NOT NULL DEFAULT 1;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`annual_income\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`father_name\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`father_occupation\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`father_contact\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mother_name\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mother_occupation\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`guardian_contact\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`siblings\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mamas_village\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`address_line\` text DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`pincode\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`alt_phone\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`contact_email\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mother_tongue\` varchar(191) DEFAULT 'Gujarati (ગુજરાતી)';
 " || true
 
 echo "Skipping Database Migrations (Hostinger RAM limits)..."

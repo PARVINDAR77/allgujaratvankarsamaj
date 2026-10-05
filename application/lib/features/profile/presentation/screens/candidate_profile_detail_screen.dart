@@ -163,9 +163,35 @@ class _CandidateProfileDetailScreenState
                       _buildDetailRow('પૂરું નામ (Full Name)', profile.fullName),
                       _buildDetailRow('જાતિ (Gender)', profile.displayGender),
                       _buildDetailRow('જન્મ તારીખ (Date of Birth)', profile.displayDob),
+                      if (profile.age != null) _buildDetailRow('ઉંમર (Age)', '${profile.age} Years (વર્ષ)'),
                       _buildDetailRow('લગ્ન સ્થિતિ (Marital Status)', profile.maritalStatus),
-                      _buildDetailRow('ધર્મ / સમાજ (Religion & Caste)', 'સમસ્ત ગુજરાત વાંકર સમાજ (Vankar)'),
-                      _buildDetailRow('માતૃભાષા (Mother Tongue)', 'ગુજરાતી (Gujarati)'),
+                      _buildDetailRow('ધર્મ (Religion)', (profile.religion != null && profile.religion!.isNotEmpty) ? profile.religion! : 'Hindu (હિન્દુ)'),
+                      _buildDetailRow('જ્ઞાતિ (Caste Category)', profile.caste ?? 'Hindu-Vankar (હિન્દુ-વણકર)'),
+                      _buildDetailRow('રક્ત જૂથ (Blood Group)', profile.bloodGroup != null && profile.bloodGroup!.isNotEmpty ? profile.bloodGroup! : 'Not specified'),
+                      _buildDetailRow('વણકર સમાજ (Vankar Community)', profile.isVankar == true ? 'Yes (હા - વણકર સમાજ)' : 'No (ના)'),
+                      _buildDetailRow('માતૃભાષા (Mother Tongue)', profile.motherTongue != null && profile.motherTongue!.isNotEmpty ? profile.motherTongue! : 'ગુજરાતી (Gujarati)'),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  _buildSectionCard(
+                    titleGuj: 'પરિવારની વિગતો અને મોસાળ',
+                    titleEng: 'Family Details & Native Roots',
+                    icon: Icons.family_restroom,
+                    iconColor: const Color(0xFFE91E63),
+                    items: [
+                      _buildDetailRow('પિતાનું નામ (Father\'s Name)', profile.fatherName ?? 'Not specified'),
+                      _buildDetailRow('પિતાનો વ્યવસાય (Father\'s Occupation)', profile.fatherOccupation ?? 'Not specified'),
+                      if (profile.fatherContact != null && profile.fatherContact!.isNotEmpty)
+                        _buildDetailRow('પિતાનો ફોન (Father\'s Contact)', profile.fatherContact!),
+                      _buildDetailRow('માતાનું નામ (Mother\'s Name)', profile.motherName ?? 'Not specified'),
+                      _buildDetailRow('માતાનો વ્યવસાય (Mother\'s Occupation)', profile.motherOccupation ?? 'Not specified'),
+                      if (profile.guardianContact != null && profile.guardianContact!.isNotEmpty)
+                        _buildDetailRow('વાલીનો સંપર્ક (Guardian Contact)', profile.guardianContact!),
+                      _buildDetailRow('ભાઈ-બહેનની વિગત (Brothers & Sisters)', profile.siblings ?? 'Not specified'),
+                      _buildDetailRow('મોસાળ / મોસાળનું ગામ (Mama\'s Village / Mosal)', profile.mamasVillage ?? 'Not specified'),
+                      _buildDetailRow('મૂળ વતન / પરગણું (Native Place / Pargana)', profile.nativePlace ?? (profile.pargana.isNotEmpty ? profile.pargana : 'Not specified')),
                     ],
                   ),
 
@@ -178,7 +204,7 @@ class _CandidateProfileDetailScreenState
                     iconColor: const Color(0xFF2E7D32),
                     items: [
                       _buildDetailRow(
-                        'શિક્ષણ (Education)',
+                        'શિક્ષણ / ડિગ્રી (Education)',
                         profile.education.isNotEmpty ? profile.education : 'Not specified',
                       ),
                       _buildDetailRow(
@@ -190,8 +216,12 @@ class _CandidateProfileDetailScreenState
                         profile.designation.isNotEmpty ? profile.designation : 'Not specified',
                       ),
                       _buildDetailRow(
-                        'ખાતું / સંસ્થા (Organization / Dept)',
+                        'ખાતું / સંસ્થા / કંપની (Organization / Dept)',
                         profile.department.isNotEmpty ? profile.department : 'Not specified',
+                      ),
+                      _buildDetailRow(
+                        'વાર્ષિક આવક (Annual Income)',
+                        profile.annualIncome != null && profile.annualIncome!.isNotEmpty ? profile.annualIncome! : 'Not specified',
                       ),
                       if (profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty)
                         _buildDetailRow('ઉદ્યોગ ક્ષેત્ર (Business Industry)', profile.businessIndustry!),
@@ -203,15 +233,13 @@ class _CandidateProfileDetailScreenState
                   const SizedBox(height: 12),
 
                   _buildSectionCard(
-                    titleGuj: 'સ્થળ અને પરિવાર મૂળ',
-                    titleEng: 'Location & Native Roots',
+                    titleGuj: 'સ્થળ અને સરનામું',
+                    titleEng: 'Location & Address',
                     icon: Icons.location_on_outlined,
                     iconColor: const Color(0xFFD84315),
                     items: [
-                      _buildDetailRow(
-                        'મૂળ વતન / પરગણું (Native Place / Pargana)',
-                        profile.pargana.isNotEmpty ? profile.pargana : (profile.nativePlace ?? 'Not specified'),
-                      ),
+                      if (profile.addressLine != null && profile.addressLine!.isNotEmpty)
+                        _buildDetailRow('સરનામું (Address)', profile.addressLine!),
                       _buildDetailRow(
                         'તાલુકો / શહેર (Taluka / City)',
                         profile.taluka.isNotEmpty ? profile.taluka : (profile.city ?? 'Not specified'),
@@ -220,7 +248,31 @@ class _CandidateProfileDetailScreenState
                         'જિલ્લો / રાજ્ય (District / State)',
                         profile.district.isNotEmpty ? profile.district : (profile.state ?? 'Not specified'),
                       ),
+                      if (profile.pincode != null && profile.pincode!.isNotEmpty)
+                        _buildDetailRow('પીનકોડ (Pincode)', profile.pincode!),
+                      _buildDetailRow('પરગણું (Pargana)', profile.pargana.isNotEmpty ? profile.pargana : 'Not specified'),
                       _buildDetailRow('દેશ (Country)', profile.country ?? 'India (ભારત)'),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  _buildSectionCard(
+                    titleGuj: 'સંપર્ક માહિતી',
+                    titleEng: 'Contact Details',
+                    icon: Icons.phone_android,
+                    iconColor: const Color(0xFF00897B),
+                    items: [
+                      _buildDetailRow(
+                        'મોબાઈલ નંબર (Mobile Number)',
+                        profile.contactPhone != null && profile.contactPhone!.isNotEmpty
+                            ? profile.contactPhone!
+                            : 'Available upon Express Interest',
+                      ),
+                      if (profile.altPhone != null && profile.altPhone!.isNotEmpty)
+                        _buildDetailRow('વોટ્સએપ / અન્ય ફોન (WhatsApp / Alt)', profile.altPhone!),
+                      if (profile.contactEmail != null && profile.contactEmail!.isNotEmpty)
+                        _buildDetailRow('ઈમેઈલ (Email)', profile.contactEmail!),
                     ],
                   ),
 
@@ -348,21 +400,43 @@ class _CandidateProfileDetailScreenState
           ),
           const SizedBox(height: 6),
 
-          // ID Tag
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white24),
-            ),
-            child: Text(
-              'ID: ${profile.id.isNotEmpty ? (profile.id.length > 8 ? profile.id.substring(0, 8).toUpperCase() : profile.id) : "CANDIDATE"}',
-              style: const TextStyle(
-                color: Color(0xFFFFD700),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1,
+          // Full ID Tag with Tap to Copy
+          InkWell(
+            onTap: () {
+              if (profile.id.isNotEmpty) {
+                Clipboard.setData(ClipboardData(text: profile.id));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('ID કોપી થયો: ${profile.id} (Copied Profile ID)'),
+                    backgroundColor: const Color(0xFF0056D2),
+                    duration: const Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 1),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'ID: ${profile.id.isNotEmpty ? profile.id : "CANDIDATE"}',
+                    style: const TextStyle(
+                      color: Color(0xFFFFD700),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.copy_rounded, size: 14, color: Color(0xFFFFD700)),
+                ],
               ),
             ),
           ),
