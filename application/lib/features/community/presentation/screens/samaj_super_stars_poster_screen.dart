@@ -127,37 +127,69 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
               children: [
                 const ViewBadge(sectionName: 'SAMAJ_SUPER_STARS'),
                 const SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD4AF37),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          spreadRadius: 2,
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: () => context.push('/samaj-super-stars'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFD4AF37),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                              blurRadius: 12,
+                              spreadRadius: 2,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.close, color: Colors.black, size: 18),
-                        SizedBox(width: 6),
-                        Text(
-                          'બંધ કરો (Close)',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                          ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.workspace_premium, color: Colors.black, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'લાઇવ સૂચિ જુઓ (View List)',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    GestureDetector(
+                      onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade900,
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.close, color: Colors.white, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'બંધ કરો (Close)',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

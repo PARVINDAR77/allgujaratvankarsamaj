@@ -38,16 +38,14 @@ void main() {
 
     // 3. Fetch Profiles from the real backend
     print('Fetching profiles...');
-    await container.read(profileNotifierProvider.notifier).fetchProfiles();
+    await container.read(profileNotifierProvider.notifier).loadProfiles();
     
     final profileState = container.read(profileNotifierProvider);
-    if (profileState.hasError) {
-      print('Profile fetch error: ${profileState.error}');
-      print('Profile fetch stacktrace: ${profileState.stackTrace}');
+    if (profileState.errorMessage != null) {
+      print('Profile fetch error: ${profileState.errorMessage}');
     }
-    expect(profileState.hasValue, true);
-    expect(profileState.value!.isNotEmpty, true, reason: 'Database should return real seeded profiles');
-    print('Fetched ${profileState.value?.length} profiles successfully.');
+    expect(profileState.profiles.isNotEmpty, true, reason: 'Database should return real seeded profiles');
+    print('Fetched ${profileState.profiles.length} profiles successfully.');
 
     // 4. Fetch Samaj Services
     print('Fetching Samaj Services...');

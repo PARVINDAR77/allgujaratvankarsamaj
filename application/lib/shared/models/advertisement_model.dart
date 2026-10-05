@@ -32,17 +32,35 @@ class AdvertisementModel {
   });
 
   factory AdvertisementModel.fromJson(Map<String, dynamic> json) {
+    final rawSortOrder = json['sortOrder'];
+    int sortOrder = 0;
+    if (rawSortOrder is num) {
+      sortOrder = rawSortOrder.toInt();
+    } else if (rawSortOrder is String) {
+      sortOrder = int.tryParse(rawSortOrder) ?? 0;
+    }
+
+    final rawIsActive = json['isActive'];
+    bool isActive = true;
+    if (rawIsActive is bool) {
+      isActive = rawIsActive;
+    } else if (rawIsActive is num) {
+      isActive = rawIsActive != 0;
+    } else if (rawIsActive is String) {
+      isActive = rawIsActive.toLowerCase() == 'true' || rawIsActive == '1';
+    }
+
     return AdvertisementModel(
-      id: json['id'] as String? ?? '',
-      title: json['title'] as String? ?? '',
-      imageUrl: AppConfig.resolveMediaUrl(json['imageUrl'] as String? ?? ''),
-      targetUrl: json['targetUrl'] as String?,
-      placement: json['placement'] as String? ?? 'HOME_BANNER',
-      isActive: json['isActive'] as bool? ?? true,
-      startAt: json['startAt'] as String?,
-      endAt: json['endAt'] as String?,
-      sortOrder: json['sortOrder'] as int? ?? 0,
-      createdAt: json['createdAt'] as String?,
+      id: json['id']?.toString() ?? '',
+      title: json['title']?.toString() ?? '',
+      imageUrl: AppConfig.resolveMediaUrl(json['imageUrl']?.toString() ?? ''),
+      targetUrl: json['targetUrl']?.toString(),
+      placement: json['placement']?.toString() ?? 'HOME_BANNER',
+      isActive: isActive,
+      startAt: json['startAt']?.toString(),
+      endAt: json['endAt']?.toString(),
+      sortOrder: sortOrder,
+      createdAt: json['createdAt']?.toString(),
     );
   }
 }

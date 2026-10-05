@@ -5,7 +5,8 @@ import 'package:intl/intl.dart';
 import '../providers/notifications_provider.dart';
 
 void showNotificationsDialog(BuildContext context, WidgetRef ref) {
-  // Mark all notifications as read when the user views the dialog
+  // Refresh notifications from server and mark all as read
+  ref.read(notificationsProvider.notifier).refresh();
   ref.read(notificationsProvider.notifier).markAllAsRead();
 
   showDialog(

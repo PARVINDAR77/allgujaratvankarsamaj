@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../shared/models/advertisement_model.dart';
 import '../../providers/advertisements_provider.dart';
 
 class AdvertisementsScreen extends ConsumerStatefulWidget {
@@ -56,15 +58,40 @@ class _AdvertisementsScreenState extends ConsumerState<AdvertisementsScreen> {
               child: Text('Error loading ads: $e', style: const TextStyle(color: Colors.red)),
             ),
             data: (ads) {
-              final placementFilter = widget.placement ?? 'HOME_BANNER';
-              final sectionAds = ads.where((a) => a.placement == placementFilter).toList();
+              List<AdvertisementModel> sectionAds;
+              if (widget.placement != null && widget.placement!.isNotEmpty) {
+                sectionAds = ads.where((a) => a.placement.toLowerCase() == widget.placement!.toLowerCase()).toList();
+                if (sectionAds.isEmpty) {
+                  // Fallback to all active ads so user never sees blank screen if placement differs
+                  sectionAds = ads;
+                }
+              } else {
+                sectionAds = ads;
+              }
               
               if (sectionAds.isEmpty) {
-                return const Center(
-                  child: Text(
-                    'હાલમાં કોઈ જાહેરાત ઉપલબ્ધ નથી.\n(No advertisements available)',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.white70, fontSize: 18),
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.campaign_outlined, size: 64, color: Color(0xFFD4AF37)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'હાલમાં કોઈ જાહેરાત ઉપલબ્ધ નથી.\n(No advertisements available)',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white70, fontSize: 18),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () => ref.refresh(advertisementsProvider),
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('રીફ્રેશ કરો (Refresh)'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD4AF37),
+                          foregroundColor: Colors.black,
+                        ),
+                      ),
+                    ],
                   ),
                 );
               }
@@ -153,21 +180,38 @@ class _AdvertisementsScreenState extends ConsumerState<AdvertisementsScreen> {
               );
             },
           ),
-          // Custom Back button at the top
+          // Top Action Bar with Back & Refresh buttons
           Positioned(
             top: MediaQuery.of(context).padding.top + 10,
             left: 10,
-            child: Material(
-              color: Colors.black54,
-              shape: const CircleBorder(),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                onPressed: () {
-                  if (Navigator.canPop(context)) {
-                    Navigator.pop(context);
-                  }
-                },
-              ),
+            right: 10,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Material(
+                  color: Colors.black54,
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
+                    onPressed: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        context.go('/home');
+                      }
+                    },
+                  ),
+                ),
+                Material(
+                  color: Colors.black54,
+                  shape: const CircleBorder(),
+                  child: IconButton(
+                    icon: const Icon(Icons.refresh, color: Color(0xFFD4AF37), size: 28),
+                    tooltip: 'Refresh Advertisements',
+                    onPressed: () => ref.refresh(advertisementsProvider),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

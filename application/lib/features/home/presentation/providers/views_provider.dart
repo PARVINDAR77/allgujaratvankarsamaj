@@ -1,15 +1,37 @@
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../../../core/config/app_config.dart';
 
 final viewsProvider = FutureProvider<Map<String, int>>((ref) async {
-  final dio = Dio();
-  final response = await dio.get('${AppConfig.baseUrl}/statistics/views');
-  final Map<String, int> views = {};
-  for (var item in response.data) {
-    views[item['sectionName']] = item['viewCount'];
+  try {
+    final dio = Dio();
+    final response = await dio.get('${AppConfig.baseUrl}/statistics/views');
+    dynamic raw = response.data;
+    if (raw is String) {
+      try {
+        raw = jsonDecode(raw);
+      } catch (_) {}
+    }
+    if (raw is Map && raw.containsKey('data')) {
+      raw = raw['data'];
+    }
+    final Map<String, int> views = {};
+    if (raw is List) {
+      for (var item in raw) {
+        if (item is Map) {
+          final sName = item['sectionName']?.toString() ?? '';
+          final vCount = int.tryParse(item['viewCount']?.toString() ?? '0') ?? 0;
+          if (sName.isNotEmpty) {
+            views[sName] = vCount;
+          }
+        }
+      }
+    }
+    return views;
+  } catch (e) {
+    return {};
   }
-  return views;
 });
 
 final incrementViewProvider = Provider((ref) => (String sectionName) async {

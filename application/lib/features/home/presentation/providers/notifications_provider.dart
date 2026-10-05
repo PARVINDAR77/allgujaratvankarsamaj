@@ -88,14 +88,25 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
         receiveTimeout: const Duration(seconds: 5),
       ));
       final res = await dio.get('${AppConfig.baseUrl}/notifications');
-      if (res.statusCode == 200 && res.data is List) {
-        for (final item in (res.data as List)) {
-          final id = item['id']?.toString() ?? '';
+      dynamic raw = res.data;
+      if (raw is String) {
+        try {
+          raw = jsonDecode(raw);
+        } catch (_) {}
+      }
+      if (raw is Map && raw.containsKey('data')) {
+        raw = raw['data'];
+      }
+      if (raw is List) {
+        for (final item in raw) {
+          if (item is! Map) continue;
+          final map = Map<String, dynamic>.from(item);
+          final id = map['id']?.toString() ?? '';
           if (id.isEmpty) continue;
-          final title = item['title']?.toString() ?? '';
-          final message = item['message']?.toString() ?? '';
-          final route = item['route']?.toString();
-          final createdAtStr = item['createdAt']?.toString();
+          final title = map['title']?.toString() ?? '';
+          final message = map['message']?.toString() ?? '';
+          final route = map['route']?.toString();
+          final createdAtStr = map['createdAt']?.toString();
           final time = createdAtStr != null
               ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
               : DateTime.now();

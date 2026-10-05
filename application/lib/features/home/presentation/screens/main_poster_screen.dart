@@ -250,7 +250,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/samaj-super-stars'),
+                                onTap: () => context.push('/samaj-ratna'),
                               ),
                             ),
                           ),
@@ -310,7 +310,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => _showImageModal(context, 'assets/images/samaj ratna.jpeg'),
+                                onTap: () => context.push('/samaj-ratna'),
                               ),
                             ),
                           ),

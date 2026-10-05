@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
@@ -24,14 +25,22 @@ class GovtEmployeeRemoteDatasource {
         queryParameters: query.toQueryParameters(),
       );
 
-      final body = response.data as Map<String, dynamic>;
-      final dataList = (body['data'] as List<dynamic>? ?? []);
+      dynamic raw = response.data;
+      if (raw is String) {
+        try {
+          raw = jsonDecode(raw);
+        } catch (_) {}
+      }
+
+      final Map<String, dynamic> body = raw is Map ? Map<String, dynamic>.from(raw) : {};
+      final dynamic rawData = body['data'];
+      final List<dynamic> dataList = rawData is List ? rawData : [];
       final meta = PaginationMeta.fromJson(
-        body['meta'] as Map<String, dynamic>? ?? {},
+        body['meta'] is Map ? Map<String, dynamic>.from(body['meta'] as Map) : {},
       );
 
       final items = dataList
-          .map((item) => GovtEmployeeModel.fromJson(item as Map<String, dynamic>))
+          .map((item) => GovtEmployeeModel.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList();
 
       return PaginatedResponse(data: items, meta: meta);
@@ -50,8 +59,19 @@ class GovtEmployeeRemoteDatasource {
   Future<List<Map<String, dynamic>>> fetchDepartments() async {
     try {
       final response = await _dio.get('/government-employees/departments');
-      final data = response.data as List<dynamic>? ?? [];
-      return data.cast<Map<String, dynamic>>();
+      dynamic raw = response.data;
+      if (raw is String) {
+        try {
+          raw = jsonDecode(raw);
+        } catch (_) {}
+      }
+      if (raw is Map && raw.containsKey('data')) {
+        raw = raw['data'];
+      }
+      if (raw is List) {
+        return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+      return [];
     } on DioException catch (e) {
       throw _mapDioException(e);
     }

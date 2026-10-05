@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import '../../../../core/network/api_failure.dart';
 
@@ -11,8 +12,19 @@ class AdvertisementsRemoteDataSource {
   Future<List<Map<String, dynamic>>> getActiveAdvertisements() async {
     try {
       final response = await _dio.get('/advertisements');
-      final list = response.data as List?;
-      return list?.map((e) => e as Map<String, dynamic>).toList() ?? [];
+      dynamic raw = response.data;
+      if (raw is String) {
+        try {
+          raw = jsonDecode(raw);
+        } catch (_) {}
+      }
+      if (raw is Map && raw.containsKey('data')) {
+        raw = raw['data'];
+      }
+      if (raw is List) {
+        return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      }
+      return [];
     } on DioException catch (e) {
       throw _map(e);
     }

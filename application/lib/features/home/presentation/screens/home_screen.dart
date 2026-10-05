@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,12 +8,21 @@ import '../providers/notifications_provider.dart';
 import '../providers/views_provider.dart';
 import '../widgets/notifications_dialog.dart';
 
-final homeButtonsProvider = FutureProvider<List<dynamic>>((ref) async {
+final homeButtonsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   try {
     final dio = ref.watch(apiClientProvider);
     final response = await dio.get('/home-buttons');
-    if (response.data != null && response.data['data'] != null) {
-      return response.data['data'] as List<dynamic>;
+    dynamic raw = response.data;
+    if (raw is String) {
+      try {
+        raw = jsonDecode(raw);
+      } catch (_) {}
+    }
+    if (raw is Map && raw.containsKey('data')) {
+      raw = raw['data'];
+    }
+    if (raw is List) {
+      return raw.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
     return [];
   } catch (e) {
@@ -151,6 +161,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   context.push('/verified-profile');
                 },
               ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.workspace_premium, color: Color(0xFFD4AF37)),
+                title: const Text('Samaj Ratna (સમાજ રત્ન)', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/samaj-ratna');
+                },
+              ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.star, color: Color(0xFFD4AF37)),
+                title: const Text('Samaj Super Stars (સમાજ સુપર સ્ટાર્સ)', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/samaj-super-stars-poster');
+                },
+              ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.lightbulb, color: Color(0xFFD4AF37)),
+                title: const Text('Pavan Prernadata (પાવન પ્રેરણાદાતા)', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/pavan-prernadata');
+                },
+              ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.campaign, color: Color(0xFFD4AF37)),
+                title: const Text('Advertisements (જાહેરાતો)', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  context.push('/advertisement');
+                },
+              ),
+              ListTile(
+                dense: true,
+                leading: const Icon(Icons.notifications, color: Color(0xFFD4AF37)),
+                title: const Text('Notifications (સૂચનાઓ)', style: TextStyle(color: Colors.white)),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  showNotificationsDialog(context, ref);
+                },
+              ),
             ],
           ),
         ),
@@ -201,9 +256,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     );
   }
 
-  void _handleBottomButtonTap(BuildContext context, WidgetRef ref, String title, String details, IconData icon, Color color, String sectionName) {
+  void _handleBottomButtonTap(
+    BuildContext context,
+    WidgetRef ref,
+    int buttonId,
+    String defaultTitle,
+    String defaultDetails,
+    IconData icon,
+    Color color,
+    String sectionName,
+    String fallbackRoute,
+  ) {
     ref.read(incrementViewProvider)(sectionName);
-    _showCategoryModal(context, title, details, icon, color);
+
+    // Look up dynamic route from homeButtonsProvider
+    final homeButtonsAsync = ref.read(homeButtonsProvider);
+    String targetRoute = fallbackRoute;
+
+    homeButtonsAsync.whenData((buttons) {
+      final match = buttons.firstWhere(
+        (b) => b['buttonId'] == buttonId || b['buttonId']?.toString() == buttonId.toString(),
+        orElse: () => <String, dynamic>{},
+      );
+      if (match.isNotEmpty && match['route'] != null && match['route'].toString().trim().isNotEmpty) {
+        targetRoute = match['route'].toString().trim();
+      }
+    });
+
+    if (targetRoute.isNotEmpty) {
+      context.push(targetRoute);
+    } else {
+      _showCategoryModal(context, defaultTitle, defaultDetails, icon, color);
+    }
   }
 
   @override
@@ -430,7 +514,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.push('/advertisement?placement=PAVAN_PRERNADATA'),
+                      onTap: () => context.push('/pavan-prernadata'),
                     ),
                   ),
                 ),
@@ -444,7 +528,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.push('/advertisement?placement=SAMAJ_SUPER_STARS'),
+                      onTap: () => context.push('/samaj-super-stars-poster'),
                     ),
                   ),
                 ),
@@ -480,7 +564,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                 ),
 
                 // --- Bottom Icons ---
-                // 8. Education (Button 1)
+                // 8. Education (Button 1) -> /samaj-ratna
                 Positioned(
                   left: sx(0),
                   top: sy(1670),
@@ -489,11 +573,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0), 'HOME_EDUCATION'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 1, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0), 'HOME_EDUCATION', '/samaj-ratna'),
                     ),
                   ),
                 ),
-                // 9. Unity (Button 2)
+                // 9. Unity (Button 2) -> /advertisement
                 Positioned(
                   left: sx(216),
                   top: sy(1670),
@@ -502,11 +586,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315), 'HOME_UNITY'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 2, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315), 'HOME_UNITY', '/advertisement'),
                     ),
                   ),
                 ),
-                // 10. Progress (Button 3)
+                // 10. Progress (Button 3) -> /statistics
                 Positioned(
                   left: sx(432),
                   top: sy(1670),
@@ -515,11 +599,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 'Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32), 'HOME_PROGRESS'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 3, 'Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32), 'HOME_PROGRESS', '/statistics'),
                     ),
                   ),
                 ),
-                // 11. Service (Button 4)
+                // 11. Service (Button 4) -> /birthdays
                 Positioned(
                   left: sx(648),
                   top: sy(1670),
@@ -528,11 +612,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 'Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828), 'HOME_SERVICE'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 4, 'Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828), 'HOME_SERVICE', '/birthdays'),
                     ),
                   ),
                 ),
-                // 12. Strong Roots (Button 5)
+                // 12. Strong Roots (Button 5) -> /advertisement
                 Positioned(
                   left: sx(864),
                   top: sy(1670),
@@ -541,7 +625,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0), 'HOME_STRONG_ROOTS'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 5, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0), 'HOME_STRONG_ROOTS', '/advertisement'),
                     ),
                   ),
                 ),
