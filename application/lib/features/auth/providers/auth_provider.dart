@@ -176,7 +176,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (e.type == DioExceptionType.connectionError) {
       return const ApiFailure(
         type: ApiFailureType.noConnection,
-        message: 'No internet connection. Please check your network.',
+        message: 'સર્વર સાથે કનેક્ટ થઈ શકતું નથી. કૃપા કરીને થોડીવાર પછી ફરી પ્રયાસ કરો. (Server connection error)',
       );
     }
     final statusCode = e.response?.statusCode;
