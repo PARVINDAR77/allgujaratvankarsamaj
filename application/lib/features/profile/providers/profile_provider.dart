@@ -166,3 +166,9 @@ final profileCompletenessProvider = FutureProvider<Map<String, dynamic>>((ref) a
   final repository = ref.watch(profileRepositoryProvider);
   return await repository.getProfileCompleteness();
 });
+
+final candidateProfileByIdProvider = FutureProvider.family<ProfileModel, String>((ref, id) async {
+  final repository = ref.watch(profileRepositoryProvider);
+  return await repository.getProfileById(id);
+});
+

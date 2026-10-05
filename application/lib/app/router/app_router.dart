@@ -27,6 +27,8 @@ import '../../features/profile/presentation/screens/verified_profile_screen.dart
 import '../../features/search/presentation/screens/advanced_search_screen.dart';
 import '../../features/search/presentation/screens/search_results_screen.dart';
 import '../../features/community/presentation/screens/samaj_ratna_screen.dart';
+import '../../features/profile/presentation/screens/candidate_profile_detail_screen.dart';
+import '../../shared/models/profile_model.dart';
 
 import '../../shared/presentation/screens/main_navigation_screen.dart';
 import '../../features/home/presentation/screens/main_poster_screen.dart';
@@ -221,6 +223,30 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/search-results',
         name: 'search-results',
         builder: (context, state) => const SearchResultsScreen(),
+      ),
+      GoRoute(
+        path: '/candidate-profile-details',
+        name: 'candidate-profile-details',
+        builder: (context, state) {
+          final profile = state.extra is ProfileModel ? state.extra as ProfileModel : null;
+          final profileId = state.uri.queryParameters['id'];
+          return CandidateProfileDetailScreen(
+            profile: profile,
+            profileId: profileId,
+          );
+        },
+      ),
+      GoRoute(
+        path: '/profile-details',
+        name: 'profile-details',
+        builder: (context, state) {
+          final profile = state.extra is ProfileModel ? state.extra as ProfileModel : null;
+          final profileId = state.uri.queryParameters['id'];
+          return CandidateProfileDetailScreen(
+            profile: profile,
+            profileId: profileId,
+          );
+        },
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {

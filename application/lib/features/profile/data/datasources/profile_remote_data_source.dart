@@ -56,6 +56,15 @@ class ProfileRemoteDataSource {
     }
   }
 
+  Future<Map<String, dynamic>> getProfileById(String id) async {
+    try {
+      final response = await _dio.get('/profiles/$id');
+      return response.data;
+    } on DioException catch (e) {
+      throw _mapDioException(e);
+    }
+  }
+
   Future<Map<String, dynamic>> createProfile(Map<String, dynamic> data) async {
     try {
       final response = await _dio.post('/profiles', data: data);

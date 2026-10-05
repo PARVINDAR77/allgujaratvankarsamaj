@@ -30,6 +30,15 @@ class ProfileRepository {
       throw Exception('Failed to fetch my profile');
     }
   }
+
+  Future<ProfileModel> fetchProfileById(String id) async {
+    try {
+      final response = await _dio.get('/profiles/$id');
+      return ProfileModel.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to fetch profile $id');
+    }
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {

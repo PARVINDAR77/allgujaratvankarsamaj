@@ -135,17 +135,14 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                 if (id.isEmpty) return;
                                 
                                 final profileState = ref.read(profileNotifierProvider);
-                                final foundProfile = profileState.profiles.where((p) => p.id == id).firstOrNull;
+                                final foundProfile = profileState.profiles
+                                    .where((p) => p.id == id || p.fullName.toLowerCase().contains(id.toLowerCase()))
+                                    .firstOrNull;
                                 
                                 if (foundProfile != null) {
-                                  context.push('/family-details');
+                                  context.push('/candidate-profile-details', extra: foundProfile);
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Profile not found for this ID! (આ ID માટે પ્રોફાઇલ મળેલ નથી!)'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
+                                  context.push('/candidate-profile-details?id=$id');
                                 }
                               },
                               borderRadius: const BorderRadius.horizontal(right: Radius.circular(11)),

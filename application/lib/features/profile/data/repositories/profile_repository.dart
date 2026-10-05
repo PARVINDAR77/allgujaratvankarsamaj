@@ -47,6 +47,11 @@ class ProfileRepository {
     return (profiles: profiles, meta: meta);
   }
 
+  Future<ProfileModel> getProfileById(String id) async {
+    final data = await _remoteDataSource.getProfileById(id);
+    return ProfileModel.fromJson(data);
+  }
+
   Future<ProfileModel> getMyProfile() async {
     try {
       final data = await _remoteDataSource.getMyProfile();
