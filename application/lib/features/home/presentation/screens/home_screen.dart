@@ -342,7 +342,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   width: renderedW,
                   height: renderedH,
                   child: Image.asset(
-                    'assets/images/home_poster_v3.jpg',
+                    'assets/images/home_poster_clean_v4.jpg',
                     fit: BoxFit.fill,
                     width: renderedW,
                     height: renderedH,
