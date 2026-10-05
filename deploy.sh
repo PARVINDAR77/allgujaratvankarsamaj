@@ -294,11 +294,17 @@ echo "🔄 Executing atomic deployments..."
 
 # 1. NestJS (Background Process via Unix Socket)
 # Since this Hostinger plan doesn't support Passenger, we run it in the background on a Unix Socket
-echo "🔄 Restarting Node.js Backend..."
-pkill -f node || true
+echo "🔄 Starting Permanent Node.js Backend Supervisor..."
+pkill -f "start_backend_daemon.sh" 2>/dev/null || true
+pkill -f "dist/main.js" 2>/dev/null || true
 sleep 1
 rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
-(cd "$PROJECT_ROOT/next-nest/backend" && SOCKET_PATH=/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock NODE_ENV=production nohup node dist/main.js > "$PROJECT_ROOT/next-nest/backend/backend.log" 2>&1 &)
+chmod +x "$PROJECT_ROOT/start_backend_daemon.sh" "$PROJECT_ROOT/keep_backend_alive.sh"
+nohup "$PROJECT_ROOT/start_backend_daemon.sh" > /dev/null 2>&1 &
+sleep 2
+
+echo "⏰ Installing Keep-Alive Watchdog Cron Job (checks every minute)..."
+(crontab -l 2>/dev/null | grep -v "keep_backend_alive.sh"; echo "* * * * * $PROJECT_ROOT/keep_backend_alive.sh >/dev/null 2>&1") | crontab - 2>/dev/null || true
 
 # 2. Deploy Application (Atomic Merge: Next.js + Flutter)
 echo "Deploying Application..."

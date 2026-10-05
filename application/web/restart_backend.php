@@ -6,10 +6,12 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 $socket_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock';
 $socket_stream = 'unix://' . $socket_file;
 $backend_dir = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source/next-nest/backend';
+$project_dir = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source';
 $main_script = $backend_dir . '/dist/main.js';
 $log_file = $backend_dir . '/backend.log';
+$trigger_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/restart_trigger.txt';
 
-$action = $_GET['action'] ?? 'restart'; // default to restart when visited
+$action = $_GET['action'] ?? 'status'; // default to status check (safe, does not kill running socket)
 $format = $_GET['format'] ?? (isset($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false ? 'json' : 'html');
 
 function check_socket($socket_stream, $timeout = 2) {
@@ -21,7 +23,7 @@ function check_socket($socket_stream, $timeout = 2) {
     }
     
     // Test HTTP health probe
-    $req = "GET /api/v1/admin/health HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
+    $req = "GET /api/v1/health HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n";
     fwrite($fp, $req);
     $response = '';
     while (!feof($fp)) {
@@ -49,31 +51,20 @@ $results = [
 ];
 
 if ($action === 'restart' || $action === 'start') {
-    // 1. Kill dead/zombie node processes
-    if (function_exists('exec')) {
-        @exec('pkill -f "dist/main.js" 2>/dev/null', $kout1);
-        @exec('pkill -f node 2>/dev/null', $kout2);
-        $results['actions_taken'][] = 'Killed prior node processes';
-    }
-    
-    // 2. Remove stale socket
-    if (file_exists($socket_file)) {
-        @unlink($socket_file);
-        $results['actions_taken'][] = 'Removed stale socket file';
-    }
-    
-    // 3. Start node process
+    // 1. Touch trigger file for the watchdog script
+    @touch($trigger_file);
+    $results['actions_taken'][] = 'Created restart trigger file for background watchdog';
+
+    // 2. If CLI execution is allowed, invoke watchdog or restart directly
     if (function_exists('shell_exec')) {
-        $start_cmd = "cd " . escapeshellarg($backend_dir) . " && SOCKET_PATH=" . escapeshellarg($socket_file) . " NODE_ENV=production nohup node " . escapeshellarg($main_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
-        @shell_exec($start_cmd);
-        $results['actions_taken'][] = 'Executed background start command';
+        @shell_exec("bash " . escapeshellarg($project_dir . "/keep_backend_alive.sh") . " > /dev/null 2>&1 &");
+        $results['actions_taken'][] = 'Triggered keep_backend_alive.sh via shell_exec';
     } elseif (function_exists('exec')) {
-        $start_cmd = "cd " . escapeshellarg($backend_dir) . " && SOCKET_PATH=" . escapeshellarg($socket_file) . " NODE_ENV=production nohup node " . escapeshellarg($main_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
-        @exec($start_cmd);
-        $results['actions_taken'][] = 'Executed background start command via exec';
+        @exec("bash " . escapeshellarg($project_dir . "/keep_backend_alive.sh") . " > /dev/null 2>&1 &");
+        $results['actions_taken'][] = 'Triggered keep_backend_alive.sh via exec';
     }
-    
-    // 4. Poll for socket ready (up to 4 seconds)
+
+    // 3. Poll for socket ready (up to 4 seconds)
     $ready = false;
     for ($i = 0; $i < 16; $i++) {
         usleep(250000); // 250ms
@@ -88,7 +79,7 @@ if ($action === 'restart' || $action === 'start') {
 } else {
     // Just check status
     $results['probe'] = check_socket($socket_stream, 2);
-    $results['ready'] = $results['probe']['connected'];
+    $results['ready'] = !empty($results['probe']['connected']);
 }
 
 // Running node processes
