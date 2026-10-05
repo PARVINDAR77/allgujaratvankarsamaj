@@ -1,5 +1,12 @@
 RewriteEngine On
 
+# Correct MIME Types for WebAssembly, JS, and JSON
+<IfModule mod_mime.c>
+    AddType application/wasm .wasm
+    AddType application/javascript .js .mjs
+    AddType application/json .json
+</IfModule>
+
 # Disable caching for HTML and JS to ensure updates apply immediately
 <IfModule mod_headers.c>
     <FilesMatch "\.(html|js|json)$">

@@ -299,13 +299,18 @@ cp -r "$PROJECT_ROOT/application/build/web/"* "${APP_WEB_ROOT}_tmp/"
 DEPLOY_TS=$(date +%s)
 echo "Injecting cache-buster timestamp: $DEPLOY_TS ..."
 sed -i "s/flutter_bootstrap\.js[^\"']*\"/flutter_bootstrap.js?v=$DEPLOY_TS\"/g" "${APP_WEB_ROOT}_tmp/index.html" || true
-sed -i "s/main\.dart\.js[^\"']*\"/main.dart.js?v=$DEPLOY_TS\"/g" "${APP_WEB_ROOT}_tmp/flutter_bootstrap.js" || true
-sed -i 's/serviceWorkerSettings:[^}]*}/serviceWorkerSettings: null/g' "${APP_WEB_ROOT}_tmp/flutter_bootstrap.js" || true
 rm -f "${APP_WEB_ROOT}_tmp/flutter_service_worker.js"
 
 # Generate robust root .htaccess
 cat << 'EOF' > "${APP_WEB_ROOT}_tmp/.htaccess"
 RewriteEngine On
+
+# Correct MIME Types for WebAssembly, JS, and JSON
+<IfModule mod_mime.c>
+    AddType application/wasm .wasm
+    AddType application/javascript .js .mjs
+    AddType application/json .json
+</IfModule>
 
 # Disable caching for HTML and JS to ensure updates apply immediately
 <IfModule mod_headers.c>
