@@ -61,7 +61,9 @@ class MasterDataNotifier extends StateNotifier<MasterDataState> {
       state = MasterDataState(
         gujaratDistricts: districts.isNotEmpty ? districts : state.gujaratDistricts,
         educationDegrees: _parseList(data['educationDegrees']) ?? state.educationDegrees,
-        abroadCountries: _parseList(data['abroadCountries']) ?? state.abroadCountries,
+        abroadCountries: (_parseList(data['abroadCountries']) != null && _parseList(data['abroadCountries'])!.length > 50)
+            ? _parseList(data['abroadCountries'])!
+            : AppData.abroadCountries,
         privateSectors: _parseList(data['privateSectors']) ?? state.privateSectors,
         businessSectors: _parseList(data['businessSectors']) ?? state.businessSectors,
         incomeRanges: _parseList(data['incomeRanges']) ?? state.incomeRanges,

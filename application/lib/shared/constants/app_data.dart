@@ -332,6 +332,7 @@ class AppData {
     'Tunisia — ટ્યુનિશિયા', 'Türkiye — તુર્કિયે', 'Turkmenistan — તુર્કમેનિસ્તાન', 'Tuvalu — તુવાલુ', 'Uganda — યુગાન્ડા',
     'Ukraine — યુક્રેન', 'United Arab Emirates — સંયુક્ત આરબ અમીરાત', 'United Kingdom — યુનાઇટેડ કિંગડમ', 'United States — યુનાઇટેડ સ્ટેટ્સ', 'Uruguay — ઉરુગ્વે',
     'Uzbekistan — ઉઝબેકિસ્તાન', 'Vanuatu — વનુઆતુ', 'Vatican City — વેટિકન સિટી', 'Venezuela — વેનેઝુએલા', 'Vietnam — વિયેતનામ',
-    'Yemen — યમન', 'Zambia — ઝામ્બિયા', 'Zimbabwe — ઝિમ્બાબ્વે'
+    'Yemen — યમન', 'Zambia — ઝામ્બિયા', 'Zimbabwe — ઝિમ્બાબ્વે',
+    'Other Country (અન્ય દેશ)'
   ];
 }
