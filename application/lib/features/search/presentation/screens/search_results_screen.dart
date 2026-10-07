@@ -149,24 +149,6 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           },
         ),
         actions: [
-          TextButton.icon(
-            onPressed: () {
-              final lookingFor = _selectedGender == 'MALE' ? 'Groom' : (_selectedGender == 'FEMALE' ? 'Bride' : 'Groom');
-              context.push('/advanced-search?lookingFor=$lookingFor');
-            },
-            icon: const Icon(Icons.assignment_outlined, color: Color(0xFFFFD700), size: 17),
-            label: const Text(
-              'જૂનું ફોર્મ (Old Form)',
-              style: TextStyle(
-                color: Color(0xFFFFD700),
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
-              ),
-            ),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-            ),
-          ),
           IconButton(
             tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
             icon: const Icon(Icons.tune, color: Color(0xFFFFD700)),
@@ -180,8 +162,8 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             // Quick Search Input
             _buildSearchBar(),
 
-            // Old Advance Search Form Banner
-            _buildOldFormBanner(),
+            // Search by Filter Banner
+            _buildSearchByFilterBanner(),
 
             // Segmented Tab Selector for Boys / Girls / All
             _buildGenderSegmentedTabs(),
@@ -271,7 +253,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  Widget _buildOldFormBanner() {
+  Widget _buildSearchByFilterBanner() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 2, 16, 4),
       child: Material(
@@ -283,19 +265,19 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           },
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
+                colors: [Color(0xFFF0F7FF), Color(0xFFE0EFFF)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+              border: Border.all(color: Colors.blue.shade300, width: 1.2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  blurRadius: 4,
+                  color: Colors.blue.shade900.withValues(alpha: 0.06),
+                  blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
@@ -303,34 +285,35 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(5),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                    color: const Color(0xFF0056D2).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: const Icon(Icons.assignment_outlined, color: Color(0xFFB45309), size: 18),
+                  child: const Icon(Icons.filter_list_rounded, color: Color(0xFF0056D2), size: 20),
                 ),
-                const SizedBox(width: 10),
+                const SizedBox(width: 12),
                 const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'જૂનું વિસ્તૃત સર્ચ ફોર્મ (Old Advance Search Form)',
+                        'ફિલ્ટર દ્વારા શોધો (Search by Filter)',
                         style: TextStyle(
-                          color: Color(0xFF92400E),
+                          color: Color(0xFF0056D2),
                           fontWeight: FontWeight.bold,
-                          fontSize: 12.5,
+                          fontSize: 13,
                         ),
                       ),
+                      SizedBox(height: 2),
                       Text(
-                        'પરગણા, જિલ્લો, શિક્ષણ, નોકરી સાથે જૂની પદ્ધતિથી શોધો',
-                        style: TextStyle(color: Color(0xFFB45309), fontSize: 10.5),
+                        'પરગણા, જિલ્લો, શિક્ષણ, વ્યવસાય સાથે વિગતવાર શોધો',
+                        style: TextStyle(color: Colors.black54, fontSize: 11),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFB45309), size: 13),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF0056D2), size: 14),
               ],
             ),
           ),
@@ -504,7 +487,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                     const Divider(),
                     const SizedBox(height: 6),
 
-                    // Ultra-Prominent Top Card to open Old / Advance Search Form
+                    // Ultra-Prominent Top Card to open Detailed Search Filters
                     Material(
                       color: Colors.transparent,
                       child: InkWell(
@@ -539,46 +522,24 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                   color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.assignment_outlined, color: Color(0xFFFFD700), size: 22),
+                                child: const Icon(Icons.filter_list_rounded, color: Color(0xFFFFD700), size: 22),
                               ),
                               const SizedBox(width: 10),
                               const Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'જૂનું વિસ્તૃત ફોર્મ (Old Form)',
-                                          style: TextStyle(
-                                            fontSize: 13.5,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                        SizedBox(width: 6),
-                                        DecoratedBox(
-                                          decoration: BoxDecoration(
-                                            color: Color(0xFFFFD700),
-                                            borderRadius: BorderRadius.all(Radius.circular(6)),
-                                          ),
-                                          child: Padding(
-                                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                            child: Text(
-                                              'OPEN FORM',
-                                              style: TextStyle(
-                                                fontSize: 8.5,
-                                                fontWeight: FontWeight.w900,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      'વિસ્તૃત શોધ ફિલ્ટર (Detailed Search Filters)',
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                     SizedBox(height: 2),
                                     Text(
-                                      'પરગણા, ગામ, શિક્ષણ, નોકરી જૂના ફોર્મથી શોધો',
+                                      'પરગણા, ગામ, શિક્ષણ, નોકરી સાથે સંપૂર્ણ ફોર્મ ખોલો',
                                       style: TextStyle(fontSize: 10.5, color: Colors.white70),
                                     ),
                                   ],
@@ -703,7 +664,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                     // Side-by-Side Action Buttons: Old Form + Apply Filters
                     Row(
                       children: [
-                        // Old Advance Form Button (Prominent & directly visible)
+                        // Detailed Search Filters Button
                         Expanded(
                           flex: 2,
                           child: OutlinedButton.icon(
@@ -712,9 +673,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                               final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
                               context.push('/advanced-search?lookingFor=$lookingFor');
                             },
-                            icon: const Icon(Icons.assignment_outlined, color: Color(0xFF0056D2), size: 18),
+                            icon: const Icon(Icons.filter_alt_outlined, color: Color(0xFF0056D2), size: 18),
                             label: const Text(
-                              'જૂનું ફોર્મ\n(Old Form)',
+                              'વિસ્તૃત શોધ\n(Advance)',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 11.5,

@@ -99,46 +99,24 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                           color: Colors.white.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.assignment_outlined, color: Color(0xFFFFD700), size: 20),
+                        child: const Icon(Icons.filter_list_rounded, color: Color(0xFFFFD700), size: 20),
                       ),
                       const SizedBox(width: 10),
                       const Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'જૂનું વિસ્તૃત ફોર્મ (Old Form)',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                SizedBox(width: 6),
-                                DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFFFD700),
-                                    borderRadius: BorderRadius.all(Radius.circular(6)),
-                                  ),
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                    child: Text(
-                                      'OPEN',
-                                      style: TextStyle(
-                                        fontSize: 8.5,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
+                            Text(
+                              'વિસ્તૃત શોધ ફિલ્ટર (Detailed Search Filters)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                             SizedBox(height: 2),
                             Text(
-                              'પરગણા, જિલ્લો, શિક્ષણ, નોકરી જૂના ફોર્મથી શોધો',
+                              'પરગણા, જિલ્લો, શિક્ષણ, નોકરી સાથે સંપૂર્ણ ફોર્મ ખોલો',
                               style: TextStyle(fontSize: 10, color: Colors.white70),
                             ),
                           ],
@@ -231,7 +209,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: const Text('જૂનું ફોર્મ', style: TextStyle(color: Color(0xFF0056D2), fontWeight: FontWeight.bold)),
+                    child: const Text('વિસ્તૃત શોધ', style: TextStyle(color: Color(0xFF0056D2), fontWeight: FontWeight.bold)),
                   ),
                 ),
                 const SizedBox(width: 8),
