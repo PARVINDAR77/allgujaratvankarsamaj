@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../features/advertisements/providers/advertisements_provider.dart';
 import '../providers/notifications_provider.dart';
 import '../widgets/notifications_dialog.dart';
+import '../widgets/community_navigation_menu.dart';
 class MainPosterScreen extends ConsumerStatefulWidget {
   const MainPosterScreen({super.key});
 
@@ -35,43 +36,6 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
 
 
 
-  void _showImageModal(BuildContext context, String imagePath) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black, // Dark background
-      builder: (ctx) => Dialog.fullscreen(
-        backgroundColor: Colors.black,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Full screen static image view (no zooming allowed)
-            SizedBox(
-              width: double.infinity,
-              height: double.infinity,
-              child: Image.asset(
-                imagePath,
-                fit: BoxFit.contain,
-                alignment: Alignment.center,
-              ),
-            ),
-            // Custom Back button at the top
-            Positioned(
-              top: MediaQuery.of(ctx).padding.top + 10,
-              left: 10,
-              child: Material(
-                color: Colors.black54,
-                shape: const CircleBorder(),
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                  onPressed: () => Navigator.pop(ctx),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +82,21 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                               errorBuilder: (context, error, stackTrace) => Image.asset(
                                 'assets/images/1 (1).jpeg',
                                 fit: BoxFit.fill,
+                              ),
+                            ),
+                          ),
+
+                          // 2. Top-Left Menu Button (Hamburger)
+                          Positioned(
+                            left: w * 0.02,
+                            top: h * 0.015,
+                            width: w * 0.14,
+                            height: h * 0.045,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(30),
+                                onTap: () => showCommunityNavigationMenu(context, ref),
                               ),
                             ),
                           ),

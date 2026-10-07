@@ -69,7 +69,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           } else if (currentUser != null && !currentUser.isVerified) {
             context.go('/profile-under-review');
           } else {
-            context.go('/home');
+            context.go('/main-poster');
           }
         } else {
           final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'લોગિન નિષ્ફળ';

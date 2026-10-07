@@ -9,8 +9,6 @@ import '../../features/community/presentation/screens/pavan_prernadata_screen.da
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_poster_screen.dart';
-import '../../features/matrimonial_listing/presentation/screens/universal_listing_screen.dart';
-import '../../shared/models/profile_query_model.dart';
 import '../../features/family/presentation/screens/family_details_screen.dart';
 import '../../features/family/presentation/screens/family_directory_poster_screen.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
@@ -108,9 +106,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return null;
         }
 
-        // Verified member or admin attempting to visit auth pages or review page should go to /home
+        // Verified member or admin attempting to visit auth pages or review page should go to /main-poster
         if (isLoggingIn || location == '/profile-under-review') {
-          return '/home';
+          return '/main-poster';
         }
       }
 
