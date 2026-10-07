@@ -5,6 +5,8 @@
 # ========================================================
 
 export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH"
+export UV_THREADPOOL_SIZE=2
+export NODE_OPTIONS="--max-old-space-size=256"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/next-nest/backend"

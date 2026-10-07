@@ -12,6 +12,7 @@ PROJECT_ROOT="$SCRIPT_DIR"
 cd "$PROJECT_ROOT"
 
 echo "Pulling latest code from Git..."
+git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>/dev/null || true
 git pull origin main
 
 # ---------------------------------------------------------
