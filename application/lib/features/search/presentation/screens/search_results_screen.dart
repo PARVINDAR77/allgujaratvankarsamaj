@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,7 +19,12 @@ class SearchResultsScreen extends ConsumerStatefulWidget {
 
 class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+  Timer? _debounceTimer;
+
   late String _selectedGender; // 'MALE', 'FEMALE', or 'ALL'
+  String _selectedMaritalStatus = 'ALL';
+  RangeValues _ageRange = const RangeValues(18, 55);
 
   @override
   void initState() {
@@ -45,18 +51,54 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     });
   }
 
+  @override
+  void didUpdateWidget(covariant SearchResultsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialGender != widget.initialGender) {
+      final normalized = ProfileModel.normalizeGenderToApi(widget.initialGender);
+      final newGender = (normalized == 'MALE' || normalized == 'FEMALE') ? normalized : 'ALL';
+      if (_selectedGender != newGender) {
+        _onGenderTabChanged(newGender);
+      }
+    }
+  }
+
   void _onGenderTabChanged(String gender) {
     if (_selectedGender == gender) return;
     setState(() {
       _selectedGender = gender;
     });
-    final apiGender = gender == 'ALL' ? '' : gender;
-    ref.read(profileNotifierProvider.notifier).updateFilters(gender: apiGender);
+    _applyActiveFilters();
+  }
+
+  void _onSearchChanged(String val) {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 400), () {
+      _applyActiveFilters();
+    });
+  }
+
+  void _applyActiveFilters() {
+    final keyword = _searchController.text.trim();
+    final apiGender = _selectedGender == 'ALL' ? '' : _selectedGender;
+    final status = _selectedMaritalStatus == 'ALL' ? null : _selectedMaritalStatus;
+    final minAge = _ageRange.start.round();
+    final maxAge = _ageRange.end.round();
+
+    ref.read(profileNotifierProvider.notifier).updateFilters(
+      search: keyword.isNotEmpty ? keyword : null,
+      gender: apiGender,
+      status: status,
+      minAge: minAge > 18 ? minAge : null,
+      maxAge: maxAge < 55 ? maxAge : null,
+    );
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -77,7 +119,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF041126),
         title: const Text(
-          'Search Results (શોધ પરિણામો)',
+          'Search Profiles (ઉમેદવાર શોધ)',
           style: TextStyle(color: Color(0xFFFFD700), fontSize: 18, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
@@ -103,6 +145,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // Quick Search Input
+            _buildSearchBar(),
+
             // Segmented Tab Selector for Boys / Girls / All
             _buildGenderSegmentedTabs(),
 
@@ -149,17 +194,59 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  Widget _buildGenderSegmentedTabs() {
+  Widget _buildSearchBar() {
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.blue.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: _onSearchChanged,
+        decoration: InputDecoration(
+          hintText: 'નામ, આઈડી, ગામ કે શહેરથી શોધો...',
+          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+          prefixIcon: const Icon(Icons.search, color: Color(0xFF0056D2), size: 22),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
+                  onPressed: () {
+                    _searchController.clear();
+                    _onSearchChanged('');
+                  },
+                )
+              : IconButton(
+                  tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
+                  icon: const Icon(Icons.tune, color: Color(0xFF0056D2), size: 20),
+                  onPressed: () => _showFilterBottomSheet(context),
+                ),
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenderSegmentedTabs() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 4),
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 6,
             offset: const Offset(0, 2),
           ),
         ],
@@ -248,11 +335,14 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       backgroundColor: Colors.transparent,
       builder: (bottomSheetContext) {
         String tempGender = _selectedGender;
+        String tempMaritalStatus = _selectedMaritalStatus;
+        RangeValues tempAgeRange = _ageRange;
+
         return StatefulBuilder(
           builder: (ctx, setSheetState) {
             return Container(
               padding: EdgeInsets.only(
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
                 left: 20,
                 right: 20,
                 top: 16,
@@ -266,9 +356,10 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    // Handle bar
                     Center(
                       child: Container(
-                        width: 40,
+                        width: 44,
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
@@ -277,6 +368,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         ),
                       ),
                     ),
+                    // Title Row with Reset button
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -294,14 +386,22 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             ),
                           ],
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () => Navigator.pop(ctx),
+                        TextButton(
+                          onPressed: () {
+                            setSheetState(() {
+                              tempGender = 'ALL';
+                              tempMaritalStatus = 'ALL';
+                              tempAgeRange = const RangeValues(18, 55);
+                            });
+                          },
+                          child: const Text('રીસેટ (Reset)', style: TextStyle(color: Colors.red)),
                         ),
                       ],
                     ),
                     const Divider(),
                     const SizedBox(height: 12),
+
+                    // Gender Section
                     const Text(
                       'કોને શોધી રહ્યા છો? (Looking For)',
                       style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
@@ -337,37 +437,95 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 18),
+
+                    // Marital Status Section
+                    const Text(
+                      'વૈવાહિક સ્થિતિ (Marital Status)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _buildChoiceChipItem(
+                          label: 'બધા (All)',
+                          isSelected: tempMaritalStatus == 'ALL',
+                          onTap: () => setSheetState(() => tempMaritalStatus = 'ALL'),
+                        ),
+                        _buildChoiceChipItem(
+                          label: 'અપરિણીત (Never Married)',
+                          isSelected: tempMaritalStatus == 'NEVER_MARRIED',
+                          onTap: () => setSheetState(() => tempMaritalStatus = 'NEVER_MARRIED'),
+                        ),
+                        _buildChoiceChipItem(
+                          label: 'વિધુર / વિધવા (Widowed)',
+                          isSelected: tempMaritalStatus == 'WIDOWED',
+                          onTap: () => setSheetState(() => tempMaritalStatus = 'WIDOWED'),
+                        ),
+                        _buildChoiceChipItem(
+                          label: 'છૂટાછેડા (Divorced)',
+                          isSelected: tempMaritalStatus == 'DIVORCED',
+                          onTap: () => setSheetState(() => tempMaritalStatus = 'DIVORCED'),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Age Range Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'ઉંમર (Age Range)',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+                        ),
+                        Text(
+                          '${tempAgeRange.start.round()} થી ${tempAgeRange.end.round()} વર્ષ',
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0056D2), fontSize: 13),
+                        ),
+                      ],
+                    ),
+                    RangeSlider(
+                      values: tempAgeRange,
+                      min: 18,
+                      max: 60,
+                      divisions: 42,
+                      activeColor: const Color(0xFF0056D2),
+                      inactiveColor: Colors.blue.shade100,
+                      labels: RangeLabels(
+                        '${tempAgeRange.start.round()}',
+                        '${tempAgeRange.end.round()}',
+                      ),
+                      onChanged: (values) {
+                        setSheetState(() => tempAgeRange = values);
+                      },
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Apply Button
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        _onGenderTabChanged(tempGender);
+                        setState(() {
+                          _selectedGender = tempGender;
+                          _selectedMaritalStatus = tempMaritalStatus;
+                          _ageRange = tempAgeRange;
+                        });
+                        _applyActiveFilters();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0056D2),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         elevation: 2,
                       ),
                       child: const Text(
-                        'લાગુ કરો (Apply Filter)',
+                        'લાગુ કરો (Apply Filters)',
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    TextButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        final lookingFor = tempGender == 'FEMALE' ? 'Bride' : 'Groom';
-                        context.go('/search?lookingFor=$lookingFor');
-                      },
-                      icon: const Icon(Icons.manage_search, size: 20),
-                      label: const Text(
-                        'વિસ્તૃત શોધ ફોર્મ ખોલો (Full Advanced Search)',
-                        style: TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF0056D2)),
                     ),
                   ],
                 ),
@@ -376,6 +534,27 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           },
         );
       },
+    );
+  }
+
+  Widget _buildChoiceChipItem({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (_) => onTap(),
+      selectedColor: const Color(0xFF0056D2),
+      labelStyle: TextStyle(
+        color: isSelected ? Colors.white : Colors.black87,
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+        fontSize: 12,
+      ),
+      backgroundColor: Colors.grey.shade100,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      showCheckmark: false,
     );
   }
 
@@ -440,7 +619,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     }
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
         color: bgColor,
@@ -528,10 +707,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   ),
                 if (_selectedGender != 'ALL') const SizedBox(width: 12),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    final lookingFor = _selectedGender == 'FEMALE' ? 'Bride' : 'Groom';
-                    context.push('/search?lookingFor=$lookingFor');
-                  },
+                  onPressed: () => _showFilterBottomSheet(context),
                   icon: const Icon(Icons.tune, size: 16),
                   label: const Text('શોધ ફિલ્ટર બદલો (Adjust Filters)'),
                   style: ElevatedButton.styleFrom(
@@ -741,6 +917,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             child: const Text('View Profile (વિગતવાર જુઓ)', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
                           ),
                         ),
+                        const SizedBox(width: 8),
                         _FavoriteIconButton(profile: profile),
                       ],
                     ),

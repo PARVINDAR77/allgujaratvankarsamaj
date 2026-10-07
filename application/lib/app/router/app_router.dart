@@ -271,8 +271,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/search',
                 name: 'search',
                 builder: (context, state) {
-                  final lookingFor = state.uri.queryParameters['lookingFor'] ?? 'Groom';
-                  return AdvancedSearchScreen(initialLookingFor: lookingFor);
+                  final lookingFor = state.uri.queryParameters['lookingFor'];
+                  String? gender;
+                  if (lookingFor != null) {
+                    gender = (lookingFor.toLowerCase() == 'groom' || lookingFor.toLowerCase() == 'boy')
+                        ? 'MALE'
+                        : 'FEMALE';
+                  } else {
+                    gender = state.uri.queryParameters['gender'];
+                  }
+                  return SearchResultsScreen(initialGender: gender);
                 },
               ),
               GoRoute(
