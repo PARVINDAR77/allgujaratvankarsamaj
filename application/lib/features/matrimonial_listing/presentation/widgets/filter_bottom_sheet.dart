@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/models/profile_query_model.dart';
 
 class FilterBottomSheet extends ConsumerStatefulWidget {
@@ -61,20 +62,109 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
               ],
             ),
             const Divider(),
+            const SizedBox(height: 6),
+            
+            // Ultra-Prominent Top Card to open Old / Advance Search Form
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  final lookingFor = _currentQuery.gender == 'MALE' ? 'Groom' : (_currentQuery.gender == 'FEMALE' ? 'Bride' : 'Groom');
+                  context.push('/advanced-search?lookingFor=$lookingFor');
+                },
+                borderRadius: BorderRadius.circular(14),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF003C9E), Color(0xFF0056D2)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF0056D2).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.assignment_outlined, color: Color(0xFFFFD700), size: 20),
+                      ),
+                      const SizedBox(width: 10),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'જૂનું વિસ્તૃત ફોર્મ (Old Form)',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFFD700),
+                                    borderRadius: BorderRadius.all(Radius.circular(6)),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    child: Text(
+                                      'OPEN',
+                                      style: TextStyle(
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'પરગણા, જિલ્લો, શિક્ષણ, નોકરી જૂના ફોર્મથી શોધો',
+                              style: TextStyle(fontSize: 10, color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 14),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
             
             // Gender Filter
-            const Text('Gender', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text('Gender (જાતિ)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               children: [
-                _buildChoiceChip('All', _currentQuery.gender == null, () {
+                _buildChoiceChip('All (બધા)', _currentQuery.gender == null, () {
                   setState(() => _currentQuery = _currentQuery.copyWith(clearGender: true));
                 }),
-                _buildChoiceChip('Male', _currentQuery.gender == 'MALE', () {
+                _buildChoiceChip('Male (વર)', _currentQuery.gender == 'MALE', () {
                   setState(() => _currentQuery = _currentQuery.copyWith(gender: 'MALE'));
                 }),
-                _buildChoiceChip('Female', _currentQuery.gender == 'FEMALE', () {
+                _buildChoiceChip('Female (કન્યા)', _currentQuery.gender == 'FEMALE', () {
                   setState(() => _currentQuery = _currentQuery.copyWith(gender: 'FEMALE'));
                 }),
               ],
@@ -82,7 +172,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
             const SizedBox(height: 16),
 
             // Age Range Filter
-            const Text('Age Range', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const Text('Age Range (ઉંમર)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
             RangeSlider(
               values: RangeValues(
                 (_currentQuery.ageMin ?? 18).toDouble(),
@@ -106,10 +196,11 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
               },
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Expanded(
+                  flex: 1,
                   child: OutlinedButton(
                     onPressed: () {
                       final resetQuery = ProfileQueryModel(
@@ -119,14 +210,33 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                       Navigator.pop(context);
                     },
                     style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text('Reset'),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 8),
                 Expanded(
+                  flex: 1,
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      final lookingFor = _currentQuery.gender == 'MALE' ? 'Groom' : (_currentQuery.gender == 'FEMALE' ? 'Bride' : 'Groom');
+                      context.push('/advanced-search?lookingFor=$lookingFor');
+                    },
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEFF6FF),
+                      side: const BorderSide(color: Color(0xFF0056D2)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('જૂનું ફોર્મ', style: TextStyle(color: Color(0xFF0056D2), fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
                   child: ElevatedButton(
                     onPressed: () {
                       widget.onApply(_currentQuery);
@@ -135,7 +245,7 @@ class _FilterBottomSheetState extends ConsumerState<FilterBottomSheet> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0056D2),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text('Apply Filters'),

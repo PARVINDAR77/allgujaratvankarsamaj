@@ -149,6 +149,24 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           },
         ),
         actions: [
+          TextButton.icon(
+            onPressed: () {
+              final lookingFor = _selectedGender == 'MALE' ? 'Groom' : (_selectedGender == 'FEMALE' ? 'Bride' : 'Groom');
+              context.push('/advanced-search?lookingFor=$lookingFor');
+            },
+            icon: const Icon(Icons.assignment_outlined, color: Color(0xFFFFD700), size: 17),
+            label: const Text(
+              'જૂનું ફોર્મ (Old Form)',
+              style: TextStyle(
+                color: Color(0xFFFFD700),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+            ),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+            ),
+          ),
           IconButton(
             tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
             icon: const Icon(Icons.tune, color: Color(0xFFFFD700)),
@@ -161,6 +179,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           children: [
             // Quick Search Input
             _buildSearchBar(),
+
+            // Old Advance Search Form Banner
+            _buildOldFormBanner(),
 
             // Segmented Tab Selector for Boys / Girls / All
             _buildGenderSegmentedTabs(),
@@ -245,6 +266,74 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOldFormBanner() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 2, 16, 4),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            final lookingFor = _selectedGender == 'MALE' ? 'Groom' : (_selectedGender == 'FEMALE' ? 'Bride' : 'Groom');
+            context.push('/advanced-search?lookingFor=$lookingFor');
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFFBEB), Color(0xFFFEF3C7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFF59E0B), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.orange.withValues(alpha: 0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.assignment_outlined, color: Color(0xFFB45309), size: 18),
+                ),
+                const SizedBox(width: 10),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'જૂનું વિસ્તૃત સર્ચ ફોર્મ (Old Advance Search Form)',
+                        style: TextStyle(
+                          color: Color(0xFF92400E),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      Text(
+                        'પરગણા, જિલ્લો, શિક્ષણ, નોકરી સાથે જૂની પદ્ધતિથી શોધો',
+                        style: TextStyle(color: Color(0xFFB45309), fontSize: 10.5),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFB45309), size: 13),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -413,48 +502,91 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       ],
                     ),
                     const Divider(),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
 
-                    // Quick Banner to open Old / Advance Search Form
-                    InkWell(
-                      onTap: () {
-                        Navigator.pop(ctx);
-                        final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
-                        context.push('/advanced-search?lookingFor=$lookingFor');
-                      },
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.blue.shade200, width: 1.2),
-                        ),
-                        child: const Row(
-                          children: [
-                            Icon(Icons.manage_search_rounded, color: Color(0xFF0056D2), size: 20),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'વિસ્તૃત શોધ ફોર્મ (Advance Search Form)',
-                                    style: TextStyle(
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF0056D2),
-                                    ),
-                                  ),
-                                  Text(
-                                    'પરગણા, જિલ્લો, શિક્ષણ, નોકરી વગેરે જૂનું વિગતવાર ફોર્મ',
-                                    style: TextStyle(fontSize: 10.5, color: Colors.black54),
-                                  ),
-                                ],
-                              ),
+                    // Ultra-Prominent Top Card to open Old / Advance Search Form
+                    Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pop(ctx);
+                          final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
+                          context.push('/advanced-search?lookingFor=$lookingFor');
+                        },
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF003C9E), Color(0xFF0056D2)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                            Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF0056D2), size: 13),
-                          ],
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFF0056D2).withValues(alpha: 0.3),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(7),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Icon(Icons.assignment_outlined, color: Color(0xFFFFD700), size: 22),
+                              ),
+                              const SizedBox(width: 10),
+                              const Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'જૂનું વિસ્તૃત ફોર્મ (Old Form)',
+                                          style: TextStyle(
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                        SizedBox(width: 6),
+                                        DecoratedBox(
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFFFD700),
+                                            borderRadius: BorderRadius.all(Radius.circular(6)),
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                            child: Text(
+                                              'OPEN FORM',
+                                              style: TextStyle(
+                                                fontSize: 8.5,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'પરગણા, ગામ, શિક્ષણ, નોકરી જૂના ફોર્મથી શોધો',
+                                      style: TextStyle(fontSize: 10.5, color: Colors.white70),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 14),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -568,50 +700,67 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // Apply Button
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        setState(() {
-                          _selectedGender = tempGender;
-                          _selectedMaritalStatus = tempMaritalStatus;
-                          _ageRange = tempAgeRange;
-                        });
-                        _applyActiveFilters();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0056D2),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        elevation: 2,
-                      ),
-                      child: const Text(
-                        'લાગુ કરો (Apply Filters)',
-                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                      ),
+                    // Side-by-Side Action Buttons: Old Form + Apply Filters
+                    Row(
+                      children: [
+                        // Old Advance Form Button (Prominent & directly visible)
+                        Expanded(
+                          flex: 2,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
+                              context.push('/advanced-search?lookingFor=$lookingFor');
+                            },
+                            icon: const Icon(Icons.assignment_outlined, color: Color(0xFF0056D2), size: 18),
+                            label: const Text(
+                              'જૂનું ફોર્મ\n(Old Form)',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0056D2),
+                                height: 1.2,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              backgroundColor: const Color(0xFFEFF6FF),
+                              side: const BorderSide(color: Color(0xFF0056D2), width: 1.5),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        // Apply Filters Button
+                        Expanded(
+                          flex: 3,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              setState(() {
+                                _selectedGender = tempGender;
+                                _selectedMaritalStatus = tempMaritalStatus;
+                                _ageRange = tempAgeRange;
+                              });
+                              _applyActiveFilters();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0056D2),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                              elevation: 2,
+                            ),
+                            child: const Text(
+                              'લાગુ કરો (Apply Filters)',
+                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 10),
-
-                    // Secondary Action: Open full Advance Search Form
-                    OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
-                        context.push('/advanced-search?lookingFor=$lookingFor');
-                      },
-                      icon: const Icon(Icons.tune_rounded, color: Color(0xFF0056D2), size: 18),
-                      label: const Text(
-                        'જૂનું વિસ્તૃત શોધ ફોર્મ ખોલો (Open Advance Form)',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0056D2)),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF8FAFC),
-                        side: BorderSide(color: Colors.blue.shade300, width: 1.2),
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                    ),
                   ],
                 ),
               ),
