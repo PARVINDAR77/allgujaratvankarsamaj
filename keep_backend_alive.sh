@@ -15,6 +15,18 @@ TRIGGER_FILE="/home/u796269890/domains/allgujaratvankarsamaj.com/restart_trigger
 LOG_FILE="$BACKEND_DIR/backend.log"
 PID_FILE="$SCRIPT_DIR/backend_daemon.pid"
 
+# Load production environment variables
+if [ -f "$SCRIPT_DIR/.env.production" ]; then
+    set -a
+    source "$SCRIPT_DIR/.env.production"
+    set +a
+fi
+if [ -f "$BACKEND_DIR/.env" ]; then
+    set -a
+    source "$BACKEND_DIR/.env"
+    set +a
+fi
+
 # 1. If restart triggered via web/admin, restart everything
 if [ -f "$TRIGGER_FILE" ]; then
     rm -f "$TRIGGER_FILE"

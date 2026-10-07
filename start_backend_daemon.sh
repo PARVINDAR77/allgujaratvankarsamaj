@@ -18,6 +18,18 @@ echo "$$" > "$PID_FILE"
 
 cd "$BACKEND_DIR" || exit 1
 
+# Load production environment variables
+if [ -f "$SCRIPT_DIR/.env.production" ]; then
+    set -a
+    source "$SCRIPT_DIR/.env.production"
+    set +a
+fi
+if [ -f "$BACKEND_DIR/.env" ]; then
+    set -a
+    source "$BACKEND_DIR/.env"
+    set +a
+fi
+
 # Clean up any orphan node processes
 pkill -f "dist/main.js" 2>/dev/null || true
 sleep 1

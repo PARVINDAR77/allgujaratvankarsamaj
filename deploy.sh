@@ -113,6 +113,7 @@ echo "📌 Target Commit: $CURRENT_COMMIT"
 # ---------------------------------------------------------
 echo "⚙️ Setting up NestJS Backend..."
 cd "$PROJECT_ROOT/next-nest/backend"
+cp -f "$PROJECT_ROOT/.env.production" "$PROJECT_ROOT/next-nest/backend/.env" 2>/dev/null || true
 
 # On shared hosting, memory is limited. Do not wipe node_modules with npm ci
 if [ ! -d "node_modules" ]; then
@@ -342,7 +343,21 @@ sleep 1
 rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
 chmod +x "$PROJECT_ROOT/start_backend_daemon.sh" "$PROJECT_ROOT/keep_backend_alive.sh"
 nohup "$PROJECT_ROOT/start_backend_daemon.sh" > /dev/null 2>&1 &
-sleep 2
+
+echo "Waiting for backend socket to initialize..."
+SOCKET_FILE="/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock"
+for i in {1..8}; do
+    if [ -S "$SOCKET_FILE" ]; then
+        echo "✅ Backend socket initialized successfully."
+        break
+    fi
+    sleep 1
+done
+
+if [ ! -S "$SOCKET_FILE" ]; then
+    echo "⚠️ Backend socket not detected yet. Checking backend log:"
+    tail -n 25 "$PROJECT_ROOT/next-nest/backend/backend.log" 2>/dev/null || true
+fi
 
 echo "⏰ Installing Keep-Alive Watchdog Cron Job (checks every minute)..."
 (crontab -l 2>/dev/null | grep -v "keep_backend_alive.sh"; echo "* * * * * $PROJECT_ROOT/keep_backend_alive.sh >/dev/null 2>&1") | crontab - 2>/dev/null || true
@@ -704,7 +719,9 @@ fi
 # Rollback Logic
 # ---------------------------------------------------------
 if [ $HEALTH_FAIL -eq 1 ]; then
-    echo "≡ƒÜ¿ Health checks failed. Initiating application rollback..."
+    echo "🚨 Health checks failed! Outputting backend log to identify root cause:"
+    tail -n 35 "$PROJECT_ROOT/next-nest/backend/backend.log" 2>/dev/null || true
+    echo "🚨 Initiating application rollback..."
     
     if [ -d "$PREV_ADMIN_DIR" ]; then
         rm -rf "$ADMIN_WEB_ROOT"
