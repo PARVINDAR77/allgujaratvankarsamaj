@@ -2,6 +2,11 @@
 
 set -Eeuo pipefail
 
+# Ensure Node / NVM environment is loaded
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
+export PATH="$HOME/.nvm/versions/node/v20.20.2/bin:$HOME/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
+
 # =========================================================
 # Hostinger Shared Hosting Deployment Script
 # =========================================================
