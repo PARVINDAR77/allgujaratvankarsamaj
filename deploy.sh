@@ -100,36 +100,36 @@ password="${DB_PASSWORD}"
 EOF
 chmod 600 "$PROJECT_ROOT/mysql-backup.cnf"
 
-mysqldump --defaults-extra-file="$PROJECT_ROOT/mysql-backup.cnf" "$DB_NAME" | gzip > "$BACKUP_FILE"
+mysqldump --defaults-extra-file="$PROJECT_ROOT/mysql-backup.cnf" --single-transaction --quick --skip-lock-tables "$DB_NAME" | gzip > "$BACKUP_FILE"
 rm -f "$PROJECT_ROOT/mysql-backup.cnf"
 
-echo "Γ£à Backup created at $BACKUP_FILE"
-
-# ---------------------------------------------------------
-# Git Sync
-# ---------------------------------------------------------
-echo "≡ƒôÑ Pulling latest code from git..."
-git pull origin main
+echo "✅ Backup created at $BACKUP_FILE"
 
 CURRENT_COMMIT=$(git rev-parse --short HEAD)
-echo "≡ƒôî Target Commit: $CURRENT_COMMIT"
+echo "📌 Target Commit: $CURRENT_COMMIT"
 
 # ---------------------------------------------------------
 # Build & Deploy: NestJS Backend
 # ---------------------------------------------------------
-echo "ΓÜÖ∩╕Å Building NestJS Backend..."
+echo "⚙️ Setting up NestJS Backend..."
 cd "$PROJECT_ROOT/next-nest/backend"
 
 # On shared hosting, memory is limited. Do not wipe node_modules with npm ci
 if [ ! -d "node_modules" ]; then
+    echo "📦 Installing production dependencies..."
     npm install --omit=dev --no-audit || npm ci || true
 fi
 
-# Pin prisma generate to Prisma 5.22.0 (matching @prisma/client) to prevent Prisma 7 breaking schema url
-if [ -f "./node_modules/.bin/prisma" ]; then
-    ./node_modules/.bin/prisma generate || true
+# Only generate Prisma client if it is not present
+if [ ! -d "node_modules/@prisma/client" ] || [ ! -f "node_modules/@prisma/client/index.js" ]; then
+    echo "📦 Generating Prisma Client (5.22.0)..."
+    if [ -f "./node_modules/.bin/prisma" ]; then
+        ./node_modules/.bin/prisma generate || true
+    else
+        npx -y prisma@5.22.0 generate || true
+    fi
 else
-    npx -y prisma@5.22.0 generate || true
+    echo "✅ Prisma Client already installed."
 fi
 
 echo "Syncing Admin Roles in Database via MySQL CLI..."
@@ -289,9 +289,6 @@ else
 fi
 cd "$PROJECT_ROOT"
 
-echo "Pulling latest code from Git..."
-git pull origin main
-
 # ---------------------------------------------------------
 # Next.js Admin (Pre-built)
 # ---------------------------------------------------------
@@ -306,9 +303,6 @@ if [ ! -d "$PROJECT_ROOT/next-nest/frontend/out" ]; then
 fi
 echo "✅ Found pre-built Next.js output."
 cd "$PROJECT_ROOT"
-
-echo "Pulling latest code from Git..."
-git pull origin main
 
 # ---------------------------------------------------------
 # Build: Flutter Web (WARNING)
@@ -329,8 +323,9 @@ echo "📸 Preparing rollback artifacts..."
 PREV_ADMIN_DIR="${ADMIN_WEB_ROOT}_prev"
 PREV_APP_DIR="${APP_WEB_ROOT}_prev"
 
-[ -d "$ADMIN_WEB_ROOT" ] && cp -r "$ADMIN_WEB_ROOT" "$PREV_ADMIN_DIR"
-[ -d "$APP_WEB_ROOT" ] && cp -r "$APP_WEB_ROOT" "$PREV_APP_DIR"
+rm -rf "$PREV_ADMIN_DIR" "$PREV_APP_DIR"
+[ -d "$ADMIN_WEB_ROOT" ] && cp -a "$ADMIN_WEB_ROOT" "$PREV_ADMIN_DIR" 2>/dev/null || true
+[ -d "$APP_WEB_ROOT" ] && cp -a "$APP_WEB_ROOT" "$PREV_APP_DIR" 2>/dev/null || true
 
 # ---------------------------------------------------------
 # Atomic Replacements & Reloads
@@ -670,21 +665,23 @@ rm -rf "${APP_WEB_ROOT}_old"
 # ---------------------------------------------------------
 echo "≡ƒ⌐║ Running Health Checks..."
 
-# Give Hostinger Passenger time to spin up the Node app
-sleep 5 
+sleep 2
 
 check_health() {
     local url=$1
-    local retries=15
-    local wait=3
+    local retries=8
+    local wait=2
     while [ $retries -gt 0 ]; do
-        BODY=$(curl -s "$url"); HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$url"); echo "URL: $url | CODE: $HTTP_CODE | BODY: $BODY"
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 4 "$url" 2>/dev/null || echo "000")
         if [ "$HTTP_CODE" = "200" ]; then
+            echo "  ✅ $url -> HTTP 200 (OK)"
             return 0
         fi
+        echo "  ⏳ Waiting for $url (HTTP $HTTP_CODE)..."
         sleep $wait
         retries=$((retries - 1))
     done
+    echo "  ❌ $url health check failed (HTTP $HTTP_CODE)"
     return 1
 }
 
