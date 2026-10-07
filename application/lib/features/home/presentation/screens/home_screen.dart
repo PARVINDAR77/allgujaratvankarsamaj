@@ -169,26 +169,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
               ? constraints.maxHeight
               : MediaQuery.of(context).size.height;
 
-          // Fit 1080x1920 poster perfectly into the available screen area without distortion or overflow
+          // Responsive full-viewport configuration:
+          // On mobile, fill the screen edge-to-edge in width and height (above bottom bar)
+          // so all 5 community buttons, labels, and bottom banner are 100% visible with zero scrolling.
+          // On desktop/tablet, constrain to mobile phone aspect ratio centered on screen.
           final isMobile = screenW < 600;
-          final double maxAllowedW = isMobile ? screenW : 520.0;
-          final double maxAllowedH = screenH;
+          final double posterH = isMobile ? screenH : screenH.clamp(500.0, 920.0);
+          final double posterW = isMobile ? screenW : (posterH * (1080.0 / 1920.0)).clamp(360.0, 520.0);
 
-          // Uniform scale so that the 1080x1920 poster fits within available width AND height
-          // This guarantees that posterH <= screenH, so the entire poster and bottom icons
-          // fit cleanly above the bottom navigation bar with ZERO up/down scrolling.
-          final double scale = ((maxAllowedW / 1080.0) < (maxAllowedH / 1920.0))
-              ? (maxAllowedW / 1080.0)
-              : (maxAllowedH / 1920.0);
+          final double scaleX = posterW / 1080.0;
+          final double scaleY = posterH / 1920.0;
 
-          final double posterW = 1080.0 * scale;
-          final double posterH = 1920.0 * scale;
-
-          // Helper to convert poster coords to screen coords with uniform scaling
-          double sx(double x) => x * scale;
-          double sy(double y) => y * scale;
-          double sw(double w) => w * scale;
-          double sh(double h) => h * scale;
+          // Helper to convert poster coords to screen coords
+          double sx(double x) => x * scaleX;
+          double sy(double y) => y * scaleY;
+          double sw(double w) => w * scaleX;
+          double sh(double h) => h * scaleY;
 
           return SizedBox(
             width: screenW,
@@ -437,49 +433,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   ),
                 ),
 
-                // --- Golden Buttons (Middle section above Join Now) ---
-                // 1. Pavan Prernadata
-                Positioned(
-                  left: sx(20),
-                  top: sy(1415),
-                  width: sw(330),
-                  height: sh(130),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.push('/pavan-prernadata'),
-                    ),
-                  ),
-                ),
-                // 2. Samaj Super Stars
-                Positioned(
-                  left: sx(370),
-                  top: sy(1415),
-                  width: sw(340),
-                  height: sh(130),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.push('/samaj-super-stars-poster'),
-                    ),
-                  ),
-                ),
-                // 3. Family Directory
-                Positioned(
-                  left: sx(730),
-                  top: sy(1415),
-                  width: sw(330),
-                  height: sh(130),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.push('/family-details'),
-                    ),
-                  ),
-                ),
+
 
                 // --- Center Bottom ---
                 // 7. Join Now
