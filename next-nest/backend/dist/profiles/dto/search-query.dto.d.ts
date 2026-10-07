@@ -1,0 +1,34 @@
+import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "@prisma/client";
+import { ProfileSortField, SortOrder } from "./profile-query.dto";
+export declare class SearchQueryDto {
+    page?: number;
+    limit?: number;
+    gender?: Gender;
+    lookingFor?: string;
+    maritalStatus?: MaritalStatus;
+    ageMin?: number;
+    ageMax?: number;
+    ageFrom?: number;
+    ageTo?: number;
+    heightFrom?: string;
+    heightTo?: string;
+    districtId?: string;
+    talukaId?: string;
+    parganaId?: string;
+    pargana?: string;
+    city?: string;
+    education?: string;
+    occupation?: string;
+    occupationCategory?: string;
+    religion?: string;
+    annualIncome?: string;
+    diet?: string;
+    familyType?: string;
+    motherTongue?: string;
+    verification?: VerificationStatus;
+    status?: ProfileStatus;
+    search?: string;
+    keyword?: string;
+    sortBy?: ProfileSortField;
+    sortOrder?: SortOrder;
+}

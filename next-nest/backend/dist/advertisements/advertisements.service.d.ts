@@ -1,0 +1,91 @@
+import { PrismaService } from "../prisma/prisma.service";
+import { CreateAdvertisementDto } from "./dto/create-advertisement.dto";
+import { UpdateAdvertisementDto } from "./dto/update-advertisement.dto";
+export declare class AdvertisementsService {
+    private readonly prisma;
+    constructor(prisma: PrismaService);
+    create(createAdvertisementDto: CreateAdvertisementDto, adminId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        sortOrder: number;
+        imageUrl: string;
+        targetUrl: string | null;
+        placement: import(".prisma/client").$Enums.AdPlacement;
+        startAt: Date | null;
+        endAt: Date | null;
+        createdBy: string | null;
+    }>;
+    findAllPublic(): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        sortOrder: number;
+        imageUrl: string;
+        targetUrl: string | null;
+        placement: import(".prisma/client").$Enums.AdPlacement;
+        startAt: Date | null;
+        endAt: Date | null;
+        createdBy: string | null;
+    }[]>;
+    findAllAdmin(): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        sortOrder: number;
+        imageUrl: string;
+        targetUrl: string | null;
+        placement: import(".prisma/client").$Enums.AdPlacement;
+        startAt: Date | null;
+        endAt: Date | null;
+        createdBy: string | null;
+    }[]>;
+    findOne(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        sortOrder: number;
+        imageUrl: string;
+        targetUrl: string | null;
+        placement: import(".prisma/client").$Enums.AdPlacement;
+        startAt: Date | null;
+        endAt: Date | null;
+        createdBy: string | null;
+    }>;
+    update(id: string, updateAdvertisementDto: UpdateAdvertisementDto, adminId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        sortOrder: number;
+        imageUrl: string;
+        targetUrl: string | null;
+        placement: import(".prisma/client").$Enums.AdPlacement;
+        startAt: Date | null;
+        endAt: Date | null;
+        createdBy: string | null;
+    }>;
+    remove(id: string, adminId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        sortOrder: number;
+        imageUrl: string;
+        targetUrl: string | null;
+        placement: import(".prisma/client").$Enums.AdPlacement;
+        startAt: Date | null;
+        endAt: Date | null;
+        createdBy: string | null;
+    }>;
+}

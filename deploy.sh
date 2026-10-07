@@ -124,7 +124,13 @@ cd "$PROJECT_ROOT/next-nest/backend"
 if [ ! -d "node_modules" ]; then
     npm install --omit=dev --no-audit || npm ci || true
 fi
-npx prisma generate || true
+
+# Pin prisma generate to Prisma 5.22.0 (matching @prisma/client) to prevent Prisma 7 breaking schema url
+if [ -f "./node_modules/.bin/prisma" ]; then
+    ./node_modules/.bin/prisma generate || true
+else
+    npx -y prisma@5.22.0 generate || true
+fi
 
 echo "Syncing Admin Roles in Database via MySQL CLI..."
 mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "UPDATE users SET role = 'SUPER_ADMIN', status = 'ACTIVE' WHERE email IN ('admin@vankarsamaj.org', 'admin@vankarsamaj.com');" || true
@@ -275,7 +281,12 @@ ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mother_tongue\` 
 
 echo "Skipping Database Migrations (Hostinger RAM limits)..."
 # npx prisma migrate deploy
-npm run build
+if [ -f "dist/main.js" ]; then
+    echo "✅ Found pre-compiled NestJS backend (dist/main.js)."
+else
+    echo "⚙️ Building NestJS Backend..."
+    ./node_modules/.bin/nest build || npx -y @nestjs/cli@10.4.9 build || true
+fi
 cd "$PROJECT_ROOT"
 
 echo "Pulling latest code from Git..."

@@ -1,0 +1,103 @@
+import { PrismaService } from "../prisma/prisma.service";
+export declare class ParganasService {
+    private readonly prisma;
+    private readonly logger;
+    constructor(prisma: PrismaService);
+    private readonly initialParganas;
+    getPublicParganas(): Promise<{
+        name: string;
+        gujaratiName: string;
+        code: string;
+        description: string;
+        villageCount: string;
+        districtRegion: string;
+        leaderName: string;
+        contactPhone: string;
+        totalCount: number;
+        isActive: boolean;
+        id: string;
+    }[]>;
+    getAllAdminParganas(): Promise<{
+        name: string;
+        gujaratiName: string;
+        code: string;
+        description: string;
+        villageCount: string;
+        districtRegion: string;
+        leaderName: string;
+        contactPhone: string;
+        totalCount: number;
+        isActive: boolean;
+        id: string;
+    }[]>;
+    createPargana(data: {
+        name: string;
+        gujaratiName?: string;
+        code?: string;
+        description?: string;
+        villageCount?: string;
+        districtRegion?: string;
+        leaderName?: string;
+        contactPhone?: string;
+        totalCount?: number;
+        isActive?: boolean;
+    }): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        gujaratiName: string | null;
+        code: string | null;
+        contactPhone: string | null;
+        villageCount: string | null;
+        districtRegion: string | null;
+        leaderName: string | null;
+        manualCount: number | null;
+        totalCount: number;
+    }>;
+    updatePargana(id: string, data: Partial<{
+        name: string;
+        gujaratiName: string;
+        code: string;
+        description: string;
+        villageCount: string;
+        districtRegion: string;
+        leaderName: string;
+        contactPhone: string;
+        totalCount: number;
+        isActive: boolean;
+    }>): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        gujaratiName: string | null;
+        code: string | null;
+        contactPhone: string | null;
+        villageCount: string | null;
+        districtRegion: string | null;
+        leaderName: string | null;
+        manualCount: number | null;
+        totalCount: number;
+    }>;
+    deletePargana(id: string): Promise<{
+        description: string | null;
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        gujaratiName: string | null;
+        code: string | null;
+        contactPhone: string | null;
+        villageCount: string | null;
+        districtRegion: string | null;
+        leaderName: string | null;
+        manualCount: number | null;
+        totalCount: number;
+    }>;
+}
