@@ -94,12 +94,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Filter Profiles',
+            tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
             icon: const Icon(Icons.tune, color: Color(0xFFFFD700)),
-            onPressed: () {
-              final lookingFor = _selectedGender == 'FEMALE' ? 'Bride' : 'Groom';
-              context.push('/search?lookingFor=$lookingFor');
-            },
+            onPressed: () => _showFilterBottomSheet(context),
           ),
         ],
       ),
@@ -237,6 +234,177 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               color: isSelected ? Colors.white : Colors.black87,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               fontSize: 13,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFilterBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        String tempGender = _selectedGender;
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+                left: 20,
+                right: 20,
+                top: 16,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade300,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.tune, color: Color(0xFF0056D2), size: 22),
+                            SizedBox(width: 8),
+                            Text(
+                              'Filter Profiles (શોધ ફિલ્ટર)',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF0056D2),
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'કોને શોધી રહ્યા છો? (Looking For)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _buildModalChoiceChip(
+                            label: '👨 વર (Boys)',
+                            isSelected: tempGender == 'MALE',
+                            activeColor: const Color(0xFF0056D2),
+                            onTap: () => setSheetState(() => tempGender = 'MALE'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildModalChoiceChip(
+                            label: '👰 કન્યા (Girls)',
+                            isSelected: tempGender == 'FEMALE',
+                            activeColor: const Color(0xFFC2185B),
+                            onTap: () => setSheetState(() => tempGender = 'FEMALE'),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: _buildModalChoiceChip(
+                            label: '👥 બધા (All)',
+                            isSelected: tempGender == 'ALL',
+                            activeColor: const Color(0xFF041126),
+                            onTap: () => setSheetState(() => tempGender = 'ALL'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _onGenderTabChanged(tempGender);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0056D2),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 2,
+                      ),
+                      child: const Text(
+                        'લાગુ કરો (Apply Filter)',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        final lookingFor = tempGender == 'FEMALE' ? 'Bride' : 'Groom';
+                        context.go('/search?lookingFor=$lookingFor');
+                      },
+                      icon: const Icon(Icons.manage_search, size: 20),
+                      label: const Text(
+                        'વિસ્તૃત શોધ ફોર્મ ખોલો (Full Advanced Search)',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF0056D2)),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildModalChoiceChip({
+    required String label,
+    required bool isSelected,
+    required Color activeColor,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? activeColor : Colors.grey.shade300,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isSelected ? Colors.white : Colors.black87,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontSize: 12.5,
             ),
           ),
         ),

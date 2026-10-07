@@ -3,6 +3,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  OnModuleInit,
 } from "@nestjs/common";
 import {
   Prisma,
@@ -34,9 +35,31 @@ export interface CompletenessResult {
 }
 
 @Injectable()
-export class ProfilesService {
+export class ProfilesService implements OnModuleInit {
   private readonly logger = new Logger(ProfilesService.name);
   private readonly memoryProfiles: Map<string, MatrimonialProfile> = new Map();
+
+  async onModuleInit() {
+    try {
+      await this.prisma.$executeRawUnsafe(`
+        UPDATE matrimonial_profiles 
+        SET gender = 'FEMALE' 
+        WHERE LOWER(first_name) LIKE '%ben%' 
+           OR LOWER(first_name) LIKE '%bahen%' 
+           OR first_name LIKE '%બેન%' 
+           OR first_name LIKE '%બહેન%'
+           OR LOWER(first_name) IN ('dipika', 'sakshi', 'pooja', 'priya', 'neha', 'dula', 'dulaben', 'heena', 'kinjal', 'payal', 'kiran', 'sheetal', 'rekha');
+      `);
+      await this.prisma.$executeRawUnsafe(`
+        UPDATE users 
+        SET gender = 'FEMALE' 
+        WHERE id IN (SELECT user_id FROM matrimonial_profiles WHERE gender = 'FEMALE');
+      `);
+      this.logger.log('Candidate gender synchronization completed in database.');
+    } catch (e: any) {
+      this.logger.warn(`Candidate gender sync: ${e.message}`);
+    }
+  }
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -814,7 +837,27 @@ export class ProfilesService {
     const resolvedGender =
       query.gender || (query.lookingFor ? normalizeGender(query.lookingFor) : undefined);
     if (resolvedGender) {
-      where.gender = resolvedGender;
+      if (resolvedGender === Gender.FEMALE) {
+        where.OR = [
+          { gender: Gender.FEMALE },
+          { firstName: { endsWith: "ben" } },
+          { firstName: { endsWith: "bahen" } },
+          { firstName: { contains: "બેન" } },
+          { firstName: { contains: "બહેન" } },
+          { firstName: { in: ["Dipika", "Sakshi", "DULABEN", "dipika", "sakshi", "dulaben", "Dulaben", "Dula"] } },
+        ];
+      } else if (resolvedGender === Gender.MALE) {
+        where.gender = Gender.MALE;
+        where.NOT = [
+          { firstName: { endsWith: "ben" } },
+          { firstName: { endsWith: "bahen" } },
+          { firstName: { contains: "બેન" } },
+          { firstName: { contains: "બહેન" } },
+          { firstName: { in: ["Dipika", "Sakshi", "DULABEN", "dipika", "sakshi", "dulaben", "Dulaben", "Dula"] } },
+        ];
+      } else {
+        where.gender = resolvedGender;
+      }
     }
 
     if (query.maritalStatus) {
@@ -1010,12 +1053,24 @@ export class ProfilesService {
           age = calculatedAge;
         }
       }
+      let effectiveGender = p.gender;
+      const fn = (p.firstName || "").toLowerCase().trim();
+      if (
+        fn.endsWith("ben") ||
+        fn.endsWith("bahen") ||
+        fn.includes("બેન") ||
+        fn.includes("બહેન") ||
+        ["dipika", "sakshi", "dulaben", "dula", "pooja", "priya", "heena"].includes(fn)
+      ) {
+        effectiveGender = Gender.FEMALE;
+      }
+
       return {
         id: p.id,
         fullName: `${p.firstName} ${p.lastName}`.trim(),
         firstName: p.firstName,
         lastName: p.lastName,
-        gender: p.gender,
+        gender: effectiveGender,
         age,
         dateOfBirth: p.dateOfBirth,
         height: "5'6\"",

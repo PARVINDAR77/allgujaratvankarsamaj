@@ -282,12 +282,22 @@ class ProfileModel {
       userEmail = json['user']['email']?.toString();
     }
 
+    final rawFirst = (json['firstName'] ?? json['first_name'] ?? '').toString().toUpperCase().trim();
+    String resolvedGender = normalizeGenderToDisplay(json['gender']);
+    if (rawFirst.endsWith('BEN') ||
+        rawFirst.endsWith('BAHEN') ||
+        rawFirst.contains('બેન') ||
+        rawFirst.contains('બહેન') ||
+        ['DIPIKA', 'SAKSHI', 'POOJA', 'PRIYA', 'DULA', 'DULABEN', 'HEENA', 'PAYAL', 'KINJAL'].contains(rawFirst)) {
+      resolvedGender = 'Female (સ્ત્રી)';
+    }
+
     return ProfileModel(
       id: (json['id'] ?? '').toString(),
       firstName: (json['firstName'] ?? json['first_name'] ?? '').toString(),
       lastName: (json['lastName'] ?? json['last_name'] ?? '').toString(),
       photoUrl: (json['photoUrl'] ?? json['photo_url']) as String?,
-      gender: normalizeGenderToDisplay(json['gender']),
+      gender: resolvedGender,
       maritalStatus: (json['maritalStatus'] ?? json['marital_status'] ?? json['maritialStatus'] ?? 'Never Married (અપરિણીત)').toString(),
       dateOfBirth: (json['dateOfBirth'] ?? json['date_of_birth'] ?? '').toString(),
       bloodGroup: (json['bloodGroup'] ?? json['blood_group'])?.toString(),

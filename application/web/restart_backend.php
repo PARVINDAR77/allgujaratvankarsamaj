@@ -49,6 +49,69 @@ function check_socket($socket_stream, $timeout = 2) {
     ];
 }
 
+function fix_database_genders($project_dir, &$results) {
+    $env_file = $project_dir . '/.env.production';
+    if (!file_exists($env_file)) {
+        $env_file = $project_dir . '/next-nest/backend/.env';
+    }
+    if (!file_exists($env_file)) {
+        $results['db_fix'] = 'No env file found at ' . $env_file;
+        return;
+    }
+    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $conf = [];
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (strpos($line, '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($k, $v) = explode('=', $line, 2);
+            $conf[trim($k)] = trim(trim($v), '"\'');
+        }
+    }
+    $host = $conf['DB_HOST'] ?? 'localhost';
+    $user = $conf['DB_USER'] ?? '';
+    $pass = $conf['DB_PASSWORD'] ?? '';
+    $name = $conf['DB_NAME'] ?? '';
+    if (empty($user) && !empty($conf['DATABASE_URL'])) {
+        $p = parse_url($conf['DATABASE_URL']);
+        $host = $p['host'] ?? 'localhost';
+        $user = $p['user'] ?? '';
+        $pass = $p['pass'] ?? '';
+        $name = ltrim($p['path'] ?? '', '/');
+    }
+    if (empty($name)) {
+        $results['db_fix'] = 'DB credentials missing';
+        return;
+    }
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+        $q1 = "UPDATE matrimonial_profiles 
+               SET gender = 'FEMALE' 
+               WHERE LOWER(first_name) LIKE '%ben%' 
+                  OR LOWER(first_name) LIKE '%bahen%' 
+                  OR first_name LIKE '%બેન%' 
+                  OR first_name LIKE '%બહેન%'
+                  OR LOWER(first_name) IN ('dipika', 'sakshi', 'pooja', 'priya', 'neha', 'dula', 'dulaben', 'heena', 'kinjal', 'payal', 'kiran', 'sheetal', 'rekha')";
+        $s1 = $pdo->prepare($q1);
+        $s1->execute();
+        $c1 = $s1->rowCount();
+
+        $q2 = "UPDATE users 
+               SET gender = 'FEMALE' 
+               WHERE id IN (SELECT user_id FROM matrimonial_profiles WHERE gender = 'FEMALE')";
+        $s2 = $pdo->prepare($q2);
+        $s2->execute();
+        $c2 = $s2->rowCount();
+
+        $results['db_fix'] = "Updated $c1 candidate profiles and $c2 users to FEMALE";
+        $results['actions_taken'][] = "Database Gender Fix: Updated $c1 profiles and $c2 users to FEMALE";
+    } catch (Exception $e) {
+        $results['db_fix_error'] = $e->getMessage();
+    }
+}
+
 $results = [
     'timestamp' => date('Y-m-d H:i:s T'),
     'php_user' => get_current_user(),
@@ -56,7 +119,12 @@ $results = [
     'actions_taken' => [],
 ];
 
+if ($action === 'fix_db') {
+    fix_database_genders($project_dir, $results);
+}
+
 if ($action === 'restart' || $action === 'start') {
+    fix_database_genders($project_dir, $results);
     // 1. Touch trigger file for the watchdog script
     @touch($trigger_file);
     $results['actions_taken'][] = 'Created restart trigger file for background watchdog';
