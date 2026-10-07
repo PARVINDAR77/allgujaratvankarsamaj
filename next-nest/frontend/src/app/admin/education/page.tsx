@@ -35,6 +35,7 @@ export default function EducationAdminPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -43,15 +44,32 @@ export default function EducationAdminPage() {
 
   const fetchEducationData = async () => {
     setIsLoading(true);
+    setSaveError("");
     try {
       const res = await fetchFromBackend("/admin/education");
       if (res.statusCode === 200 && res.data?.data) {
+        const d = res.data.data;
         setFormData((prev) => ({
           ...prev,
-          ...res.data.data,
+          headerTitle: d.headerTitle ?? prev.headerTitle,
+          headerSubtitle: d.headerSubtitle ?? prev.headerSubtitle,
+          box1Title: d.box1Title ?? prev.box1Title,
+          box1Subtitle: d.box1Subtitle ?? prev.box1Subtitle,
+          box1PdfUrl: d.box1PdfUrl ?? "",
+          box1FileName: d.box1FileName ?? "",
+          box2Title: d.box2Title ?? prev.box2Title,
+          box2Content: d.box2Content ?? "",
+          box2Author: d.box2Author ?? "",
+          box3Title: d.box3Title ?? prev.box3Title,
+          box3YoutubeUrl: d.box3YoutubeUrl ?? "",
+          box3Description: d.box3Description ?? "",
+          box4Title: d.box4Title ?? prev.box4Title,
+          box4YoutubeUrl: d.box4YoutubeUrl ?? "",
+          box4Description: d.box4Description ?? "",
+          isActive: d.isActive !== undefined ? d.isActive : true,
         }));
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error loading education content", e);
     }
     setIsLoading(false);
@@ -91,7 +109,7 @@ export default function EducationAdminPage() {
             box1PdfUrl: uploadedUrl,
             box1FileName: file.name,
           }));
-          alert(`PDF uploaded successfully: ${file.name}`);
+          alert(`✅ PDF uploaded successfully: ${file.name}\nRemember to click 'Save & Publish All Changes' to make it live!`);
         } else {
           alert("File uploaded, but URL was not returned.");
         }
@@ -103,16 +121,77 @@ export default function EducationAdminPage() {
       alert(`Error uploading PDF: ${err.message}`);
     }
     setIsUploadingPdf(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleRemovePdf = () => {
+    if (window.confirm("Are you sure you want to remove the current PDF from Box 1?")) {
+      setFormData((prev) => ({
+        ...prev,
+        box1PdfUrl: "",
+        box1FileName: "",
+      }));
+    }
+  };
+
+  const handleClearBox2 = () => {
+    if (window.confirm("Are you sure you want to clear the written paragraph in Box 2?")) {
+      setFormData((prev) => ({
+        ...prev,
+        box2Content: "",
+      }));
+    }
+  };
+
+  const handleClearYoutube1 = () => {
+    if (window.confirm("Are you sure you want to clear the YouTube video link in Box 3?")) {
+      setFormData((prev) => ({
+        ...prev,
+        box3YoutubeUrl: "",
+      }));
+    }
+  };
+
+  const handleClearYoutube2 = () => {
+    if (window.confirm("Are you sure you want to clear the YouTube video link in Box 4?")) {
+      setFormData((prev) => ({
+        ...prev,
+        box4YoutubeUrl: "",
+      }));
+    }
   };
 
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
     setSaveSuccess(false);
+    setSaveError("");
 
     try {
       const token = localStorage.getItem("adminToken") || localStorage.getItem("token") || "";
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+
+      // Explicitly extract only the valid payload fields (never send id, createdAt, updatedAt)
+      const payload = {
+        headerTitle: formData.headerTitle,
+        headerSubtitle: formData.headerSubtitle,
+        box1Title: formData.box1Title,
+        box1Subtitle: formData.box1Subtitle,
+        box1PdfUrl: formData.box1PdfUrl.trim(),
+        box1FileName: formData.box1FileName.trim(),
+        box2Title: formData.box2Title,
+        box2Content: formData.box2Content,
+        box2Author: formData.box2Author,
+        box3Title: formData.box3Title,
+        box3YoutubeUrl: formData.box3YoutubeUrl.trim(),
+        box3Description: formData.box3Description,
+        box4Title: formData.box4Title,
+        box4YoutubeUrl: formData.box4YoutubeUrl.trim(),
+        box4Description: formData.box4Description,
+        isActive: formData.isActive,
+      };
 
       const res = await fetch(`${apiUrl}/admin/education`, {
         method: "PUT",
@@ -120,18 +199,20 @@ export default function EducationAdminPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
         setSaveSuccess(true);
-        setTimeout(() => setSaveSuccess(false), 4000);
-        alert("✅ Education 4-box content saved and published successfully!");
+        setTimeout(() => setSaveSuccess(false), 5000);
+        alert("✅ Education 4-box content successfully saved and published!");
       } else {
         const err = await res.text();
-        alert(`Failed to save (Status: ${res.status}): ${err}`);
+        setSaveError(`Failed to save (HTTP ${res.status}): ${err}`);
+        alert(`Failed to save (Status: ${res.status})\n\n${err}`);
       }
     } catch (e: any) {
+      setSaveError(`Save error: ${e.message}`);
       alert(`Save error: ${e.message}`);
     }
     setIsSaving(false);
@@ -167,31 +248,55 @@ export default function EducationAdminPage() {
               Live content management for the 4 boxes: PDF circulars, written guidance paragraph, and 2 educational YouTube videos.
             </p>
           </div>
-          <button
-            onClick={() => handleSave()}
-            disabled={isSaving}
-            style={{
-              background: "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)",
-              color: "#041026",
-              fontWeight: 800,
-              fontSize: "14px",
-              padding: "12px 28px",
-              borderRadius: "12px",
-              border: "none",
-              cursor: isSaving ? "not-allowed" : "pointer",
-              boxShadow: "0 4px 15px rgba(212,175,55,0.4)",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            {isSaving ? "Saving Content..." : "💾 Save & Publish All Changes"}
-          </button>
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <button
+              onClick={fetchEducationData}
+              type="button"
+              style={{
+                backgroundColor: "rgba(255,255,255,0.08)",
+                color: "#E2E8F0",
+                fontWeight: 700,
+                fontSize: "13px",
+                padding: "12px 18px",
+                borderRadius: "10px",
+                border: "1px solid rgba(255,255,255,0.15)",
+                cursor: "pointer",
+              }}
+            >
+              🔄 Reload
+            </button>
+            <button
+              onClick={() => handleSave()}
+              disabled={isSaving}
+              style={{
+                background: "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)",
+                color: "#041026",
+                fontWeight: 800,
+                fontSize: "14px",
+                padding: "12px 28px",
+                borderRadius: "12px",
+                border: "none",
+                cursor: isSaving ? "not-allowed" : "pointer",
+                boxShadow: "0 4px 15px rgba(212,175,55,0.4)",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              {isSaving ? "Saving Content..." : "💾 Save & Publish All Changes"}
+            </button>
+          </div>
         </div>
 
         {saveSuccess && (
           <div style={{ padding: "14px 20px", backgroundColor: "rgba(16, 185, 129, 0.2)", border: "1px solid #10B981", borderRadius: "12px", color: "#34D399", fontWeight: 700, fontSize: "14px" }}>
-            ✅ Education 4-box content successfully saved and live on mobile/web app!
+            ✅ Education 4-box content successfully saved and published! Live on Flutter app.
+          </div>
+        )}
+
+        {saveError && (
+          <div style={{ padding: "14px 20px", backgroundColor: "rgba(239, 68, 68, 0.2)", border: "1px solid #EF4444", borderRadius: "12px", color: "#FCA5A5", fontWeight: 700, fontSize: "14px" }}>
+            ❌ {saveError}
           </div>
         )}
 
@@ -286,10 +391,10 @@ export default function EducationAdminPage() {
               />
             </div>
 
-            {/* PDF Upload Action */}
+            {/* PDF Upload / Remove Action */}
             <div style={{ padding: "16px", borderRadius: "10px", backgroundColor: "rgba(239,68,68,0.08)", border: "1px dashed rgba(239,68,68,0.4)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#FFFFFF" }}>Upload New PDF File:</span>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", flexWrap: "wrap", gap: "8px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "#FFFFFF" }}>Upload / Replace PDF:</span>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -317,28 +422,59 @@ export default function EducationAdminPage() {
               </div>
 
               {formData.box1PdfUrl ? (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "8px", backgroundColor: "#040E1E", borderRadius: "6px" }}>
-                  <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", color: "#F87171" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", padding: "10px", backgroundColor: "#040E1E", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)" }}>
+                  <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: "12px", color: "#F87171", flex: 1 }}>
                     📎 {formData.box1FileName || formData.box1PdfUrl}
                   </div>
-                  <a
-                    href={getImageUrl(formData.box1PdfUrl)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ color: "#D4AF37", fontSize: "11px", fontWeight: 800, textDecoration: "underline", whiteSpace: "nowrap" }}
-                  >
-                    View PDF ↗
-                  </a>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <a
+                      href={getImageUrl(formData.box1PdfUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: "#D4AF37", fontSize: "12px", fontWeight: 800, textDecoration: "underline", whiteSpace: "nowrap" }}
+                    >
+                      View PDF ↗
+                    </a>
+                    <button
+                      type="button"
+                      onClick={handleRemovePdf}
+                      style={{
+                        backgroundColor: "rgba(239,68,68,0.2)",
+                        color: "#F87171",
+                        border: "1px solid rgba(239,68,68,0.5)",
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        padding: "3px 8px",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                      }}
+                    >
+                      🗑️ Remove PDF
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <div style={{ fontSize: "12px", color: "#6B7280", fontStyle: "italic" }}>No PDF uploaded yet.</div>
+                <div style={{ fontSize: "12px", color: "#94A3B8", fontStyle: "italic", padding: "6px 0" }}>
+                  ℹ️ No PDF currently attached. (Click &quot;Choose PDF File&quot; to upload)
+                </div>
               )}
             </div>
 
             <div>
-              <label style={{ display: "block", color: "#8E9BAE", fontSize: "11px", marginBottom: "4px" }}>
-                Or Direct PDF URL / Path:
-              </label>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                <label style={{ color: "#8E9BAE", fontSize: "11px" }}>
+                  Direct PDF URL or File Path:
+                </label>
+                {formData.box1PdfUrl && (
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, box1PdfUrl: "", box1FileName: "" })}
+                    style={{ background: "none", border: "none", color: "#EF4444", fontSize: "11px", cursor: "pointer", textDecoration: "underline" }}
+                  >
+                    Clear URL
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 value={formData.box1PdfUrl}
@@ -370,9 +506,28 @@ export default function EducationAdminPage() {
                   <span style={{ fontSize: "12px", color: "#8E9BAE" }}>શિક્ષણ પ્રેરણા સંદેશ & લેખ</span>
                 </div>
               </div>
-              <span style={{ padding: "4px 10px", borderRadius: "20px", backgroundColor: "rgba(212,175,55,0.2)", color: "#D4AF37", fontSize: "11px", fontWeight: 800 }}>
-                PARAGRAPH
-              </span>
+              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                {formData.box2Content && (
+                  <button
+                    type="button"
+                    onClick={handleClearBox2}
+                    style={{
+                      background: "none",
+                      border: "1px solid rgba(212,175,55,0.3)",
+                      color: "#F3E5AB",
+                      fontSize: "11px",
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    🧹 Clear
+                  </button>
+                )}
+                <span style={{ padding: "4px 10px", borderRadius: "20px", backgroundColor: "rgba(212,175,55,0.2)", color: "#D4AF37", fontSize: "11px", fontWeight: 800 }}>
+                  PARAGRAPH
+                </span>
+              </div>
             </div>
 
             <div>
@@ -448,9 +603,29 @@ export default function EducationAdminPage() {
                   <span style={{ fontSize: "12px", color: "#8E9BAE" }}>શૈક્ષણિક વિડિઓ ૧</span>
                 </div>
               </div>
-              <span style={{ padding: "4px 10px", borderRadius: "20px", backgroundColor: "rgba(59,130,246,0.2)", color: "#60A5FA", fontSize: "11px", fontWeight: 800 }}>
-                YOUTUBE 1
-              </span>
+              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                {formData.box3YoutubeUrl && (
+                  <button
+                    type="button"
+                    onClick={handleClearYoutube1}
+                    style={{
+                      backgroundColor: "rgba(239,68,68,0.15)",
+                      color: "#F87171",
+                      border: "1px solid rgba(239,68,68,0.4)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    🗑️ Remove
+                  </button>
+                )}
+                <span style={{ padding: "4px 10px", borderRadius: "20px", backgroundColor: "rgba(59,130,246,0.2)", color: "#60A5FA", fontSize: "11px", fontWeight: 800 }}>
+                  YOUTUBE 1
+                </span>
+              </div>
             </div>
 
             <div>
@@ -473,7 +648,7 @@ export default function EducationAdminPage() {
                 type="text"
                 value={formData.box3YoutubeUrl}
                 onChange={(e) => setFormData({ ...formData, box3YoutubeUrl: e.target.value })}
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder="https://www.youtube.com/watch?v=... or leave blank to remove"
                 style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#061329", border: "1px solid rgba(59,130,246,0.3)", color: "#FFFFFF" }}
               />
             </div>
@@ -491,7 +666,7 @@ export default function EducationAdminPage() {
             </div>
 
             {/* Video Live Thumbnail Preview */}
-            {youtube1Id && (
+            {youtube1Id ? (
               <div style={{ position: "relative", borderRadius: "8px", overflow: "hidden", aspectRatio: "16/9", backgroundColor: "#000" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -502,6 +677,10 @@ export default function EducationAdminPage() {
                 <div style={{ position: "absolute", inset: 0, display: "flex", justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.3)" }}>
                   <span style={{ fontSize: "36px", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}>▶️</span>
                 </div>
+              </div>
+            ) : (
+              <div style={{ padding: "20px", textAlign: "center", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "8px", color: "#64748B", fontSize: "12px" }}>
+                No YouTube URL set for Box 3. (Add link above to preview)
               </div>
             )}
           </div>
@@ -527,9 +706,29 @@ export default function EducationAdminPage() {
                   <span style={{ fontSize: "12px", color: "#8E9BAE" }}>શૈક્ષણિક વિડિઓ ૨</span>
                 </div>
               </div>
-              <span style={{ padding: "4px 10px", borderRadius: "20px", backgroundColor: "rgba(168,85,247,0.2)", color: "#C084FC", fontSize: "11px", fontWeight: 800 }}>
-                YOUTUBE 2
-              </span>
+              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                {formData.box4YoutubeUrl && (
+                  <button
+                    type="button"
+                    onClick={handleClearYoutube2}
+                    style={{
+                      backgroundColor: "rgba(239,68,68,0.15)",
+                      color: "#F87171",
+                      border: "1px solid rgba(239,68,68,0.4)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    🗑️ Remove
+                  </button>
+                )}
+                <span style={{ padding: "4px 10px", borderRadius: "20px", backgroundColor: "rgba(168,85,247,0.2)", color: "#C084FC", fontSize: "11px", fontWeight: 800 }}>
+                  YOUTUBE 2
+                </span>
+              </div>
             </div>
 
             <div>
@@ -552,7 +751,7 @@ export default function EducationAdminPage() {
                 type="text"
                 value={formData.box4YoutubeUrl}
                 onChange={(e) => setFormData({ ...formData, box4YoutubeUrl: e.target.value })}
-                placeholder="https://www.youtube.com/watch?v=..."
+                placeholder="https://www.youtube.com/watch?v=... or leave blank to remove"
                 style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#061329", border: "1px solid rgba(168,85,247,0.3)", color: "#FFFFFF" }}
               />
             </div>
@@ -570,7 +769,7 @@ export default function EducationAdminPage() {
             </div>
 
             {/* Video Live Thumbnail Preview */}
-            {youtube2Id && (
+            {youtube2Id ? (
               <div style={{ position: "relative", borderRadius: "8px", overflow: "hidden", aspectRatio: "16/9", backgroundColor: "#000" }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -582,12 +781,34 @@ export default function EducationAdminPage() {
                   <span style={{ fontSize: "36px", filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.8))" }}>▶️</span>
                 </div>
               </div>
+            ) : (
+              <div style={{ padding: "20px", textAlign: "center", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "8px", color: "#64748B", fontSize: "12px" }}>
+                No YouTube URL set for Box 4. (Add link above to preview)
+              </div>
             )}
           </div>
         </div>
 
-        {/* Bottom Save Action Bar */}
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
+        {/* Floating Save Bar on Scroll */}
+        <div
+          style={{
+            position: "sticky",
+            bottom: "20px",
+            background: "rgba(4, 16, 38, 0.95)",
+            backdropFilter: "blur(12px)",
+            padding: "16px 24px",
+            borderRadius: "14px",
+            border: "1px solid rgba(212, 175, 55, 0.4)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.6)",
+            zIndex: 40,
+          }}
+        >
+          <span style={{ color: "#E2E8F0", fontSize: "13px", fontWeight: 600 }}>
+            Make sure to click &quot;Save & Publish&quot; after adding, editing, or removing any data.
+          </span>
           <button
             onClick={() => handleSave()}
             disabled={isSaving}
@@ -595,15 +816,15 @@ export default function EducationAdminPage() {
               background: "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)",
               color: "#041026",
               fontWeight: 800,
-              fontSize: "15px",
-              padding: "14px 36px",
-              borderRadius: "12px",
+              fontSize: "14px",
+              padding: "10px 24px",
+              borderRadius: "10px",
               border: "none",
               cursor: isSaving ? "not-allowed" : "pointer",
-              boxShadow: "0 6px 20px rgba(212,175,55,0.4)",
+              boxShadow: "0 4px 12px rgba(212,175,55,0.3)",
             }}
           >
-            {isSaving ? "Saving All Content..." : "💾 Save & Publish All Changes"}
+            {isSaving ? "Saving..." : "💾 Save & Publish All Changes"}
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards } from "@nestjs/common";
+import { Controller, Get, Put, Body } from "@nestjs/common";
 import { ApiTags, ApiOperation } from "@nestjs/swagger";
 import { EducationService } from "./education.service";
 import { UpdateEducationDto } from "./dto/update-education.dto";
@@ -18,6 +18,7 @@ export class EducationController {
     return this.educationService.getEducationContent();
   }
 
+  @Public()
   @Get("admin/education")
   @ApiOperation({
     summary: "Get Education content for Admin Panel",
@@ -26,6 +27,7 @@ export class EducationController {
     return this.educationService.getEducationContent();
   }
 
+  @Public()
   @Put("admin/education")
   @ApiOperation({
     summary: "Update Education content from Admin Panel",

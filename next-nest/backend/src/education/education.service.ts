@@ -67,9 +67,30 @@ export class EducationService {
           "SELECT * FROM `education_content` WHERE id = 'default' LIMIT 1",
         );
         if (rows && rows.length > 0) {
+          const r = rows[0];
           return {
             statusCode: 200,
-            data: rows[0],
+            data: {
+              id: r.id,
+              headerTitle: r.header_title,
+              headerSubtitle: r.header_subtitle,
+              box1Title: r.box1_title,
+              box1Subtitle: r.box1_subtitle,
+              box1PdfUrl: r.box1_pdf_url || "",
+              box1FileName: r.box1_file_name || "",
+              box2Title: r.box2_title,
+              box2Content: r.box2_content || "",
+              box2Author: r.box2_author || "",
+              box3Title: r.box3_title,
+              box3YoutubeUrl: r.box3_youtube_url || "",
+              box3Description: r.box3_description || "",
+              box4Title: r.box4_title,
+              box4YoutubeUrl: r.box4_youtube_url || "",
+              box4Description: r.box4_description || "",
+              isActive: r.is_active === 1 || r.is_active === true,
+              createdAt: r.created_at,
+              updatedAt: r.updated_at,
+            },
           };
         }
       } catch (sqlErr: any) {
@@ -84,6 +105,14 @@ export class EducationService {
   }
 
   async updateEducationContent(dto: UpdateEducationDto) {
+    const { id, createdAt, updatedAt, ...cleanData } = dto as any;
+
+    // Normalize empty strings to null or string
+    const normalized: Record<string, any> = {};
+    for (const key of Object.keys(cleanData)) {
+      normalized[key] = cleanData[key];
+    }
+
     try {
       // @ts-ignore
       if (this.prisma.educationContent) {
@@ -91,13 +120,13 @@ export class EducationService {
         const updated = await this.prisma.educationContent.upsert({
           where: { id: "default" },
           update: {
-            ...dto,
+            ...normalized,
             updatedAt: new Date(),
           },
           create: {
             id: "default",
             ...DEFAULT_EDUCATION_DATA,
-            ...dto,
+            ...normalized,
           },
         });
         return {
@@ -116,72 +145,90 @@ export class EducationService {
         "SELECT id FROM `education_content` WHERE id = 'default' LIMIT 1",
       );
 
+      const headerTitle = normalized.headerTitle !== undefined ? normalized.headerTitle : DEFAULT_EDUCATION_DATA.headerTitle;
+      const headerSubtitle = normalized.headerSubtitle !== undefined ? normalized.headerSubtitle : DEFAULT_EDUCATION_DATA.headerSubtitle;
+      const box1Title = normalized.box1Title !== undefined ? normalized.box1Title : DEFAULT_EDUCATION_DATA.box1Title;
+      const box1Subtitle = normalized.box1Subtitle !== undefined ? normalized.box1Subtitle : DEFAULT_EDUCATION_DATA.box1Subtitle;
+      const box1PdfUrl = normalized.box1PdfUrl !== undefined ? (normalized.box1PdfUrl || null) : null;
+      const box1FileName = normalized.box1FileName !== undefined ? (normalized.box1FileName || null) : null;
+      const box2Title = normalized.box2Title !== undefined ? normalized.box2Title : DEFAULT_EDUCATION_DATA.box2Title;
+      const box2Content = normalized.box2Content !== undefined ? (normalized.box2Content || null) : null;
+      const box2Author = normalized.box2Author !== undefined ? (normalized.box2Author || null) : null;
+      const box3Title = normalized.box3Title !== undefined ? normalized.box3Title : DEFAULT_EDUCATION_DATA.box3Title;
+      const box3YoutubeUrl = normalized.box3YoutubeUrl !== undefined ? (normalized.box3YoutubeUrl || null) : null;
+      const box3Description = normalized.box3Description !== undefined ? (normalized.box3Description || null) : null;
+      const box4Title = normalized.box4Title !== undefined ? normalized.box4Title : DEFAULT_EDUCATION_DATA.box4Title;
+      const box4YoutubeUrl = normalized.box4YoutubeUrl !== undefined ? (normalized.box4YoutubeUrl || null) : null;
+      const box4Description = normalized.box4Description !== undefined ? (normalized.box4Description || null) : null;
+      const isActive = normalized.isActive !== undefined ? (normalized.isActive ? 1 : 0) : 1;
+
       if (existing && existing.length > 0) {
         await this.prisma.$executeRawUnsafe(
           `UPDATE \`education_content\` SET 
-            header_title = COALESCE(?, header_title),
-            header_subtitle = COALESCE(?, header_subtitle),
-            box1_title = COALESCE(?, box1_title),
-            box1_subtitle = COALESCE(?, box1_subtitle),
-            box1_pdf_url = COALESCE(?, box1_pdf_url),
-            box1_file_name = COALESCE(?, box1_file_name),
-            box2_title = COALESCE(?, box2_title),
-            box2_content = COALESCE(?, box2_content),
-            box2_author = COALESCE(?, box2_author),
-            box3_title = COALESCE(?, box3_title),
-            box3_youtube_url = COALESCE(?, box3_youtube_url),
-            box3_description = COALESCE(?, box3_description),
-            box4_title = COALESCE(?, box4_title),
-            box4_youtube_url = COALESCE(?, box4_youtube_url),
-            box4_description = COALESCE(?, box4_description),
-            is_active = COALESCE(?, is_active),
+            header_title = ?,
+            header_subtitle = ?,
+            box1_title = ?,
+            box1_subtitle = ?,
+            box1_pdf_url = ?,
+            box1_file_name = ?,
+            box2_title = ?,
+            box2_content = ?,
+            box2_author = ?,
+            box3_title = ?,
+            box3_youtube_url = ?,
+            box3_description = ?,
+            box4_title = ?,
+            box4_youtube_url = ?,
+            box4_description = ?,
+            is_active = ?,
             updated_at = NOW()
           WHERE id = 'default'`,
-          dto.headerTitle ?? null,
-          dto.headerSubtitle ?? null,
-          dto.box1Title ?? null,
-          dto.box1Subtitle ?? null,
-          dto.box1PdfUrl ?? null,
-          dto.box1FileName ?? null,
-          dto.box2Title ?? null,
-          dto.box2Content ?? null,
-          dto.box2Author ?? null,
-          dto.box3Title ?? null,
-          dto.box3YoutubeUrl ?? null,
-          dto.box3Description ?? null,
-          dto.box4Title ?? null,
-          dto.box4YoutubeUrl ?? null,
-          dto.box4Description ?? null,
-          dto.isActive !== undefined ? (dto.isActive ? 1 : 0) : null,
+          headerTitle,
+          headerSubtitle,
+          box1Title,
+          box1Subtitle,
+          box1PdfUrl,
+          box1FileName,
+          box2Title,
+          box2Content,
+          box2Author,
+          box3Title,
+          box3YoutubeUrl,
+          box3Description,
+          box4Title,
+          box4YoutubeUrl,
+          box4Description,
+          isActive,
         );
       } else {
         await this.prisma.$executeRawUnsafe(
           `INSERT INTO \`education_content\` 
             (id, header_title, header_subtitle, box1_title, box1_subtitle, box1_pdf_url, box1_file_name, box2_title, box2_content, box2_author, box3_title, box3_youtube_url, box3_description, box4_title, box4_youtube_url, box4_description, is_active)
           VALUES 
-            ('default', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)`,
-          dto.headerTitle || DEFAULT_EDUCATION_DATA.headerTitle,
-          dto.headerSubtitle || DEFAULT_EDUCATION_DATA.headerSubtitle,
-          dto.box1Title || DEFAULT_EDUCATION_DATA.box1Title,
-          dto.box1Subtitle || DEFAULT_EDUCATION_DATA.box1Subtitle,
-          dto.box1PdfUrl || DEFAULT_EDUCATION_DATA.box1PdfUrl,
-          dto.box1FileName || DEFAULT_EDUCATION_DATA.box1FileName,
-          dto.box2Title || DEFAULT_EDUCATION_DATA.box2Title,
-          dto.box2Content || DEFAULT_EDUCATION_DATA.box2Content,
-          dto.box2Author || DEFAULT_EDUCATION_DATA.box2Author,
-          dto.box3Title || DEFAULT_EDUCATION_DATA.box3Title,
-          dto.box3YoutubeUrl || DEFAULT_EDUCATION_DATA.box3YoutubeUrl,
-          dto.box3Description || DEFAULT_EDUCATION_DATA.box3Description,
-          dto.box4Title || DEFAULT_EDUCATION_DATA.box4Title,
-          dto.box4YoutubeUrl || DEFAULT_EDUCATION_DATA.box4YoutubeUrl,
-          dto.box4Description || DEFAULT_EDUCATION_DATA.box4Description,
+            ('default', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          headerTitle,
+          headerSubtitle,
+          box1Title,
+          box1Subtitle,
+          box1PdfUrl,
+          box1FileName,
+          box2Title,
+          box2Content,
+          box2Author,
+          box3Title,
+          box3YoutubeUrl,
+          box3Description,
+          box4Title,
+          box4YoutubeUrl,
+          box4Description,
+          isActive,
         );
       }
 
       return {
         statusCode: 200,
         message: "Education content updated successfully (SQL)",
-        data: dto,
+        data: normalized,
       };
     } catch (sqlErr: any) {
       this.logger.error(`Raw SQL update failed: ${sqlErr.message}`);

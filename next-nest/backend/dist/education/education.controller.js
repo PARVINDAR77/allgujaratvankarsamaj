@@ -44,6 +44,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EducationController.prototype, "getEducation", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Get)("admin/education"),
     (0, swagger_1.ApiOperation)({
         summary: "Get Education content for Admin Panel",
@@ -53,6 +54,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], EducationController.prototype, "getAdminEducation", null);
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Put)("admin/education"),
     (0, swagger_1.ApiOperation)({
         summary: "Update Education content from Admin Panel",

@@ -1,4 +1,7 @@
 export declare class UpdateEducationDto {
+    id?: any;
+    createdAt?: any;
+    updatedAt?: any;
     headerTitle?: string;
     headerSubtitle?: string;
     box1Title?: string;
