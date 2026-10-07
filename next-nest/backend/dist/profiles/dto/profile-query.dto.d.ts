@@ -1,4 +1,4 @@
-import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "@prisma/client";
+import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "../../common/enums/profile.enums";
 export declare enum SortOrder {
     ASC = "asc",
     DESC = "desc"

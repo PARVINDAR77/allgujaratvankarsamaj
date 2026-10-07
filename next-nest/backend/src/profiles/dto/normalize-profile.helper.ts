@@ -1,4 +1,4 @@
-import { Gender, MaritalStatus } from "@prisma/client";
+import { Gender, MaritalStatus } from "../../common/enums/profile.enums";
 
 /**
  * Normalizes any incoming string or value to Prisma Gender enum.

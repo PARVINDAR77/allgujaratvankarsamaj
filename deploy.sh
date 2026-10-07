@@ -121,16 +121,11 @@ if [ ! -d "node_modules" ]; then
     npm install --omit=dev --no-audit || npm ci || true
 fi
 
-# Only generate Prisma client if it is not present
-if [ ! -d "node_modules/@prisma/client" ] || [ ! -f "node_modules/@prisma/client/index.js" ]; then
-    echo "📦 Generating Prisma Client (5.22.0)..."
-    if [ -f "./node_modules/.bin/prisma" ]; then
-        ./node_modules/.bin/prisma generate || true
-    else
-        npx -y prisma@5.22.0 generate || true
-    fi
+echo "📦 Ensuring Prisma Client (5.22.0) is generated..."
+if [ -f "./node_modules/.bin/prisma" ]; then
+    ./node_modules/.bin/prisma generate || true
 else
-    echo "✅ Prisma Client already installed."
+    npx -y prisma@5.22.0 generate || true
 fi
 
 echo "Syncing Admin Roles in Database via MySQL CLI..."

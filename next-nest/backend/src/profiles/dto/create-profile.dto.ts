@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { Gender, MaritalStatus } from "@prisma/client";
+import { Gender, MaritalStatus } from "../../common/enums/profile.enums";
 import { Transform } from "class-transformer";
 import {
   IsEnum,

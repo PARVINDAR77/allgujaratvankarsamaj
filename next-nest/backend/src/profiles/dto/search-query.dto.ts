@@ -1,7 +1,7 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
 import { Transform, Type } from "class-transformer";
 import { IsEnum, IsInt, IsOptional, IsString, Min } from "class-validator";
-import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "@prisma/client";
+import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "../../common/enums/profile.enums";
 import { normalizeGender, normalizeMaritalStatus } from "./normalize-profile.helper";
 import { ProfileSortField, SortOrder } from "./profile-query.dto";
 

@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateProfileDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
-const client_1 = require("@prisma/client");
+const profile_enums_1 = require("../../common/enums/profile.enums");
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 const normalize_profile_helper_1 = require("./normalize-profile.helper");
@@ -60,23 +60,23 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: "Gender of the profile owner",
-        enum: client_1.Gender,
-        example: client_1.Gender.MALE,
+        enum: profile_enums_1.Gender,
+        example: profile_enums_1.Gender.MALE,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => (0, normalize_profile_helper_1.normalizeGender)(value) || value),
-    (0, class_validator_1.IsEnum)(client_1.Gender),
+    (0, class_validator_1.IsEnum)(profile_enums_1.Gender),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "gender", void 0);
 __decorate([
     (0, swagger_1.ApiProperty)({
         description: "Marital status",
-        enum: client_1.MaritalStatus,
-        example: client_1.MaritalStatus.NEVER_MARRIED,
+        enum: profile_enums_1.MaritalStatus,
+        example: profile_enums_1.MaritalStatus.NEVER_MARRIED,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => (0, normalize_profile_helper_1.normalizeMaritalStatus)(value) || value),
-    (0, class_validator_1.IsEnum)(client_1.MaritalStatus),
+    (0, class_validator_1.IsEnum)(profile_enums_1.MaritalStatus),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "maritalStatus", void 0);
 __decorate([

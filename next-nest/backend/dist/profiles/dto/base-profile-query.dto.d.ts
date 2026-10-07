@@ -1,4 +1,4 @@
-import { Gender, MaritalStatus, VerificationStatus } from "@prisma/client";
+import { Gender, MaritalStatus, VerificationStatus } from "../../common/enums/profile.enums";
 import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto";
 declare const ALLOWED_SORT_FIELDS: readonly ["createdAt", "updatedAt", "dateOfBirth", "firstName"];
 type SortField = (typeof ALLOWED_SORT_FIELDS)[number];

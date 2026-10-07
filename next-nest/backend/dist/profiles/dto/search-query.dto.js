@@ -13,7 +13,7 @@ exports.SearchQueryDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
-const client_1 = require("@prisma/client");
+const profile_enums_1 = require("../../common/enums/profile.enums");
 const normalize_profile_helper_1 = require("./normalize-profile.helper");
 const profile_query_dto_1 = require("./profile-query.dto");
 class SearchQueryDto {
@@ -40,10 +40,10 @@ __decorate([
     __metadata("design:type", Number)
 ], SearchQueryDto.prototype, "limit", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.Gender }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: profile_enums_1.Gender }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => (0, normalize_profile_helper_1.normalizeGender)(value)),
-    (0, class_validator_1.IsEnum)(client_1.Gender),
+    (0, class_validator_1.IsEnum)(profile_enums_1.Gender),
     __metadata("design:type", String)
 ], SearchQueryDto.prototype, "gender", void 0);
 __decorate([
@@ -53,10 +53,10 @@ __decorate([
     __metadata("design:type", String)
 ], SearchQueryDto.prototype, "lookingFor", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.MaritalStatus }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: profile_enums_1.MaritalStatus }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Transform)(({ value }) => (0, normalize_profile_helper_1.normalizeMaritalStatus)(value)),
-    (0, class_validator_1.IsEnum)(client_1.MaritalStatus),
+    (0, class_validator_1.IsEnum)(profile_enums_1.MaritalStatus),
     __metadata("design:type", String)
 ], SearchQueryDto.prototype, "maritalStatus", void 0);
 __decorate([
@@ -178,15 +178,15 @@ __decorate([
     __metadata("design:type", String)
 ], SearchQueryDto.prototype, "motherTongue", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.VerificationStatus }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: profile_enums_1.VerificationStatus }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(client_1.VerificationStatus),
+    (0, class_validator_1.IsEnum)(profile_enums_1.VerificationStatus),
     __metadata("design:type", String)
 ], SearchQueryDto.prototype, "verification", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({ enum: client_1.ProfileStatus }),
+    (0, swagger_1.ApiPropertyOptional)({ enum: profile_enums_1.ProfileStatus }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsEnum)(client_1.ProfileStatus),
+    (0, class_validator_1.IsEnum)(profile_enums_1.ProfileStatus),
     __metadata("design:type", String)
 ], SearchQueryDto.prototype, "status", void 0);
 __decorate([

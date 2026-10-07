@@ -1,4 +1,4 @@
-import { Gender, MaritalStatus } from "@prisma/client";
+import { Gender, MaritalStatus } from "../../common/enums/profile.enums";
 export declare class CreateProfileDto {
     firstName: string;
     lastName: string;

@@ -1,4 +1,4 @@
-import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "@prisma/client";
+import { Gender, MaritalStatus, ProfileStatus, VerificationStatus } from "../../common/enums/profile.enums";
 import { ProfileSortField, SortOrder } from "./profile-query.dto";
 export declare class SearchQueryDto {
     page?: number;

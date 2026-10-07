@@ -9,7 +9,7 @@ import {
   Min,
   IsInt,
 } from "class-validator";
-import { Gender, MaritalStatus, VerificationStatus } from "@prisma/client";
+import { Gender, MaritalStatus, VerificationStatus } from "../../common/enums/profile.enums";
 import { PaginationQueryDto } from "../../common/pagination/dto/pagination-query.dto";
 import { normalizeGender, normalizeMaritalStatus } from "./normalize-profile.helper";
 

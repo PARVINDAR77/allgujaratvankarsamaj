@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.normalizeGender = normalizeGender;
 exports.normalizeMaritalStatus = normalizeMaritalStatus;
-const client_1 = require("@prisma/client");
+const profile_enums_1 = require("../../common/enums/profile.enums");
 function normalizeGender(val) {
     if (val === null || val === undefined)
         return undefined;
@@ -18,7 +18,7 @@ function normalizeGender(val) {
         s.includes("GIRL") ||
         s.includes("સ્ત્રી") ||
         s.includes("કન્યા")) {
-        return client_1.Gender.FEMALE;
+        return profile_enums_1.Gender.FEMALE;
     }
     if (s === "MALE" ||
         s === "GROOM" ||
@@ -29,10 +29,10 @@ function normalizeGender(val) {
         s.includes("BOY") ||
         s.includes("પુરુષ") ||
         s.includes("વર")) {
-        return client_1.Gender.MALE;
+        return profile_enums_1.Gender.MALE;
     }
     if (s === "OTHER" || s.includes("OTHER") || s.includes("અન્ય")) {
-        return client_1.Gender.OTHER;
+        return profile_enums_1.Gender.OTHER;
     }
     return undefined;
 }
@@ -43,25 +43,25 @@ function normalizeMaritalStatus(val) {
     if (!s)
         return undefined;
     if (s.includes("DIVORC") || s.includes("છૂટાછેડા લીધેલ")) {
-        return client_1.MaritalStatus.DIVORCED;
+        return profile_enums_1.MaritalStatus.DIVORCED;
     }
     if (s.includes("WIDOW") || s.includes("વિધવા") || s.includes("વિધુર")) {
-        return client_1.MaritalStatus.WIDOWED;
+        return profile_enums_1.MaritalStatus.WIDOWED;
     }
     if (s.includes("SEPARAT") || s.includes("AWAITING") || s.includes("રાહમાં")) {
-        return client_1.MaritalStatus.SEPARATED;
+        return profile_enums_1.MaritalStatus.SEPARATED;
     }
     if (s.includes("NEVER") ||
         s.includes("UNMARRIED") ||
         s.includes("SINGLE") ||
         s.includes("અપરિણીત") ||
         s.includes("અવિવાહિત")) {
-        return client_1.MaritalStatus.NEVER_MARRIED;
+        return profile_enums_1.MaritalStatus.NEVER_MARRIED;
     }
     if ((s.includes("MARRIED") && !s.includes("NEVER") && !s.includes("UN")) ||
         (s.includes("પરિણીત") && !s.includes("અપરિણીત")) ||
         (s.includes("વિવાહિત") && !s.includes("અવિવાહિત"))) {
-        return client_1.MaritalStatus.MARRIED;
+        return profile_enums_1.MaritalStatus.MARRIED;
     }
     return undefined;
 }
