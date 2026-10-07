@@ -120,9 +120,11 @@ echo "≡ƒôî Target Commit: $CURRENT_COMMIT"
 echo "ΓÜÖ∩╕Å Building NestJS Backend..."
 cd "$PROJECT_ROOT/next-nest/backend"
 
-# On shared hosting, memory is limited. If 'npm ci' crashes, try 'npm install --production'
-npm ci
-npx prisma generate
+# On shared hosting, memory is limited. Do not wipe node_modules with npm ci
+if [ ! -d "node_modules" ]; then
+    npm install --omit=dev --no-audit || npm ci || true
+fi
+npx prisma generate || true
 
 echo "Syncing Admin Roles in Database via MySQL CLI..."
 mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "UPDATE users SET role = 'SUPER_ADMIN', status = 'ACTIVE' WHERE email IN ('admin@vankarsamaj.org', 'admin@vankarsamaj.com');" || true
