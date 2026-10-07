@@ -151,7 +151,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             if (!_isInitialized && profile.id != 'NEW') {
               _isInitialized = true;
               _gender = profile.displayGender;
-              _maritalStatus = profile.maritalStatus;
+              _maritalStatus = ProfileModel.normalizeMaritalStatusToDisplay(profile.maritalStatus);
               _bloodGroup = profile.bloodGroup;
               _isVankar = profile.isVankar == true ? 'Yes (હા)' : 'No (ના)';
               _religion = (profile.religion != null && profile.religion!.isNotEmpty) ? profile.religion! : 'Hindu (હિન્દુ)';
@@ -295,8 +295,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Marital Status (વૈવાહિક સ્થિતિ) *',
                 'Never Married (અપરિણીત)',
                 Icons.favorite_border,
-                ['Never Married (અપરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'],
-                value: _maritalStatus ?? profile.maritalStatus,
+                ['Never Married (અપરિણીત)', 'Married (પરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'],
+                value: _maritalStatus ?? ProfileModel.normalizeMaritalStatusToDisplay(profile.maritalStatus),
                 onChanged: (v) => setState(() => _maritalStatus = v),
               ),
               _buildDropdownField(
@@ -554,7 +554,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     final updateData = <String, dynamic>{};
                     final selectedGender = _gender ?? profile.displayGender;
                     updateData['gender'] = ProfileModel.normalizeGenderToApi(selectedGender);
-                    if (_maritalStatus != null) updateData['maritalStatus'] = _maritalStatus!.contains('Divorced') ? 'DIVORCED' : (_maritalStatus!.contains('Widow') ? 'WIDOWED' : (_maritalStatus!.contains('Awaiting') ? 'SEPARATED' : 'NEVER_MARRIED'));
+                    if (_maritalStatus != null) updateData['maritalStatus'] = ProfileModel.normalizeMaritalStatusToApi(_maritalStatus);
                     if (_casteCategory != null) updateData['caste'] = _casteCategory;
                     if (_dob != null) updateData['dateOfBirth'] = _dob;
                     if (_religion != 'Select Religion') updateData['religion'] = _religion;

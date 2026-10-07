@@ -224,7 +224,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'search-results',
         builder: (context, state) {
           final gender = state.uri.queryParameters['gender'];
-          return SearchResultsScreen(initialGender: gender);
+          final marital = state.uri.queryParameters['maritalStatus'] ?? state.uri.queryParameters['status'];
+          return SearchResultsScreen(
+            initialGender: gender,
+            initialMaritalStatus: marital,
+          );
         },
       ),
       GoRoute(
@@ -280,7 +284,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   } else {
                     gender = state.uri.queryParameters['gender'];
                   }
-                  return SearchResultsScreen(initialGender: gender);
+                  final marital = state.uri.queryParameters['maritalStatus'] ?? state.uri.queryParameters['status'];
+                  return SearchResultsScreen(
+                    initialGender: gender,
+                    initialMaritalStatus: marital,
+                  );
                 },
               ),
               GoRoute(

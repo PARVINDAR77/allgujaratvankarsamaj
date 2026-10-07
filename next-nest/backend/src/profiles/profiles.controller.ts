@@ -71,7 +71,7 @@ export class ProfilesController {
     schema: {
       example: {
         gender: ["MALE", "FEMALE", "OTHER"],
-        maritalStatus: ["NEVER_MARRIED", "DIVORCED", "WIDOWED", "SEPARATED"],
+        maritalStatus: ["NEVER_MARRIED", "MARRIED", "DIVORCED", "WIDOWED", "SEPARATED"],
       },
     },
   })

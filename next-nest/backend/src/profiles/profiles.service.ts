@@ -42,6 +42,15 @@ export class ProfilesService implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.prisma.$executeRawUnsafe(`
+        ALTER TABLE matrimonial_profiles MODIFY COLUMN marital_status ENUM('NEVER_MARRIED', 'MARRIED', 'DIVORCED', 'WIDOWED', 'SEPARATED') NOT NULL DEFAULT 'NEVER_MARRIED';
+      `);
+      this.logger.log('Matrimonial profile marital_status ENUM updated in database.');
+    } catch (e: any) {
+      this.logger.warn(`Candidate marital status enum sync: ${e.message}`);
+    }
+
+    try {
+      await this.prisma.$executeRawUnsafe(`
         UPDATE matrimonial_profiles 
         SET gender = 'FEMALE' 
         WHERE LOWER(first_name) LIKE '%ben%' 

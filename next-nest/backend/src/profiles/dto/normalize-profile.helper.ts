@@ -71,6 +71,13 @@ export function normalizeMaritalStatus(val: any): MaritalStatus | undefined {
   ) {
     return MaritalStatus.NEVER_MARRIED;
   }
+  if (
+    (s.includes("MARRIED") && !s.includes("NEVER") && !s.includes("UN")) ||
+    (s.includes("પરિણીત") && !s.includes("અપરિણીત")) ||
+    (s.includes("વિવાહિત") && !s.includes("અવિવાહિત"))
+  ) {
+    return MaritalStatus.MARRIED;
+  }
 
   return undefined;
 }

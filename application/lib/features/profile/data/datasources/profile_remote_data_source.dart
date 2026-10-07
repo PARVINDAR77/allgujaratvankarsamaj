@@ -21,6 +21,7 @@ class ProfileRemoteDataSource {
     String? search,
     String? gender,
     String? status,
+    String? maritalStatus,
     int? minAge,
     int? maxAge,
     String? districtId,
@@ -34,7 +35,13 @@ class ProfileRemoteDataSource {
 
       if (search != null && search.isNotEmpty) queryParams['search'] = search;
       if (gender != null && gender.isNotEmpty) queryParams['gender'] = gender;
-      if (status != null && status.isNotEmpty) queryParams['status'] = status;
+      final effectiveMarital = maritalStatus ?? (status != null && ['NEVER_MARRIED', 'MARRIED', 'DIVORCED', 'WIDOWED', 'SEPARATED'].contains(status) ? status : null);
+      if (effectiveMarital != null && effectiveMarital.isNotEmpty) {
+        queryParams['maritalStatus'] = effectiveMarital;
+      }
+      if (status != null && status.isNotEmpty && !['NEVER_MARRIED', 'MARRIED', 'DIVORCED', 'WIDOWED', 'SEPARATED'].contains(status)) {
+        queryParams['status'] = status;
+      }
       if (minAge != null) queryParams['ageMin'] = minAge;
       if (maxAge != null) queryParams['ageMax'] = maxAge;
       if (districtId != null && districtId.isNotEmpty) queryParams['districtId'] = districtId;

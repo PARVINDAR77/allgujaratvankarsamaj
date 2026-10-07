@@ -7,10 +7,12 @@ import '../../../../shared/models/profile_model.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
   final String? initialGender;
+  final String? initialMaritalStatus;
 
   const SearchResultsScreen({
     super.key,
     this.initialGender,
+    this.initialMaritalStatus,
   });
 
   @override
@@ -34,6 +36,13 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       _selectedGender = normalized;
     } else {
       _selectedGender = 'ALL';
+    }
+
+    if (widget.initialMaritalStatus != null && widget.initialMaritalStatus!.isNotEmpty) {
+      final normMarital = ProfileModel.normalizeMaritalStatusToApi(widget.initialMaritalStatus);
+      if (normMarital.isNotEmpty) {
+        _selectedMaritalStatus = normMarital;
+      }
     }
 
     _scrollController.addListener(() {
@@ -88,6 +97,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     ref.read(profileNotifierProvider.notifier).updateFilters(
       search: keyword.isNotEmpty ? keyword : null,
       gender: apiGender,
+      maritalStatus: status,
       status: status,
       minAge: minAge > 18 ? minAge : null,
       maxAge: maxAge < 55 ? maxAge : null,
@@ -107,10 +117,14 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     final profileState = ref.watch(profileNotifierProvider);
     final rawProfiles = profileState.profiles;
 
-    // Strict client-side gender separation to prevent any cross-contamination
+    // Strict client-side gender and marital status separation
     final profiles = rawProfiles.where((p) {
-      if (_selectedGender == 'MALE') return p.isMale;
-      if (_selectedGender == 'FEMALE') return p.isFemale;
+      if (_selectedGender == 'MALE' && !p.isMale) return false;
+      if (_selectedGender == 'FEMALE' && !p.isFemale) return false;
+      if (_selectedMaritalStatus != 'ALL') {
+        final norm = ProfileModel.normalizeMaritalStatusToApi(p.maritalStatus);
+        if (norm != _selectedMaritalStatus) return false;
+      }
       return true;
     }).toList();
 
@@ -458,6 +472,11 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           label: 'અપરિણીત (Never Married)',
                           isSelected: tempMaritalStatus == 'NEVER_MARRIED',
                           onTap: () => setSheetState(() => tempMaritalStatus = 'NEVER_MARRIED'),
+                        ),
+                        _buildChoiceChipItem(
+                          label: 'પરિણીત (Married)',
+                          isSelected: tempMaritalStatus == 'MARRIED',
+                          onTap: () => setSheetState(() => tempMaritalStatus = 'MARRIED'),
                         ),
                         _buildChoiceChipItem(
                           label: 'વિધુર / વિધવા (Widowed)',

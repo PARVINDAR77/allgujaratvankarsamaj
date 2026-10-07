@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../profile/providers/master_data_provider.dart';
+import '../../../../shared/models/profile_model.dart';
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
   final String initialLookingFor;
@@ -210,7 +211,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                       children: [
                         Expanded(child: _buildDropdown('હું શોધી રહ્યો છું (Looking For)', _lookingFor, ['Groom', 'Bride'], Icons.person, Colors.orange, (v) => setState(() => _lookingFor = v!))),
                         const SizedBox(width: 12),
-                        Expanded(child: _buildDropdown('વૈવાહિક સ્થિતિ (Marital Status)', _maritalStatus, ['Never Married', 'Widowed', 'Divorced'], Icons.favorite, Colors.red, (v) => setState(() => _maritalStatus = v!))),
+                        Expanded(child: _buildDropdown('વૈવાહિક સ્થિતિ (Marital Status)', _maritalStatus, ['Never Married', 'Married', 'Widowed', 'Divorced'], Icons.favorite, Colors.red, (v) => setState(() => _maritalStatus = v!))),
                       ],
                     ),
                     Row(
@@ -325,9 +326,12 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
 
                           // Perform the search
                           final keyword = _idSearchController.text.trim();
+                          final apiMarital = ProfileModel.normalizeMaritalStatusToApi(_maritalStatus);
                           ref.read(profileNotifierProvider.notifier).updateFilters(
                             search: keyword.isNotEmpty ? keyword : null,
                             gender: gender,
+                            maritalStatus: apiMarital,
+                            status: apiMarital,
                             minAge: minAge,
                             maxAge: maxAge,
                             occupationCategory: occCat,
@@ -342,7 +346,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                   Navigator.of(ctx).pop(); // Safely close the dialog
                                 }
                                 if (context.mounted) {
-                                  context.push('/search-results?gender=$gender');
+                                  context.push('/search-results?gender=$gender&maritalStatus=$apiMarital');
                                 }
                               });
                               return AlertDialog(

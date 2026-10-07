@@ -56,6 +56,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   String? _searchQuery;
   String? _gender;
   String? _status;
+  String? _maritalStatus;
   int? _minAge;
   int? _maxAge;
   String? _districtId;
@@ -71,6 +72,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     String? search,
     String? gender,
     String? status,
+    String? maritalStatus,
     int? minAge,
     int? maxAge,
     String? districtId,
@@ -79,6 +81,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     _searchQuery = search;
     _gender = gender;
     _status = status;
+    _maritalStatus = maritalStatus ?? status;
     _minAge = minAge;
     _maxAge = maxAge;
     _districtId = districtId;
@@ -96,6 +99,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         search: _searchQuery,
         gender: _gender,
         status: _status,
+        maritalStatus: _maritalStatus,
         minAge: _minAge,
         maxAge: _maxAge,
         districtId: _districtId,
@@ -130,6 +134,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
         search: _searchQuery,
         gender: _gender,
         status: _status,
+        maritalStatus: _maritalStatus,
         minAge: _minAge,
         maxAge: _maxAge,
         districtId: _districtId,

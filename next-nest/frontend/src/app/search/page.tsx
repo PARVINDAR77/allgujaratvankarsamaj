@@ -238,6 +238,7 @@ function SearchContent() {
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white focus:outline-none focus:border-[#FFE066] text-xs font-semibold"
               >
                 <option>Unmarried (અવિકસિત / અવિવાહિત)</option>
+                <option>Married (પરિણીત)</option>
                 <option>Divorced (છૂટાછેડા)</option>
                 <option>Widowed (વિધવા / વિધુર)</option>
               </select>

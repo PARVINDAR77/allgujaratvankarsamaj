@@ -188,6 +188,54 @@ class ProfileModel {
     return '';
   }
 
+  String get displayMaritalStatus => normalizeMaritalStatusToDisplay(maritalStatus);
+
+  static String normalizeMaritalStatusToDisplay(dynamic val) {
+    if (val == null) return 'Never Married (અપરિણીત)';
+    final s = val.toString().trim();
+    if (s.isEmpty) return 'Never Married (અપરિણીત)';
+
+    if (s.contains('DIVORCED') || (s.contains('Divorced') && !s.contains('Awaiting')) || (s.contains('છૂટાછેડા') && !s.contains('રાહમાં'))) {
+      return 'Divorced (છૂટાછેડા લીધેલ)';
+    }
+    if (s.contains('WIDOW') || s.contains('Widow') || s.contains('વિધવા') || s.contains('વિધુર')) {
+      return 'Widowed (વિધવા / વિધુર)';
+    }
+    if (s.contains('SEPARATED') || s.contains('Awaiting') || s.contains('રાહમાં')) {
+      return 'Awaiting Divorce (છૂટાછેડાની રાહમાં)';
+    }
+    if ((s.contains('MARRIED') && !s.contains('NEVER')) ||
+        (s.contains('Married') && !s.contains('Never')) ||
+        (s.contains('પરિણીત') && !s.contains('અપરિણીત')) ||
+        (s.contains('વિવાહિત') && !s.contains('અવિવાહિત'))) {
+      return 'Married (પરિણીત)';
+    }
+    return 'Never Married (અપરિણીત)';
+  }
+
+  static String normalizeMaritalStatusToApi(dynamic val) {
+    if (val == null) return 'NEVER_MARRIED';
+    final s = val.toString().trim();
+    if (s.isEmpty) return 'NEVER_MARRIED';
+
+    if (s.contains('DIVORCED') || (s.contains('Divorced') && !s.contains('Awaiting')) || (s.contains('છૂટાછેડા') && !s.contains('રાહમાં'))) {
+      return 'DIVORCED';
+    }
+    if (s.contains('WIDOW') || s.contains('Widow') || s.contains('વિધવા') || s.contains('વિધુર')) {
+      return 'WIDOWED';
+    }
+    if (s.contains('SEPARATED') || s.contains('Awaiting') || s.contains('રાહમાં')) {
+      return 'SEPARATED';
+    }
+    if ((s.contains('MARRIED') && !s.contains('NEVER')) ||
+        (s.contains('Married') && !s.contains('Never')) ||
+        (s.contains('પરિણીત') && !s.contains('અપરિણીત')) ||
+        (s.contains('વિવાહિત') && !s.contains('અવિવાહિત'))) {
+      return 'MARRIED';
+    }
+    return 'NEVER_MARRIED';
+  }
+
   String? get fullPhotoUrl {
     if (photoUrl == null || photoUrl!.trim().isEmpty) return null;
     final clean = photoUrl!.trim();
@@ -298,7 +346,7 @@ class ProfileModel {
       lastName: (json['lastName'] ?? json['last_name'] ?? '').toString(),
       photoUrl: (json['photoUrl'] ?? json['photo_url']) as String?,
       gender: resolvedGender,
-      maritalStatus: (json['maritalStatus'] ?? json['marital_status'] ?? json['maritialStatus'] ?? 'Never Married (અપરિણીત)').toString(),
+      maritalStatus: normalizeMaritalStatusToDisplay(json['maritalStatus'] ?? json['marital_status'] ?? json['maritialStatus']),
       dateOfBirth: (json['dateOfBirth'] ?? json['date_of_birth'] ?? '').toString(),
       bloodGroup: (json['bloodGroup'] ?? json['blood_group'])?.toString(),
       isVankar: (json['isVankar'] ?? json['is_vankar']) as bool? ?? true,
@@ -349,11 +397,7 @@ class ProfileModel {
       'lastName': lastName,
       'photoUrl': photoUrl,
       'gender': normalizeGenderToApi(gender),
-      'maritalStatus': maritalStatus.contains('Divorced')
-          ? 'DIVORCED'
-          : (maritalStatus.contains('Widow')
-              ? 'WIDOWED'
-              : (maritalStatus.contains('Awaiting') ? 'SEPARATED' : 'NEVER_MARRIED')),
+      'maritalStatus': normalizeMaritalStatusToApi(maritalStatus),
       'dateOfBirth': dateOfBirth,
       'education': education,
       'occupation': employmentType,
