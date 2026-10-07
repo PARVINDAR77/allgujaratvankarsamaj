@@ -43,6 +43,7 @@ export declare class VerificationsService {
         profileId: string;
     })[]>;
     getMyVerificationStatus(userId: string): Promise<{
+        hasProfile: boolean;
         isVerified: boolean;
         profileStatus: import(".prisma/client").$Enums.ProfileStatus;
         latestRequest: {

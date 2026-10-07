@@ -116,6 +116,12 @@ export class VerificationsService {
             status: ProfileStatus.APPROVED,
           },
         });
+        if (request.profile && request.profile.userId) {
+          await tx.user.update({
+            where: { id: request.profile.userId },
+            data: { status: "ACTIVE" as any },
+          });
+        }
       } else if (newStatus === VerificationStatus.REJECTED) {
         await tx.matrimonialProfile.update({
           where: { id: request.profileId },
@@ -164,38 +170,27 @@ export class VerificationsService {
   }
 
   async getMyVerificationStatus(userId: string) {
-    let profile = await this.prisma.matrimonialProfile.findUnique({
+    const profile = await this.prisma.matrimonialProfile.findUnique({
       where: { userId },
     });
 
     if (!profile) {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-      });
-      if (user) {
-        const nameParts = (user.name || "User").trim().split(" ");
-        profile = await this.prisma.matrimonialProfile.create({
-          data: {
-            userId,
-            firstName: nameParts[0] || "User",
-            lastName: nameParts.slice(1).join(" ") || "Member",
-            gender: user.gender || Gender.MALE,
-            dateOfBirth: new Date(2000, 0, 1),
-            maritalStatus: MaritalStatus.NEVER_MARRIED,
-            status: ProfileStatus.PENDING,
-            isVerified: false,
-          },
-        });
-      }
-    }
-
-    if (!profile) {
       return {
+        hasProfile: false,
         isVerified: false,
         profileStatus: ProfileStatus.PENDING,
         latestRequest: null,
       };
     }
+
+    const isStub =
+      profile.firstName === "User" &&
+      profile.lastName === "Member" &&
+      !profile.religion &&
+      !profile.education &&
+      !profile.caste;
+
+    const hasProfile = !isStub;
 
     const latestRequest = await this.prisma.verificationRequest.findFirst({
       where: { profileId: profile.id },
@@ -203,7 +198,8 @@ export class VerificationsService {
     });
 
     return {
-      isVerified: profile.isVerified,
+      hasProfile,
+      isVerified: profile.isVerified === true && profile.status === ProfileStatus.APPROVED,
       profileStatus: profile.status,
       latestRequest: latestRequest
         ? {

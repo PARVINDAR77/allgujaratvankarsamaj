@@ -97,6 +97,12 @@ let VerificationsService = class VerificationsService {
                         status: client_1.ProfileStatus.APPROVED,
                     },
                 });
+                if (request.profile && request.profile.userId) {
+                    await tx.user.update({
+                        where: { id: request.profile.userId },
+                        data: { status: "ACTIVE" },
+                    });
+                }
             }
             else if (newStatus === client_1.VerificationStatus.REJECTED) {
                 await tx.matrimonialProfile.update({
@@ -141,42 +147,30 @@ let VerificationsService = class VerificationsService {
         });
     }
     async getMyVerificationStatus(userId) {
-        let profile = await this.prisma.matrimonialProfile.findUnique({
+        const profile = await this.prisma.matrimonialProfile.findUnique({
             where: { userId },
         });
         if (!profile) {
-            const user = await this.prisma.user.findUnique({
-                where: { id: userId },
-            });
-            if (user) {
-                const nameParts = (user.name || "User").trim().split(" ");
-                profile = await this.prisma.matrimonialProfile.create({
-                    data: {
-                        userId,
-                        firstName: nameParts[0] || "User",
-                        lastName: nameParts.slice(1).join(" ") || "Member",
-                        gender: user.gender || client_1.Gender.MALE,
-                        dateOfBirth: new Date(2000, 0, 1),
-                        maritalStatus: client_1.MaritalStatus.NEVER_MARRIED,
-                        status: client_1.ProfileStatus.PENDING,
-                        isVerified: false,
-                    },
-                });
-            }
-        }
-        if (!profile) {
             return {
+                hasProfile: false,
                 isVerified: false,
                 profileStatus: client_1.ProfileStatus.PENDING,
                 latestRequest: null,
             };
         }
+        const isStub = profile.firstName === "User" &&
+            profile.lastName === "Member" &&
+            !profile.religion &&
+            !profile.education &&
+            !profile.caste;
+        const hasProfile = !isStub;
         const latestRequest = await this.prisma.verificationRequest.findFirst({
             where: { profileId: profile.id },
             orderBy: { createdAt: "desc" },
         });
         return {
-            isVerified: profile.isVerified,
+            hasProfile,
+            isVerified: profile.isVerified === true && profile.status === client_1.ProfileStatus.APPROVED,
             profileStatus: profile.status,
             latestRequest: latestRequest
                 ? {

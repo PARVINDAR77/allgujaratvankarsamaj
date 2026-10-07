@@ -40,12 +40,27 @@ class _ProfileUnderReviewScreenState
           _isLoadingStatus = false;
         });
 
+        // If candidate does NOT have a profile yet, guide them directly to profile creation
+        if (_statusData?['hasProfile'] == false) {
+          if (mounted) {
+            context.go('/profile/create');
+            return;
+          }
+        }
+
         // If backend already marked profile as verified, update auth and go home!
         if (_statusData?['isVerified'] == true) {
           await ref
               .read(authNotifierProvider.notifier)
               .checkVerificationStatus();
           if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                    'અભિનંદન! તમારી પ્રોફાઇલ મંજૂર થઈ ગઈ છે. (Profile Approved!)'),
+                backgroundColor: Colors.green,
+              ),
+            );
             context.go('/home');
           }
         }
@@ -373,6 +388,9 @@ class _ProfileUnderReviewScreenState
               TextButton(
                 onPressed: () async {
                   await ref.read(authNotifierProvider.notifier).logout();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
                 },
                 child: const Text(
                   'લૉગઆઉટ (Sign Out)',

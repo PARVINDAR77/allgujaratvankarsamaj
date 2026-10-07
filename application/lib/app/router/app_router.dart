@@ -76,8 +76,23 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (authState.isAuthenticated) {
         final user = authState.user;
+        final hasProfile = user?.hasProfile ?? false;
         final isVerified = user?.isVerified ?? false;
-        // If profile is not verified, strictly restrict to review / verification screens
+
+        // If candidate has not yet created their profile:
+        if (!hasProfile) {
+          final isAllowedNoProfileRoute = location == '/profile/create' ||
+              location == '/privacy-policy' ||
+              location == '/delete-account' ||
+              location == '/privacy-contact';
+
+          if (!isAllowedNoProfileRoute) {
+            return '/profile/create';
+          }
+          return null;
+        }
+
+        // If candidate created profile but is not yet approved by admin:
         if (!isVerified) {
           final isAllowedUnverifiedRoute = location == '/verified-profile' ||
               location == '/profile-under-review' ||
@@ -93,8 +108,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return null;
         }
 
-        // Verified member or admin attempting to visit auth pages should go to /home
-        if (isLoggingIn) {
+        // Verified member or admin attempting to visit auth pages or review page should go to /home
+        if (isLoggingIn || location == '/profile-under-review') {
           return '/home';
         }
       }
@@ -160,6 +175,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/verified-profile',
         name: 'verified-profile',
         builder: (context, state) => const VerifiedProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/create',
+        name: 'profile-create',
+        builder: (context, state) => const CreateProfileScreen(),
       ),
       GoRoute(
         path: '/profile-under-review',
@@ -338,7 +358,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'create',
-                    name: 'profile-create',
+                    name: 'profile-create-nested',
                     builder: (context, state) => const CreateProfileScreen(),
                   ),
                   GoRoute(

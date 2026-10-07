@@ -57,6 +57,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         role: data['role']?.toString() ?? 'USER',
         status: 'ACTIVE',
         isVerified: data['isVerified'] == true,
+        hasProfile: data['hasProfile'] == true,
       );
     } catch (e) {
       print('JWT Decode error: $e');
@@ -84,8 +85,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
         var user = _decodeToken(token);
         if (user != null) {
           final userData = response.data['user'];
-          if (userData is Map<String, dynamic> && userData.containsKey('isVerified')) {
-            user = user.copyWith(isVerified: userData['isVerified'] == true);
+          if (userData is Map<String, dynamic>) {
+            user = user.copyWith(
+              isVerified: userData['isVerified'] == true,
+              hasProfile: userData['hasProfile'] == true,
+            );
           }
           state = AuthState.authenticated(user);
           return true;
@@ -139,8 +143,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final res = await _dio.get('/verifications/my-status');
       if (res.data != null && res.data is Map<String, dynamic>) {
         final isVerified = res.data['isVerified'] == true;
-        if (state.user!.isVerified != isVerified) {
-          state = AuthState.authenticated(state.user!.copyWith(isVerified: isVerified));
+        final hasProfile = res.data['hasProfile'] == true;
+        if (state.user!.isVerified != isVerified || state.user!.hasProfile != hasProfile) {
+          state = AuthState.authenticated(state.user!.copyWith(
+            isVerified: isVerified,
+            hasProfile: hasProfile,
+          ));
         }
         return isVerified;
       }
@@ -149,8 +157,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final res = await _dio.get('/profiles/me');
         if (res.data != null && res.data is Map<String, dynamic>) {
           final isVerified = res.data['isVerified'] == true;
-          if (state.user!.isVerified != isVerified) {
-            state = AuthState.authenticated(state.user!.copyWith(isVerified: isVerified));
+          final hasProfile = res.data['id'] != null;
+          if (state.user!.isVerified != isVerified || state.user!.hasProfile != hasProfile) {
+            state = AuthState.authenticated(state.user!.copyWith(
+              isVerified: isVerified,
+              hasProfile: hasProfile,
+            ));
           }
           return isVerified;
         }

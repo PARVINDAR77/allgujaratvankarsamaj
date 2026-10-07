@@ -17,6 +17,7 @@ export declare class VerificationsController {
         profileId: string;
     }>;
     getMyVerificationStatus(req: any): Promise<{
+        hasProfile: boolean;
         isVerified: boolean;
         profileStatus: import(".prisma/client").$Enums.ProfileStatus;
         latestRequest: {

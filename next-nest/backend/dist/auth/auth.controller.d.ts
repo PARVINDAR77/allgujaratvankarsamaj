@@ -6,6 +6,9 @@ export declare class AuthController {
     private readonly authService;
     constructor(authService: AuthService);
     register(dto: RegisterDto): Promise<{
+        isVerified: boolean;
+        hasProfile: boolean;
+        profileStatus: string;
         status: import(".prisma/client").$Enums.Status;
         name: string | null;
         id: string;
@@ -20,6 +23,7 @@ export declare class AuthController {
         message: string;
         user: {
             isVerified: boolean;
+            hasProfile: boolean;
             profileStatus: import(".prisma/client").$Enums.ProfileStatus;
             status: import(".prisma/client").$Enums.Status;
             name: string | null;

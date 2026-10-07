@@ -92,11 +92,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
         ),
         title: const Row(
           children: [
-            Icon(Icons.verified_user_rounded, color: Color(0xFFD4AF37), size: 28),
+            Icon(Icons.person_add_rounded, color: Color(0xFFD4AF37), size: 28),
             SizedBox(width: 10),
             Expanded(
               child: Text(
-                'દસ્તાવેજ ચકાસણી ફરજિયાત છે',
+                'નોંધણી સફળ! પ્રોફાઇલ બનાવો',
                 style: TextStyle(
                     color: Color(0xFFD4AF37),
                     fontSize: 16,
@@ -110,13 +110,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'તમારી નોંધણી સફળ થઈ ગઈ છે!\n\nસમાજની સુરક્ષા અને વિશ્વસનીયતા માટે તમારું ઓળખ કાર્ડ (Aadhaar / ID Card) અપલોડ કરવું ફરજિયાત છે. એડમિન દ્વારા મંજૂર થયા પછી જ તમે અન્ય પ્રોફાઇલ જોઈ શકશો.',
+              'તમારું એકાઉન્ટ સફળતાપૂર્વક બની ગયું છે!\n\nહવે તમારી વૈવાહિક પ્રોફાઇલ વિગતો (Biodata) ભરો જેથી સમાજના અન્ય સભ્યો તમારી યોગ્યતા જોઈ શકે. પ્રોફાઇલ સબમિટ કર્યા પછી એડમિન દ્વારા મંજૂર કરવામાં આવશે.',
               style:
                   TextStyle(color: Colors.white, fontSize: 13, height: 1.5),
             ),
             SizedBox(height: 10),
             Text(
-              'Registration successful! Identity document verification is mandatory before access to the platform is granted.',
+              'Account created successfully! Please proceed to fill your matrimonial candidate profile.',
               style:
                   TextStyle(color: Colors.white60, fontSize: 12, height: 1.4),
             ),
@@ -128,11 +128,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
             child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(dialogCtx);
-                context.go('/verified-profile');
+                context.go('/profile/create');
               },
-              icon: const Icon(Icons.upload_file, color: Colors.black),
+              icon: const Icon(Icons.arrow_forward_rounded, color: Colors.black),
               label: const Text(
-                'ઓળખ કાર્ડ અપલોડ કરો (Upload Document)',
+                'પ્રોફાઇલ બનાવો (Create Profile Now)',
                 style: TextStyle(
                     color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
               ),

@@ -47,7 +47,12 @@ let AuthService = class AuthService {
             passwordHash,
         });
         const { passwordHash: _, ...safeUser } = user;
-        return safeUser;
+        return {
+            ...safeUser,
+            isVerified: false,
+            hasProfile: false,
+            profileStatus: "NOT_CREATED",
+        };
     }
     async login(dto) {
         let user = dto.phone
@@ -78,13 +83,22 @@ let AuthService = class AuthService {
         const profile = await this.prisma.matrimonialProfile.findUnique({
             where: { userId: user.id },
         });
-        const isVerified = profile?.isVerified === true &&
+        const isStub = profile &&
+            profile.firstName === "User" &&
+            profile.lastName === "Member" &&
+            !profile.religion &&
+            !profile.education &&
+            !profile.caste;
+        const hasProfile = profile !== null && !isStub;
+        const isVerified = hasProfile &&
+            profile?.isVerified === true &&
             profile?.status === client_1.ProfileStatus.APPROVED;
         const payload = {
             sub: user.id,
             email: user.email,
             role: user.role,
             isVerified,
+            hasProfile,
         };
         const expiresIn = this.configService.get("JWT_EXPIRES_IN", "1d");
         const accessToken = this.jwtService.sign(payload);
@@ -94,6 +108,7 @@ let AuthService = class AuthService {
             user: {
                 ...safeUser,
                 isVerified,
+                hasProfile,
                 profileStatus: profile?.status ?? "PENDING",
             },
             tokenType: "Bearer",

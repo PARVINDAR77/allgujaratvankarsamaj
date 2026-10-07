@@ -11,6 +11,9 @@ export declare class AuthService {
     private readonly prisma;
     constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService);
     register(dto: RegisterDto): Promise<{
+        isVerified: boolean;
+        hasProfile: boolean;
+        profileStatus: string;
         status: import(".prisma/client").$Enums.Status;
         name: string | null;
         id: string;
@@ -25,6 +28,7 @@ export declare class AuthService {
         accessToken: string;
         user: {
             isVerified: boolean;
+            hasProfile: boolean;
             profileStatus: import(".prisma/client").$Enums.ProfileStatus;
             status: import(".prisma/client").$Enums.Status;
             name: string | null;

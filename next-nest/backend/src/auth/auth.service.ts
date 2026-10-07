@@ -48,7 +48,12 @@ export class AuthService {
     });
 
     const { passwordHash: _, ...safeUser } = user;
-    return safeUser;
+    return {
+      ...safeUser,
+      isVerified: false,
+      hasProfile: false,
+      profileStatus: "NOT_CREATED",
+    };
   }
 
   async login(dto: LoginDto) {
@@ -88,7 +93,18 @@ export class AuthService {
       where: { userId: user.id },
     });
 
+    const isStub =
+      profile &&
+      profile.firstName === "User" &&
+      profile.lastName === "Member" &&
+      !profile.religion &&
+      !profile.education &&
+      !profile.caste;
+
+    const hasProfile = profile !== null && !isStub;
+
     const isVerified =
+      hasProfile &&
       profile?.isVerified === true &&
       profile?.status === ProfileStatus.APPROVED;
 
@@ -97,6 +113,7 @@ export class AuthService {
       email: user.email,
       role: user.role,
       isVerified,
+      hasProfile,
     };
 
     const expiresIn = this.configService.get<string>("JWT_EXPIRES_IN", "1d");
@@ -109,6 +126,7 @@ export class AuthService {
       user: {
         ...safeUser,
         isVerified,
+        hasProfile,
         profileStatus: profile?.status ?? "PENDING",
       },
       tokenType: "Bearer",

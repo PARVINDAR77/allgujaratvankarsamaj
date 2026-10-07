@@ -4,6 +4,7 @@ class UserModel {
   final String role;
   final String status;
   final bool isVerified;
+  final bool hasProfile;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -13,6 +14,7 @@ class UserModel {
     required this.role,
     required this.status,
     this.isVerified = false,
+    this.hasProfile = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -23,6 +25,7 @@ class UserModel {
     String? role,
     String? status,
     bool? isVerified,
+    bool? hasProfile,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -32,6 +35,7 @@ class UserModel {
       role: role ?? this.role,
       status: status ?? this.status,
       isVerified: isVerified ?? this.isVerified,
+      hasProfile: hasProfile ?? this.hasProfile,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -44,6 +48,7 @@ class UserModel {
       role: json['role'] as String? ?? 'USER',
       status: json['status'] as String? ?? 'ACTIVE',
       isVerified: json['isVerified'] == true,
+      hasProfile: json['hasProfile'] == true,
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
     );
@@ -56,6 +61,7 @@ class UserModel {
       'role': role,
       'status': status,
       'isVerified': isVerified,
+      'hasProfile': hasProfile,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),
     };
