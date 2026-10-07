@@ -569,7 +569,12 @@ if (!$fp) {
             @unlink($socket_file);
         }
 
-        $start_cmd = "cd " . escapeshellarg($backend_dir) . " && SOCKET_PATH=" . escapeshellarg($socket_file) . " NODE_ENV=production nohup node " . escapeshellarg($main_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
+        $supervisor_script = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source/start_backend_daemon.sh';
+        if (file_exists($supervisor_script)) {
+            $start_cmd = "nohup bash " . escapeshellarg($supervisor_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
+        } else {
+            $start_cmd = "cd " . escapeshellarg($backend_dir) . " && SOCKET_PATH=" . escapeshellarg($socket_file) . " NODE_ENV=production nohup node " . escapeshellarg($main_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
+        }
         if (function_exists('shell_exec')) {
             @shell_exec($start_cmd);
         } else {
