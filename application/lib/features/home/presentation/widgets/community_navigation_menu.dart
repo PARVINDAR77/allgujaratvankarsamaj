@@ -335,6 +335,18 @@ class CommunityNavigationMenu extends ConsumerWidget {
                             context.push('/pavan-prernadata');
                           },
                         ),
+                        _buildMenuItem(
+                          context: context,
+                          icon: Icons.school_rounded,
+                          gujaratiTitle: 'શિક્ષણ અને માર્ગદર્શન',
+                          englishSubtitle: 'Education for Better Tomorrow',
+                          customIconColor: const Color(0xFF60A5FA),
+                          customBgTint: const Color(0xFF2563EB).withOpacity(0.20),
+                          onTap: () {
+                            Navigator.pop(context);
+                            context.push('/education');
+                          },
+                        ),
 
                         // Section 4: Utilities & Support (સુવિધાઓ અને માહિતી)
                         _buildSectionHeader(

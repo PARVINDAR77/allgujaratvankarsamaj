@@ -35,6 +35,7 @@ const samaj_ratna_module_1 = require("./samaj-ratna/samaj-ratna.module");
 const pavan_prernadata_module_1 = require("./pavan-prernadata/pavan-prernadata.module");
 const samaj_super_stars_module_1 = require("./samaj-super-stars/samaj-super-stars.module");
 const notifications_module_1 = require("./notifications/notifications.module");
+const education_module_1 = require("./education/education.module");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(request_id_middleware_1.RequestIdMiddleware).forRoutes("*");
@@ -72,6 +73,7 @@ exports.AppModule = AppModule = __decorate([
             pavan_prernadata_module_1.PavanPrernadataModule,
             samaj_super_stars_module_1.SamajSuperStarsModule,
             notifications_module_1.NotificationsModule,
+            education_module_1.EducationModule,
         ],
     })
 ], AppModule);

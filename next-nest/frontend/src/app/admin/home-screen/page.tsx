@@ -197,9 +197,9 @@ export default function HomeScreenConfigPage() {
                     />
                   </div>
                   
-                  {(config.route.includes("/samaj-ratna") || config.route.includes("/advertisement")) && (
+                  {(config.route.includes("/samaj-ratna") || config.route.includes("/advertisement") || config.route.includes("/education")) && (
                     <a 
-                      href={config.route.includes("/samaj-ratna") ? "/admin/samaj-ratna" : `/admin/advertisements${config.route.includes("?") ? config.route.substring(config.route.indexOf("?")) : ""}`}
+                      href={config.route.includes("/samaj-ratna") ? "/admin/samaj-ratna" : config.route.includes("/education") ? "/admin/education" : `/admin/advertisements${config.route.includes("?") ? config.route.substring(config.route.indexOf("?")) : ""}`}
                       style={{
                         textAlign: "center",
                         padding: "8px 12px",

@@ -254,6 +254,32 @@ CREATE TABLE IF NOT EXISTS \`system_notifications\` (
   PRIMARY KEY (\`id\`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS \`education_content\` (
+  \`id\` varchar(191) NOT NULL DEFAULT 'default',
+  \`header_title\` varchar(191) DEFAULT 'Education for Better Tomorrow',
+  \`header_subtitle\` varchar(191) DEFAULT 'શિક્ષણ અને ઉજ્જવળ ભવિષ્ય માર્ગદર્શન',
+  \`box1_title\` varchar(191) DEFAULT 'શિક્ષણ માર્ગદર્શિકા અને પરિપત્રો (PDF)',
+  \`box1_subtitle\` varchar(191) DEFAULT 'Download Official Educational PDF Guidelines & Circulars',
+  \`box1_pdf_url\` text DEFAULT NULL,
+  \`box1_file_name\` varchar(191) DEFAULT 'career_guidance_2026.pdf',
+  \`box2_title\` varchar(191) DEFAULT 'શિક્ષણ પ્રેરણા સંદેશ & કારકિર્દી સલાહ',
+  \`box2_content\` text DEFAULT NULL,
+  \`box2_author\` varchar(191) DEFAULT 'શિક્ષણ સમિતિ, ઓલ ગુજરાત વણકર સમાજ',
+  \`box3_title\` varchar(191) DEFAULT 'શૈક્ષણિક સેમિનાર & કારકિર્દી માર્ગદર્શન',
+  \`box3_youtube_url\` text DEFAULT NULL,
+  \`box3_description\` varchar(191) DEFAULT NULL,
+  \`box4_title\` varchar(191) DEFAULT 'યુવા પ્રેરણા સંવાદ & સફળતાની વાર્તાઓ',
+  \`box4_youtube_url\` text DEFAULT NULL,
+  \`box4_description\` varchar(191) DEFAULT NULL,
+  \`is_active\` tinyint(1) NOT NULL DEFAULT 1,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT IGNORE INTO \`education_content\` (\`id\`, \`box1_title\`, \`box2_title\`, \`box2_content\`, \`box3_title\`, \`box4_title\`) VALUES ('default', 'શિક્ષણ માર્ગદર્શિકા અને પરિપત્રો (PDF)', 'શિક્ષણ પ્રેરણા સંદેશ & કારકિર્દી સલાહ', 'શિક્ષણ એ જીવનનો સૌથી મહત્વનો પાયો છે. આપણા વણકર સમાજના દરેક દીકરા અને દીકરી ઉચ્ચ શિક્ષણ મેળવી સમાજ અને દેશનું નામ રોશન કરે તે અમારો મુખ્ય સંકલ્પ છે. ધોરણ ૧૦ અને ૧૨ પછીના વિવિધ અભ્યાસક્રમો, સ્કોલરશીપ સહાય, અને સરકારી ભરતીઓની તૈયારી માટે સમાજ સદાય તમારી સાથે છે. જ્ઞાન એ જ શક્તિ છે, અને શિક્ષણ દ્વારા જ પ્રગતિ શક્ય છે.', 'શૈક્ષણિક સેમિનાર & કારકિર્દી માર્ગદર્શન', 'યુવા પ્રેરણા સંવાદ & સફળતાની વાર્તાઓ');
+
+
 ALTER TABLE \`advertisements\` MODIFY COLUMN \`placement\` ENUM('HOME_BANNER', 'DIRECTORY_BANNER', 'POPUP', 'BUTTON_1', 'BUTTON_2', 'BUTTON_3', 'BUTTON_4', 'BUTTON_5', 'PAVAN_PRERNADATA', 'SAMAJ_SUPER_STARS', 'SAMAJ_RATNA') NOT NULL DEFAULT 'HOME_BANNER';
 
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`is_physically_disabled\` tinyint(1) NOT NULL DEFAULT 0;

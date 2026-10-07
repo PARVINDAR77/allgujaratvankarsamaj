@@ -37,6 +37,7 @@ const menuSections = [
       { name: "Locations", href: "/admin/locations", icon: "📍" },
       { name: "Parganas", href: "/admin/parganas", icon: "🏛️" },
       { name: "Samaj Services", href: "/admin/services", icon: "🤝" },
+      { name: "Education", href: "/admin/education", icon: "🎓" },
       { name: "Pavan Prernadata", href: "/admin/pavan-prernadata", icon: "📖" },
       { name: "Samaj Super Stars", href: "/admin/samaj-super-stars", icon: "🌟" },
       { name: "Samaj Ratna", href: "/admin/samaj-ratna", icon: "🏆" },

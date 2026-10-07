@@ -452,7 +452,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                 ),
 
                 // --- Bottom Icons ---
-                // 8. Education (Button 1) -> /samaj-ratna
+                // 8. Education (Button 1) -> /education
                 Positioned(
                   left: sx(0),
                   top: sy(1670),
@@ -461,7 +461,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 1, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0), 'HOME_EDUCATION', '/samaj-ratna'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 1, 'Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0), 'HOME_EDUCATION', '/education'),
                     ),
                   ),
                 ),

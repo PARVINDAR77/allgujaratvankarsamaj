@@ -590,3 +590,36 @@ model SystemNotification {
   @@map("system_notifications")
 }
 
+model EducationContent {
+  id              String   @id @default("default")
+  headerTitle     String?  @default("Education for Better Tomorrow") @map("header_title")
+  headerSubtitle  String?  @default("શિક્ષણ અને ઉજ્જવળ ભવિષ્ય માર્ગદર્શન") @map("header_subtitle")
+
+  // Box 1: PDF Document / Circular
+  box1Title       String?  @default("શિક્ષણ માર્ગદર્શિકા અને પરિપત્રો") @map("box1_title")
+  box1Subtitle    String?  @default("Download Official Educational Guidelines & Circulars") @map("box1_subtitle")
+  box1PdfUrl      String?  @db.Text @map("box1_pdf_url")
+  box1FileName    String?  @default("career_guidance.pdf") @map("box1_file_name")
+
+  // Box 2: Written Paragraph / Article
+  box2Title       String?  @default("શિક્ષણ પ્રેરણા સંદેશ & કારકિર્દી સલાહ") @map("box2_title")
+  box2Content     String?  @db.Text @map("box2_content")
+  box2Author      String?  @default("શિક્ષણ સમિતિ, ઓલ ગુજરાત વણકર સમાજ") @map("box2_author")
+
+  // Box 3: YouTube Video 1
+  box3Title       String?  @default("શૈક્ષણિક સેમિનાર & કારકિર્દી માર્ગદર્શન") @map("box3_title")
+  box3YoutubeUrl  String?  @db.Text @map("box3_youtube_url")
+  box3Description String?  @map("box3_description")
+
+  // Box 4: YouTube Video 2
+  box4Title       String?  @default("યુવા પ્રેરણા સંવાદ & સફળતાની વાર્તાઓ") @map("box4_title")
+  box4YoutubeUrl  String?  @db.Text @map("box4_youtube_url")
+  box4Description String?  @map("box4_description")
+
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("education_content")
+}
+

@@ -289,7 +289,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                               color: Colors.transparent,
                               child: InkWell(
                                 borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/samaj-ratna'),
+                                onTap: () => context.push('/education'),
                               ),
                             ),
                           ),

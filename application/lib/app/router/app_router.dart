@@ -36,6 +36,7 @@ import '../../features/success_stories/presentation/screens/success_stories_scre
 import '../../features/advertisements/presentation/screens/advertisements_screen.dart';
 import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
 import '../../features/government_employees/presentation/screens/private_employees_screen.dart';
+import '../../features/education/presentation/screens/education_screen.dart';
 
 class AuthRouterListenable extends ChangeNotifier {
   AuthRouterListenable(Ref ref) {
@@ -218,6 +219,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/samaj-ratna',
         name: 'samaj-ratna',
         builder: (context, state) => const SamajRatnaScreen(),
+      ),
+      GoRoute(
+        path: '/education',
+        name: 'education',
+        builder: (context, state) => const EducationScreen(),
       ),
       GoRoute(
         path: '/advertisement',
