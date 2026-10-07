@@ -121,16 +121,6 @@ export declare class StatisticsService {
     }>;
     getPublicLiveStatistics(): Promise<{
         totalCandidates: number;
-        totalBoys: number;
-        totalGirls: number;
-        boys: number;
-        girls: number;
-        genderBreakdown: {
-            boys: number;
-            girls: number;
-            MALE: number;
-            FEMALE: number;
-        };
         today: {
             boys: number;
             girls: number;

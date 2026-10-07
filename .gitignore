@@ -28,6 +28,3 @@ Thumbs.db
 .idea/
 *.swp
 *.apk
-next-nest/backend/remote_exec.js
-capture_*.js
-flutter_screenshots/

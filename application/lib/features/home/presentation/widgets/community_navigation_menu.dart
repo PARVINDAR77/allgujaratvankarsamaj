@@ -221,84 +221,23 @@ class CommunityNavigationMenu extends ConsumerWidget {
                         _buildUserCard(context, ref, authState, myProfileAsync),
                         const SizedBox(height: 12),
 
-                        // Section 1: Core Navigation (મુખ્ય સેવાઓ)
-                        _buildSectionHeader('મુખ્ય સેવાઓ', 'Core Navigation', Icons.navigation_rounded),
-                        _buildMenuItem(
-                          context: context,
-                          icon: Icons.home_rounded,
-                          gujaratiTitle: 'મુખ્ય પૃષ્ઠ',
-                          englishSubtitle: 'Home Screen',
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.go('/home');
-                          },
-                        ),
-                        _buildMenuItem(
-                          context: context,
-                          icon: Icons.auto_awesome,
-                          gujaratiTitle: 'મુખ્ય પોસ્ટર પૃષ્ઠ',
-                          englishSubtitle: 'Main Poster Page',
-                          isHighlighted: true,
-                          badge: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFFDF7A), Color(0xFFD4AF37)],
-                              ),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.star_rounded, size: 10, color: Colors.black),
-                                SizedBox(width: 3),
-                                Text(
-                                  'વિશેષ / SPECIAL',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.3,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.push('/main-poster');
-                          },
-                        ),
-                        _buildMenuItem(
-                          context: context,
-                          icon: Icons.search_rounded,
-                          gujaratiTitle: 'પ્રોફાઇલ શોધો',
-                          englishSubtitle: 'Search Profiles',
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.go('/search');
-                          },
-                        ),
-                        _buildMenuItem(
-                          context: context,
-                          icon: Icons.favorite_rounded,
-                          gujaratiTitle: 'મેળ / પસંદગી',
-                          englishSubtitle: 'Mutual Interest',
-                          customIconColor: const Color(0xFFFF5E7E),
-                          customBgTint: const Color(0xFFFF5E7E).withOpacity(0.16),
-                          onTap: () {
-                            Navigator.pop(context);
-                            context.go('/match');
-                          },
-                        ),
+                        // Section 1: Quick Access 2x2 Grid (મુખ્ય સેવાઓ • QUICK ACCESS)
+                        _buildQuickAccessGrid(context),
 
                         // Section 2: Community & Directory (સમાજ નેટવર્ક)
-                        _buildSectionHeader('સમાજ નેટવર્ક', 'Community & Directory', Icons.hub_rounded),
+                        _buildSectionHeader(
+                          'સમાજ નેટવર્ક',
+                          'Community & Directory',
+                          Icons.hub_rounded,
+                          headerIconColor: const Color(0xFF38BDF8),
+                        ),
                         _buildMenuItem(
                           context: context,
-                          icon: Icons.groups_rounded,
+                          icon: Icons.family_restroom_rounded,
                           gujaratiTitle: 'પરિવાર ડિરેક્ટરી',
-                          englishSubtitle: 'View Families',
+                          englishSubtitle: 'Family Directory',
+                          customIconColor: const Color(0xFF38BDF8),
+                          customBgTint: const Color(0xFF0284C7).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/family-details');
@@ -306,9 +245,11 @@ class CommunityNavigationMenu extends ConsumerWidget {
                         ),
                         _buildMenuItem(
                           context: context,
-                          icon: Icons.location_city_rounded,
+                          icon: Icons.explore_rounded,
                           gujaratiTitle: 'પરગણાં દર્શન',
                           englishSubtitle: 'Pargana Overview',
+                          customIconColor: const Color(0xFFA78BFA),
+                          customBgTint: const Color(0xFF7C3AED).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/pargana-overview');
@@ -318,7 +259,9 @@ class CommunityNavigationMenu extends ConsumerWidget {
                           context: context,
                           icon: Icons.handshake_rounded,
                           gujaratiTitle: 'સમાજ સેવાઓ & વ્યવસાય',
-                          englishSubtitle: 'Samaj Services',
+                          englishSubtitle: 'Samaj Services & Business',
+                          customIconColor: const Color(0xFFFB923C),
+                          customBgTint: const Color(0xFFEA580C).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/samaj-services');
@@ -326,9 +269,11 @@ class CommunityNavigationMenu extends ConsumerWidget {
                         ),
                         _buildMenuItem(
                           context: context,
-                          icon: Icons.work_rounded,
+                          icon: Icons.badge_rounded,
                           gujaratiTitle: 'સરકારી કર્મચારી મંડળ',
-                          englishSubtitle: 'Govt. Employees',
+                          englishSubtitle: 'Govt. Employees Directory',
+                          customIconColor: const Color(0xFF60A5FA),
+                          customBgTint: const Color(0xFF2563EB).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/government-employees');
@@ -336,14 +281,19 @@ class CommunityNavigationMenu extends ConsumerWidget {
                         ),
 
                         // Section 3: Honors & Recognition (સમાજ ગૌરવ)
-                        _buildSectionHeader('સમાજ ગૌરવ', 'Honors & Recognition', Icons.military_tech_rounded),
+                        _buildSectionHeader(
+                          'સમાજ ગૌરવ',
+                          'Honors & Recognition',
+                          Icons.military_tech_rounded,
+                          headerIconColor: const Color(0xFFFFD700),
+                        ),
                         _buildMenuItem(
                           context: context,
-                          icon: Icons.verified_user_rounded,
+                          icon: Icons.verified_rounded,
                           gujaratiTitle: 'વેરિફાઈડ પ્રોફાઈલ',
-                          englishSubtitle: 'Verified Profiles',
-                          customIconColor: const Color(0xFF10B981),
-                          customBgTint: const Color(0xFF10B981).withOpacity(0.16),
+                          englishSubtitle: 'Verified Identity Profiles',
+                          customIconColor: const Color(0xFF34D399),
+                          customBgTint: const Color(0xFF059669).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/verified-profile');
@@ -351,9 +301,11 @@ class CommunityNavigationMenu extends ConsumerWidget {
                         ),
                         _buildMenuItem(
                           context: context,
-                          icon: Icons.workspace_premium_rounded,
+                          icon: Icons.emoji_events_rounded,
                           gujaratiTitle: 'સમાજ રત્ન સન્માન',
                           englishSubtitle: 'Samaj Ratna Awards',
+                          customIconColor: const Color(0xFFFFD700),
+                          customBgTint: const Color(0xFFD97706).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/samaj-ratna');
@@ -361,9 +313,11 @@ class CommunityNavigationMenu extends ConsumerWidget {
                         ),
                         _buildMenuItem(
                           context: context,
-                          icon: Icons.star_rounded,
+                          icon: Icons.stars_rounded,
                           gujaratiTitle: 'સમાજ સુપર સ્ટાર્સ',
-                          englishSubtitle: 'Samaj Super Stars',
+                          englishSubtitle: 'Samaj Super Stars Poster',
+                          customIconColor: const Color(0xFFFBBF24),
+                          customBgTint: const Color(0xFFB45309).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/samaj-super-stars-poster');
@@ -373,20 +327,29 @@ class CommunityNavigationMenu extends ConsumerWidget {
                           context: context,
                           icon: Icons.lightbulb_rounded,
                           gujaratiTitle: 'પાવન પ્રેરણાદાતા',
-                          englishSubtitle: 'Pavan Prernadata',
+                          englishSubtitle: 'Inspirational Leaders',
+                          customIconColor: const Color(0xFFFDE047),
+                          customBgTint: const Color(0xFFCA8A04).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/pavan-prernadata');
                           },
                         ),
 
-                        // Section 4: Utilities & Support (ઉપયોગિતા અને સહાય)
-                        _buildSectionHeader('સુવિધાઓ અને માહિતી', 'Utilities & Info', Icons.info_outline_rounded),
+                        // Section 4: Utilities & Support (સુવિધાઓ અને માહિતી)
+                        _buildSectionHeader(
+                          'સુવિધાઓ અને માહિતી',
+                          'Utilities & Info',
+                          Icons.info_outline_rounded,
+                          headerIconColor: const Color(0xFFF43F5E),
+                        ),
                         _buildMenuItem(
                           context: context,
                           icon: Icons.campaign_rounded,
                           gujaratiTitle: 'જાહેરાતો & પ્રોમોશન્સ',
-                          englishSubtitle: 'Advertisements',
+                          englishSubtitle: 'Advertisements & Promos',
+                          customIconColor: const Color(0xFFF43F5E),
+                          customBgTint: const Color(0xFFE11D48).withOpacity(0.20),
                           onTap: () {
                             Navigator.pop(context);
                             context.push('/advertisement');
@@ -397,6 +360,8 @@ class CommunityNavigationMenu extends ConsumerWidget {
                           icon: Icons.notifications_active_rounded,
                           gujaratiTitle: 'સૂચનાઓ & ઘોષણાઓ',
                           englishSubtitle: 'Live Notifications',
+                          customIconColor: const Color(0xFF818CF8),
+                          customBgTint: const Color(0xFF4F46E5).withOpacity(0.20),
                           badge: unreadCount > 0
                               ? Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
@@ -707,23 +672,243 @@ class CommunityNavigationMenu extends ConsumerWidget {
     );
   }
 
+  // --- Section 1: Quick Access 2x2 Grid (મુખ્ય સેવાઓ) ---
+  Widget _buildQuickAccessGrid(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSectionHeader(
+          'મુખ્ય સેવાઓ',
+          'QUICK ACCESS',
+          Icons.bolt_rounded,
+          headerIconColor: const Color(0xFFFBBF24),
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickAccessCard(
+                context: context,
+                icon: Icons.home_rounded,
+                iconBgColor: const Color(0xFF2563EB),
+                cardGradient: const [Color(0xFF0F2245), Color(0xFF09162D)],
+                borderColor: const Color(0xFF1D4ED8).withOpacity(0.55),
+                title: 'મુખ્ય પૃષ્ઠ',
+                subtitle: 'Home Portal',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/home');
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildQuickAccessCard(
+                context: context,
+                icon: Icons.auto_awesome,
+                iconBgColor: const Color(0xFFD97706),
+                cardGradient: const [Color(0xFF2D1D08), Color(0xFF1A1104)],
+                borderColor: const Color(0xFFD97706).withOpacity(0.55),
+                title: 'મુખ્ય પોસ્ટર',
+                subtitle: 'Poster View',
+                badgeText: 'Featured',
+                badgeColor: const Color(0xFFD97706),
+                onTap: () {
+                  Navigator.pop(context);
+                  context.push('/main-poster');
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _buildQuickAccessCard(
+                context: context,
+                icon: Icons.person_search_rounded,
+                iconBgColor: const Color(0xFF059669),
+                cardGradient: const [Color(0xFF072921), Color(0xFF041914)],
+                borderColor: const Color(0xFF059669).withOpacity(0.55),
+                title: 'પ્રોફાઇલ શોધો',
+                subtitle: 'Search Profiles',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/search');
+                },
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _buildQuickAccessCard(
+                context: context,
+                icon: Icons.favorite_rounded,
+                iconBgColor: const Color(0xFFBE185D),
+                cardGradient: const [Color(0xFF2C0E28), Color(0xFF1A0717)],
+                borderColor: const Color(0xFFBE185D).withOpacity(0.55),
+                title: 'પરસ્પર મેળ',
+                subtitle: 'Mutual Match',
+                onTap: () {
+                  Navigator.pop(context);
+                  context.go('/match');
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+      ],
+    );
+  }
+
+  Widget _buildQuickAccessCard({
+    required BuildContext context,
+    required IconData icon,
+    required Color iconBgColor,
+    required List<Color> cardGradient,
+    required Color borderColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    String? badgeText,
+    Color? badgeColor,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: cardGradient,
+            ),
+            border: Border.all(
+              color: borderColor,
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.35),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: iconBgColor,
+                      borderRadius: BorderRadius.circular(13),
+                      boxShadow: [
+                        BoxShadow(
+                          color: iconBgColor.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        icon,
+                        color: Colors.white,
+                        size: 23,
+                      ),
+                    ),
+                  ),
+                  if (badgeText != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.5, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: badgeColor ?? const Color(0xFFD97706),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (badgeColor ?? const Color(0xFFD97706)).withOpacity(0.4),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        badgeText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.55),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   // --- Section Category Header ---
-  Widget _buildSectionHeader(String gujaratiTitle, String englishSubtitle, IconData icon) {
+  Widget _buildSectionHeader(
+    String gujaratiTitle,
+    String englishSubtitle,
+    IconData icon, {
+    Color? headerIconColor,
+  }) {
+    final accentColor = headerIconColor ?? const Color(0xFFD4AF37);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 14, 4, 8),
+      padding: const EdgeInsets.fromLTRB(4, 16, 4, 8),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(4.5),
             decoration: BoxDecoration(
-              color: const Color(0xFFD4AF37).withOpacity(0.14),
+              color: accentColor.withOpacity(0.16),
               borderRadius: BorderRadius.circular(6),
               border: Border.all(
-                color: const Color(0xFFD4AF37).withOpacity(0.25),
+                color: accentColor.withOpacity(0.3),
                 width: 0.8,
               ),
             ),
-            child: Icon(icon, color: const Color(0xFFD4AF37), size: 13),
+            child: Icon(icon, color: accentColor, size: 13.5),
           ),
           const SizedBox(width: 8),
           Text(
@@ -751,7 +936,7 @@ class CommunityNavigationMenu extends ConsumerWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  const Color(0xFFD4AF37).withOpacity(0.45),
+                  accentColor.withOpacity(0.45),
                   Colors.transparent,
                 ],
               ),
@@ -799,7 +984,9 @@ class CommunityNavigationMenu extends ConsumerWidget {
               border: Border.all(
                 color: isHighlighted
                     ? const Color(0xFFD4AF37)
-                    : const Color(0xFFD4AF37).withOpacity(0.12),
+                    : (customIconColor != null
+                        ? customIconColor.withOpacity(0.25)
+                        : const Color(0xFFD4AF37).withOpacity(0.12)),
                 width: isHighlighted ? 1.2 : 0.8,
               ),
               boxShadow: isHighlighted
@@ -816,10 +1003,10 @@ class CommunityNavigationMenu extends ConsumerWidget {
               children: [
                 // Squircle Icon Container
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                     gradient: isHighlighted
                         ? const LinearGradient(
                             colors: [Color(0xFFFFDF7A), Color(0xFFD4AF37)],
@@ -827,13 +1014,20 @@ class CommunityNavigationMenu extends ConsumerWidget {
                         : null,
                     color: isHighlighted
                         ? null
-                        : (customBgTint ?? const Color(0xFFD4AF37).withOpacity(0.14)),
+                        : (customBgTint ?? const Color(0xFFD4AF37).withOpacity(0.16)),
                     border: Border.all(
                       color: isHighlighted
                           ? const Color(0xFFFFDF7A)
-                          : (customIconColor ?? const Color(0xFFD4AF37)).withOpacity(0.3),
+                          : (customIconColor ?? const Color(0xFFD4AF37)).withOpacity(0.4),
                       width: 1,
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (customIconColor ?? const Color(0xFFD4AF37)).withOpacity(0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
                   child: Center(
                     child: Icon(
@@ -841,7 +1035,7 @@ class CommunityNavigationMenu extends ConsumerWidget {
                       color: isHighlighted
                           ? Colors.black
                           : (customIconColor ?? const Color(0xFFFFD700)),
-                      size: 20,
+                      size: 21,
                     ),
                   ),
                 ),
