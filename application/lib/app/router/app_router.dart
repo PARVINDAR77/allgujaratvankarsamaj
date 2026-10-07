@@ -332,7 +332,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'under-review',
-                    name: 'profile-under-review',
+                    name: 'profile-under-review-nested',
                     builder: (context, state) => const ProfileUnderReviewScreen(),
                   ),
                 ],

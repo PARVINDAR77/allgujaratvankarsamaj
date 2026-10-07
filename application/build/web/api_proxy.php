@@ -71,6 +71,13 @@ function try_connect_socket($path, $timeout = 2) {
 }
 
 list($fp, $errno, $errstr) = try_connect_socket($socket_path, 2);
+if (!$fp) {
+    // Fallback: check if backend is listening on localhost TCP port 3000
+    list($tcp_fp, $tcp_errno, $tcp_errstr) = try_connect_socket('tcp://127.0.0.1:3000', 1);
+    if ($tcp_fp) {
+        $fp = $tcp_fp;
+    }
+}
 
 // If socket connection failed, attempt automatic self-healing restart
 if (!$fp) {
@@ -102,10 +109,21 @@ if (!$fp) {
         for ($i = 0; $i < 14; $i++) {
             usleep(250000); // 250ms
             list($retry_fp, $retry_errno, $retry_errstr) = try_connect_socket($socket_path, 1);
+            if (!$retry_fp) {
+                list($retry_fp, $retry_errno, $retry_errstr) = try_connect_socket('tcp://127.0.0.1:3000', 1);
+            }
             if ($retry_fp) {
                 $fp = $retry_fp;
                 break;
             }
+        }
+    }
+
+    // Final fallback check
+    if (!$fp) {
+        list($tcp_fp, $tcp_errno, $tcp_errstr) = try_connect_socket('tcp://127.0.0.1:3000', 1);
+        if ($tcp_fp) {
+            $fp = $tcp_fp;
         }
     }
 }

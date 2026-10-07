@@ -5,7 +5,10 @@ module.exports = {
       script: "npm",
       args: "run start:prod",
       cwd: "./next-nest/backend",
-      env_production: { NODE_ENV: "production" }
+      env_production: {
+        NODE_ENV: "production",
+        SOCKET_PATH: "/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock"
+      }
     }
   ]
 };

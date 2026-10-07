@@ -311,6 +311,7 @@ echo "🔄 Executing atomic deployments..."
 # 1. NestJS (Background Process via Unix Socket)
 # Since this Hostinger plan doesn't support Passenger, we run it in the background on a Unix Socket
 echo "🔄 Starting Permanent Node.js Backend Supervisor..."
+command -v pm2 > /dev/null 2>&1 && pm2 delete all 2>/dev/null || true
 pkill -f "start_backend_daemon.sh" 2>/dev/null || true
 pkill -f "dist/main.js" 2>/dev/null || true
 sleep 1
@@ -506,6 +507,12 @@ function try_connect_socket($path, $timeout = 2) {
 }
 
 list($fp, $errno, $errstr) = try_connect_socket($socket_path, 2);
+if (!$fp) {
+    list($tcp_fp, $tcp_errno, $tcp_errstr) = try_connect_socket('tcp://127.0.0.1:3000', 1);
+    if ($tcp_fp) {
+        $fp = $tcp_fp;
+    }
+}
 
 // If socket connection failed, attempt automatic self-healing restart
 if (!$fp) {
@@ -533,10 +540,21 @@ if (!$fp) {
         for ($i = 0; $i < 14; $i++) {
             usleep(250000); // 250ms
             list($retry_fp, $retry_errno, $retry_errstr) = try_connect_socket($socket_path, 1);
+            if (!$retry_fp) {
+                list($retry_fp, $retry_errno, $retry_errstr) = try_connect_socket('tcp://127.0.0.1:3000', 1);
+            }
             if ($retry_fp) {
                 $fp = $retry_fp;
                 break;
             }
+        }
+    }
+
+    // Final fallback check
+    if (!$fp) {
+        list($tcp_fp, $tcp_errno, $tcp_errstr) = try_connect_socket('tcp://127.0.0.1:3000', 1);
+        if ($tcp_fp) {
+            $fp = $tcp_fp;
         }
     }
 }

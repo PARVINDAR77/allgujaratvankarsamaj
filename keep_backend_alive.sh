@@ -4,6 +4,8 @@
 # Checks health every minute and restarts daemon if down
 # ========================================================
 
+export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/next-nest/backend"
 SOCKET_FILE="/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock"

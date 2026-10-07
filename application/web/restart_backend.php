@@ -18,6 +18,11 @@ function check_socket($socket_stream, $timeout = 2) {
     $errno = 0;
     $errstr = '';
     $fp = @stream_socket_client($socket_stream, $errno, $errstr, $timeout);
+    $type = 'unix';
+    if (!$fp) {
+        $fp = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, $timeout);
+        $type = 'tcp';
+    }
     if (!$fp) {
         return ['connected' => false, 'error' => "$errstr ($errno)"];
     }
@@ -38,6 +43,7 @@ function check_socket($socket_stream, $timeout = 2) {
     }
     return [
         'connected' => true,
+        'channel' => $type,
         'http_status' => $status,
         'body' => isset($parts[1]) ? trim($parts[1]) : ''
     ];
@@ -54,6 +60,17 @@ if ($action === 'restart' || $action === 'start') {
     // 1. Touch trigger file for the watchdog script
     @touch($trigger_file);
     $results['actions_taken'][] = 'Created restart trigger file for background watchdog';
+
+    // Remove stale socket if connection is refused
+    if (file_exists($socket_file)) {
+        $t_fp = @stream_socket_client($socket_stream, $t_err, $t_msg, 1);
+        if (!$t_fp) {
+            @unlink($socket_file);
+            $results['actions_taken'][] = 'Removed stale unix socket file';
+        } else {
+            @fclose($t_fp);
+        }
+    }
 
     // 2. If CLI execution is allowed, invoke watchdog or restart directly
     if (function_exists('shell_exec')) {
