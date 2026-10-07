@@ -413,7 +413,52 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       ],
                     ),
                     const Divider(),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
+
+                    // Quick Banner to open Old / Advance Search Form
+                    InkWell(
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
+                        context.push('/advanced-search?lookingFor=$lookingFor');
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.blue.shade200, width: 1.2),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.manage_search_rounded, color: Color(0xFF0056D2), size: 20),
+                            SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'વિસ્તૃત શોધ ફોર્મ (Advance Search Form)',
+                                    style: TextStyle(
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0056D2),
+                                    ),
+                                  ),
+                                  Text(
+                                    'પરગણા, જિલ્લો, શિક્ષણ, નોકરી વગેરે જૂનું વિગતવાર ફોર્મ',
+                                    style: TextStyle(fontSize: 10.5, color: Colors.black54),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF0056D2), size: 13),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
 
                     // Gender Section
                     const Text(
@@ -544,6 +589,27 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       child: const Text(
                         'લાગુ કરો (Apply Filters)',
                         style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Secondary Action: Open full Advance Search Form
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
+                        context.push('/advanced-search?lookingFor=$lookingFor');
+                      },
+                      icon: const Icon(Icons.tune_rounded, color: Color(0xFF0056D2), size: 18),
+                      label: const Text(
+                        'જૂનું વિસ્તૃત શોધ ફોર્મ ખોલો (Open Advance Form)',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF0056D2)),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF8FAFC),
+                        side: BorderSide(color: Colors.blue.shade300, width: 1.2),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       ),
                     ),
                   ],
