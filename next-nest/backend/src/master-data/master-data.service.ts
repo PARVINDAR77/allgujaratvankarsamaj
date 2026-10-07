@@ -21,16 +21,57 @@ export class MasterDataService {
       },
     });
 
+    const defaultGujaratDistricts: Record<string, string[]> = {
+      "Select District": ["Select Taluka"],
+      "Ahmedabad": ["Ahmedabad City", "Bavla", "Daskroi", "Detroj-Rampura", "Dhandhuka", "Dholera", "Dholka", "Mandal", "Sanand", "Viramgam"],
+      "Amreli": ["Amreli", "Babra", "Bagasara", "Dhari", "Jafrabad", "Khambha", "Kunkavav Vadia", "Lathi", "Lilia", "Rajula", "Savar Kundla"],
+      "Anand": ["Anand", "Anklav", "Borsad", "Khambhat", "Petlad", "Sojitra", "Tarapur", "Umreth"],
+      "Aravalli": ["Bayad", "Bhiloda", "Dhansura", "Malpur", "Meghraj", "Modasa"],
+      "Banaskantha": ["Amirgadh", "Bhabhar", "Dantiwada", "Danta", "Deesa", "Deodar", "Dhanera", "Kankrej", "Lakhani", "Palanpur", "Suigam", "Tharad", "Vadgam", "Vav"],
+      "Bharuch": ["Bharuch", "Amod", "Ankleshwar", "Hansot", "Jambusar", "Netrang", "Vagra", "Valia", "Jhagadia"],
+      "Bhavnagar": ["Bhavnagar", "Gariadhar", "Ghogha", "Jesar", "Mahuva", "Palitana", "Sihor", "Talaja", "Umrala", "Vallabhipur"],
+      "Botad": ["Botad", "Barwala", "Gadhada", "Ranpur"],
+      "Chhota Udaipur": ["Chhota Udaipur", "Bodeli", "Jetpur Pavi", "Kavant", "Nasvadi", "Sankheda"],
+      "Dahod": ["Dahod", "Devgadh Baria", "Dhanpur", "Fatepura", "Garbada", "Limkheda", "Sanjeli", "Jhalod"],
+      "Dang": ["Ahwa", "Subir", "Waghai"],
+      "Devbhoomi Dwarka": ["Bhanvad", "Kalyanpur", "Khambhalia", "Okhamandal"],
+      "Gandhinagar": ["Gandhinagar", "Dehgam", "Kalol", "Mansa"],
+      "Gir Somnath": ["Gir Gadhada", "Kodinar", "Sutrapada", "Talala", "Una", "Patan-Veraval"],
+      "Jamnagar": ["Jamnagar", "Dhrol", "Jamjodhpur", "Jodiya", "Kalavad", "Lalpur"],
+      "Junagadh": ["Junagadh City", "Bhesan", "Junagadh Rural", "Keshod", "Malia Hatina", "Manavadar", "Mangrol", "Mendarda", "Vanthali", "Visavadar"],
+      "Kheda": ["Nadiad", "Balasinor", "Dakhor", "Galteshwar", "Kapadvanj", "Kathlal", "Kheda", "Mahudha", "Matar", "Mehmedabad", "Thasra", "Vaso"],
+      "Kutch": ["Bhuj", "Abdasa", "Anjar", "Bhachau", "Gandhidham", "Lakhpat", "Mandvi", "Mundra", "Nakhatrana", "Rapar"],
+      "Mahisagar": ["Lunawada", "Balasinor", "Kadana", "Khanpur", "Santrampur", "Virpur"],
+      "Mehsana": ["Mehsana", "Becharaji", "Jotana", "Kadi", "Kheralu", "Satlasana", "Unjha", "Vadnagar", "Vijapur", "Visnagar"],
+      "Morbi": ["Morbi", "Halvad", "Maliya", "Tankara", "Wankaner"],
+      "Narmada": ["Rajpipla", "Dediapada", "Garudeshwar", "Nandod", "Sagbara", "Tilakwada"],
+      "Navsari": ["Navsari", "Vansda", "Chikhli", "Gandevi", "Jalalpore", "Khergam"],
+      "Panchmahal": ["Godhra", "Ghoghaba", "Halol", "Jambughoda", "Kalol", "Morwa Hadaf", "Shehera"],
+      "Patan": ["Patan", "Chanasma", "Harij", "Radhanpur", "Sami", "Santalpur", "Sarasvati", "Sidhpur", "Shankheshwar"],
+      "Porbandar": ["Porbandar", "Kutiyana", "Ranavav"],
+      "Rajkot": ["Rajkot", "Dhoraji", "Gondal", "Jam Kandorna", "Jasdan", "Jetpur", "Kotada Sangani", "Lodhika", "Paddhari", "Upleta", "Vinchhiya"],
+      "Sabarkantha": ["Himmatnagar", "Idar", "Khedbrahma", "Poshina", "Prantij", "Talod", "Vadali", "Vijaynagar"],
+      "Surat": ["Surat City", "Bardoli", "Choryasi", "Kamrej", "Mahuva", "Mandvi", "Mangrol", "Olpad", "Palsana", "Umarpada"],
+      "Surendranagar": ["Surendranagar", "Chotila", "Chuda", "Dasada", "Dhrangadhra", "Lakhtar", "Limbdi", "Muli", "Sayla", "Thangadh", "Wadhwan"],
+      "Tapi": ["Vyara", "Nizar", "Songadh", "Uchhal", "Valod", "Kukarmunda", "Dolvan"],
+      "Vadodara": ["Vadodara", "Dabhoi", "Desar", "Karjan", "Padra", "Savli", "Sinor", "Vaghodia"],
+      "Valsad": ["Valsad", "Dharampur", "Kaprada", "Pardi", "Umbergaon", "Vapi"],
+    };
+
     // Formatting for frontend AppData compatibility
     const gujaratDistricts: Record<string, string[]> = {
       "Select District": ["Select Taluka"],
     };
 
     const gujaratState = states.find((s) => s.name.toLowerCase() === "gujarat");
-    if (gujaratState) {
+    if (gujaratState && gujaratState.districts.length > 0) {
       for (const district of gujaratState.districts) {
         gujaratDistricts[district.name] = district.talukas.map((t) => t.name);
       }
+    }
+
+    if (Object.keys(gujaratDistricts).length <= 1) {
+      Object.assign(gujaratDistricts, defaultGujaratDistricts);
     }
 
     // Static data that is not yet in DB

@@ -155,6 +155,12 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     'Gir Somnath': 'ગીર સોમનાથ',
     'Botad': 'બોટાદ',
     'Devbhoomi Dwarka': 'દેવભૂમિ દ્વારકા',
+    'Aravalli': 'અરવલ્લી',
+    'Chhota Udaipur': 'છોટા ઉદેપુર',
+    'Dang': 'ડાંગ',
+    'Mahisagar': 'મહીસાગર',
+    'Narmada': 'નર્મદા',
+    'Tapi': 'તાપી',
     
     // Talukas
     'Ahmedabad City': 'અમદાવાદ શહેર',
@@ -493,11 +499,15 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   }
 
   List<String> get _districts {
-    final list = _allData.map((e) => e['district'] as String).toSet().toList();
-    for (final d in _districtTalukas.keys) {
-      if (!list.contains(d)) list.add(d);
+    final set = <String>{};
+    for (final d in AppData.gujaratDistricts.keys) {
+      if (d != 'Select District') set.add(d);
     }
-    list.sort();
+    for (final e in _allData) {
+      final d = e['district'] as String?;
+      if (d != null && d.isNotEmpty && d != 'All') set.add(d);
+    }
+    final list = set.toList()..sort();
     return ['All', ...list];
   }
 
@@ -505,7 +515,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     if (_district == 'All') {
       return ['All'];
     }
-    final list = _districtTalukas[_district] ?? [];
+    final list = AppData.gujaratDistricts[_district] ?? _districtTalukas[_district] ?? [];
     return ['All', ...list];
   }
 
@@ -1358,13 +1368,13 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                 // Table Header
                                 Row(
                                   children: [
-                                    _buildHeaderCell('#', const Color(0xFF00A2FF), 40),
-                                    _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 70),
-                                    _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 160),
-                                    _buildHeaderCell('Sector / Industry\n(ક્ષેત્ર / વેપાર)', const Color(0xFF4CAF50), 160),
-                                    _buildHeaderCell('Role / Post\n(હોદ્દો / પદ)', const Color(0xFFFF9800), 140),
-                                    _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 120),
-                                    _buildHeaderCell('Action\n(વિગત)', const Color(0xFF0056D2), 80),
+                                    _buildHeaderCell('#\n(ક્રમ)', const Color(0xFF00A2FF), 60),
+                                    _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 65),
+                                    _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 165),
+                                    _buildHeaderCell('Sector / Industry\n(ક્ષેત્ર / વેપાર)', const Color(0xFF4CAF50), 220),
+                                    _buildHeaderCell('Role / Post\n(હોદ્દો / પદ)', const Color(0xFFFF9800), 175),
+                                    _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 130),
+                                    _buildHeaderCell('Action\n(વિગત)', const Color(0xFF0056D2), 85),
                                   ],
                                 ),
                                 // Table Body
@@ -1386,78 +1396,172 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                       child: Row(
                                         children: [
                                           _buildDataCell(
-                                            Text(data['id']!, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0056D2))),
-                                            40,
-                                          ),
-                                          _buildDataCell(
-                                            InkWell(
-                                              onTap: () => _showEmployeeDetails(data),
-                                              child: CircleAvatar(
-                                                radius: 16,
-                                                backgroundColor: Colors.blue.shade50,
-                                                backgroundImage: (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty)
-                                                    ? NetworkImage(data['photoUrl'].toString())
-                                                    : null,
-                                                child: (data['photoUrl'] == null || data['photoUrl'].toString().isEmpty)
-                                                    ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
-                                                    : null,
-                                              ),
-                                            ),
-                                            70,
-                                          ),
-                                          _buildDataCell(
-                                            InkWell(
-                                              onTap: () => _showEmployeeDetails(data),
-                                              child: Text(
-                                                data['name']!,
-                                                style: const TextStyle(
-                                                  fontWeight: FontWeight.w600,
-                                                  color: Color(0xFF0056D2),
-                                                  fontSize: 13,
+                                            Center(
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.blue.shade50,
+                                                  borderRadius: BorderRadius.circular(6),
+                                                  border: Border.all(color: Colors.blue.shade200, width: 0.8),
                                                 ),
-                                                overflow: TextOverflow.ellipsis,
+                                                child: Text(
+                                                  data['id']!,
+                                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0056D2), fontSize: 12),
+                                                  maxLines: 1,
+                                                  softWrap: false,
+                                                ),
                                               ),
                                             ),
-                                            160,
+                                            60,
+                                          ),
+                                          _buildDataCell(
+                                            Center(
+                                              child: InkWell(
+                                                onTap: () => _showEmployeeDetails(data),
+                                                child: CircleAvatar(
+                                                  radius: 17,
+                                                  backgroundColor: Colors.blue.shade50,
+                                                  backgroundImage: (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty)
+                                                      ? NetworkImage(data['photoUrl'].toString())
+                                                      : null,
+                                                  child: (data['photoUrl'] == null || data['photoUrl'].toString().isEmpty)
+                                                      ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
+                                                      : null,
+                                                ),
+                                              ),
+                                            ),
+                                            65,
+                                          ),
+                                          _buildDataCell(
+                                            InkWell(
+                                              onTap: () => _showEmployeeDetails(data),
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisAlignment: MainAxisAlignment.center,
+                                                children: [
+                                                  Text(
+                                                    data['name']!,
+                                                    style: const TextStyle(
+                                                      fontWeight: FontWeight.w600,
+                                                      color: Color(0xFF0056D2),
+                                                      fontSize: 13,
+                                                    ),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                  if (data['company'] != null && data['company'].toString().isNotEmpty)
+                                                    Text(
+                                                      data['company'].toString(),
+                                                      style: const TextStyle(fontSize: 10.5, color: Colors.black45),
+                                                      overflow: TextOverflow.ellipsis,
+                                                      maxLines: 1,
+                                                    ),
+                                                ],
+                                              ),
+                                            ),
+                                            165,
                                           ),
                                           _buildDataCell(
                                             Row(
                                               children: [
-                                                Icon(data['icon'] as IconData? ?? Icons.business_center, color: data['iconColor'] as Color? ?? Colors.grey.shade800, size: 16),
-                                                const SizedBox(width: 4),
+                                                Container(
+                                                  padding: const EdgeInsets.all(5),
+                                                  decoration: BoxDecoration(
+                                                    color: (data['iconColor'] as Color? ?? const Color(0xFF0056D2)).withValues(alpha: 0.1),
+                                                    borderRadius: BorderRadius.circular(6),
+                                                  ),
+                                                  child: Icon(
+                                                    data['icon'] as IconData? ?? Icons.business_center,
+                                                    color: data['iconColor'] as Color? ?? const Color(0xFF0056D2),
+                                                    size: 16,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
                                                 Expanded(
-                                                  child: Text(
-                                                    _getTranslatedText(data['dept']!),
-                                                    style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500),
-                                                    overflow: TextOverflow.ellipsis,
+                                                  child: Column(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Text(
+                                                        data['dept']!,
+                                                        style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w600),
+                                                        overflow: TextOverflow.ellipsis,
+                                                        maxLines: 1,
+                                                      ),
+                                                      if (_translations.containsKey(data['dept']!))
+                                                        Text(
+                                                          _translations[data['dept']!]!,
+                                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 10.5),
+                                                          overflow: TextOverflow.ellipsis,
+                                                          maxLines: 1,
+                                                        ),
+                                                    ],
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                            160,
+                                            220,
                                           ),
                                           _buildDataCell(
-                                            Text(_getTranslatedText(data['post']!), style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12)),
-                                            140,
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  data['post']!,
+                                                  style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12, fontWeight: FontWeight.w600),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                                if (_translations.containsKey(data['post']!))
+                                                  Text(
+                                                    _translations[data['post']!]!,
+                                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 10.5),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                              ],
+                                            ),
+                                            175,
                                           ),
                                           _buildDataCell(
-                                            Text(_getTranslatedText(data['district']!), style: const TextStyle(color: Colors.black87, fontSize: 12)),
-                                            120,
+                                            Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  data['district']!,
+                                                  style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500),
+                                                  overflow: TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                                if (_translations.containsKey(data['district']!))
+                                                  Text(
+                                                    _translations[data['district']!]!,
+                                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 10.5),
+                                                    overflow: TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                              ],
+                                            ),
+                                            130,
                                           ),
                                           _buildDataCell(
-                                            ElevatedButton.icon(
-                                              onPressed: () => _showEmployeeDetails(data),
-                                              icon: const Icon(Icons.remove_red_eye, size: 12),
-                                              label: const Text('View', style: TextStyle(fontSize: 11)),
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: const Color(0xFF4CAF50),
-                                                foregroundColor: Colors.white,
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                                                minimumSize: const Size(60, 26),
-                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                            Center(
+                                              child: ElevatedButton.icon(
+                                                onPressed: () => _showEmployeeDetails(data),
+                                                icon: const Icon(Icons.remove_red_eye, size: 12),
+                                                label: const Text('View', style: TextStyle(fontSize: 11)),
+                                                style: ElevatedButton.styleFrom(
+                                                  backgroundColor: const Color(0xFF4CAF50),
+                                                  foregroundColor: Colors.white,
+                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                                  minimumSize: const Size(64, 28),
+                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                                ),
                                               ),
                                             ),
-                                            80,
+                                            85,
                                           ),
                                         ],
                                       ),
@@ -1496,7 +1600,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   Widget _buildDataCell(Widget child, double width) {
     return Container(
       width: width,
-      height: 50,
+      height: 58,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(

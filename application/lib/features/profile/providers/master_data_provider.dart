@@ -58,8 +58,10 @@ class MasterDataNotifier extends StateNotifier<MasterDataState> {
         });
       }
 
+      final validDistricts = districts.keys.where((k) => k != 'Select District').toList();
+
       state = MasterDataState(
-        gujaratDistricts: districts.isNotEmpty ? districts : state.gujaratDistricts,
+        gujaratDistricts: validDistricts.isNotEmpty ? districts : AppData.gujaratDistricts,
         educationDegrees: _parseList(data['educationDegrees']) ?? state.educationDegrees,
         abroadCountries: (_parseList(data['abroadCountries']) != null && _parseList(data['abroadCountries'])!.length > 50)
             ? _parseList(data['abroadCountries'])!

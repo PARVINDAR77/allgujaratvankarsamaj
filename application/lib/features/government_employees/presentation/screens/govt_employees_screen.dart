@@ -6,6 +6,7 @@ import '../../data/models/govt_employee_query.dart';
 import '../../providers/govt_employees_provider.dart';
 import '../../../../core/network/api_failure.dart';
 import '../../../profile/providers/master_data_provider.dart';
+import '../../../../shared/constants/app_data.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
   const GovtEmployeesScreen({super.key});
@@ -118,7 +119,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
               'assets/images/vankar_header_banner.png',
               fit: BoxFit.cover,
               alignment: Alignment.topCenter,
-              errorBuilder: (_, __, ___) => Container(
+              errorBuilder: (context, error, stackTrace) => Container(
                 color: Colors.blue.shade100,
                 child: const Center(child: Text('Header Image')),
               ),
@@ -235,32 +236,123 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     );
   }
 
-  Widget _buildDropdown(String hint, String? value, List<DropdownMenuItem<String?>> items, ValueChanged<String?> onChanged) {
-    return SizedBox(
+  static const Map<String, String> _districtTranslations = {
+    'Ahmedabad': 'અમદાવાદ',
+    'Amreli': 'અમરેલી',
+    'Anand': 'આણંદ',
+    'Aravalli': 'અરવલ્લી',
+    'Banaskantha': 'બનાસકાંઠા',
+    'Bharuch': 'ભરૂચ',
+    'Bhavnagar': 'ભાવનગર',
+    'Botad': 'બોટાદ',
+    'Chhota Udaipur': 'છોટા ઉદેપુર',
+    'Dahod': 'દાહોદ',
+    'Dang': 'ડાંગ',
+    'Devbhoomi Dwarka': 'દેવભૂમિ દ્વારકા',
+    'Gandhinagar': 'ગાંધીનગર',
+    'Gir Somnath': 'ગીર સોમનાથ',
+    'Jamnagar': 'જામનગર',
+    'Junagadh': 'જૂનાગઢ',
+    'Kheda': 'ખેડા',
+    'Kutch': 'કચ્છ',
+    'Mahisagar': 'મહીસાગર',
+    'Mehsana': 'મહેસાણા',
+    'Morbi': 'મોરબી',
+    'Narmada': 'નર્મદા',
+    'Navsari': 'નવસારી',
+    'Panchmahal': 'પંચમહાલ',
+    'Patan': 'પાટણ',
+    'Porbandar': 'પોરબંદર',
+    'Rajkot': 'રાજકોટ',
+    'Sabarkantha': 'સાબરકાંઠા',
+    'Surat': 'સુરત',
+    'Surendranagar': 'સુરેન્દ્રનગર',
+    'Tapi': 'તાપી',
+    'Vadodara': 'વડોદરા',
+    'Valsad': 'વલસાડ',
+  };
+
+  Widget _buildDropdown(
+    String hint,
+    String? value,
+    List<DropdownMenuItem<String?>> items,
+    ValueChanged<String?> onChanged, {
+    IconData? prefixIcon,
+  }) {
+    return Container(
       height: 40,
-      child: DropdownButtonFormField<String?>(
-        value: value,
-        isExpanded: true,
-        dropdownColor: Colors.white,
-        icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF0056D2)),
-        style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w600),
-        decoration: InputDecoration(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-          hintText: hint,
-          hintStyle: const TextStyle(fontSize: 11, color: Colors.black54),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: const BorderSide(color: Colors.grey),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          if (prefixIcon != null) ...[
+            Icon(prefixIcon, color: const Color(0xFF0056D2), size: 16),
+            const SizedBox(width: 6),
+          ],
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String?>(
+                value: value,
+                isExpanded: true,
+                dropdownColor: Colors.white,
+                menuMaxHeight: 380,
+                borderRadius: BorderRadius.circular(12),
+                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF0056D2), size: 20),
+                style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w600),
+                hint: Text(hint, style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.normal)),
+                selectedItemBuilder: (BuildContext context) {
+                  return items.map<Widget>((DropdownMenuItem<String?> item) {
+                    final itemText = (item.child as Text).data ?? '';
+                    return Container(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        itemText,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF0056D2),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList();
+                },
+                items: items.map((item) {
+                  final isSelected = item.value == value;
+                  final itemText = (item.child as Text).data ?? '';
+                  return DropdownMenuItem<String?>(
+                    value: item.value,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              itemText,
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected ? const Color(0xFF0056D2) : Colors.black87,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isSelected)
+                            const Icon(Icons.check, size: 16, color: Color(0xFF0056D2)),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+                onChanged: onChanged,
+              ),
+            ),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Colors.grey.shade300),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-        ),
-        items: items,
-        onChanged: onChanged,
+        ],
       ),
     );
   }
@@ -270,31 +362,63 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     final departments = deptsAsync.valueOrNull ?? [];
 
     List<DropdownMenuItem<String?>> deptItems = [
-      const DropdownMenuItem<String?>(value: null, child: Text('All Dept (બધા વિભાગ)')),
+      const DropdownMenuItem<String?>(
+        value: null,
+        child: Text('All Dept (બધા વિભાગ)', overflow: TextOverflow.ellipsis),
+      ),
     ];
-    deptItems.addAll(departments.map((d) => DropdownMenuItem<String?>(
-      value: d['id'].toString(),
-      child: Text('${d['name']} - ${d['gujaratiName']}', overflow: TextOverflow.ellipsis),
-    )));
+    deptItems.addAll(departments.map((d) {
+      final name = d['name']?.toString() ?? '';
+      final guj = d['gujaratiName']?.toString() ?? '';
+      final fullLabel = guj.isNotEmpty ? '$name ($guj)' : name;
+      return DropdownMenuItem<String?>(
+        value: d['id'].toString(),
+        child: Text(fullLabel, overflow: TextOverflow.ellipsis),
+      );
+    }));
 
     List<DropdownMenuItem<String?>> desigItems = [
-      const DropdownMenuItem<String?>(value: null, child: Text('All Posts (બધા હોદ્દા)')),
+      const DropdownMenuItem<String?>(
+        value: null,
+        child: Text('All Posts (બધા હોદ્દા)', overflow: TextOverflow.ellipsis),
+      ),
     ];
     if (_selectedDepartmentId != null) {
       final dept = departments.firstWhere((d) => d['id'].toString() == _selectedDepartmentId, orElse: () => {});
       if (dept.isNotEmpty && dept['designations'] != null) {
         final designations = (dept['designations'] as List).cast<Map<String, dynamic>>();
-        desigItems.addAll(designations.map((d) => DropdownMenuItem<String?>(
-          value: d['id'].toString(),
-          child: Text('${d['name']} - ${d['gujaratiName']}', overflow: TextOverflow.ellipsis),
-        )));
+        desigItems.addAll(designations.map((d) {
+          final name = d['name']?.toString() ?? '';
+          final guj = d['gujaratiName']?.toString() ?? '';
+          final fullLabel = guj.isNotEmpty ? '$name ($guj)' : name;
+          return DropdownMenuItem<String?>(
+            value: d['id'].toString(),
+            child: Text(fullLabel, overflow: TextOverflow.ellipsis),
+          );
+        }));
       }
     }
 
     final masterData = ref.watch(masterDataProvider);
+    final districtSource = (masterData.gujaratDistricts.keys.where((d) => d != 'Select District').length > 1)
+        ? masterData.gujaratDistricts
+        : AppData.gujaratDistricts;
+
     final List<DropdownMenuItem<String?>> districtItems = [
-      const DropdownMenuItem<String?>(value: null, child: Text('All Districts (બધા જિલ્લા)')),
-      ...masterData.gujaratDistricts.keys.where((d) => d != 'Select District').map((d) => DropdownMenuItem<String?>(value: d, child: Text(d))),
+      const DropdownMenuItem<String?>(
+        value: null,
+        child: Text('All Districts (બધા જિલ્લા)', overflow: TextOverflow.ellipsis),
+      ),
+      ...districtSource.keys
+          .where((d) => d != 'Select District')
+          .map((d) {
+            final guj = _districtTranslations[d];
+            final label = guj != null ? '$d ($guj)' : d;
+            return DropdownMenuItem<String?>(
+              value: d,
+              child: Text(label, overflow: TextOverflow.ellipsis),
+            );
+          }),
     ];
 
     final List<DropdownMenuItem<String?>> genderItems = [
@@ -317,51 +441,63 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
           if (isDesktop)
             Row(
               children: [
-                Expanded(child: _buildDropdown('Department', _selectedDepartmentId, deptItems, (v) {
-                  setState(() { _selectedDepartmentId = v; _selectedDesignationId = null; });
-                  _applyCurrentFilters();
-                })),
+                Expanded(
+                  child: _buildDropdown('Department (વિભાગ)', _selectedDepartmentId, deptItems, (v) {
+                    setState(() { _selectedDepartmentId = v; _selectedDesignationId = null; });
+                    _applyCurrentFilters();
+                  }, prefixIcon: Icons.account_balance),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildDropdown('Designation', _selectedDesignationId, desigItems, (v) {
-                  setState(() => _selectedDesignationId = v);
-                  _applyCurrentFilters();
-                })),
+                Expanded(
+                  child: _buildDropdown('Designation (હોદ્દો)', _selectedDesignationId, desigItems, (v) {
+                    setState(() => _selectedDesignationId = v);
+                    _applyCurrentFilters();
+                  }, prefixIcon: Icons.badge),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildDropdown('District', _selectedDistrictId, districtItems, (v) {
-                  setState(() => _selectedDistrictId = v);
-                  _applyCurrentFilters();
-                })),
+                Expanded(
+                  child: _buildDropdown('District (જિલ્લો)', _selectedDistrictId, districtItems, (v) {
+                    setState(() => _selectedDistrictId = v);
+                    _applyCurrentFilters();
+                  }, prefixIcon: Icons.location_on),
+                ),
                 const SizedBox(width: 8),
-                Expanded(child: _buildDropdown('Gender', _selectedGender, genderItems, (v) {
-                  setState(() => _selectedGender = v);
-                  _applyCurrentFilters();
-                })),
+                Expanded(
+                  child: _buildDropdown('Gender (જાતિ)', _selectedGender, genderItems, (v) {
+                    setState(() => _selectedGender = v);
+                    _applyCurrentFilters();
+                  }, prefixIcon: Icons.people),
+                ),
               ],
             )
           else
             Column(
               children: [
-                Row(
-                  children: [
-                    Expanded(child: _buildDropdown('Department', _selectedDepartmentId, deptItems, (v) {
-                      setState(() { _selectedDepartmentId = v; _selectedDesignationId = null; });
-                    })),
-                    const SizedBox(width: 8),
-                    Expanded(child: _buildDropdown('Designation', _selectedDesignationId, desigItems, (v) {
-                      setState(() => _selectedDesignationId = v);
-                    })),
-                  ],
-                ),
+                _buildDropdown('Department (વિભાગ)', _selectedDepartmentId, deptItems, (v) {
+                  setState(() { _selectedDepartmentId = v; _selectedDesignationId = null; });
+                  _applyCurrentFilters();
+                }, prefixIcon: Icons.account_balance),
+                const SizedBox(height: 8),
+                _buildDropdown('Designation (હોદ્દો)', _selectedDesignationId, desigItems, (v) {
+                  setState(() => _selectedDesignationId = v);
+                  _applyCurrentFilters();
+                }, prefixIcon: Icons.badge),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Expanded(child: _buildDropdown('District', _selectedDistrictId, districtItems, (v) {
-                      setState(() => _selectedDistrictId = v);
-                    })),
+                    Expanded(
+                      child: _buildDropdown('District (જિલ્લો)', _selectedDistrictId, districtItems, (v) {
+                        setState(() => _selectedDistrictId = v);
+                        _applyCurrentFilters();
+                      }, prefixIcon: Icons.location_on),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: _buildDropdown('Gender', _selectedGender, genderItems, (v) {
-                      setState(() => _selectedGender = v);
-                    })),
+                    Expanded(
+                      child: _buildDropdown('Gender (જાતિ)', _selectedGender, genderItems, (v) {
+                        setState(() => _selectedGender = v);
+                        _applyCurrentFilters();
+                      }, prefixIcon: Icons.people),
+                    ),
                   ],
                 ),
               ],
@@ -571,13 +707,14 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
               children: [
                 Row(
                   children: [
-                    _buildHeaderCell('#', const Color(0xFF00A2FF), 40),
-                    _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 70),
-                    _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 160),
-                    _buildHeaderCell('Department\n(વિભાગ)', const Color(0xFF4CAF50), 160),
-                    _buildHeaderCell('Post\n(હોદ્દો)', const Color(0xFFFF9800), 160),
-                    _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 120),
-                    _buildHeaderCell('Age\n(ઉંમર)', const Color(0xFF009688), 60),
+                    _buildHeaderCell('#\n(ક્રમ)', const Color(0xFF00A2FF), 55),
+                    _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 65),
+                    _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 165),
+                    _buildHeaderCell('Department\n(વિભાગ)', const Color(0xFF4CAF50), 180),
+                    _buildHeaderCell('Post\n(હોદ્દો)', const Color(0xFFFF9800), 170),
+                    _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 130),
+                    _buildHeaderCell('Age\n(ઉંમર)', const Color(0xFF009688), 65),
+                    _buildHeaderCell('Action\n(વિગત)', const Color(0xFF0056D2), 85),
                   ],
                 ),
                 ...empState.items.asMap().entries.map((entry) {
@@ -630,85 +767,351 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       child: Row(
         children: [
           _buildDataCell(
-            Text('$index',
-                style: const TextStyle(
-                    fontWeight: FontWeight.bold, color: Color(0xFF0056D2))),
-            40,
-          ),
-          _buildDataCell(
-            emp.photoUrl != null
-                ? CircleAvatar(
-                    radius: 16,
-                    backgroundImage: NetworkImage(emp.photoUrl!),
-                  )
-                : CircleAvatar(
-                    radius: 16,
-                    backgroundColor: Colors.blue.shade50,
-                    child: const Icon(Icons.person,
-                        color: Color(0xFF0056D2), size: 20),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.blue.shade200, width: 0.8),
+                ),
+                child: Text(
+                  '$index',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0056D2),
+                    fontSize: 12,
                   ),
-            70,
+                  maxLines: 1,
+                  softWrap: false,
+                ),
+              ),
+            ),
+            55,
           ),
           _buildDataCell(
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(emp.fullName,
+            Center(
+              child: InkWell(
+                onTap: () => _showGovtEmployeeDetails(emp),
+                child: CircleAvatar(
+                  radius: 17,
+                  backgroundColor: Colors.blue.shade50,
+                  backgroundImage: (emp.photoUrl != null && emp.photoUrl!.isNotEmpty)
+                      ? NetworkImage(emp.photoUrl!)
+                      : null,
+                  child: (emp.photoUrl == null || emp.photoUrl!.isEmpty)
+                      ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
+                      : null,
+                ),
+              ),
+            ),
+            65,
+          ),
+          _buildDataCell(
+            InkWell(
+              onTap: () => _showGovtEmployeeDetails(emp),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    emp.fullName,
                     style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF0056D2),
-                        fontSize: 13),
-                    overflow: TextOverflow.ellipsis),
-                if (emp.gender.isNotEmpty)
-                  Text(emp.gender,
-                      style: const TextStyle(fontSize: 10, color: Colors.black45)),
-              ],
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF0056D2),
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  if (emp.gender.isNotEmpty)
+                    Text(
+                      emp.gender == 'MALE'
+                          ? 'Male (પુરુષ)'
+                          : (emp.gender == 'FEMALE' ? 'Female (સ્ત્રી)' : emp.gender),
+                      style: const TextStyle(fontSize: 10, color: Colors.black45),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                ],
+              ),
             ),
-            160,
+            165,
           ),
           _buildDataCell(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(emp.departmentName,
-                    style: const TextStyle(color: Colors.black87, fontSize: 12),
-                    overflow: TextOverflow.ellipsis),
-                Text(emp.departmentGujaratiName,
-                    style: const TextStyle(fontSize: 10, color: Colors.black45),
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  emp.departmentName,
+                  style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                if (emp.departmentGujaratiName.isNotEmpty)
+                  Text(
+                    emp.departmentGujaratiName,
+                    style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
               ],
             ),
-            160,
+            180,
           ),
           _buildDataCell(
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(emp.designationName,
-                    style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12),
-                    overflow: TextOverflow.ellipsis),
-                Text(emp.designationGujaratiName,
-                    style: const TextStyle(fontSize: 10, color: Colors.black45),
-                    overflow: TextOverflow.ellipsis),
+                Text(
+                  emp.designationName,
+                  style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                if (emp.designationGujaratiName.isNotEmpty)
+                  Text(
+                    emp.designationGujaratiName,
+                    style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
               ],
             ),
-            160,
+            170,
           ),
           _buildDataCell(
-            Text(emp.districtName ?? '—',
-                style: const TextStyle(color: Colors.black87, fontSize: 12)),
-            120,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  emp.districtName ?? '—',
+                  style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                if (emp.districtName != null && _districtTranslations.containsKey(emp.districtName!))
+                  Text(
+                    _districtTranslations[emp.districtName!]!,
+                    style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+              ],
+            ),
+            130,
           ),
           _buildDataCell(
-            Text(emp.age != null ? '${emp.age}' : '—',
-                style: const TextStyle(color: Colors.black87, fontSize: 12)),
-            60,
+            Center(
+              child: Text(
+                emp.age != null ? '${emp.age} yrs' : '—',
+                style: const TextStyle(color: Colors.black87, fontSize: 12),
+              ),
+            ),
+            65,
+          ),
+          _buildDataCell(
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: () => _showGovtEmployeeDetails(emp),
+                icon: const Icon(Icons.remove_red_eye, size: 12),
+                label: const Text('View', style: TextStyle(fontSize: 11)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF4CAF50),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                  minimumSize: const Size(64, 28),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                ),
+              ),
+            ),
+            85,
           ),
         ],
       ),
+    );
+  }
+
+  void _showGovtEmployeeDetails(GovtEmployeeModel emp) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF0056D2), Color(0xFF0A2540)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 26,
+                      backgroundColor: Colors.white24,
+                      backgroundImage: (emp.photoUrl != null && emp.photoUrl!.isNotEmpty)
+                          ? NetworkImage(emp.photoUrl!)
+                          : null,
+                      child: (emp.photoUrl == null || emp.photoUrl!.isEmpty)
+                          ? const Icon(Icons.person, color: Colors.white, size: 30)
+                          : null,
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            emp.fullName,
+                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                          const SizedBox(height: 2),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF4CAF50),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.verified, size: 11, color: Colors.white),
+                                    SizedBox(width: 3),
+                                    Text('Verified Govt (પ્રમાણિત)', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                emp.employmentType == 'CENTRAL_GOVT' ? 'Central Gov' : 'Gujarat Gov',
+                                style: const TextStyle(color: Colors.white70, fontSize: 11),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Details Body
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      _buildDetailRow(Icons.account_balance, 'Department (વિભાગ)', '${emp.departmentName} (${emp.departmentGujaratiName})'),
+                      const Divider(height: 16),
+                      _buildDetailRow(Icons.badge, 'Post / Role (હોદ્દો)', '${emp.designationName} (${emp.designationGujaratiName})'),
+                      const Divider(height: 16),
+                      if (emp.officeLocation != null && emp.officeLocation!.isNotEmpty) ...[
+                        _buildDetailRow(Icons.business, 'Office / Posting (કચેરી)', emp.officeLocation!),
+                        const Divider(height: 16),
+                      ],
+                      if (emp.districtName != null && emp.districtName!.isNotEmpty) ...[
+                        _buildDetailRow(Icons.location_on, 'District (જિલ્લો)', '${emp.districtName!} (${_districtTranslations[emp.districtName!] ?? ''})'),
+                        const Divider(height: 16),
+                      ],
+                      if (emp.joiningYear != null) ...[
+                        _buildDetailRow(Icons.calendar_today, 'Joining Year (સેવા વર્ષ)', '${emp.joiningYear}'),
+                        const Divider(height: 16),
+                      ],
+                      if (emp.education != null && emp.education!.isNotEmpty) ...[
+                        _buildDetailRow(Icons.school, 'Education (શિક્ષણ)', emp.education!),
+                        const Divider(height: 16),
+                      ],
+                      if (emp.age != null) ...[
+                        _buildDetailRow(Icons.cake, 'Age (ઉંમર)', '${emp.age} Years (વર્ષ)'),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              // Footer
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                ),
+                child: Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF475569),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      ),
+                      child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                    ),
+                    const Spacer(),
+                    if (emp.profileId.isNotEmpty)
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          context.push('/candidate-profile-details', extra: {'id': emp.profileId});
+                        },
+                        icon: const Icon(Icons.person_search, size: 16),
+                        label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF0056D2),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 18, color: const Color(0xFF0056D2)),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 2),
+              Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -743,7 +1146,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   Widget _buildDataCell(Widget child, double width) {
     return Container(
       width: width,
-      height: 56,
+      height: 58,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(

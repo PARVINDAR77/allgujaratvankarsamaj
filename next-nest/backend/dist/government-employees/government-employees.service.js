@@ -445,7 +445,12 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                 whereCondition.profile.gender = query.gender.toUpperCase();
             }
             if (query.districtId) {
-                whereCondition.profile.districtId = query.districtId;
+                whereCondition.profile.OR = [
+                    { districtId: query.districtId },
+                    { district: { name: { contains: query.districtId } } },
+                    { city: { contains: query.districtId } },
+                    { nativePlace: { contains: query.districtId } },
+                ];
             }
             if (query.talukaId) {
                 whereCondition.profile.talukaId = query.talukaId;
