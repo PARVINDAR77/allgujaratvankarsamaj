@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
 
+import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/models/profile_query_model.dart';
 import '../../../../shared/widgets/profile_card.dart';
 import '../../../../shared/widgets/vankar_header.dart';
@@ -152,13 +153,20 @@ class _UniversalListingScreenState extends ConsumerState<UniversalListingScreen>
   }
 
   Widget _buildContent(UniversalListingState state) {
-    if (state.isLoading && state.profiles.isEmpty) {
+    final targetGender = ProfileModel.normalizeGenderToApi(state.query.gender);
+    final displayedProfiles = state.profiles.where((p) {
+      if (targetGender == 'MALE') return p.isMale;
+      if (targetGender == 'FEMALE') return p.isFemale;
+      return true;
+    }).toList();
+
+    if (state.isLoading && displayedProfiles.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(color: Color(0xFF0056D2)),
       );
     }
 
-    if (state.error != null && state.profiles.isEmpty) {
+    if (state.error != null && displayedProfiles.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -178,7 +186,7 @@ class _UniversalListingScreenState extends ConsumerState<UniversalListingScreen>
       );
     }
 
-    if (state.profiles.isEmpty) {
+    if (displayedProfiles.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -210,9 +218,9 @@ class _UniversalListingScreenState extends ConsumerState<UniversalListingScreen>
       child: ListView.builder(
         controller: _scrollController,
         physics: const AlwaysScrollableScrollPhysics(),
-        itemCount: state.profiles.length + (state.isLoadingMore ? 1 : 0),
+        itemCount: displayedProfiles.length + (state.isLoadingMore ? 1 : 0),
         itemBuilder: (context, index) {
-          if (index == state.profiles.length) {
+          if (index == displayedProfiles.length) {
             return const Padding(
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(
@@ -220,7 +228,7 @@ class _UniversalListingScreenState extends ConsumerState<UniversalListingScreen>
               ),
             );
           }
-          return ProfileCard(profile: state.profiles[index]);
+          return ProfileCard(profile: displayedProfiles[index]);
         },
       ),
     );

@@ -146,8 +146,9 @@ class ProfileModel {
   }
 
   static String normalizeGenderToApi(dynamic val) {
-    if (val == null) return 'MALE';
-    final s = val.toString().toUpperCase();
+    if (val == null) return '';
+    final s = val.toString().toUpperCase().trim();
+    if (s.isEmpty || s == 'ALL' || s == 'ANY') return '';
     if (s.contains('FEMALE') ||
         s.contains('WOMAN') ||
         s.contains('GIRL') ||
@@ -156,7 +157,15 @@ class ProfileModel {
         s.contains('BRIDE')) {
       return 'FEMALE';
     }
-    return 'MALE';
+    if (s.contains('MALE') ||
+        s.contains('MAN') ||
+        s.contains('BOY') ||
+        s.contains('પુરુષ') ||
+        s.contains('વર') ||
+        s.contains('GROOM')) {
+      return 'MALE';
+    }
+    return '';
   }
 
   String? get fullPhotoUrl {

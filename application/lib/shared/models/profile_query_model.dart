@@ -67,11 +67,11 @@ class ProfileQueryModel {
   }
 
   Map<String, dynamic> toJson() {
+    final apiGender = ProfileModel.normalizeGenderToApi(gender);
     final map = <String, dynamic>{
       'page': page,
       'limit': limit,
-      if (gender != null && gender!.isNotEmpty)
-        'gender': ProfileModel.normalizeGenderToApi(gender),
+      if (apiGender.isNotEmpty) 'gender': apiGender,
       if (ageMin != null) 'ageMin': ageMin,
       if (ageMax != null) 'ageMax': ageMax,
       if (districtId != null) 'districtId': districtId,
@@ -85,4 +85,40 @@ class ProfileQueryModel {
     };
     return map;
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ProfileQueryModel &&
+          runtimeType == other.runtimeType &&
+          page == other.page &&
+          limit == other.limit &&
+          gender == other.gender &&
+          ageMin == other.ageMin &&
+          ageMax == other.ageMax &&
+          districtId == other.districtId &&
+          talukaId == other.talukaId &&
+          occupationCategory == other.occupationCategory &&
+          verification == other.verification &&
+          status == other.status &&
+          search == other.search &&
+          sortBy == other.sortBy &&
+          sortOrder == other.sortOrder;
+
+  @override
+  int get hashCode => Object.hash(
+        page,
+        limit,
+        gender,
+        ageMin,
+        ageMax,
+        districtId,
+        talukaId,
+        occupationCategory,
+        verification,
+        status,
+        search,
+        sortBy,
+        sortOrder,
+      );
 }

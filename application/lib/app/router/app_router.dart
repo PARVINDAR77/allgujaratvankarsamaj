@@ -222,7 +222,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/search-results',
         name: 'search-results',
-        builder: (context, state) => const SearchResultsScreen(),
+        builder: (context, state) {
+          final gender = state.uri.queryParameters['gender'];
+          return SearchResultsScreen(initialGender: gender);
+        },
       ),
       GoRoute(
         path: '/candidate-profile-details',

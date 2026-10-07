@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
-import '../../../../shared/models/profile_model.dart';
-import '../../../../shared/models/profile_query_model.dart';
-import '../../../../shared/constants/gov_departments.dart';
-import '../../../../shared/constants/app_data.dart';
 import '../../../profile/providers/master_data_provider.dart';
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
@@ -47,6 +43,16 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
   void initState() {
     super.initState();
     _lookingFor = widget.initialLookingFor;
+  }
+
+  @override
+  void didUpdateWidget(covariant AdvancedSearchScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialLookingFor != widget.initialLookingFor) {
+      setState(() {
+        _lookingFor = widget.initialLookingFor;
+      });
+    }
   }
 
   @override
@@ -336,7 +342,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                   Navigator.of(ctx).pop(); // Safely close the dialog
                                 }
                                 if (context.mounted) {
-                                  context.push('/search-results');
+                                  context.push('/search-results?gender=$gender');
                                 }
                               });
                               return AlertDialog(
@@ -426,28 +432,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
         ],
       ),
     );
-  }
-
-  void _performSearch() {
-    int? ageMin;
-    int? ageMax;
-    
-    if (_ageRange == '18 to 22 Years') {
-      ageMin = 18; ageMax = 22;
-    } else if (_ageRange == '22 to 30 Years') {
-      ageMin = 22; ageMax = 30;
-    } else if (_ageRange == '30 to 40 Years') {
-      ageMin = 30; ageMax = 40;
-    }
-
-    final query = ProfileQueryModel(
-      gender: _lookingFor == 'Groom' ? 'MALE' : 'FEMALE',
-      ageMin: ageMin,
-      ageMax: ageMax,
-      search: _idSearchController.text.trim().isNotEmpty ? _idSearchController.text.trim() : null,
-    );
-
-    context.push('/advanced-search', extra: query);
   }
 
   Widget _buildDropdown(String label, String value, List<String> options, IconData prefixIcon, Color iconColor, ValueChanged<String?> onChanged) {

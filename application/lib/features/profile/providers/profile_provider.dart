@@ -61,11 +61,13 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
   String? _districtId;
   String? _occupationCategory;
 
+  String? get currentGender => _gender;
+
   ProfileNotifier(this._repository) : super(ProfileState(isLoading: true)) {
     Future.microtask(() => fetchFirstPage());
   }
 
-  void updateFilters({
+  Future<void> updateFilters({
     String? search,
     String? gender,
     String? status,
@@ -73,7 +75,7 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     int? maxAge,
     String? districtId,
     String? occupationCategory,
-  }) {
+  }) async {
     _searchQuery = search;
     _gender = gender;
     _status = status;
@@ -81,7 +83,8 @@ class ProfileNotifier extends StateNotifier<ProfileState> {
     _maxAge = maxAge;
     _districtId = districtId;
     _occupationCategory = occupationCategory;
-    fetchFirstPage();
+    state = state.copyWith(isLoading: true, profiles: [], error: null);
+    await fetchFirstPage();
   }
 
   Future<void> fetchFirstPage() async {

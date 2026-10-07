@@ -8,6 +8,7 @@ import '../../../../features/advertisements/providers/advertisements_provider.da
 import '../providers/notifications_provider.dart';
 import '../providers/views_provider.dart';
 import '../widgets/notifications_dialog.dart';
+import '../../../profile/providers/profile_provider.dart';
 
 final homeButtonsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   try {
@@ -498,7 +499,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.go('/search?lookingFor=Groom'),
+                      onTap: () {
+                        ref.read(profileNotifierProvider.notifier).updateFilters(gender: 'MALE');
+                        context.push('/search-results?gender=MALE');
+                      },
                     ),
                   ),
                 ),
@@ -512,7 +516,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.go('/search?lookingFor=Bride'),
+                      onTap: () {
+                        ref.read(profileNotifierProvider.notifier).updateFilters(gender: 'FEMALE');
+                        context.push('/search-results?gender=FEMALE');
+                      },
                     ),
                   ),
                 ),
