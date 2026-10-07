@@ -281,8 +281,23 @@ let StatisticsService = class StatisticsService {
             const totalCandidates = await this.prisma.matrimonialProfile.count({
                 where: { status: "APPROVED" },
             });
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0);
+            const totalBoys = await this.prisma.matrimonialProfile.count({
+                where: {
+                    status: "APPROVED",
+                    gender: "MALE",
+                },
+            });
+            const totalGirls = await this.prisma.matrimonialProfile.count({
+                where: {
+                    status: "APPROVED",
+                    gender: "FEMALE",
+                },
+            });
+            const now = new Date();
+            const istOffsetMs = 5.5 * 60 * 60 * 1000;
+            const istDate = new Date(now.getTime() + istOffsetMs);
+            istDate.setUTCHours(0, 0, 0, 0);
+            const startOfDay = new Date(istDate.getTime() - istOffsetMs);
             const boysToday = await this.prisma.matrimonialProfile.count({
                 where: {
                     gender: "MALE",
@@ -435,6 +450,16 @@ let StatisticsService = class StatisticsService {
             }
             return {
                 totalCandidates,
+                totalBoys,
+                totalGirls,
+                boys: totalBoys,
+                girls: totalGirls,
+                genderBreakdown: {
+                    boys: totalBoys,
+                    girls: totalGirls,
+                    MALE: totalBoys,
+                    FEMALE: totalGirls,
+                },
                 today: {
                     boys: boysToday,
                     girls: girlsToday,
@@ -449,6 +474,16 @@ let StatisticsService = class StatisticsService {
             console.error("Critical error in getPublicLiveStatistics:", globalError);
             return {
                 totalCandidates: 0,
+                totalBoys: 0,
+                totalGirls: 0,
+                boys: 0,
+                girls: 0,
+                genderBreakdown: {
+                    boys: 0,
+                    girls: 0,
+                    MALE: 0,
+                    FEMALE: 0,
+                },
                 today: { boys: 0, girls: 0 },
                 departments: {
                     government: [

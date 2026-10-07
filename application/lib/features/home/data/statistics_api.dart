@@ -33,6 +33,10 @@ class StatisticsApi {
       // Graceful fallback to keep the Live Counter screen functional without 500 error screens
       return {
         'totalCandidates': 0,
+        'totalBoys': 0,
+        'totalGirls': 0,
+        'boys': 0,
+        'girls': 0,
         'today': {'boys': 0, 'girls': 0},
         'departments': {
           'government': [
