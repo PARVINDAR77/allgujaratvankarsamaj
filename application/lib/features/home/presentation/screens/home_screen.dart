@@ -168,11 +168,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           final screenH = constraints.maxHeight > 0
               ? constraints.maxHeight
               : MediaQuery.of(context).size.height;
-          // Determine responsive width and lock aspect ratio to 1080x1920 (no distortion)
+
+          // Fit 1080x1920 poster perfectly into the available screen area without distortion or overflow
           final isMobile = screenW < 600;
-          final double posterW = isMobile ? screenW : 520;
-          final double posterH = posterW * (1920 / 1080);
-          final double scale = posterW / 1080;
+          final double maxAllowedW = isMobile ? screenW : 520.0;
+          final double maxAllowedH = screenH;
+
+          // Uniform scale so that the 1080x1920 poster fits within available width AND height
+          // This guarantees that posterH <= screenH, so the entire poster and bottom icons
+          // fit cleanly above the bottom navigation bar with ZERO up/down scrolling.
+          final double scale = ((maxAllowedW / 1080.0) < (maxAllowedH / 1920.0))
+              ? (maxAllowedW / 1080.0)
+              : (maxAllowedH / 1920.0);
+
+          final double posterW = 1080.0 * scale;
+          final double posterH = 1920.0 * scale;
 
           // Helper to convert poster coords to screen coords with uniform scaling
           double sx(double x) => x * scale;
@@ -180,29 +190,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
           double sw(double w) => w * scale;
           double sh(double h) => h * scale;
 
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                minHeight: screenH,
-              ),
-              child: Center(
-                child: SizedBox(
-                  width: posterW,
-                  height: posterH,
-                  child: Stack(
-                    children: [
-                      // Post-Login Matrimony Graphic - 100% natural proportions
-                      Positioned.fill(
-                        child: Image.asset(
-                          'assets/images/home_poster_clean_v4.jpg',
+          return SizedBox(
+            width: screenW,
+            height: screenH,
+            child: Center(
+              child: SizedBox(
+                width: posterW,
+                height: posterH,
+                child: Stack(
+                  children: [
+                    // Post-Login Matrimony Graphic - 100% natural proportions
+                    Positioned.fill(
+                      child: Image.asset(
+                        'assets/images/home_poster_clean_v4.jpg',
+                        fit: BoxFit.fill,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/images/1 (1).jpeg',
                           fit: BoxFit.fill,
-                          errorBuilder: (context, error, stackTrace) => Image.asset(
-                            'assets/images/1 (1).jpeg',
-                            fit: BoxFit.fill,
-                          ),
                         ),
                       ),
+                    ),
 
                 // Top-Left Menu Button (Hamburger)
                 Positioned(
@@ -557,47 +564,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   ),
                 ),
 
-                // ── Success Stories quick-access button ────────────────────
-                Positioned(
-                  left: sx(30),
-                  bottom: sh(60),
-                  child: GestureDetector(
-                    onTap: () => context.push('/success-stories'),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFD4AF37),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.favorite, color: Colors.black, size: 18),
-                          SizedBox(width: 6),
-                          Text('Success Stories',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13)),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                
                     ],
                   ),
                 ),
               ),
-            ),
-          );
+            );
         },
       ),
     );
