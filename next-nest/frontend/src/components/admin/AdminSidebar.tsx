@@ -34,10 +34,10 @@ const menuSections = [
   {
     title: "COMMUNITY",
     items: [
+      { name: "Education (4 Boxes)", href: "/admin/education", icon: "🎓" },
       { name: "Locations", href: "/admin/locations", icon: "📍" },
       { name: "Parganas", href: "/admin/parganas", icon: "🏛️" },
       { name: "Samaj Services", href: "/admin/services", icon: "🤝" },
-      { name: "Education", href: "/admin/education", icon: "🎓" },
       { name: "Pavan Prernadata", href: "/admin/pavan-prernadata", icon: "📖" },
       { name: "Samaj Super Stars", href: "/admin/samaj-super-stars", icon: "🌟" },
       { name: "Samaj Ratna", href: "/admin/samaj-ratna", icon: "🏆" },
@@ -47,6 +47,7 @@ const menuSections = [
     title: "CONTENT & SETTINGS",
     items: [
       { name: "Home Screen", href: "/admin/home-screen", icon: "📱" },
+      { name: "Education (4 Boxes)", href: "/admin/education", icon: "🎓" },
       { name: "Advertisements", href: "/admin/advertisements", icon: "📢" },
       { name: "Notifications", href: "/admin/notifications", icon: "🔔" },
       { name: "Reports", href: "/admin/reports", icon: "📈" },

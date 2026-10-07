@@ -80,7 +80,7 @@ export class SettingsService {
       title: "Education",
       subtitle: "For Better Tomorrow",
       icon: "menu_book",
-      route: "/samaj-ratna",
+      route: "/education",
       isActive: true,
     },
     {
@@ -139,8 +139,6 @@ export class SettingsService {
   }
 
   async updateHomeButtonConfigs(configs: any[]) {
-    // Validate route allowlist
-
     for (const config of configs) {
       if (config.buttonId < 1 || config.buttonId > 5) {
         throw new BadRequestException(
@@ -150,7 +148,7 @@ export class SettingsService {
     }
 
     const fixedRoutes: Record<number, string> = {
-      1: "/samaj-ratna",
+      1: "/education",
       2: "/advertisement",
       3: "/statistics",
       4: "/birthdays",
@@ -159,13 +157,16 @@ export class SettingsService {
 
     try {
       const updates = configs.map((config) => {
-        const fixedRoute = fixedRoutes[config.buttonId];
+        const targetRoute = config.route && config.route.trim().startsWith("/") 
+          ? config.route.trim() 
+          : fixedRoutes[config.buttonId];
         return this.prisma.homeButtonConfig.upsert({
           where: { buttonId: config.buttonId },
           update: {
             title: config.title,
             subtitle: config.subtitle,
             icon: config.icon,
+            route: targetRoute,
             isActive: config.isActive !== undefined ? config.isActive : true,
           },
           create: {
@@ -173,7 +174,7 @@ export class SettingsService {
             title: config.title,
             subtitle: config.subtitle,
             icon: config.icon,
-            route: fixedRoute,
+            route: targetRoute,
             isActive: config.isActive !== undefined ? config.isActive : true,
           },
         });

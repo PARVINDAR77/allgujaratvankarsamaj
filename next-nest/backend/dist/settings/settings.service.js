@@ -31,7 +31,7 @@ let SettingsService = SettingsService_1 = class SettingsService {
                 title: "Education",
                 subtitle: "For Better Tomorrow",
                 icon: "menu_book",
-                route: "/samaj-ratna",
+                route: "/education",
                 isActive: true,
             },
             {
@@ -139,7 +139,7 @@ let SettingsService = SettingsService_1 = class SettingsService {
             }
         }
         const fixedRoutes = {
-            1: "/samaj-ratna",
+            1: "/education",
             2: "/advertisement",
             3: "/statistics",
             4: "/birthdays",
@@ -147,13 +147,16 @@ let SettingsService = SettingsService_1 = class SettingsService {
         };
         try {
             const updates = configs.map((config) => {
-                const fixedRoute = fixedRoutes[config.buttonId];
+                const targetRoute = config.route && config.route.trim().startsWith("/")
+                    ? config.route.trim()
+                    : fixedRoutes[config.buttonId];
                 return this.prisma.homeButtonConfig.upsert({
                     where: { buttonId: config.buttonId },
                     update: {
                         title: config.title,
                         subtitle: config.subtitle,
                         icon: config.icon,
+                        route: targetRoute,
                         isActive: config.isActive !== undefined ? config.isActive : true,
                     },
                     create: {
@@ -161,7 +164,7 @@ let SettingsService = SettingsService_1 = class SettingsService {
                         title: config.title,
                         subtitle: config.subtitle,
                         icon: config.icon,
-                        route: fixedRoute,
+                        route: targetRoute,
                         isActive: config.isActive !== undefined ? config.isActive : true,
                     },
                 });

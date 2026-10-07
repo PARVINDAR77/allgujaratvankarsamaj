@@ -91,6 +91,56 @@ export default function HomeScreenConfigPage() {
           </div>
         </div>
         
+        {/* Education 4 Boxes Quick Access Banner */}
+        <div 
+          style={{ 
+            background: "linear-gradient(135deg, rgba(212, 175, 55, 0.18) 0%, rgba(37, 99, 235, 0.18) 100%)",
+            backdropFilter: "blur(20px)",
+            borderRadius: "16px", 
+            border: "1.5px solid #D4AF37", 
+            padding: "20px 24px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "16px",
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.4), 0 0 20px rgba(212, 175, 55, 0.15)"
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", boxShadow: "0 4px 12px rgba(212,175,55,0.4)", flexShrink: 0 }}>
+              🎓
+            </div>
+            <div>
+              <h2 style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 900, color: "#D4AF37", letterSpacing: "0.5px" }}>
+                Education for Better Tomorrow (4 Dynamic Boxes)
+              </h2>
+              <p style={{ margin: 0, color: "#E2E8F0", fontSize: "13px", fontWeight: 500 }}>
+                Looking to change or remove PDF circulars, written editorial guidance, and 2 YouTube videos?
+              </p>
+            </div>
+          </div>
+          <a 
+            href="/admin/education"
+            style={{
+              background: "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)",
+              color: "#041026",
+              padding: "12px 26px",
+              borderRadius: "10px",
+              fontWeight: 900,
+              fontSize: "14px",
+              textDecoration: "none",
+              boxShadow: "0 4px 16px rgba(212, 175, 55, 0.4)",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              whiteSpace: "nowrap"
+            }}
+          >
+            <span>Edit 4 Boxes Content Here ➔</span>
+          </a>
+        </div>
+
         {/* Dynamic Bottom Buttons block */}
         <div 
           style={{ 
@@ -170,7 +220,7 @@ export default function HomeScreenConfigPage() {
                 </div>
 
                 {/* Destination & Action */}
-                <div style={{ width: "220px", display: "flex", flexDirection: "column", gap: "12px", justifyContent: "center" }}>
+                <div style={{ width: "240px", display: "flex", flexDirection: "column", gap: "10px", justifyContent: "center" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     <label style={{ fontSize: "11px", color: "#8E9BAE", fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px" }}>Destination Route</label>
                     <input 
@@ -197,9 +247,58 @@ export default function HomeScreenConfigPage() {
                     />
                   </div>
                   
-                  {(config.route.includes("/samaj-ratna") || config.route.includes("/advertisement") || config.route.includes("/education")) && (
+                  {/* Button 1 / Education quick action */}
+                  {(config.buttonId === 1 || config.route.toLowerCase().includes("education")) && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                      <a 
+                        href="/admin/education"
+                        style={{
+                          textAlign: "center",
+                          padding: "10px 12px",
+                          background: "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)",
+                          color: "#041026",
+                          borderRadius: "8px",
+                          fontSize: "12px",
+                          fontWeight: 900,
+                          textDecoration: "none",
+                          boxShadow: "0 2px 8px rgba(212,175,55,0.3)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px"
+                        }}
+                      >
+                        <span>🎓 Manage 4 Boxes Data ➔</span>
+                      </a>
+                      {config.route.trim().toLowerCase() !== "/education" && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newConfigs = [...configs];
+                            newConfigs[i].route = "/education";
+                            setConfigs(newConfigs);
+                          }}
+                          style={{
+                            background: "rgba(59, 130, 246, 0.2)",
+                            color: "#60A5FA",
+                            border: "1px dashed rgba(59, 130, 246, 0.5)",
+                            borderRadius: "6px",
+                            padding: "5px 8px",
+                            fontSize: "11px",
+                            cursor: "pointer",
+                            fontWeight: 700
+                          }}
+                        >
+                          ⚡ Click to set route to &quot;/education&quot;
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Buttons 2-5 actions */}
+                  {config.buttonId !== 1 && (config.route.toLowerCase().includes("samaj-ratna") || config.route.toLowerCase().includes("advertisement")) && (
                     <a 
-                      href={config.route.includes("/samaj-ratna") ? "/admin/samaj-ratna" : config.route.includes("/education") ? "/admin/education" : `/admin/advertisements${config.route.includes("?") ? config.route.substring(config.route.indexOf("?")) : ""}`}
+                      href={config.route.toLowerCase().includes("samaj-ratna") ? "/admin/samaj-ratna" : `/admin/advertisements${config.route.includes("?") ? config.route.substring(config.route.indexOf("?")) : ""}`}
                       style={{
                         textAlign: "center",
                         padding: "8px 12px",
