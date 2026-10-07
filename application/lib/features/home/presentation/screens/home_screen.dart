@@ -79,146 +79,725 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF041126),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.75),
+      builder: (ctx) {
+        final screenH = MediaQuery.of(ctx).size.height;
+
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 580,
+              maxHeight: screenH * 0.90,
+            ),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF071838),
+                    Color(0xFF040E22),
+                    Color(0xFF020712),
+                  ],
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border.all(
+                  color: const Color(0xFFD4AF37).withOpacity(0.35),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.8),
+                    blurRadius: 35,
+                    spreadRadius: 5,
+                    offset: const Offset(0, -10),
+                  ),
+                  BoxShadow(
+                    color: const Color(0xFFD4AF37).withOpacity(0.15),
+                    blurRadius: 20,
+                    spreadRadius: 1,
+                    offset: const Offset(0, -3),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Top drag pill
+                    const SizedBox(height: 12),
+                    Center(
+                      child: Container(
+                        width: 44,
+                        height: 4.5,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Header: Logo, Title, Subtitle, Close Button
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF0E2752).withOpacity(0.9),
+                              const Color(0xFF071836).withOpacity(0.9),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(
+                            color: const Color(0xFFD4AF37).withOpacity(0.35),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            // Glowing Circular Logo
+                            Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFD4AF37),
+                                  width: 1.8,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFD4AF37).withOpacity(0.35),
+                                    blurRadius: 10,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    color: const Color(0xFF0B1E3D),
+                                    child: const Icon(
+                                      Icons.account_balance,
+                                      color: Color(0xFFD4AF37),
+                                      size: 26,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            // Brand Titles
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text(
+                                    'અખિલ ગુજરાત વણકર સમાજ',
+                                    style: TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontSize: 15.5,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text(
+                                    'All Gujarat Vankar Samaj',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w500,
+                                      letterSpacing: 0.3,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFD4AF37).withOpacity(0.18),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: const Color(0xFFD4AF37).withOpacity(0.4),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: const Text(
+                                      'એકતા • સેવા • પ્રગતિ',
+                                      style: TextStyle(
+                                        color: Color(0xFFFFE082),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // Close Button
+                            InkWell(
+                              onTap: () => Navigator.pop(ctx),
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.08),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white.withOpacity(0.15),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.white70,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Scrollable Menu Content
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 18.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // 1. Quick Navigation Grid (2x2)
+                            _buildMenuSectionTitle('મુખ્ય સેવાઓ', 'QUICK ACCESS', Icons.flash_on_rounded),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildQuickActionCard(
+                                    icon: Icons.home_rounded,
+                                    title: 'મુખ્ય પૃષ્ઠ',
+                                    subtitle: 'Home Portal',
+                                    accentColor: const Color(0xFF3B82F6),
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      context.go('/home');
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _buildQuickActionCard(
+                                    icon: Icons.auto_awesome_rounded,
+                                    title: 'મુખ્ય પોસ્ટર',
+                                    subtitle: 'Poster View',
+                                    accentColor: const Color(0xFFF59E0B),
+                                    badge: 'Featured',
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      context.push('/main-poster');
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _buildQuickActionCard(
+                                    icon: Icons.person_search_rounded,
+                                    title: 'પ્રોફાઈલ શોધો',
+                                    subtitle: 'Search Profiles',
+                                    accentColor: const Color(0xFF10B981),
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      context.go('/search');
+                                    },
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: _buildQuickActionCard(
+                                    icon: Icons.favorite_rounded,
+                                    title: 'પરસ્પર મેળ',
+                                    subtitle: 'Mutual Match',
+                                    accentColor: const Color(0xFFEC4899),
+                                    onTap: () {
+                                      Navigator.pop(ctx);
+                                      context.go('/match');
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 18),
+
+                            // 2. Community & Services Section
+                            _buildMenuSectionTitle('સમાજ અને સમુદાય', 'COMMUNITY DIRECTORY', Icons.groups_rounded),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.handshake_rounded,
+                              iconGradient: const [Color(0xFFF59E0B), Color(0xFFB45309)],
+                              title: 'સમાજ સેવાઓ (Samaj Services)',
+                              subtitle: '128+ વ્યાવસાયિક સેવાઓ અને સુવિધાઓ',
+                              badgeText: '128+ Services',
+                              badgeColor: const Color(0xFFF59E0B),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/samaj-services');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.groups_rounded,
+                              iconGradient: const [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+                              title: 'પરિવાર જુઓ (View Families)',
+                              subtitle: 'સમાજ પરિવાર અને શાખા ડિરેક્ટરી',
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/family-details');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.account_balance_rounded,
+                              iconGradient: const [Color(0xFF06B6D4), Color(0xFF0E7490)],
+                              title: 'પરગણાં (Pargana Overview)',
+                              subtitle: 'ગુજરાતના તમામ પરગણાં અને વિગતો',
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/pargana-overview');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.badge_rounded,
+                              iconGradient: const [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                              title: 'સરકારી કર્મચારી (Govt. Employees)',
+                              subtitle: 'સરકારી અને પબ્લિક સેક્ટરમાં કાર્યરત સભ્યો',
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/government-employees');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.verified_user_rounded,
+                              iconGradient: const [Color(0xFF10B981), Color(0xFF047857)],
+                              title: 'વેરિફાઈડ પ્રોફાઈલ (Verified Profiles)',
+                              subtitle: 'સત્યાપિત અને અધિકૃત ઉમેદવારો',
+                              badgeText: 'Verified',
+                              badgeColor: const Color(0xFF10B981),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/verified-profile');
+                              },
+                            ),
+                            const SizedBox(height: 18),
+
+                            // 3. Pride & Recognition Section
+                            _buildMenuSectionTitle('સમાજનું ગૌરવ', 'PRIDE & INSPIRATION', Icons.workspace_premium_rounded),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.workspace_premium_rounded,
+                              iconGradient: const [Color(0xFFFBBF24), Color(0xFFD97706)],
+                              title: 'સમાજ રત્ન (Samaj Ratna)',
+                              subtitle: 'સમાજના ગૌરવવંતા અને સન્માનિત રત્નો',
+                              badgeText: 'Pride',
+                              badgeColor: const Color(0xFFF59E0B),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/samaj-ratna');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.star_rounded,
+                              iconGradient: const [Color(0xFFFB923C), Color(0xFFC2410C)],
+                              title: 'સમાજ સુપર સ્ટાર્સ (Samaj Super Stars)',
+                              subtitle: 'વિશેષ સિદ્ધિ મેળવનાર પ્રતિભાઓ',
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/samaj-super-stars-poster');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.lightbulb_rounded,
+                              iconGradient: const [Color(0xFFFCD34D), Color(0xFFB45309)],
+                              title: 'પાવન પ્રેરણાદાતા (Pavan Prernadata)',
+                              subtitle: 'માર્ગદર્શક અને પ્રેરણાદાયી વ્યક્તિત્વ',
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/pavan-prernadata');
+                              },
+                            ),
+                            const SizedBox(height: 18),
+
+                            // 4. Updates & Utilities
+                            _buildMenuSectionTitle('અપડેટ્સ અને સૂચનાઓ', 'UPDATES & ALERTS', Icons.notifications_active_rounded),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.campaign_rounded,
+                              iconGradient: const [Color(0xFFF43F5E), Color(0xFFBE123C)],
+                              title: 'જાહેરાતો (Advertisements)',
+                              subtitle: 'સમાજ અને વ્યાપારની તાજી જાહેરાતો',
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                context.push('/advertisement');
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            _buildModernMenuItem(
+                              icon: Icons.notifications_active_rounded,
+                              iconGradient: const [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                              title: 'સૂચનાઓ (Notifications)',
+                              subtitle: 'મહત્વપૂર્ણ સમાચારો અને જાહેરાતો',
+                              badgeText: 'LIVE',
+                              badgeColor: const Color(0xFFEF4444),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                showNotificationsDialog(context, ref);
+                              },
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Footer Card
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.04),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: const Color(0xFFD4AF37).withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.volunteer_activism_rounded,
+                                    color: Color(0xFFD4AF37),
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 10),
+                                  const Expanded(
+                                    child: Text(
+                                      'સંગઠન એ જ શક્તિ • એકતા એ જ પ્રગતિ',
+                                      style: TextStyle(
+                                        color: Color(0xFFFFD54F),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: const Text(
+                                      'v1.0.0',
+                                      style: TextStyle(
+                                        color: Colors.white54,
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMenuSectionTitle(String gujarati, String english, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, top: 4, bottom: 2),
+      child: Row(
+        children: [
+          Icon(icon, size: 14, color: const Color(0xFFD4AF37)),
+          const SizedBox(width: 6),
+          Text(
+            gujarati,
+            style: const TextStyle(
+              color: Color(0xFFE2E8F0),
+              fontSize: 12.5,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Container(
+            width: 3,
+            height: 3,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white30,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            english,
+            style: const TextStyle(
+              color: Colors.white38,
+              fontSize: 9.5,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.8,
+            ),
+          ),
+        ],
       ),
-      builder: (ctx) => SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+    );
+  }
+
+  Widget _buildQuickActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color accentColor,
+    String? badge,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                accentColor.withOpacity(0.18),
+                const Color(0xFF0B1E3D).withOpacity(0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: accentColor.withOpacity(0.35),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: accentColor.withOpacity(0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'All Gujarat Vankar Samaj',
-                style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [accentColor, accentColor.withOpacity(0.7)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accentColor.withOpacity(0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(icon, color: Colors.white, size: 20),
+                  ),
+                  if (badge != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: accentColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        badge,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              const SizedBox(height: 12),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.home, color: Color(0xFFD4AF37)),
-                title: const Text('Home (મુખ્ય પૃષ્ઠ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.go('/home');
-                },
+              const SizedBox(height: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.auto_awesome, color: Color(0xFFD4AF37)),
-                title: const Text('Main Poster Page (મુખ્ય પોસ્ટર પૃષ્ઠ)', style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/main-poster');
-                },
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.6),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w400,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.search, color: Color(0xFFD4AF37)),
-                title: const Text('Search Profiles (શોધો)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.go('/search');
-                },
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildModernMenuItem({
+    required IconData icon,
+    required List<Color> iconGradient,
+    required String title,
+    required String subtitle,
+    String? badgeText,
+    Color? badgeColor,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF091936).withOpacity(0.65),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.07),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              // Icon Badge with Gradient
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: iconGradient,
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: iconGradient.first.withOpacity(0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: Colors.white, size: 21),
               ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.favorite, color: Color(0xFFD4AF37)),
-                title: const Text('Mutual Interest (મેળ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.go('/match');
-                },
+              const SizedBox(width: 12),
+              // Titles
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.1,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.55),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
               ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.groups, color: Color(0xFFD4AF37)),
-                title: const Text('View Families (પરિવાર જુઓ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/family-details');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.location_city, color: Color(0xFFD4AF37)),
-                title: const Text('Pargana Overview (પરગણાં)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/pargana-overview');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.handshake, color: Color(0xFFD4AF37)),
-                title: const Text('Samaj Services (સમાજ સેવાઓ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/samaj-services');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.work, color: Color(0xFFD4AF37)),
-                title: const Text('Govt. Employees (સરકારી કર્મચારી)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/government-employees');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.verified_user, color: Color(0xFFD4AF37)),
-                title: const Text('Verified Profiles (વેરિફાઈડ પ્રોફાઈલ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/verified-profile');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.workspace_premium, color: Color(0xFFD4AF37)),
-                title: const Text('Samaj Ratna (સમાજ રત્ન)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/samaj-ratna');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.star, color: Color(0xFFD4AF37)),
-                title: const Text('Samaj Super Stars (સમાજ સુપર સ્ટાર્સ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/samaj-super-stars-poster');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.lightbulb, color: Color(0xFFD4AF37)),
-                title: const Text('Pavan Prernadata (પાવન પ્રેરણાદાતા)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/pavan-prernadata');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.campaign, color: Color(0xFFD4AF37)),
-                title: const Text('Advertisements (જાહેરાતો)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  context.push('/advertisement');
-                },
-              ),
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.notifications, color: Color(0xFFD4AF37)),
-                title: const Text('Notifications (સૂચનાઓ)', style: TextStyle(color: Colors.white)),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  showNotificationsDialog(context, ref);
-                },
+              // Optional Badge or Chevron
+              if (badgeText != null) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: (badgeColor ?? const Color(0xFFD4AF37)).withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: (badgeColor ?? const Color(0xFFD4AF37)).withOpacity(0.5),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    badgeText,
+                    style: TextStyle(
+                      color: badgeColor ?? const Color(0xFFFFD54F),
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+              const SizedBox(width: 6),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withOpacity(0.25),
+                size: 20,
               ),
             ],
           ),
