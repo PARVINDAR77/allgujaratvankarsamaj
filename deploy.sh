@@ -127,6 +127,20 @@ npx prisma generate
 echo "Syncing Admin Roles in Database via MySQL CLI..."
 mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "UPDATE users SET role = 'SUPER_ADMIN', status = 'ACTIVE' WHERE email IN ('admin@vankarsamaj.org', 'admin@vankarsamaj.com');" || true
 
+echo "Fixing candidate gender assignments in Database..."
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "
+UPDATE matrimonial_profiles 
+SET gender = 'FEMALE' 
+WHERE LOWER(first_name) LIKE '%ben%' 
+   OR LOWER(first_name) LIKE '%bahen%' 
+   OR first_name LIKE '%બેન%' 
+   OR first_name LIKE '%બહેન%'
+   OR LOWER(first_name) IN ('dipika', 'sakshi', 'pooja', 'priya', 'neha', 'dula', 'dulaben', 'heena', 'kinjal', 'payal', 'kiran', 'sheetal', 'rekha');
+UPDATE users 
+SET gender = 'FEMALE' 
+WHERE id IN (SELECT user_id FROM matrimonial_profiles WHERE gender = 'FEMALE');
+" || true
+
 echo "Applying required schema tables and columns via MySQL CLI..."
 mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "
 CREATE TABLE IF NOT EXISTS \`samaj_super_stars\` (

@@ -119,12 +119,32 @@ class ProfileModel {
 
   bool get isFemale {
     final s = gender.toUpperCase();
-    return s.contains('FEMALE') ||
+    if (s.contains('FEMALE') ||
         s.contains('WOMAN') ||
         s.contains('GIRL') ||
         s.contains('સ્ત્રી') ||
         s.contains('કન્યા') ||
-        s.contains('BRIDE');
+        s.contains('BRIDE')) {
+      return true;
+    }
+    // Heuristic protection for female candidates if database defaulted them to MALE:
+    final f = firstName.toUpperCase().trim();
+    if (f.endsWith('BEN') ||
+        f.endsWith('BAHEN') ||
+        f.contains('બેન') ||
+        f.contains('બહેન') ||
+        f == 'DIPIKA' ||
+        f == 'SAKSHI' ||
+        f == 'POOJA' ||
+        f == 'PRIYA' ||
+        f == 'DULA' ||
+        f == 'DULABEN' ||
+        f == 'HEENA' ||
+        f == 'PAYAL' ||
+        f == 'KINJAL') {
+      return true;
+    }
+    return false;
   }
 
   bool get isMale => !isFemale;
