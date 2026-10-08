@@ -428,6 +428,50 @@ export class GovernmentEmployeesService {
       );
     }
 
+    // Single-use rule: if already verified, do not allow re-submission
+    if (emp.verificationStatus === GovtVerificationStatus.VERIFIED) {
+      throw new ConflictException(
+        "સરકારી નોકરી વેરિફિકેશન પહેલેથી જ મંજૂર થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (Government employment verification is already approved. Documents can only be used one time.)",
+      );
+    }
+
+    // Single-use rule: document can only be used one time across all candidates
+    const cleanDoc = dto.documentUrl.trim().toLowerCase();
+    const docFilename = cleanDoc.split("/").pop()?.split("?")[0];
+
+    const docUsedElsewhere = await this.prisma.governmentEmploymentVerification.findFirst({
+      where: {
+        employmentId: { not: emp.id },
+        OR: [
+          { documentUrl: cleanDoc },
+          ...(docFilename && docFilename.length > 5
+            ? [{ documentUrl: { contains: docFilename } }]
+            : []),
+        ],
+      },
+    });
+    if (docUsedElsewhere) {
+      throw new ConflictException(
+        "આ દસ્તાવેજ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ જમા થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (This document has already been submitted for another candidate. Documents can only be used one time.)",
+      );
+    }
+
+    const docUsedInMatrimonial = await this.prisma.verificationRequest.findFirst({
+      where: {
+        OR: [
+          { documentUrl: cleanDoc },
+          ...(docFilename && docFilename.length > 5
+            ? [{ documentUrl: { contains: docFilename } }]
+            : []),
+        ],
+      },
+    });
+    if (docUsedInMatrimonial) {
+      throw new ConflictException(
+        "આ દસ્તાવેજ પહેલેથી જ જમા થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (This document has already been submitted. Documents can only be used one time.)",
+      );
+    }
+
     return this.prisma.$transaction(async (tx) => {
       const verification = await tx.governmentEmploymentVerification.create({
         data: {

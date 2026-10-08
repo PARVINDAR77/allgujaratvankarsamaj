@@ -123,6 +123,43 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             ? new Date(dto.dateOfBirth)
             : new Date(1995, 0, 1);
         const validDob = isNaN(dob.getTime()) ? new Date(1995, 0, 1) : dob;
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (dto.contactPhone && !phoneRegex.test(dto.contactPhone.trim())) {
+            throw new common_1.BadRequestException("મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (Mobile number must be exactly 10 digits starting with 6-9)");
+        }
+        if (dto.altPhone && !phoneRegex.test(dto.altPhone.trim())) {
+            throw new common_1.BadRequestException("વોટ્સએપ / વૈકલ્પિક મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (WhatsApp/Alt phone must be 10 digits starting with 6-9)");
+        }
+        if (dto.fatherContact && !phoneRegex.test(dto.fatherContact.trim())) {
+            throw new common_1.BadRequestException("પિતાનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Father contact must be 10 digits starting with 6-9)");
+        }
+        if (dto.guardianContact && !phoneRegex.test(dto.guardianContact.trim())) {
+            throw new common_1.BadRequestException("વાલીનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Guardian contact must be 10 digits starting with 6-9)");
+        }
+        if (dto.pincode && !/^\d{6}$/.test(dto.pincode.trim())) {
+            throw new common_1.BadRequestException("પીનકોડ બરાબર 6 અંકનો હોવો જોઈએ (Pincode must be exactly 6 digits)");
+        }
+        const cleanEmail = dto.contactEmail
+            ? dto.contactEmail.trim().toLowerCase()
+            : null;
+        if (cleanEmail) {
+            const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailRegex.test(cleanEmail)) {
+                throw new common_1.BadRequestException("કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter a valid email address)");
+            }
+            const otherUser = await this.prisma.user.findFirst({
+                where: { email: cleanEmail, id: { not: userId } },
+            });
+            if (otherUser) {
+                throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)");
+            }
+            const otherProfile = await this.prisma.matrimonialProfile.findFirst({
+                where: { contactEmail: cleanEmail, userId: { not: userId } },
+            });
+            if (otherProfile) {
+                throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવારની પ્રોફાઇલમાં પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)");
+            }
+        }
         try {
             const existingProfile = await this.prisma.matrimonialProfile.findUnique({
                 where: { userId },
@@ -255,7 +292,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             return profile;
         }
         catch (err) {
-            if (err instanceof common_1.ConflictException)
+            if (err instanceof common_1.ConflictException || err instanceof common_1.BadRequestException)
                 throw err;
             this.logger.warn(`PostgreSQL offline or error during DB profile create for user ${userId}: ${err?.message || err}`);
             if (this.memoryProfiles.has(userId)) {
@@ -425,6 +462,43 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (!existingProfile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
+            const phoneRegex = /^[6-9]\d{9}$/;
+            if (dto.contactPhone && !phoneRegex.test(dto.contactPhone.trim())) {
+                throw new common_1.BadRequestException("મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (Mobile number must be exactly 10 digits starting with 6-9)");
+            }
+            if (dto.altPhone && !phoneRegex.test(dto.altPhone.trim())) {
+                throw new common_1.BadRequestException("વોટ્સએપ / વૈકલ્પિક મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (WhatsApp/Alt phone must be 10 digits starting with 6-9)");
+            }
+            if (dto.fatherContact && !phoneRegex.test(dto.fatherContact.trim())) {
+                throw new common_1.BadRequestException("પિતાનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Father contact must be 10 digits starting with 6-9)");
+            }
+            if (dto.guardianContact && !phoneRegex.test(dto.guardianContact.trim())) {
+                throw new common_1.BadRequestException("વાલીનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Guardian contact must be 10 digits starting with 6-9)");
+            }
+            if (dto.pincode && !/^\d{6}$/.test(dto.pincode.trim())) {
+                throw new common_1.BadRequestException("પીનકોડ બરાબર 6 અંકનો હોવો જોઈએ (Pincode must be exactly 6 digits)");
+            }
+            if (dto.contactEmail !== undefined && dto.contactEmail !== null) {
+                const cleanEmail = dto.contactEmail.trim().toLowerCase();
+                if (cleanEmail.length > 0) {
+                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    if (!emailRegex.test(cleanEmail)) {
+                        throw new common_1.BadRequestException("કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter a valid email address)");
+                    }
+                    const otherUser = await this.prisma.user.findFirst({
+                        where: { email: cleanEmail, id: { not: userId } },
+                    });
+                    if (otherUser) {
+                        throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)");
+                    }
+                    const otherProfile = await this.prisma.matrimonialProfile.findFirst({
+                        where: { contactEmail: cleanEmail, userId: { not: userId } },
+                    });
+                    if (otherProfile) {
+                        throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવારની પ્રોફાઇલમાં પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)");
+                    }
+                }
+            }
             const updateData = {};
             if (dto.firstName !== undefined)
                 updateData.firstName = dto.firstName.trim();
@@ -552,8 +626,11 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             return updatedProfile;
         }
         catch (err) {
-            if (err instanceof common_1.NotFoundException)
+            if (err instanceof common_1.NotFoundException ||
+                err instanceof common_1.ConflictException ||
+                err instanceof common_1.BadRequestException) {
                 throw err;
+            }
             const existing = this.memoryProfiles.get(userId);
             if (!existing) {
                 throw new common_1.NotFoundException("Profile not found");

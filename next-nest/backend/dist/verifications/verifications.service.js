@@ -18,6 +18,9 @@ let VerificationsService = class VerificationsService {
         this.prisma = prisma;
     }
     async submitVerification(userId, documentType, documentUrl) {
+        if (!documentUrl || documentUrl.trim().length === 0) {
+            throw new common_1.BadRequestException("કૃપા કરીને દસ્તાવેજ અપલોડ કરો (Please upload a document)");
+        }
         let profile = await this.prisma.matrimonialProfile.findUnique({
             where: { userId },
         });
@@ -43,6 +46,47 @@ let VerificationsService = class VerificationsService {
                     isVerified: false,
                 },
             });
+        }
+        if (profile.isVerified) {
+            throw new common_1.ConflictException("તમારી પ્રોફાઇલ પહેલેથી જ વેરિફાઈડ છે. ઉમેદવાર દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકે છે. (Your profile is already verified. Documents can only be used one time.)");
+        }
+        const alreadyApproved = await this.prisma.verificationRequest.findFirst({
+            where: {
+                profileId: profile.id,
+                status: client_1.VerificationStatus.VERIFIED,
+            },
+        });
+        if (alreadyApproved) {
+            throw new common_1.ConflictException("તમારા દસ્તાવેજો પહેલેથી જ મંજૂર થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (Verification already approved. Documents can only be used one time.)");
+        }
+        const cleanDoc = documentUrl.trim().toLowerCase();
+        const docFilename = cleanDoc.split("/").pop()?.split("?")[0];
+        const docUsedElsewhere = await this.prisma.verificationRequest.findFirst({
+            where: {
+                profileId: { not: profile.id },
+                OR: [
+                    { documentUrl: cleanDoc },
+                    ...(docFilename && docFilename.length > 5
+                        ? [{ documentUrl: { contains: docFilename } }]
+                        : []),
+                ],
+            },
+        });
+        if (docUsedElsewhere) {
+            throw new common_1.ConflictException("આ દસ્તાવેજ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ જમા થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (This document has already been submitted for another candidate. Documents can only be used one time.)");
+        }
+        const docUsedInGovt = await this.prisma.governmentEmploymentVerification.findFirst({
+            where: {
+                OR: [
+                    { documentUrl: cleanDoc },
+                    ...(docFilename && docFilename.length > 5
+                        ? [{ documentUrl: { contains: docFilename } }]
+                        : []),
+                ],
+            },
+        });
+        if (docUsedInGovt) {
+            throw new common_1.ConflictException("આ દસ્તાવેજ પહેલેથી જ જમા થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (This document has already been submitted. Documents can only be used one time.)");
         }
         const existingPending = await this.prisma.verificationRequest.findFirst({
             where: {

@@ -37,7 +37,7 @@ __decorate([
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
-    (0, class_validator_1.Matches)(/^\d{10}$/, { message: "Phone must be a 10-digit number" }),
+    (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "Phone must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "phone", void 0);
 __decorate([

@@ -46,11 +46,11 @@ export declare class SamajServicesService {
         updatedAt: Date;
         isActive: boolean;
         title: string;
+        contactPhone: string | null;
         sortOrder: number;
         slug: string;
         category: string;
         icon: string;
-        contactPhone: string | null;
         contactPerson: string | null;
     }>;
     private readonly defaultPersons;
@@ -106,11 +106,11 @@ export declare class SamajServicesService {
         updatedAt: Date;
         isActive: boolean;
         title: string;
+        contactPhone: string | null;
         sortOrder: number;
         slug: string;
         category: string;
         icon: string;
-        contactPhone: string | null;
         contactPerson: string | null;
     }>;
     updateService(id: string, data: Partial<{
@@ -128,11 +128,11 @@ export declare class SamajServicesService {
         updatedAt: Date;
         isActive: boolean;
         title: string;
+        contactPhone: string | null;
         sortOrder: number;
         slug: string;
         category: string;
         icon: string;
-        contactPhone: string | null;
         contactPerson: string | null;
     }>;
     deleteService(id: string): Promise<{
@@ -142,11 +142,11 @@ export declare class SamajServicesService {
         updatedAt: Date;
         isActive: boolean;
         title: string;
+        contactPhone: string | null;
         sortOrder: number;
         slug: string;
         category: string;
         icon: string;
-        contactPhone: string | null;
         contactPerson: string | null;
     }>;
     getAllAdminServicePersons(serviceId?: string): Promise<({

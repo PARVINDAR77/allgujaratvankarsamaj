@@ -345,16 +345,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                   LengthLimitingTextInputFormatter(10),
                                 ],
                                 decoration: _inputDecoration(
-                                  label: 'Mobile Number (મોબાઇલ નંબર) *',
+                                  label: 'Mobile Number (મોબાઇલ નંબર - 10 અંક) *',
                                   hint: '10-digit mobile number',
                                   prefixIcon: Icons.phone_android_rounded,
                                 ),
                                 validator: (val) {
-                                  if (val == null || val.isEmpty) {
-                                    return 'Please enter mobile number';
+                                  if (val == null || val.trim().isEmpty) {
+                                    return 'કૃપા કરીને મોબાઇલ નંબર દાખલ કરો (Please enter mobile number)';
                                   }
-                                  if (val.length != 10) {
-                                    return 'Enter valid 10-digit mobile number';
+                                  if (val.trim().length != 10 || !RegExp(r'^[6-9]\d{9}$').hasMatch(val.trim())) {
+                                    return 'માન્ય 10 અંકનો મોબાઇલ નંબર દાખલ કરો (6-9 થી શરૂ)';
                                   }
                                   return null;
                                 },
@@ -378,12 +378,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                                 ),
                                 validator: (val) {
                                   if (val == null || val.trim().isEmpty) {
-                                    return 'Please enter email address';
+                                    return 'કૃપા કરીને ઈમેઈલ સરનામું દાખલ કરો (Please enter email address)';
                                   }
                                   final emailRegex = RegExp(
-                                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                                      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
                                   if (!emailRegex.hasMatch(val.trim())) {
-                                    return 'Enter a valid email address';
+                                    return 'માન્ય ઈમેઈલ સરનામું દાખલ કરો (Enter a valid email address)';
                                   }
                                   return null;
                                 },

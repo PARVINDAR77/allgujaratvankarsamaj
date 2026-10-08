@@ -30,7 +30,7 @@ export class RegisterDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^\d{10}$/, { message: "Phone must be a 10-digit number" })
+  @Matches(/^[6-9]\d{9}$/, { message: "Phone must be a valid 10-digit mobile number starting with 6-9" })
   phone?: string;
 
   @ApiPropertyOptional({

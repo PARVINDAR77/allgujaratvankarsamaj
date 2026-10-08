@@ -331,11 +331,12 @@ __decorate([
 ], CreateProfileDto.prototype, "fatherOccupation", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "Father's contact number",
+        description: "Father's contact number (10 digits)",
         example: "9876543210",
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "Father contact must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "fatherContact", void 0);
 __decorate([
@@ -358,11 +359,12 @@ __decorate([
 ], CreateProfileDto.prototype, "motherOccupation", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "Guardian's contact number",
+        description: "Guardian's contact number (10 digits)",
         example: "9876543210",
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "Guardian contact must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "guardianContact", void 0);
 __decorate([
@@ -394,20 +396,32 @@ __decorate([
 ], CreateProfileDto.prototype, "addressLine", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "Pincode / Zip Code",
+        description: "Pincode / Zip Code (6 digits)",
         example: "382424",
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^\d{6}$/, { message: "Pincode must be exactly 6 digits" }),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "pincode", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "WhatsApp or alternate phone number",
+        description: "Primary 10-digit mobile number",
         example: "9876543210",
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "Contact phone must be a valid 10-digit mobile number starting with 6-9" }),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "contactPhone", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "WhatsApp or alternate phone number (10 digits)",
+        example: "9876543210",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "WhatsApp / Alt phone must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "altPhone", void 0);
 __decorate([
@@ -417,6 +431,7 @@ __decorate([
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
+    (0, class_validator_1.IsEmail)({}, { message: "Invalid email address format" }),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "contactEmail", void 0);
 __decorate([

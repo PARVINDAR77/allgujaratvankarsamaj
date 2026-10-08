@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   Logger,
@@ -153,6 +154,64 @@ export class ProfilesService implements OnModuleInit {
       : new Date(1995, 0, 1);
     const validDob = isNaN(dob.getTime()) ? new Date(1995, 0, 1) : dob;
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (dto.contactPhone && !phoneRegex.test(dto.contactPhone.trim())) {
+      throw new BadRequestException(
+        "મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (Mobile number must be exactly 10 digits starting with 6-9)",
+      );
+    }
+    if (dto.altPhone && !phoneRegex.test(dto.altPhone.trim())) {
+      throw new BadRequestException(
+        "વોટ્સએપ / વૈકલ્પિક મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (WhatsApp/Alt phone must be 10 digits starting with 6-9)",
+      );
+    }
+    if (dto.fatherContact && !phoneRegex.test(dto.fatherContact.trim())) {
+      throw new BadRequestException(
+        "પિતાનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Father contact must be 10 digits starting with 6-9)",
+      );
+    }
+    if (dto.guardianContact && !phoneRegex.test(dto.guardianContact.trim())) {
+      throw new BadRequestException(
+        "વાલીનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Guardian contact must be 10 digits starting with 6-9)",
+      );
+    }
+    if (dto.pincode && !/^\d{6}$/.test(dto.pincode.trim())) {
+      throw new BadRequestException(
+        "પીનકોડ બરાબર 6 અંકનો હોવો જોઈએ (Pincode must be exactly 6 digits)",
+      );
+    }
+
+    const cleanEmail = dto.contactEmail
+      ? dto.contactEmail.trim().toLowerCase()
+      : null;
+    if (cleanEmail) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(cleanEmail)) {
+        throw new BadRequestException(
+          "કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter a valid email address)",
+        );
+      }
+
+      // Candidate can use email in ONE TIME ONLY: verify no other user or profile uses this email
+      const otherUser = await this.prisma.user.findFirst({
+        where: { email: cleanEmail, id: { not: userId } },
+      });
+      if (otherUser) {
+        throw new ConflictException(
+          "આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)",
+        );
+      }
+
+      const otherProfile = await this.prisma.matrimonialProfile.findFirst({
+        where: { contactEmail: cleanEmail, userId: { not: userId } },
+      });
+      if (otherProfile) {
+        throw new ConflictException(
+          "આ ઈમેઈલ અન્ય ઉમેદવારની પ્રોફાઇલમાં પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)",
+        );
+      }
+    }
+
     try {
       const existingProfile = await this.prisma.matrimonialProfile.findUnique({
         where: { userId },
@@ -288,7 +347,7 @@ export class ProfilesService implements OnModuleInit {
       await this.syncGovernmentEmployment(profile);
       return profile;
     } catch (err: any) {
-      if (err instanceof ConflictException) throw err;
+      if (err instanceof ConflictException || err instanceof BadRequestException) throw err;
       this.logger.warn(
         `PostgreSQL offline or error during DB profile create for user ${userId}: ${err?.message || err}`,
       );
@@ -468,6 +527,64 @@ export class ProfilesService implements OnModuleInit {
         throw new NotFoundException("Profile not found");
       }
 
+      const phoneRegex = /^[6-9]\d{9}$/;
+      if (dto.contactPhone && !phoneRegex.test(dto.contactPhone.trim())) {
+        throw new BadRequestException(
+          "મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (Mobile number must be exactly 10 digits starting with 6-9)",
+        );
+      }
+      if (dto.altPhone && !phoneRegex.test(dto.altPhone.trim())) {
+        throw new BadRequestException(
+          "વોટ્સએપ / વૈકલ્પિક મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (WhatsApp/Alt phone must be 10 digits starting with 6-9)",
+        );
+      }
+      if (dto.fatherContact && !phoneRegex.test(dto.fatherContact.trim())) {
+        throw new BadRequestException(
+          "પિતાનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Father contact must be 10 digits starting with 6-9)",
+        );
+      }
+      if (dto.guardianContact && !phoneRegex.test(dto.guardianContact.trim())) {
+        throw new BadRequestException(
+          "વાલીનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Guardian contact must be 10 digits starting with 6-9)",
+        );
+      }
+      if (dto.pincode && !/^\d{6}$/.test(dto.pincode.trim())) {
+        throw new BadRequestException(
+          "પીનકોડ બરાબર 6 અંકનો હોવો જોઈએ (Pincode must be exactly 6 digits)",
+        );
+      }
+
+      if (dto.contactEmail !== undefined && dto.contactEmail !== null) {
+        const cleanEmail = dto.contactEmail.trim().toLowerCase();
+        if (cleanEmail.length > 0) {
+          const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+          if (!emailRegex.test(cleanEmail)) {
+            throw new BadRequestException(
+              "કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter a valid email address)",
+            );
+          }
+
+          // Candidate can use email in ONE TIME ONLY: verify no other user or profile uses this email
+          const otherUser = await this.prisma.user.findFirst({
+            where: { email: cleanEmail, id: { not: userId } },
+          });
+          if (otherUser) {
+            throw new ConflictException(
+              "આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)",
+            );
+          }
+
+          const otherProfile = await this.prisma.matrimonialProfile.findFirst({
+            where: { contactEmail: cleanEmail, userId: { not: userId } },
+          });
+          if (otherProfile) {
+            throw new ConflictException(
+              "આ ઈમેઈલ અન્ય ઉમેદવારની પ્રોફાઇલમાં પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)",
+            );
+          }
+        }
+      }
+
       const updateData: any = {};
       if (dto.firstName !== undefined)
         updateData.firstName = dto.firstName.trim();
@@ -592,7 +709,13 @@ export class ProfilesService implements OnModuleInit {
       await this.syncGovernmentEmployment(updatedProfile);
       return updatedProfile;
     } catch (err: any) {
-      if (err instanceof NotFoundException) throw err;
+      if (
+        err instanceof NotFoundException ||
+        err instanceof ConflictException ||
+        err instanceof BadRequestException
+      ) {
+        throw err;
+      }
       const existing = this.memoryProfiles.get(userId);
       if (!existing) {
         throw new NotFoundException("Profile not found");

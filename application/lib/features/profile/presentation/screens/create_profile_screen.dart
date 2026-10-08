@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
@@ -123,6 +124,97 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   }
 
   Future<void> _submitProfile() async {
+    final mobile = _mobileNumber.trim();
+    final email = _emailAddress.trim();
+    final altMobile = _whatsappNumber.trim();
+    final fatherPhone = _fatherContact.trim();
+    final guardianPhone = _guardianContact.trim();
+    final pin = _pincode.trim();
+
+    // 1. Mobile number validation (10 digits starting with 6-9)
+    if (mobile.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને 10 અંકનો મોબાઇલ નંબર દાખલ કરો (Please enter mobile number)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(mobile)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (Mobile number must be a valid 10-digit number starting with 6-9)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 2. Email validation
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને ઈમેઈલ સરનામું દાખલ કરો (Please enter email address)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter a valid email address)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 3. Alt / WhatsApp phone validation
+    if (altMobile.isNotEmpty && !RegExp(r'^[6-9]\d{9}$').hasMatch(altMobile)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('વોટ્સએપ / વૈકલ્પિક મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (WhatsApp/Alt phone must be 10 digits starting with 6-9)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 4. Father contact validation
+    if (fatherPhone.isNotEmpty && !RegExp(r'^[6-9]\d{9}$').hasMatch(fatherPhone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('પિતાનો ફોન નંબર માન્ય 10 અંકનો હોવો જોઈએ (Father contact must be 10 digits starting with 6-9)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 5. Guardian contact validation
+    if (guardianPhone.isNotEmpty && !RegExp(r'^[6-9]\d{9}$').hasMatch(guardianPhone)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('વાલીનો સંપર્ક નંબર માન્ય 10 અંકનો હોવો જોઈએ (Guardian contact must be 10 digits starting with 6-9)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 6. Pincode validation
+    if (pin.isNotEmpty && !RegExp(r'^\d{6}$').hasMatch(pin)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('પીનકોડ બરાબર 6 અંકનો હોવો જોઈએ (Pincode must be exactly 6 digits)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
     String? uploadedPhotoUrl;
@@ -235,8 +327,21 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     } catch (e) {
       if (mounted) {
         setState(() => _isSubmitting = false);
+        String msg = e.toString();
+        if (e is DioException && e.response?.data != null) {
+          final data = e.response!.data;
+          if (data is Map && data['message'] != null) {
+            msg = data['message'] is List
+                ? (data['message'] as List).join('\n')
+                : data['message'].toString();
+          }
+        }
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save profile: $e')),
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
         );
       }
       return;
@@ -499,9 +604,35 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               // Contact Details Section
               _buildSectionHeader(Icons.phone_android, 'Contact Details (સંપર્ક માહિતી)'),
               const SizedBox(height: 16),
-              _buildTextField('Mobile Number (મોબાઈલ નંબર - 10 અંક) *', 'Enter Mobile Number (મોબાઈલ નંબર - 10 અંક)', Icons.phone_android, onChanged: (v) => setState(() => _mobileNumber = v)),
-              _buildTextField('Email Address (ઈમેઈલ સરનામું) *', 'Enter Email Address (ઈમેઈલ સરનામું)', Icons.email_outlined, onChanged: (v) => setState(() => _emailAddress = v)),
-              _buildTextField('WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)', 'Enter WhatsApp / Alt Phone...', Icons.chat_bubble_outline, onChanged: (v) => setState(() => _whatsappNumber = v)),
+              _buildTextField(
+                'Mobile Number (મોબાઈલ નંબર - 10 અંક) *',
+                'Enter 10-digit Mobile Number',
+                Icons.phone_android,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                onChanged: (v) => setState(() => _mobileNumber = v),
+              ),
+              _buildTextField(
+                'Email Address (ઈમેઈલ સરનામું) *',
+                'Enter Email Address (ઈમેઈલ સરનામું)',
+                Icons.email_outlined,
+                keyboardType: TextInputType.emailAddress,
+                onChanged: (v) => setState(() => _emailAddress = v),
+              ),
+              _buildTextField(
+                'WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)',
+                'Enter 10-digit WhatsApp / Alt Phone...',
+                Icons.chat_bubble_outline,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                onChanged: (v) => setState(() => _whatsappNumber = v),
+              ),
 
               const SizedBox(height: 24),
               // Location & Address Section
@@ -533,7 +664,17 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   onChanged: (v) => setState(() => _abroadCountry = v),
                 ),
               _buildTextField('Country (દેશ) *', 'Enter Country (દેશ)', Icons.public, onChanged: (v) => setState(() => _country = v)),
-              _buildTextField('Pincode / Zip Code (પીનકોડ)', 'Enter Pincode / Zip Code (પીનકોડ)', Icons.markunread_mailbox_outlined, onChanged: (v) => setState(() => _pincode = v)),
+              _buildTextField(
+                'Pincode / Zip Code (પીનકોડ - 6 અંક)',
+                'Enter 6-digit Pincode',
+                Icons.markunread_mailbox_outlined,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(6),
+                ],
+                onChanged: (v) => setState(() => _pincode = v),
+              ),
 
               const SizedBox(height: 24),
               // Career & Employment Details Section
@@ -783,10 +924,30 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               const SizedBox(height: 16),
               _buildTextField('Father\'s Name (પિતાનું નામ) *', 'Enter Father\'s Name (પિતાનું નામ)', Icons.person_outline, onChanged: (v) => setState(() => _fatherName = v)),
               _buildTextField('Father\'s Occupation (પિતાનો વ્યવસાય)', 'Enter Father\'s Occupation (પિતાનો વ્યવસાય)', Icons.work_outline, onChanged: (v) => setState(() => _fatherOccupation = v)),
-              _buildTextField('Father\'s Contact Number (પિતાનો ફોન નંબર - 10 અંક)', 'Enter Father\'s Contact Number...', Icons.phone, onChanged: (v) => setState(() => _fatherContact = v)),
+              _buildTextField(
+                'Father\'s Contact Number (પિતાનો ફોન નંબર - 10 અંક)',
+                'Enter 10-digit Father\'s Contact Number...',
+                Icons.phone,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                onChanged: (v) => setState(() => _fatherContact = v),
+              ),
               _buildTextField('Mother\'s Name (માતાનું નામ) *', 'Enter Mother\'s Name (માતાનું નામ)', Icons.face_3_outlined, onChanged: (v) => setState(() => _motherName = v)),
               _buildTextField('Mother\'s Occupation (માતાનો વ્યવસાય)', 'Enter Mother\'s Occupation (માતાનો વ્યવસાય)', Icons.work_outline, onChanged: (v) => setState(() => _motherOccupation = v)),
-              _buildTextField('Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)', 'Enter Guardian Contact Number...', Icons.contact_phone_outlined, onChanged: (v) => setState(() => _guardianContact = v)),
+              _buildTextField(
+                'Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)',
+                'Enter 10-digit Guardian Contact Number...',
+                Icons.contact_phone_outlined,
+                keyboardType: TextInputType.phone,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                onChanged: (v) => setState(() => _guardianContact = v),
+              ),
               _buildTextField('Brothers & Sisters (ભાઈ-બહેનની વિગત)', 'Enter Brothers & Sisters (ભાઈ-બહેનની વિગત)', Icons.groups_outlined, onChanged: (v) => setState(() => _siblings = v)),
               _buildTextField('Mama\'s Village / Mosal (મોસાળ / મોસાળનું ગામ)', 'Enter Mama\'s Village / Mosal...', Icons.holiday_village_outlined, onChanged: (v) => setState(() => _mamasVillage = v)),
               _buildTextField('Native Place (મૂળ વતન / પરગણું)', 'Enter Native Place (મૂળ વતન / પરગણું)', Icons.home_work_outlined, onChanged: (v) => setState(() => _nativePlace = v)),
@@ -867,7 +1028,19 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     );
   }
 
-  Widget _buildTextField(String label, String hint, IconData prefixIcon, {bool isDropdown = false, bool isMultiline = false, Function(String)? onChanged, bool readOnly = false, VoidCallback? onTap}) {
+  Widget _buildTextField(
+    String label, 
+    String hint, 
+    IconData prefixIcon, {
+    bool isDropdown = false, 
+    bool isMultiline = false, 
+    Function(String)? onChanged, 
+    bool readOnly = false, 
+    VoidCallback? onTap,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? errorText,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -882,7 +1055,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade300),
+              border: Border.all(color: errorText != null ? Colors.red : Colors.grey.shade300),
               boxShadow: [
                 BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2)),
               ],
@@ -893,6 +1066,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               onChanged: onChanged,
               readOnly: readOnly,
               onTap: onTap,
+              keyboardType: keyboardType,
+              inputFormatters: inputFormatters,
               decoration: InputDecoration(
                 hintText: hint,
                 hintStyle: TextStyle(color: readOnly && hint != 'Tap to select date of birth' ? Colors.black87 : Colors.black38, fontSize: 14),
@@ -903,6 +1078,13 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               ),
             ),
           ),
+          if (errorText != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              errorText,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ],
         ],
       ),
     );

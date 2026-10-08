@@ -293,23 +293,44 @@ class _VerifiedProfileScreenState
         border:
             Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Verification Benefits',
+          const Text('Verification Benefits',
               style: TextStyle(
                   color: AppColors.secondary,
                   fontWeight: FontWeight.bold,
                   fontSize: 16)),
-          SizedBox(height: 16),
-          _BenefitRow(
+          const SizedBox(height: 16),
+          const _BenefitRow(
               icon: Icons.star, text: 'Gold verified badge on your profile'),
-          _BenefitRow(
+          const _BenefitRow(
               icon: Icons.visibility, text: 'Higher visibility in search'),
-          _BenefitRow(
+          const _BenefitRow(
               icon: Icons.shield, text: 'Trusted member status'),
-          _BenefitRow(
+          const _BenefitRow(
               icon: Icons.people, text: 'Access to verified members only section'),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.green.shade50,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.green.shade200),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.lock_outline, color: Colors.green, size: 20),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'તમારા દસ્તાવેજો સફળતાપૂર્વક માન્ય (Verified) થઈ ગયા છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ થઈ શકે છે.\n(Documents verified & locked. Each document can be used one time only.)',
+                    style: TextStyle(color: Colors.green, fontSize: 12, fontWeight: FontWeight.bold, height: 1.3),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -331,7 +352,30 @@ class _VerifiedProfileScreenState
             'Upload a valid government document to get your profile verified.',
             style: TextStyle(color: Colors.black54, fontSize: 14),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 14),
+
+          // Single-use document notice
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFDE68A)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Color(0xFFB45309), size: 22),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'મહત્વપૂર્ણ નિયમ: ઉમેદવાર પોતાના દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકે છે. અન્ય પ્રોફાઇલમાં કે ફરીથી આ દસ્તાવેજ માન્ય રહેશે નહીં.\n(Important: Documents can only be used one time. Re-submission or reuse is not allowed.)',
+                    style: TextStyle(color: Color(0xFF92400E), fontSize: 12, height: 1.3, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
 
           // Document type dropdown
           const Text('Document Type',

@@ -22,17 +22,33 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    // Check for existing user by email or phone
+    // Check for existing user by email or phone - Candidate can use their email only ONE time
     if (dto.email) {
-      const existingByEmail = await this.usersService.findByEmail(dto.email);
+      const cleanEmail = dto.email.trim().toLowerCase();
+      const existingByEmail = await this.usersService.findByEmail(cleanEmail);
       if (existingByEmail) {
-        throw new ConflictException("User with this email already exists");
+        throw new ConflictException(
+          "આ ઈમેઈલ સરનામું પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already registered. Candidates can use their email only once.)",
+        );
+      }
+
+      // Check if email was used in any candidate profile
+      const existingProfileEmail = await this.prisma.matrimonialProfile.findFirst({
+        where: { contactEmail: cleanEmail },
+      });
+      if (existingProfileEmail) {
+        throw new ConflictException(
+          "આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can use their email only once.)",
+        );
       }
     }
     if (dto.phone) {
-      const existingByPhone = await this.usersService.findByPhone(dto.phone);
+      const cleanPhone = dto.phone.trim();
+      const existingByPhone = await this.usersService.findByPhone(cleanPhone);
       if (existingByPhone) {
-        throw new ConflictException("User with this phone already exists");
+        throw new ConflictException(
+          "આ મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે. (This mobile number is already registered.)",
+        );
       }
     }
 

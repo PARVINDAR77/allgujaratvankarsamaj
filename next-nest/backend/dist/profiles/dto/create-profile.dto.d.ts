@@ -37,6 +37,7 @@ export declare class CreateProfileDto {
     mamasVillage?: string;
     addressLine?: string;
     pincode?: string;
+    contactPhone?: string;
     altPhone?: string;
     contactEmail?: string;
     motherTongue?: string;

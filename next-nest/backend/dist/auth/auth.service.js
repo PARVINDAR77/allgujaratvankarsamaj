@@ -26,15 +26,23 @@ let AuthService = class AuthService {
     }
     async register(dto) {
         if (dto.email) {
-            const existingByEmail = await this.usersService.findByEmail(dto.email);
+            const cleanEmail = dto.email.trim().toLowerCase();
+            const existingByEmail = await this.usersService.findByEmail(cleanEmail);
             if (existingByEmail) {
-                throw new common_1.ConflictException("User with this email already exists");
+                throw new common_1.ConflictException("આ ઈમેઈલ સરનામું પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already registered. Candidates can use their email only once.)");
+            }
+            const existingProfileEmail = await this.prisma.matrimonialProfile.findFirst({
+                where: { contactEmail: cleanEmail },
+            });
+            if (existingProfileEmail) {
+                throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can use their email only once.)");
             }
         }
         if (dto.phone) {
-            const existingByPhone = await this.usersService.findByPhone(dto.phone);
+            const cleanPhone = dto.phone.trim();
+            const existingByPhone = await this.usersService.findByPhone(cleanPhone);
             if (existingByPhone) {
-                throw new common_1.ConflictException("User with this phone already exists");
+                throw new common_1.ConflictException("આ મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે. (This mobile number is already registered.)");
             }
         }
         const saltRounds = 10;

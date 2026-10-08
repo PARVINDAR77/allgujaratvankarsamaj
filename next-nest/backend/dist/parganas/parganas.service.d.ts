@@ -48,9 +48,9 @@ export declare class ParganasService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
+        contactPhone: string | null;
         gujaratiName: string | null;
         code: string | null;
-        contactPhone: string | null;
         villageCount: string | null;
         districtRegion: string | null;
         leaderName: string | null;
@@ -75,9 +75,9 @@ export declare class ParganasService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
+        contactPhone: string | null;
         gujaratiName: string | null;
         code: string | null;
-        contactPhone: string | null;
         villageCount: string | null;
         districtRegion: string | null;
         leaderName: string | null;
@@ -91,9 +91,9 @@ export declare class ParganasService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
+        contactPhone: string | null;
         gujaratiName: string | null;
         code: string | null;
-        contactPhone: string | null;
         villageCount: string | null;
         districtRegion: string | null;
         leaderName: string | null;

@@ -432,6 +432,7 @@ class ProfileModel {
       'siblings': siblings,
       'mamasVillage': mamasVillage,
       'altPhone': altPhone,
+      'contactPhone': contactPhone,
       'contactEmail': contactEmail,
     };
 

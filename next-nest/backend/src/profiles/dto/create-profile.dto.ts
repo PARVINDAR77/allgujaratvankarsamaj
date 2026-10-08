@@ -2,6 +2,7 @@ import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Gender, MaritalStatus } from "../../common/enums/profile.enums";
 import { Transform } from "class-transformer";
 import {
+  IsEmail,
   IsEnum,
   IsNotEmpty,
   IsOptional,
@@ -296,11 +297,12 @@ export class CreateProfileDto {
   fatherOccupation?: string;
 
   @ApiPropertyOptional({
-    description: "Father's contact number",
+    description: "Father's contact number (10 digits)",
     example: "9876543210",
   })
   @IsOptional()
   @IsString()
+  @Matches(/^[6-9]\d{9}$/, { message: "Father contact must be a valid 10-digit mobile number starting with 6-9" })
   fatherContact?: string;
 
   @ApiPropertyOptional({
@@ -320,11 +322,12 @@ export class CreateProfileDto {
   motherOccupation?: string;
 
   @ApiPropertyOptional({
-    description: "Guardian's contact number",
+    description: "Guardian's contact number (10 digits)",
     example: "9876543210",
   })
   @IsOptional()
   @IsString()
+  @Matches(/^[6-9]\d{9}$/, { message: "Guardian contact must be a valid 10-digit mobile number starting with 6-9" })
   guardianContact?: string;
 
   @ApiPropertyOptional({
@@ -352,19 +355,30 @@ export class CreateProfileDto {
   addressLine?: string;
 
   @ApiPropertyOptional({
-    description: "Pincode / Zip Code",
+    description: "Pincode / Zip Code (6 digits)",
     example: "382424",
   })
   @IsOptional()
   @IsString()
+  @Matches(/^\d{6}$/, { message: "Pincode must be exactly 6 digits" })
   pincode?: string;
 
   @ApiPropertyOptional({
-    description: "WhatsApp or alternate phone number",
+    description: "Primary 10-digit mobile number",
     example: "9876543210",
   })
   @IsOptional()
   @IsString()
+  @Matches(/^[6-9]\d{9}$/, { message: "Contact phone must be a valid 10-digit mobile number starting with 6-9" })
+  contactPhone?: string;
+
+  @ApiPropertyOptional({
+    description: "WhatsApp or alternate phone number (10 digits)",
+    example: "9876543210",
+  })
+  @IsOptional()
+  @IsString()
+  @Matches(/^[6-9]\d{9}$/, { message: "WhatsApp / Alt phone must be a valid 10-digit mobile number starting with 6-9" })
   altPhone?: string;
 
   @ApiPropertyOptional({
@@ -373,6 +387,7 @@ export class CreateProfileDto {
   })
   @IsOptional()
   @IsString()
+  @IsEmail({}, { message: "Invalid email address format" })
   contactEmail?: string;
 
   @ApiPropertyOptional({
