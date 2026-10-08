@@ -15,6 +15,8 @@ class ParganaOverviewScreen extends ConsumerStatefulWidget {
 class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
   String _selectedPargana = 'All';
   String _selectedDistrict = 'All';
+  String _selectedTaluka = 'All';
+  String _selectedVillage = 'All';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
@@ -557,18 +559,26 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                   ),
                 ),
                 data: (allParganas) {
-                  // Compute available districts
+                  // Compute available districts, talukas, villages
                   final districtSet = <String>{'All'};
+                  final talukaSet = <String>{'All'};
+                  final villageSet = <String>{'All'};
+
                   for (final p in allParganas) {
                     if (p.districtRegion.isNotEmpty) {
                       districtSet.add(p.districtRegion);
                     }
+                    for (final pr in p.profiles) {
+                      if (_selectedDistrict != 'All' && pr.district != _selectedDistrict && p.districtRegion != _selectedDistrict) continue;
+                      if (pr.taluka.isNotEmpty) talukaSet.add(pr.taluka);
+                      if (pr.nativePlace != null && pr.nativePlace!.isNotEmpty) villageSet.add(pr.nativePlace!);
+                      if (pr.city != null && pr.city!.isNotEmpty) villageSet.add(pr.city!);
+                    }
                   }
-                  final availableDistricts = districtSet.toList()..sort((a, b) {
-                    if (a == 'All') return -1;
-                    if (b == 'All') return 1;
-                    return a.compareTo(b);
-                  });
+
+                  final availableDistricts = districtSet.toList()..sort((a, b) => a == 'All' ? -1 : (b == 'All' ? 1 : a.compareTo(b)));
+                  final availableTalukas = talukaSet.toList()..sort((a, b) => a == 'All' ? -1 : (b == 'All' ? 1 : a.compareTo(b)));
+                  final availableVillages = villageSet.toList()..sort((a, b) => a == 'All' ? -1 : (b == 'All' ? 1 : a.compareTo(b)));
 
                   // Compute available parganas based on district
                   final parganaListForFilter = <String>{'All'};
@@ -576,19 +586,27 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                     if (_selectedDistrict != 'All' && p.districtRegion != _selectedDistrict) continue;
                     parganaListForFilter.add(p.displayName);
                   }
-                  final availableParganas = parganaListForFilter.toList()..sort((a, b) {
-                    if (a == 'All') return -1;
-                    if (b == 'All') return 1;
-                    return a.compareTo(b);
-                  });
+                  final availableParganas = parganaListForFilter.toList()..sort((a, b) => a == 'All' ? -1 : (b == 'All' ? 1 : a.compareTo(b)));
 
                   if (!availableDistricts.contains(_selectedDistrict)) _selectedDistrict = 'All';
+                  if (!availableTalukas.contains(_selectedTaluka)) _selectedTaluka = 'All';
+                  if (!availableVillages.contains(_selectedVillage)) _selectedVillage = 'All';
                   if (!availableParganas.contains(_selectedPargana)) _selectedPargana = 'All';
 
                   // Filter the parganas list
                   final filteredParganas = allParganas.where((p) {
                     if (_selectedDistrict != 'All' && p.districtRegion != _selectedDistrict) return false;
                     if (_selectedPargana != 'All' && p.displayName != _selectedPargana) return false;
+
+                    bool hasMatchingProfileForTalukaVillage = false;
+                    if (_selectedTaluka != 'All' || _selectedVillage != 'All') {
+                      hasMatchingProfileForTalukaVillage = p.profiles.any((pr) {
+                        bool tMatch = _selectedTaluka == 'All' || pr.taluka == _selectedTaluka;
+                        bool vMatch = _selectedVillage == 'All' || pr.nativePlace == _selectedVillage || pr.city == _selectedVillage;
+                        return tMatch && vMatch;
+                      });
+                      if (!hasMatchingProfileForTalukaVillage) return false;
+                    }
 
                     if (_searchQuery.isNotEmpty) {
                       final query = _searchQuery.toLowerCase().trim();
@@ -631,7 +649,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                                 style: TextStyle(color: _goldColor, fontSize: 16, fontWeight: FontWeight.bold),
                               ),
                               const SizedBox(height: 12),
-                              _buildFilterGrid(availableParganas, availableDistricts),
+                              _buildFilterGrid(availableParganas, availableDistricts, availableTalukas, availableVillages),
                               const SizedBox(height: 16),
                               _buildSearchBar(),
                               const SizedBox(height: 16),
@@ -642,12 +660,14 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                                     '${filteredParganas.length} પરગણા મળ્યા (Parganas found)',
                                     style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
                                   ),
-                                  if (_selectedDistrict != 'All' || _selectedPargana != 'All' || _searchQuery.isNotEmpty)
+                                  if (_selectedDistrict != 'All' || _selectedPargana != 'All' || _selectedTaluka != 'All' || _selectedVillage != 'All' || _searchQuery.isNotEmpty)
                                     InkWell(
                                       onTap: () {
                                         setState(() {
                                           _selectedDistrict = 'All';
                                           _selectedPargana = 'All';
+                                          _selectedTaluka = 'All';
+                                          _selectedVillage = 'All';
                                           _searchQuery = '';
                                           _searchController.clear();
                                         });
@@ -778,24 +798,53 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
     );
   }
 
-  Widget _buildFilterGrid(List<String> parganas, List<String> districts) {
-    return Row(
+  Widget _buildFilterGrid(List<String> parganas, List<String> districts, List<String> talukas, List<String> villages) {
+    return Column(
       children: [
-        Expanded(
-          child: _buildDropdown('જિલ્લો / વિસ્તાર (District)', _selectedDistrict, districts, (v) {
-            setState(() {
-              _selectedDistrict = v ?? 'All';
-              _selectedPargana = 'All';
-            });
-          }),
+        Row(
+          children: [
+            Expanded(
+              child: _buildDropdown('પરગણા (Pargana)', _selectedPargana, parganas, (v) {
+                setState(() {
+                  _selectedPargana = v ?? 'All';
+                  _selectedDistrict = 'All';
+                  _selectedTaluka = 'All';
+                  _selectedVillage = 'All';
+                });
+              }),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildDropdown('જિલ્લો (District)', _selectedDistrict, districts, (v) {
+                setState(() {
+                  _selectedDistrict = v ?? 'All';
+                  _selectedTaluka = 'All';
+                  _selectedVillage = 'All';
+                });
+              }),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: _buildDropdown('પરગણા (Pargana)', _selectedPargana, parganas, (v) {
-            setState(() {
-              _selectedPargana = v ?? 'All';
-            });
-          }),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildDropdown('તાલુકો (Taluka)', _selectedTaluka, talukas, (v) {
+                setState(() {
+                  _selectedTaluka = v ?? 'All';
+                  _selectedVillage = 'All';
+                });
+              }),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildDropdown('ગામ (Village)', _selectedVillage, villages, (v) {
+                setState(() {
+                  _selectedVillage = v ?? 'All';
+                });
+              }),
+            ),
+          ],
         ),
       ],
     );
