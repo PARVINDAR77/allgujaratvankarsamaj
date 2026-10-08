@@ -15,6 +15,7 @@ import '../../providers/master_data_provider.dart';
 import '../../../community/providers/samaj_services_provider.dart';
 import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/widgets/samaj_service_picker_sheet.dart';
+import '../../../../shared/constants/pargana_constants.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
@@ -514,8 +515,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 'Which Pargana you have? (તમારું પરગણું કયું છે?) *', 
                 'Select Pargana', 
                 Icons.account_tree_outlined, 
-                ['Select Pargana', '7 Pargana (૭ પરગણા)', '22 Pargana (૨૨ પરગણા)', '24 Pargana / Chovisey (ચોવીસી)', '42 Pargana (૪૨ પરગણા)', 'Other (અન્ય)'],
-                value: _pargana,
+                kParganaOptions,
+                value: kParganaOptions.contains(_pargana) ? _pargana : 'Select Pargana',
                 onChanged: (v) => setState(() => _pargana = v ?? _pargana),
               ),
               _buildDropdownField('Are you studying or living abroad? (શું તમે વિદેશમાં અભ્યાસ કરો છો કે રહો છો?) *', 'No (ના)', Icons.flight_takeoff, ['Yes (હા)', 'No (ના)'], value: _isAbroad ? 'Yes (હા)' : 'No (ના)', onChanged: (v) => setState(() {

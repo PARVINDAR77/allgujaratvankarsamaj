@@ -13,6 +13,7 @@ import '../../providers/master_data_provider.dart';
 import '../../../community/providers/samaj_services_provider.dart';
 import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/widgets/samaj_service_picker_sheet.dart';
+import '../../../../shared/constants/pargana_constants.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -401,8 +402,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Which Pargana you have? (તમારું પરગણું કયું છે?) *', 
                 'Select Pargana', 
                 Icons.account_tree_outlined, 
-                ['Select Pargana', '7 Pargana (૭ પરગણા)', '22 Pargana (૨૨ પરગણા)', '24 Pargana / Chovisey (ચોવીસી)', '42 Pargana (૪૨ પરગણા)', 'Other (અન્ય)'],
-                value: ['Select Pargana', '7 Pargana (૭ પરગણા)', '22 Pargana (૨૨ પરગણા)', '24 Pargana / Chovisey (ચોવીસી)', '42 Pargana (૪૨ પરગણા)', 'Other (અન્ય)'].contains(_pargana) ? _pargana : 'Select Pargana',
+                kParganaOptions,
+                value: kParganaOptions.contains(_pargana) 
+                    ? _pargana 
+                    : (kParganaOptions.any((e) => e.contains(_pargana)) 
+                        ? kParganaOptions.firstWhere((e) => e.contains(_pargana)) 
+                        : 'Select Pargana'),
                 onChanged: (v) => setState(() => _pargana = v ?? _pargana),
               ),
               _buildDropdownField('Are you studying or living abroad? (શું તમે વિદેશમાં અભ્યાસ કરો છો કે રહો છો?) *', 'No (ના)', Icons.flight_takeoff, ['Yes (હા)', 'No (ના)'], value: _isAbroad ? 'Yes (હા)' : 'No (ના)', onChanged: (v) => setState(() {
@@ -699,9 +704,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_religion != 'Select Religion') updateData['religion'] = _religion;
                     if (_bloodGroup != null && _bloodGroup != 'Select Blood Group') updateData['bloodGroup'] = _bloodGroup;
                     if (_isVankar != null) updateData['isVankar'] = _isVankar == 'Yes (હા)';
-                    if (_education != 'Select Degree') updateData['education'] = _education;
+                    if (_education != 'Select Degree') {
+                      updateData['education'] = (_education.contains('Other') && _customEducation.isNotEmpty) ? _customEducation : _education;
+                    }
                     if (_employmentType != 'Select Sector') updateData['occupation'] = _employmentType;
-                    if (_department != 'Select Department') updateData['organizationName'] = _department;
+                    if (_department != 'Select Department') {
+                      updateData['organizationName'] = (_govCategory != 'Select Category' && _govCategory.contains('Other') && _customGovCategory.isNotEmpty)
+                          ? _customGovCategory
+                          : _department;
+                    }
                     if (_pargana != 'Select Pargana') updateData['nativePlace'] = _pargana;
                     if (_yearlyIncome != 'Select Income') updateData['annualIncome'] = _yearlyIncome;
                     if (_employmentType.contains('Business')) {

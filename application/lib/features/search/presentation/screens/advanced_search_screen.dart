@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../profile/providers/master_data_provider.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/constants/pargana_constants.dart';
 
 class AdvancedSearchScreen extends ConsumerStatefulWidget {
   final String initialLookingFor;
@@ -223,7 +224,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                     ),
                     Row(
                       children: [
-                        Expanded(child: _buildDropdown('પરગણા (Pargana)', _pargana, ['Any', '35 Pargana'], Icons.people, Colors.orange, (v) => setState(() => _pargana = v!))),
+                        Expanded(child: _buildDropdown('પરગણા (Pargana)', _pargana, kSearchParganaOptions, Icons.people, Colors.orange, (v) => setState(() => _pargana = v!))),
                         const SizedBox(width: 12),
                         Expanded(child: _buildDropdown('રહેઠાણ (Living In)', _livingIn, ['Any', 'Ahmedabad'], Icons.location_on, Colors.orange, (v) => setState(() => _livingIn = v!))),
                       ],
