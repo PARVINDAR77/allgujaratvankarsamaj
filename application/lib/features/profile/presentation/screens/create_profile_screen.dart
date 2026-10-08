@@ -26,6 +26,7 @@ class CreateProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
+  Uint8List? _profileImageBytes;
   final List<Uint8List> _galleryPhotosBytes = [];
   String _idProofType = 'Aadhaar Card (આધાર કાર્ડ)';
   Uint8List? _idFrontBytes;
@@ -41,6 +42,30 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
 
   final ImagePicker _picker = ImagePicker();
   bool _isSubmitting = false;
+
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        if (bytes.length > 5 * 1024 * 1024) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('પ્રોફાઇલ ફોટો સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (Profile photo must be under 5 MB)'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        setState(() {
+          _profileImageBytes = bytes;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking profile image: $e');
+    }
+  }
 
   String _firstName = '';
   String _lastName = '';
@@ -325,7 +350,18 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       return;
     }
 
-    // 7. Candidate Photos validation (2 to 5 photos)
+    // 7. Profile Photo validation (Main photo or gallery)
+    if (_profileImageBytes == null && _galleryPhotosBytes.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને પ્રોફાઇલ ફોટો પસંદ કરો (Please upload profile photo)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 8. Candidate Photos validation (2 to 5 photos)
     if (_galleryPhotosBytes.length < 2) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -345,7 +381,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       return;
     }
 
-    // 8. ID Proof validation (Front & Back both mandatory)
+    // 9. ID Proof validation (Front & Back both mandatory)
     if (_idFrontBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -415,22 +451,31 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       return null;
     }
 
-    // Upload Candidate Gallery Photos (2 to 5 images)
+    // Upload Main Profile Photo (Top)
+    String? uploadedMainPhoto;
+    if (_profileImageBytes != null) {
+      uploadedMainPhoto = await uploadBytes(_profileImageBytes!, 'profile_main');
+    }
+
+    // Upload Candidate Gallery Photos (Bottom, 2 to 5 images)
     final List<String> uploadedPhotoUrls = [];
+    if (uploadedMainPhoto != null) {
+      uploadedPhotoUrls.add(uploadedMainPhoto);
+    }
     for (int i = 0; i < _galleryPhotosBytes.length; i++) {
       final u = await uploadBytes(_galleryPhotosBytes[i], 'profile_gallery_$i');
-      if (u != null) {
+      if (u != null && !uploadedPhotoUrls.contains(u)) {
         uploadedPhotoUrls.add(u);
       }
     }
 
-    // Upload ID Proof Front and Back
+    // Upload ID Proof Front and Back (Bottom)
     final String? uploadedIdFront = await uploadBytes(_idFrontBytes!, 'id_proof_front');
     final String? uploadedIdBack = await uploadBytes(_idBackBytes!, 'id_proof_back');
 
-    final String? primaryPhotoUrl = uploadedPhotoUrls.isNotEmpty
+    final String? primaryPhotoUrl = uploadedMainPhoto ?? (uploadedPhotoUrls.isNotEmpty
         ? uploadedPhotoUrls[0]
-        : null;
+        : null);
 
     final uniqueId = 'VNK${math.Random().nextInt(90000) + 10000}';
     final password = '${math.Random().nextInt(900000) + 100000}'; // 6 digit random pass
@@ -657,12 +702,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Box 1: Multiple Candidate Photos (2 to 5 images)
-              _buildCandidatePhotosBox(),
-              const SizedBox(height: 20),
-
-              // Box 2: ID Proof Verification (Front & Back Mandatory) - Separate Box
-              _buildIdProofBox(),
+              // Main Profile Photo Upload (Top)
+              _buildMainPhotoUpload(),
               const SizedBox(height: 24),
 
               // Personal Details Section
@@ -1072,7 +1113,15 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               const SizedBox(height: 16),
               _buildTextField('Tell us about yourself (વધારાની વિગતો)', 'Enter Tell us about yourself (વધારાની વિગતો)', Icons.notes, isMultiline: true, onChanged: (v) => setState(() => _aboutMe = v)),
 
+              const SizedBox(height: 28),
+              // Box 1: Multiple Candidate Photos (2 to 5 images) - Bottom
+              _buildCandidatePhotosBox(),
+              const SizedBox(height: 20),
+
+              // Box 2: ID Proof Verification (Front & Back Mandatory) - Bottom
+              _buildIdProofBox(),
               const SizedBox(height: 32),
+
               // Submit Button
               ElevatedButton(
                 onPressed: _isSubmitting ? null : _submitProfile,
@@ -1247,6 +1296,95 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 );
               }).toList(),
               onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainPhotoUpload() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: _profileImageBytes != null ? const Color(0xFFD4AF37) : Colors.grey.shade300,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F7FA),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: _profileImageBytes != null ? const Color(0xFFD4AF37) : Colors.grey.shade300,
+                width: 2,
+              ),
+              image: _profileImageBytes != null
+                  ? DecorationImage(
+                      image: MemoryImage(_profileImageBytes!),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: _profileImageBytes == null
+                ? const Icon(Icons.add_a_photo, color: Colors.black54, size: 36)
+                : null,
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Upload Profile Photo (પ્રોફાઇલ ફોટો અપલોડ કરો)',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'તમારો મુખ્ય પાસપોર્ટ સાઈઝ અથવા સુંદર પ્રોફાઈલ ફોટો અહીં અપલોડ કરો (Max 5 MB).',
+                  style: TextStyle(color: Colors.black54, fontSize: 11),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: _pickImage,
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  ),
+                  icon: const Icon(Icons.cloud_upload_outlined, color: Color(0xFFD4AF37), size: 18),
+                  label: Text(
+                    _profileImageBytes != null
+                        ? 'Change Photo (ફોટો બદલો)'
+                        : 'Choose Photo (ફોટો પસંદ કરો)',
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
