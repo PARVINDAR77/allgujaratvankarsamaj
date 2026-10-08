@@ -83,26 +83,28 @@ if (!$fp) {
 if (!$fp) {
     $can_restart = true;
     if (file_exists($lock_file)) {
-        // Prevent race conditions: check if another request attempted restart in the last 10 seconds
-        if ((time() - filemtime($lock_file)) < 10) {
+        // Prevent race conditions: check if another request attempted restart in the last 8 seconds
+        if ((time() - filemtime($lock_file)) < 8) {
             $can_restart = false;
         }
     }
 
-    if ($can_restart && (function_exists('shell_exec') || function_exists('exec'))) {
+    if ($can_restart) {
         @touch($lock_file);
         
-        // Remove stale socket if process is not responding
-        if (file_exists($socket_file)) {
-            @unlink($socket_file);
-        }
+        // Signal watchdog to restart via trigger file
+        $trigger_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/restart_trigger.txt';
+        @touch($trigger_file);
 
-        // Start node backend process in background
-        $start_cmd = "cd " . escapeshellarg($backend_dir) . " && SOCKET_PATH=" . escapeshellarg($socket_file) . " NODE_ENV=production nohup node " . escapeshellarg($main_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
-        if (function_exists('shell_exec')) {
-            @shell_exec($start_cmd);
-        } else {
-            @exec($start_cmd);
+        // Try direct script invocation via keep_backend_alive.sh
+        $watchdog_script = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source/keep_backend_alive.sh';
+        if (function_exists('shell_exec') || function_exists('exec')) {
+            $start_cmd = "/bin/bash " . escapeshellarg($watchdog_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
+            if (function_exists('shell_exec')) {
+                @shell_exec($start_cmd);
+            } else {
+                @exec($start_cmd);
+            }
         }
 
         // Poll for socket readiness up to 3.5 seconds

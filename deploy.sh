@@ -359,16 +359,14 @@ rm -rf "$PREV_ADMIN_DIR" "$PREV_APP_DIR"
 # ---------------------------------------------------------
 echo "🔄 Executing atomic deployments..."
 
-# 1. NestJS (Background Process via Unix Socket)
-# Since this Hostinger plan doesn't support Passenger, we run it in the background on a Unix Socket
-echo "🔄 Starting Permanent Node.js Backend Supervisor..."
-command -v pm2 > /dev/null 2>&1 && pm2 delete all 2>/dev/null || true
+# 1. NestJS (Managed via PM2 with Internal Watchdog on Unix Socket)
+echo "🔄 Managing NestJS Backend & Watchdog via PM2..."
+cd "$PROJECT_ROOT/next-nest/backend"
 pkill -f "start_backend_daemon.sh" 2>/dev/null || true
-pkill -f "dist/main.js" 2>/dev/null || true
-sleep 1
 rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
-chmod +x "$PROJECT_ROOT/start_backend_daemon.sh" "$PROJECT_ROOT/keep_backend_alive.sh"
-nohup "$PROJECT_ROOT/start_backend_daemon.sh" > /dev/null 2>&1 &
+chmod +x "$PROJECT_ROOT/keep_backend_alive.sh"
+pm2 restart ecosystem.config.js --env production 2>/dev/null || pm2 start ecosystem.config.js --env production
+pm2 save
 
 echo "Waiting for backend socket to initialize..."
 SOCKET_FILE="/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock"
@@ -583,30 +581,31 @@ if (!$fp) {
 if (!$fp) {
     $can_restart = true;
     if (file_exists($lock_file)) {
-        if ((time() - filemtime($lock_file)) < 10) {
+        // Prevent race conditions: check if another request attempted restart in the last 8 seconds
+        if ((time() - filemtime($lock_file)) < 8) {
             $can_restart = false;
         }
     }
 
-    if ($can_restart && (function_exists('shell_exec') || function_exists('exec'))) {
+    if ($can_restart) {
         @touch($lock_file);
         
-        if (file_exists($socket_file)) {
-            @unlink($socket_file);
+        // Signal watchdog to restart via trigger file
+        $trigger_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/restart_trigger.txt';
+        @touch($trigger_file);
+
+        // Try direct script invocation via keep_backend_alive.sh
+        $watchdog_script = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source/keep_backend_alive.sh';
+        if (function_exists('shell_exec') || function_exists('exec')) {
+            $start_cmd = "/bin/bash " . escapeshellarg($watchdog_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
+            if (function_exists('shell_exec')) {
+                @shell_exec($start_cmd);
+            } else {
+                @exec($start_cmd);
+            }
         }
 
-        $supervisor_script = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source/start_backend_daemon.sh';
-        if (file_exists($supervisor_script)) {
-            $start_cmd = "nohup bash " . escapeshellarg($supervisor_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
-        } else {
-            $start_cmd = "cd " . escapeshellarg($backend_dir) . " && SOCKET_PATH=" . escapeshellarg($socket_file) . " NODE_ENV=production nohup node " . escapeshellarg($main_script) . " >> " . escapeshellarg($log_file) . " 2>&1 &";
-        }
-        if (function_exists('shell_exec')) {
-            @shell_exec($start_cmd);
-        } else {
-            @exec($start_cmd);
-        }
-
+        // Poll for socket readiness up to 3.5 seconds
         for ($i = 0; $i < 14; $i++) {
             usleep(250000); // 250ms
             list($retry_fp, $retry_errno, $retry_errstr) = try_connect_socket($socket_path, 1);
