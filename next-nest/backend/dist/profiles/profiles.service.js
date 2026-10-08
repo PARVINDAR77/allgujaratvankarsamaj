@@ -160,6 +160,19 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવારની પ્રોફાઇલમાં પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can only use their email one time.)");
             }
         }
+        let photosJson = null;
+        if (dto.photos) {
+            if (Array.isArray(dto.photos)) {
+                photosJson = JSON.stringify(dto.photos);
+            }
+            else if (typeof dto.photos === "string") {
+                photosJson = dto.photos.trim().startsWith("[")
+                    ? dto.photos.trim()
+                    : JSON.stringify([dto.photos.trim()]);
+            }
+        }
+        const primaryPhoto = dto.photoUrl ||
+            (Array.isArray(dto.photos) && dto.photos.length > 0 ? dto.photos[0] : null);
         try {
             const existingProfile = await this.prisma.matrimonialProfile.findUnique({
                 where: { userId },
@@ -184,7 +197,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 designation: dto.designation ? dto.designation.trim() : null,
                 nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
                 about: dto.about ? dto.about.trim() : null,
-                photoUrl: dto.photoUrl ?? null,
+                photoUrl: primaryPhoto ?? null,
+                photos: photosJson,
                 isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
                 pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
                 isAbroad: dto.isAbroad ?? false,
@@ -230,7 +244,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         designation: dto.designation !== undefined ? (dto.designation ? dto.designation.trim() : null) : existingProfile.designation,
                         nativePlace: dto.nativePlace !== undefined ? (dto.nativePlace ? dto.nativePlace.trim() : null) : existingProfile.nativePlace,
                         about: dto.about !== undefined ? (dto.about ? dto.about.trim() : null) : existingProfile.about,
-                        photoUrl: dto.photoUrl !== undefined ? dto.photoUrl : existingProfile.photoUrl,
+                        photoUrl: primaryPhoto !== undefined ? primaryPhoto : existingProfile.photoUrl,
+                        photos: photosJson !== null ? photosJson : existingProfile.photos,
                         status: client_1.ProfileStatus.PENDING,
                         isVerified: false,
                     },
@@ -262,7 +277,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 }
                 catch (_) { }
             }
-            const docUrl = profile.photoUrl || dto.photoUrl || "/uploads/default-id.png";
+            const docType = dto.idProofType?.trim() || "Aadhaar Card";
+            const docFront = dto.idProofFrontUrl?.trim() || profile.photoUrl || dto.photoUrl || "/uploads/default-id.png";
+            const docBack = dto.idProofBackUrl?.trim() || null;
             const existingReq = await this.prisma.verificationRequest.findFirst({
                 where: { profileId: profile.id, status: client_1.VerificationStatus.PENDING },
             });
@@ -270,8 +287,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 await this.prisma.verificationRequest.update({
                     where: { id: existingReq.id },
                     data: {
-                        documentType: "Profile Photo & KYC",
-                        documentUrl: docUrl,
+                        documentType: docType,
+                        documentUrl: docFront,
+                        documentBackUrl: docBack,
                         status: client_1.VerificationStatus.PENDING,
                         createdAt: new Date(),
                     },
@@ -281,8 +299,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 await this.prisma.verificationRequest.create({
                     data: {
                         profileId: profile.id,
-                        documentType: "Profile Photo & KYC",
-                        documentUrl: docUrl,
+                        documentType: docType,
+                        documentUrl: docFront,
+                        documentBackUrl: docBack,
                         status: client_1.VerificationStatus.PENDING,
                     },
                 });
@@ -320,7 +339,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 designation: dto.designation ? dto.designation.trim() : null,
                 nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
                 about: dto.about ? dto.about.trim() : null,
-                photoUrl: dto.photoUrl ?? null,
+                photoUrl: primaryPhoto ?? null,
+                photos: photosJson,
                 isPhysicallyDisabled: dto.isPhysicallyDisabled ?? false,
                 pwbdCategory: dto.pwbdCategory ? dto.pwbdCategory.trim() : null,
                 isAbroad: dto.isAbroad ?? false,
@@ -540,6 +560,19 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 updateData.about = dto.about ? dto.about.trim() : null;
             if (dto.photoUrl !== undefined)
                 updateData.photoUrl = dto.photoUrl;
+            if (dto.photos !== undefined) {
+                if (Array.isArray(dto.photos)) {
+                    updateData.photos = JSON.stringify(dto.photos);
+                    if (!updateData.photoUrl && dto.photos.length > 0) {
+                        updateData.photoUrl = dto.photos[0];
+                    }
+                }
+                else if (typeof dto.photos === "string") {
+                    updateData.photos = dto.photos.trim().startsWith("[")
+                        ? dto.photos.trim()
+                        : JSON.stringify([dto.photos.trim()]);
+                }
+            }
             if (dto.isPhysicallyDisabled !== undefined)
                 updateData.isPhysicallyDisabled = dto.isPhysicallyDisabled;
             if (dto.pwbdCategory !== undefined)
@@ -620,6 +653,47 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     });
                 }
                 catch (_) { }
+            }
+            if (dto.idProofFrontUrl || dto.idProofBackUrl) {
+                try {
+                    const docType = dto.idProofType?.trim() || "Aadhaar Card";
+                    const docFront = dto.idProofFrontUrl?.trim() ||
+                        updatedProfile.photoUrl ||
+                        "/uploads/default-id.png";
+                    const docBack = dto.idProofBackUrl?.trim() || null;
+                    const existingReq = await this.prisma.verificationRequest.findFirst({
+                        where: {
+                            profileId: updatedProfile.id,
+                            status: client_1.VerificationStatus.PENDING,
+                        },
+                    });
+                    if (existingReq) {
+                        await this.prisma.verificationRequest.update({
+                            where: { id: existingReq.id },
+                            data: {
+                                documentType: docType,
+                                documentUrl: docFront,
+                                documentBackUrl: docBack,
+                                status: client_1.VerificationStatus.PENDING,
+                                createdAt: new Date(),
+                            },
+                        });
+                    }
+                    else {
+                        await this.prisma.verificationRequest.create({
+                            data: {
+                                profileId: updatedProfile.id,
+                                documentType: docType,
+                                documentUrl: docFront,
+                                documentBackUrl: docBack,
+                                status: client_1.VerificationStatus.PENDING,
+                            },
+                        });
+                    }
+                }
+                catch (vErr) {
+                    this.logger.warn(`Verification request update error: ${vErr}`);
+                }
             }
             await this.syncSamajServicePerson(userId, updatedProfile);
             await this.syncGovernmentEmployment(updatedProfile);

@@ -226,6 +226,39 @@ __decorate([
 ], CreateProfileDto.prototype, "photoUrl", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
+        description: "Multiple photos (2 to 5 images) uploaded by candidate",
+        example: ["https://example.com/p1.jpg", "https://example.com/p2.jpg"],
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProfileDto.prototype, "photos", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "ID Proof Document Type (Aadhaar Card, PAN Card, Voter ID, etc.)",
+        example: "Aadhaar Card",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "idProofType", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "Mandatory front side image URL of ID Proof",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "idProofFrontUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "Mandatory back side image URL of ID Proof",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "idProofBackUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
         description: "Whether the candidate is physically disabled",
         example: true,
     }),

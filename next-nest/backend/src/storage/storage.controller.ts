@@ -31,8 +31,15 @@ export class StorageController {
       "application/pdf",
     ];
 
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB limit
+
     // Case 1: Standard multipart file upload
     if (file && file.buffer) {
+      if (file.buffer.length > MAX_FILE_SIZE) {
+        throw new BadRequestException(
+          "Image size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).",
+        );
+      }
       if (!allowedMimeTypes.includes(file.mimetype)) {
         throw new BadRequestException(
           "Invalid file type. Only images and PDFs are allowed.",
@@ -73,6 +80,11 @@ export class StorageController {
       const fileBuffer = Buffer.from(rawBase64, "base64");
       if (!fileBuffer || fileBuffer.length === 0) {
         throw new BadRequestException("Invalid or empty base64 data");
+      }
+      if (fileBuffer.length > MAX_FILE_SIZE) {
+        throw new BadRequestException(
+          "Image size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).",
+        );
       }
 
       const url = await this.storageService.uploadFile(

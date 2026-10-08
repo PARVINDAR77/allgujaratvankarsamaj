@@ -37,8 +37,8 @@ export declare class ProfilesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isFeatured: boolean;
-                rejectionReason: string | null;
                 profileId: string;
+                rejectionReason: string | null;
                 employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
                 officeLocation: string | null;
                 joiningYear: number | null;
@@ -74,6 +74,7 @@ export declare class ProfilesController {
             designation: string | null;
             about: string | null;
             photoUrl: string | null;
+            photos: string | null;
             isPhysicallyDisabled: boolean;
             pwbdCategory: string | null;
             isAbroad: boolean;
@@ -195,8 +196,8 @@ export declare class ProfilesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isFeatured: boolean;
-                rejectionReason: string | null;
                 profileId: string;
+                rejectionReason: string | null;
                 employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
                 officeLocation: string | null;
                 joiningYear: number | null;
@@ -232,6 +233,7 @@ export declare class ProfilesController {
             designation: string | null;
             about: string | null;
             photoUrl: string | null;
+            photos: string | null;
             isPhysicallyDisabled: boolean;
             pwbdCategory: string | null;
             isAbroad: boolean;
@@ -353,8 +355,8 @@ export declare class ProfilesController {
                 createdAt: Date;
                 updatedAt: Date;
                 isFeatured: boolean;
-                rejectionReason: string | null;
                 profileId: string;
+                rejectionReason: string | null;
                 employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
                 officeLocation: string | null;
                 joiningYear: number | null;
@@ -390,6 +392,7 @@ export declare class ProfilesController {
             designation: string | null;
             about: string | null;
             photoUrl: string | null;
+            photos: string | null;
             isPhysicallyDisabled: boolean;
             pwbdCategory: string | null;
             isAbroad: boolean;
@@ -486,6 +489,7 @@ export declare class ProfilesController {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
+        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;
@@ -540,6 +544,7 @@ export declare class ProfilesController {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
+        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;
@@ -594,6 +599,7 @@ export declare class ProfilesController {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
+        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;
@@ -648,6 +654,7 @@ export declare class ProfilesController {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
+        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;
@@ -702,6 +709,7 @@ export declare class ProfilesController {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
+        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;

@@ -108,6 +108,7 @@ model MatrimonialProfile {
   designation      String?
   about            String?
   photoUrl         String?       @map("photo_url")
+  photos           String?       @db.Text @map("photos")
   isPhysicallyDisabled Boolean   @default(false) @map("is_physically_disabled")
   pwbdCategory     String?       @map("pwbd_category")
   isAbroad         Boolean       @default(false) @map("is_abroad")
@@ -283,6 +284,7 @@ model VerificationRequest {
   profile         MatrimonialProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   documentType    String             @map("document_type")
   documentUrl     String             @map("document_url")
+  documentBackUrl String?            @map("document_back_url")
   status          VerificationStatus @default(PENDING)
   rejectionReason String?            @map("rejection_reason")
   createdAt       DateTime           @default(now()) @map("created_at")

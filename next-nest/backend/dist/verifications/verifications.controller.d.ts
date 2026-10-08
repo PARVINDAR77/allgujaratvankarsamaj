@@ -11,10 +11,11 @@ export declare class VerificationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
-        profileId: string;
     }>;
     getMyVerificationStatus(req: any): Promise<{
         hasProfile: boolean;
@@ -52,9 +53,10 @@ export declare class AdminVerificationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
-        profileId: string;
     }>;
 }

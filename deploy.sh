@@ -304,6 +304,8 @@ ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`pincode\` varcha
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`alt_phone\` varchar(191) DEFAULT NULL;
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`contact_email\` varchar(191) DEFAULT NULL;
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mother_tongue\` varchar(191) DEFAULT 'Gujarati (ગુજરાતી)';
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`photos\` TEXT DEFAULT NULL;
+ALTER TABLE \`verification_requests\` ADD COLUMN IF NOT EXISTS \`document_back_url\` varchar(191) DEFAULT NULL;
 " || true
 
 echo "Skipping Database Migrations (Hostinger RAM limits)..."

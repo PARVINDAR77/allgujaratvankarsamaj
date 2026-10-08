@@ -220,6 +220,26 @@ let AdminService = AdminService_1 = class AdminService {
         try {
             const requests = await this.prisma.verificationRequest.findMany({
                 orderBy: { createdAt: "desc" },
+                include: {
+                    profile: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            photoUrl: true,
+                            photos: true,
+                            nativePlace: true,
+                            city: true,
+                            user: {
+                                select: {
+                                    phone: true,
+                                    email: true,
+                                    name: true,
+                                },
+                            },
+                        },
+                    },
+                },
             });
             return requests;
         }

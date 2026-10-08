@@ -95,6 +95,7 @@ export declare class StatisticsController {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
+        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;

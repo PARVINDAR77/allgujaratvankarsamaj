@@ -1,8 +1,14 @@
+import 'dart:convert';
+
 class ProfileModel {
   final String id;
   final String firstName;
   final String lastName;
   final String? photoUrl;
+  final List<String>? photos;
+  final String? idProofType;
+  final String? idProofFrontUrl;
+  final String? idProofBackUrl;
 
   // Personal
   final String gender;
@@ -71,6 +77,10 @@ class ProfileModel {
     required this.firstName,
     required this.lastName,
     this.photoUrl,
+    this.photos,
+    this.idProofType,
+    this.idProofFrontUrl,
+    this.idProofBackUrl,
     required this.gender,
     required this.maritalStatus,
     required this.dateOfBirth,
@@ -340,11 +350,39 @@ class ProfileModel {
       resolvedGender = 'Female (સ્ત્રી)';
     }
 
+    List<String>? parsedPhotos;
+    final rawPhotos = json['photos'];
+    if (rawPhotos is List) {
+      parsedPhotos = rawPhotos.map((e) => e.toString()).toList();
+    } else if (rawPhotos is String && rawPhotos.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawPhotos);
+        if (decoded is List) {
+          parsedPhotos = decoded.map((e) => e.toString()).toList();
+        }
+      } catch (_) {
+        parsedPhotos = [rawPhotos];
+      }
+    }
+
+    String? idDocType = json['idProofType']?.toString();
+    String? idDocFront = json['idProofFrontUrl']?.toString();
+    String? idDocBack = json['idProofBackUrl']?.toString();
+    if (json['verification'] is Map) {
+      idDocType ??= json['verification']['documentType']?.toString();
+      idDocFront ??= json['verification']['documentUrl']?.toString();
+      idDocBack ??= json['verification']['documentBackUrl']?.toString();
+    }
+
     return ProfileModel(
       id: (json['id'] ?? '').toString(),
       firstName: (json['firstName'] ?? json['first_name'] ?? '').toString(),
       lastName: (json['lastName'] ?? json['last_name'] ?? '').toString(),
       photoUrl: (json['photoUrl'] ?? json['photo_url']) as String?,
+      photos: parsedPhotos,
+      idProofType: idDocType,
+      idProofFrontUrl: idDocFront,
+      idProofBackUrl: idDocBack,
       gender: resolvedGender,
       maritalStatus: normalizeMaritalStatusToDisplay(json['maritalStatus'] ?? json['marital_status'] ?? json['maritialStatus']),
       dateOfBirth: (json['dateOfBirth'] ?? json['date_of_birth'] ?? '').toString(),
@@ -396,6 +434,10 @@ class ProfileModel {
       'firstName': firstName,
       'lastName': lastName,
       'photoUrl': photoUrl,
+      if (photos != null && photos!.isNotEmpty) 'photos': photos,
+      if (idProofType != null) 'idProofType': idProofType,
+      if (idProofFrontUrl != null) 'idProofFrontUrl': idProofFrontUrl,
+      if (idProofBackUrl != null) 'idProofBackUrl': idProofBackUrl,
       'gender': normalizeGenderToApi(gender),
       'maritalStatus': normalizeMaritalStatusToApi(maritalStatus),
       'dateOfBirth': dateOfBirth,

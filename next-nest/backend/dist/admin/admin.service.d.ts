@@ -53,16 +53,32 @@ export declare class AdminService {
             date: string;
         }[];
     }>;
-    getVerifications(): Promise<{
+    getVerifications(): Promise<({
+        profile: {
+            user: {
+                name: string;
+                email: string;
+                phone: string;
+            };
+            id: string;
+            firstName: string;
+            lastName: string;
+            nativePlace: string;
+            city: string;
+            photoUrl: string;
+            photos: string;
+        };
+    } & {
         status: import(".prisma/client").$Enums.VerificationStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
-        profileId: string;
-    }[] | {
+    })[] | {
         id: string;
         profileId: string;
         name: string;
@@ -76,10 +92,11 @@ export declare class AdminService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
-        profileId: string;
     } | {
         id: string;
         status: any;

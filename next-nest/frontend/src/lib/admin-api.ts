@@ -63,6 +63,20 @@ export interface AdminProfileItem {
   status: string;
   isVerified: boolean;
   isFeatured: boolean;
+  photoUrl?: string;
+  photos?: string[];
+  verification?: {
+    id: string;
+    documentType: string;
+    documentUrl: string;
+    documentBackUrl?: string;
+    status: string;
+    createdAt: string;
+  };
+  user?: {
+    email?: string;
+    phone?: string;
+  };
   createdAt: string;
 }
 

@@ -75,6 +75,7 @@ export declare class StatisticsService {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
+        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;

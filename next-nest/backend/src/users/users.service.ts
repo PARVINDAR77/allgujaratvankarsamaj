@@ -217,6 +217,8 @@ export class UsersService {
           city: true,
           education: true,
           occupation: true,
+          photoUrl: true,
+          photos: true,
           status: true,
           isVerified: true,
           isFeatured: true,
@@ -227,25 +229,57 @@ export class UsersService {
               phone: true,
             },
           },
+          verificationRequests: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              documentType: true,
+              documentUrl: true,
+              documentBackUrl: true,
+              status: true,
+              createdAt: true,
+            },
+          },
         },
       });
-      return profiles.map((p) => ({
-        id: p.id,
-        userId: p.userId,
-        name: `${p.firstName} ${p.lastName || ""}`.trim(),
-        age: p.dateOfBirth
-          ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()
-          : 26,
-        gender: p.gender,
-        pargana: p.nativePlace || "35 Pargana",
-        city: p.city || "Ahmedabad",
-        education: p.education || "Graduate",
-        occupation: p.occupation || "Service",
-        status: p.status || "PENDING",
-        isVerified: p.isVerified,
-        isFeatured: p.isFeatured,
-        createdAt: p.createdAt,
-      }));
+      return profiles.map((p) => {
+        let parsedPhotos: string[] = [];
+        if (p.photos) {
+          try {
+            parsedPhotos = JSON.parse(p.photos);
+          } catch (_) {
+            parsedPhotos = [p.photos];
+          }
+        } else if (p.photoUrl) {
+          parsedPhotos = [p.photoUrl];
+        }
+
+        return {
+          id: p.id,
+          userId: p.userId,
+          name: `${p.firstName} ${p.lastName || ""}`.trim(),
+          age: p.dateOfBirth
+            ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear()
+            : 26,
+          gender: p.gender,
+          pargana: p.nativePlace || "35 Pargana",
+          city: p.city || "Ahmedabad",
+          education: p.education || "Graduate",
+          occupation: p.occupation || "Service",
+          photoUrl: p.photoUrl,
+          photos: parsedPhotos,
+          verification:
+            p.verificationRequests && p.verificationRequests[0]
+              ? p.verificationRequests[0]
+              : null,
+          user: p.user,
+          status: p.status || "PENDING",
+          isVerified: p.isVerified,
+          isFeatured: p.isFeatured,
+          createdAt: p.createdAt,
+        };
+      });
     } catch (err) {
       this.logger.error("Failed to query admin matrimonial profiles", err);
       return [];

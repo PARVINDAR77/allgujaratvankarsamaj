@@ -17,6 +17,10 @@ export declare class CreateProfileDto {
     organizationName?: string;
     designation?: string;
     photoUrl?: string;
+    photos?: string[] | string;
+    idProofType?: string;
+    idProofFrontUrl?: string;
+    idProofBackUrl?: string;
     isPhysicallyDisabled?: boolean;
     pwbdCategory?: string;
     isAbroad?: boolean;

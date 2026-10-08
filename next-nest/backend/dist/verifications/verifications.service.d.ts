@@ -8,20 +8,22 @@ export declare class VerificationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
-        profileId: string;
     }>;
     updateVerificationStatus(requestId: string, adminId: string, dto: UpdateVerificationStatusDto, ipAddress?: string): Promise<{
         status: import(".prisma/client").$Enums.VerificationStatus;
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
-        profileId: string;
     }>;
     getPendingVerifications(): Promise<({
         profile: {
@@ -37,10 +39,11 @@ export declare class VerificationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
+        profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
-        profileId: string;
     })[]>;
     getMyVerificationStatus(userId: string): Promise<{
         hasProfile: boolean;

@@ -204,6 +204,35 @@ export class CreateProfileDto {
   photoUrl?: string;
 
   @ApiPropertyOptional({
+    description: "Multiple photos (2 to 5 images) uploaded by candidate",
+    example: ["https://example.com/p1.jpg", "https://example.com/p2.jpg"],
+  })
+  @IsOptional()
+  photos?: string[] | string;
+
+  @ApiPropertyOptional({
+    description: "ID Proof Document Type (Aadhaar Card, PAN Card, Voter ID, etc.)",
+    example: "Aadhaar Card",
+  })
+  @IsOptional()
+  @IsString()
+  idProofType?: string;
+
+  @ApiPropertyOptional({
+    description: "Mandatory front side image URL of ID Proof",
+  })
+  @IsOptional()
+  @IsString()
+  idProofFrontUrl?: string;
+
+  @ApiPropertyOptional({
+    description: "Mandatory back side image URL of ID Proof",
+  })
+  @IsOptional()
+  @IsString()
+  idProofBackUrl?: string;
+
+  @ApiPropertyOptional({
     description: "Whether the candidate is physically disabled",
     example: true,
   })

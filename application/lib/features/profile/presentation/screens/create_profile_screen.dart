@@ -26,7 +26,19 @@ class CreateProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
-  Uint8List? _profileImageBytes;
+  final List<Uint8List> _galleryPhotosBytes = [];
+  String _idProofType = 'Aadhaar Card (આધાર કાર્ડ)';
+  Uint8List? _idFrontBytes;
+  Uint8List? _idBackBytes;
+  final List<String> _idProofOptions = [
+    'Aadhaar Card (આધાર કાર્ડ)',
+    'PAN Card (પાન કાર્ડ)',
+    'Voter ID Card (ચૂંટણી કાર્ડ)',
+    'Driving License (ડ્રાઇવિંગ લાઇસન્સ)',
+    'Passport (પાસપોર્ટ)',
+    'Other Govt ID (અન્ય સરકારી ઓળખપત્ર)',
+  ];
+
   final ImagePicker _picker = ImagePicker();
   bool _isSubmitting = false;
 
@@ -82,17 +94,115 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   // About Me
   String _aboutMe = '';
 
-  Future<void> _pickImage() async {
+  Future<void> _pickGalleryPhotos() async {
+    if (_galleryPhotosBytes.length >= 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('તમે વધુમાં વધુ ૫ ફોટા પસંદ કરી શકો છો (Maximum 5 candidate photos allowed)'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    try {
+      final List<XFile> pickedFiles = await _picker.pickMultiImage();
+      if (pickedFiles.isNotEmpty) {
+        int skippedTooLarge = 0;
+        for (final file in pickedFiles) {
+          if (_galleryPhotosBytes.length >= 5) break;
+          final bytes = await file.readAsBytes();
+          if (bytes.length > 5 * 1024 * 1024) {
+            skippedTooLarge++;
+            continue;
+          }
+          _galleryPhotosBytes.add(bytes);
+        }
+        setState(() {});
+        if (skippedTooLarge > 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$skippedTooLarge ફોટો 5 MB કરતાં મોટો હોવાથી રદ કરવામાં આવ્યો (Images > 5 MB were skipped)'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      } else {
+        final XFile? single = await _picker.pickImage(source: ImageSource.gallery);
+        if (single != null) {
+          final bytes = await single.readAsBytes();
+          if (bytes.length > 5 * 1024 * 1024) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('ફોટો સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (Image must be under 5 MB)'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+          if (_galleryPhotosBytes.length < 5) {
+            setState(() {
+              _galleryPhotosBytes.add(bytes);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error picking gallery photos: $e');
+    }
+  }
+
+  void _removeGalleryPhoto(int index) {
+    if (index >= 0 && index < _galleryPhotosBytes.length) {
+      setState(() {
+        _galleryPhotosBytes.removeAt(index);
+      });
+    }
+  }
+
+  Future<void> _pickIdFront() async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image != null) {
         final bytes = await image.readAsBytes();
+        if (bytes.length > 5 * 1024 * 1024) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ઓળખપત્રના આગળના ફોટાની સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (ID Front photo must be under 5 MB)'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
         setState(() {
-          _profileImageBytes = bytes;
+          _idFrontBytes = bytes;
         });
       }
     } catch (e) {
-      debugPrint('Error picking image: $e');
+      debugPrint('Error picking ID front image: $e');
+    }
+  }
+
+  Future<void> _pickIdBack() async {
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image != null) {
+        final bytes = await image.readAsBytes();
+        if (bytes.length > 5 * 1024 * 1024) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ઓળખપત્રના પાછળના ફોટાની સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (ID Back photo must be under 5 MB)'),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        setState(() {
+          _idBackBytes = bytes;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking ID back image: $e');
     }
   }
 
@@ -215,21 +325,60 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       return;
     }
 
+    // 7. Candidate Photos validation (2 to 5 photos)
+    if (_galleryPhotosBytes.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને ઓછામાં ઓછા ૨ ઉમેદવારના ફોટા પસંદ કરો (Please upload at least 2 candidate photos, maximum 5 allowed)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (_galleryPhotosBytes.length > 5) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('ઉમેદવારના વધુમાં વધુ ૫ ફોટા માન્ય છે (Maximum 5 candidate photos allowed)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // 8. ID Proof validation (Front & Back both mandatory)
+    if (_idFrontBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('સરકારી ઓળખપત્રનો આગળનો ફોટો (Front Side) ફરજિયાત છે (ID Proof Front photo is mandatory)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+    if (_idBackBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('સરકારી ઓળખપત્રનો પાછળનો ફોટો (Back Side) ફરજિયાત છે (ID Proof Back photo is mandatory)'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
 
-    String? uploadedPhotoUrl;
-    if (_profileImageBytes != null) {
+    Future<String?> uploadBytes(Uint8List bytes, String filenamePrefix) async {
       final dio = ref.read(apiClientProvider);
       String? rawUrl;
 
       // Strategy 1: Base64 JSON upload
       try {
-        final base64String = base64Encode(_profileImageBytes!);
+        final base64String = base64Encode(bytes);
         final uploadRes = await dio.post(
           '/storage/upload',
           data: {
             'base64': base64String,
-            'filename': 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+            'filename': '${filenamePrefix}_${DateTime.now().millisecondsSinceEpoch}.jpg',
             'mimetype': 'image/jpeg',
           },
         );
@@ -237,7 +386,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           rawUrl = uploadRes.data['url'] as String;
         }
       } catch (base64Err) {
-        debugPrint('Base64 upload attempt error: $base64Err');
+        debugPrint('Base64 upload attempt error for $filenamePrefix: $base64Err');
       }
 
       // Strategy 2: Multipart fallback
@@ -245,8 +394,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         try {
           final formData = FormData.fromMap({
             'file': MultipartFile.fromBytes(
-              _profileImageBytes!,
-              filename: 'profile_${DateTime.now().millisecondsSinceEpoch}.jpg',
+              bytes,
+              filename: '${filenamePrefix}_${DateTime.now().millisecondsSinceEpoch}.jpg',
             ),
           });
           final uploadRes = await dio.post('/storage/upload', data: formData);
@@ -254,16 +403,34 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
             rawUrl = uploadRes.data['url'] as String;
           }
         } catch (multipartErr) {
-          debugPrint('Multipart upload fallback error: $multipartErr');
+          debugPrint('Multipart upload fallback error for $filenamePrefix: $multipartErr');
         }
       }
 
       if (rawUrl != null) {
-        uploadedPhotoUrl = rawUrl.startsWith('http')
+        return rawUrl.startsWith('http')
             ? rawUrl
             : 'https://allgujaratvankarsamaj.com$rawUrl';
       }
+      return null;
     }
+
+    // Upload Candidate Gallery Photos (2 to 5 images)
+    final List<String> uploadedPhotoUrls = [];
+    for (int i = 0; i < _galleryPhotosBytes.length; i++) {
+      final u = await uploadBytes(_galleryPhotosBytes[i], 'profile_gallery_$i');
+      if (u != null) {
+        uploadedPhotoUrls.add(u);
+      }
+    }
+
+    // Upload ID Proof Front and Back
+    final String? uploadedIdFront = await uploadBytes(_idFrontBytes!, 'id_proof_front');
+    final String? uploadedIdBack = await uploadBytes(_idBackBytes!, 'id_proof_back');
+
+    final String? primaryPhotoUrl = uploadedPhotoUrls.isNotEmpty
+        ? uploadedPhotoUrls[0]
+        : null;
 
     final uniqueId = 'VNK${math.Random().nextInt(90000) + 10000}';
     final password = '${math.Random().nextInt(900000) + 100000}'; // 6 digit random pass
@@ -274,7 +441,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       id: uniqueId,
       firstName: _firstName.isNotEmpty ? _firstName : 'New',
       lastName: _lastName.isNotEmpty ? _lastName : 'User',
-      photoUrl: uploadedPhotoUrl,
+      photoUrl: primaryPhotoUrl,
+      photos: uploadedPhotoUrls,
+      idProofType: _idProofType,
+      idProofFrontUrl: uploadedIdFront,
+      idProofBackUrl: uploadedIdBack,
       gender: ProfileModel.normalizeGenderToDisplay(_gender),
       maritalStatus: _maritalStatus ?? 'Never Married (અપરિણીત)',
       dateOfBirth: _dob ?? '2000-01-01',
@@ -486,69 +657,12 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Photo Upload Section
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade300, width: 1.5),
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF5F7FA),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.grey.shade300),
-                        image: _profileImageBytes != null
-                            ? DecorationImage(
-                                image: MemoryImage(_profileImageBytes!),
-                                fit: BoxFit.cover,
-                              )
-                            : null,
-                      ),
-                      child: _profileImageBytes == null
-                          ? const Icon(Icons.add_a_photo, color: Colors.black54, size: 36)
-                          : null,
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Upload Profile Photo (ફોટો અપલોડ કરો)',
-                            style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 14),
-                          ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'તમારો પાસપોર્ટ સાઈઝ અથવા સુંદર પ્રોફાઈલ ફોટો અહીં અપલોડ કરો.',
-                            style: TextStyle(color: Colors.black54, fontSize: 12),
-                          ),
-                          const SizedBox(height: 12),
-                          OutlinedButton.icon(
-                            onPressed: _pickImage,
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFD4AF37)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            ),
-                            icon: const Icon(Icons.cloud_upload, color: Color(0xFFD4AF37), size: 18),
-                            label: const Text('Choose Photo (ફોટો પસંદ કરો)', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              // Box 1: Multiple Candidate Photos (2 to 5 images)
+              _buildCandidatePhotosBox(),
+              const SizedBox(height: 20),
+
+              // Box 2: ID Proof Verification (Front & Back Mandatory) - Separate Box
+              _buildIdProofBox(),
               const SizedBox(height: 24),
 
               // Personal Details Section
@@ -1133,6 +1247,469 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 );
               }).toList(),
               onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCandidatePhotosBox() {
+    final photoCount = _galleryPhotosBytes.length;
+    final isCountValid = photoCount >= 2 && photoCount <= 5;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isCountValid ? const Color(0xFFD4AF37) : Colors.amber.shade400,
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4AF37).withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.photo_library_rounded, color: Color(0xFFD4AF37), size: 22),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Candidate Photos / ઉમેદવારના ફોટા (૨ થી ૫ ફોટો)',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'ઓછામાં ઓછા ૨ અને વધુમાં વધુ ૫ ફોટો (Min 2, Max 5 • Max 5 MB each)',
+                      style: TextStyle(color: Colors.black54, fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isCountValid ? Colors.green.shade50 : Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isCountValid ? Colors.green.shade400 : Colors.amber.shade600,
+                  ),
+                ),
+                child: Text(
+                  '$photoCount / 5',
+                  style: TextStyle(
+                    color: isCountValid ? Colors.green.shade800 : Colors.amber.shade900,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Photos preview
+          if (_galleryPhotosBytes.isNotEmpty) ...[
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (int i = 0; i < _galleryPhotosBytes.length; i++)
+                  Stack(
+                    children: [
+                      Container(
+                        width: 90,
+                        height: 90,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: i == 0 ? const Color(0xFFD4AF37) : Colors.grey.shade300,
+                            width: i == 0 ? 2 : 1,
+                          ),
+                          image: DecorationImage(
+                            image: MemoryImage(_galleryPhotosBytes[i]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      if (i == 0)
+                        Positioned(
+                          bottom: 4,
+                          left: 4,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD4AF37),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              'Main',
+                              style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      Positioned(
+                        top: 2,
+                        right: 2,
+                        child: GestureDetector(
+                          onTap: () => _removeGalleryPhoto(i),
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.close, color: Colors.white, size: 14),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                if (_galleryPhotosBytes.length < 5)
+                  GestureDetector(
+                    onTap: _pickGalleryPhotos,
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF9FAFB),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37),
+                          style: BorderStyle.solid,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_photo_alternate_outlined, color: Color(0xFFD4AF37), size: 28),
+                          SizedBox(height: 4),
+                          Text(
+                            '+ Add Photo',
+                            style: TextStyle(
+                              color: Color(0xFFD4AF37),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              photoCount < 2
+                  ? '⚠️ હજી ઓછામાં ઓછો ${2 - photoCount} ફોટો ઉમેરવો જરૂરી છે. (Please add ${2 - photoCount} more photo)'
+                  : '✓ ફોટો બરાબર છે ($photoCount પસંદ કર્યા). તમે ઈચ્છો તો વધુ ${5 - photoCount} ઉમેરી શકો છો.',
+              style: TextStyle(
+                color: photoCount < 2 ? Colors.amber.shade900 : Colors.green.shade800,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ] else ...[
+            GestureDetector(
+              onTap: _pickGalleryPhotos,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF9FAFB),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFFD4AF37).withOpacity(0.6),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Column(
+                  children: [
+                    Icon(Icons.add_a_photo_outlined, color: Color(0xFFD4AF37), size: 40),
+                    SizedBox(height: 10),
+                    Text(
+                      'Click here to choose 2 to 5 photos (૨ થી ૫ ફોટા પસંદ કરો)',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'કેમેરા અથવા ગેલેરીમાંથી ઉમેદવારના સુંદર ફોટા પસંદ કરો (Max 5 MB per image)',
+                      style: TextStyle(color: Colors.black54, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIdProofBox() {
+    final hasFront = _idFrontBytes != null;
+    final hasBack = _idBackBytes != null;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: (hasFront && hasBack) ? Colors.green.shade400 : const Color(0xFF1E3A8A).withOpacity(0.4),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E3A8A).withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.badge_outlined, color: Color(0xFF1E3A8A), size: 22),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ID Proof Verification (ઓળખપત્ર વેરિફિકેશન)',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      'સરકારી ઓળખપત્રના આગળ અને પાછળ બંને ફોટા ફરજિયાત છે *',
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: (hasFront && hasBack) ? Colors.green.shade50 : Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: (hasFront && hasBack) ? Colors.green.shade400 : Colors.red.shade300,
+                  ),
+                ),
+                child: Text(
+                  (hasFront && hasBack) ? '✓ Completed' : 'Required *',
+                  style: TextStyle(
+                    color: (hasFront && hasBack) ? Colors.green.shade800 : Colors.red.shade800,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // ID Type Dropdown
+          const Text(
+            'Select Document Type (ઓળખપત્રનો પ્રકાર) *',
+            style: TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF9FAFB),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: _idProofType,
+                isExpanded: true,
+                icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
+                items: _idProofOptions.map((opt) {
+                  return DropdownMenuItem<String>(
+                    value: opt,
+                    child: Text(opt, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) setState(() => _idProofType = val);
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Two separate upload cards: Front & Back
+          Row(
+            children: [
+              // Front side card
+              Expanded(
+                child: _buildIdCardSide(
+                  title: 'Front Side (આગળનો ભાગ) *',
+                  imageBytes: _idFrontBytes,
+                  onPick: _pickIdFront,
+                  onRemove: () => setState(() => _idFrontBytes = null),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Back side card
+              Expanded(
+                child: _buildIdCardSide(
+                  title: 'Back Side (પાછળનો ભાગ) *',
+                  imageBytes: _idBackBytes,
+                  onPick: _pickIdBack,
+                  onRemove: () => setState(() => _idBackBytes = null),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIdCardSide({
+    required String title,
+    required Uint8List? imageBytes,
+    required VoidCallback onPick,
+    required VoidCallback onRemove,
+  }) {
+    final hasImg = imageBytes != null;
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF9FAFB),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: hasImg ? Colors.green.shade400 : Colors.grey.shade300,
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: hasImg ? Colors.green.shade800 : Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              if (hasImg)
+                GestureDetector(
+                  onTap: onRemove,
+                  child: const Icon(Icons.cancel, color: Colors.red, size: 16),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: onPick,
+            child: Container(
+              height: 110,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.shade300),
+                image: hasImg
+                    ? DecorationImage(
+                        image: MemoryImage(imageBytes),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: hasImg
+                  ? Container(
+                      alignment: Alignment.bottomCenter,
+                      padding: const EdgeInsets.only(bottom: 4),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.6),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text(
+                          'Tap to change',
+                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        ),
+                      ),
+                    )
+                  : const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.camera_alt_outlined, color: Color(0xFFD4AF37), size: 28),
+                        SizedBox(height: 4),
+                        Text(
+                          'Upload Image',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          'Max 5 MB',
+                          style: TextStyle(fontSize: 9, color: Colors.black45),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ],
