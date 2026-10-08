@@ -69,7 +69,7 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
     }
   }
 
-  void _offerPushpanjali(PavanPrernadata item) {
+  void _sendSnehVandan(PavanPrernadata item) {
     HapticFeedback.mediumImpact();
     setState(() {
       _tributeCounts[item.id] = (_tributeCounts[item.id] ?? 0) + 1;
@@ -96,11 +96,11 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
         duration: const Duration(seconds: 3),
         content: Row(
           children: [
-            const Text('🌸', style: TextStyle(fontSize: 22)),
+            const Text('✨', style: TextStyle(fontSize: 22)),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'શ્રી $displayName ને આપની ભાવભરી પુષ્પાંજલિ અર્પણ થઈ! 🙏',
+                'શ્રી $displayName ને આપનું ભાવભર્યું સ્નેહ વંદન પાઠવવામાં આવ્યું! 🙏',
                 style: const TextStyle(
                   color: Color(0xFFFFF2C2),
                   fontSize: 14,
@@ -452,7 +452,7 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                             const Padding(
                               padding: EdgeInsets.symmetric(horizontal: 8.0),
                               child: Text(
-                                '✦  પાવન સ્મૃતિ  ✦',
+                                '✦  પાવન પ્રેરણા  ✦',
                                 style: TextStyle(
                                   color: Color(0xFFD4AF37),
                                   fontSize: 13,
@@ -705,7 +705,7 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                           ),
                         const SizedBox(height: 24),
 
-                        // Interactive Pushpanjali (Flower Tribute) Button
+                        // Interactive Sneh Vandan (Happiness & Respect) Button
                         Wrap(
                           spacing: 12,
                           runSpacing: 10,
@@ -713,10 +713,10 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             ElevatedButton.icon(
-                              onPressed: () => _offerPushpanjali(item),
-                              icon: const Text('🌸', style: TextStyle(fontSize: 18)),
+                              onPressed: () => _sendSnehVandan(item),
+                              icon: const Text('✨', style: TextStyle(fontSize: 18)),
                               label: const Text(
-                                'પુષ્પાંજલિ અર્પણ કરો',
+                                'સ્નેહ વંદન પાઠવો',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -745,10 +745,10 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    const Text('🙏', style: TextStyle(fontSize: 14)),
+                                    const Text('✨', style: TextStyle(fontSize: 14)),
                                     const SizedBox(width: 6),
                                     Text(
-                                      '$tributeCount પુષ્પાંજલિ અર્પણ',
+                                      '$tributeCount સ્નેહ વંદન',
                                       style: const TextStyle(
                                         color: Color(0xFFFFF2C2),
                                         fontSize: 12,
