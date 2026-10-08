@@ -167,6 +167,12 @@ class DirectoryRepository {
     const DirectoryLocation(id: 'l1', districtId: 'd1', talukaId: 't1', nameEn: 'Ahmedabad', nameGu: 'અમદાવાદ', type: 'CITY'),
   ];
 
+  /// GET all parganas across Gujarat
+  static List<DirectoryPargana> getAllParganas() => _mockParganas;
+
+  /// GET all districts
+  List<DirectoryDistrict> getAllDistricts() => _mockDistricts;
+
   /// GET /directory/districts
   Future<List<DirectoryDistrict>> getDistricts() async {
     await Future.delayed(const Duration(milliseconds: 300));
