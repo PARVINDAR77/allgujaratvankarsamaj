@@ -32,6 +32,13 @@ export class ShortlistsController {
     return this.shortlistsService.createShortlist(req.user.id, dto);
   }
 
+  @Post("toggle")
+  @ApiOperation({ summary: "Toggle like/shortlist for a profile" })
+  @ApiResponse({ status: 200, description: "Toggled like status" })
+  async toggleShortlist(@Request() req: any, @Body() dto: CreateShortlistDto) {
+    return this.shortlistsService.toggleShortlist(req.user.id, dto.targetProfileId);
+  }
+
   @Delete(":targetProfileId")
   @ApiOperation({ summary: "Remove a profile from shortlists" })
   @ApiResponse({ status: 200, description: "Profile removed from shortlists" })
@@ -47,5 +54,19 @@ export class ShortlistsController {
   @ApiResponse({ status: 200, description: "List of shortlisted profiles" })
   async getShortlistedProfiles(@Request() req: any) {
     return this.shortlistsService.getShortlistedProfiles(req.user.id);
+  }
+
+  @Get("ids")
+  @ApiOperation({ summary: "Get all shortlisted profile IDs" })
+  @ApiResponse({ status: 200, description: "List of shortlisted profile IDs" })
+  async getShortlistedIds(@Request() req: any) {
+    return this.shortlistsService.getShortlistedIds(req.user.id);
+  }
+
+  @Get("count")
+  @ApiOperation({ summary: "Get count of shortlisted profiles" })
+  @ApiResponse({ status: 200, description: "Count of shortlisted profiles" })
+  async getShortlistCount(@Request() req: any) {
+    return this.shortlistsService.getShortlistCount(req.user.id);
   }
 }

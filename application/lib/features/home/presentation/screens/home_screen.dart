@@ -404,7 +404,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     ),
                   ),
                 ),
-                // 5. Search (Purple)
+                // 5. Center Button (Purple - Liked Profiles / પસંદ કરેલ પ્રોફાઈલ)
                 Positioned(
                   left: sx(800),
                   top: sy(1000),
@@ -414,7 +414,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(20),
-                      onTap: () => context.go('/search'),
+                      onTap: () => context.push('/liked-profiles'),
                     ),
                   ),
                 ),

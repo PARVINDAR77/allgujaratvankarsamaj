@@ -9,16 +9,122 @@ export declare class ShortlistsController {
         userId: string;
         targetProfileId: string;
     }>;
+    toggleShortlist(req: any, dto: CreateShortlistDto): Promise<{
+        isLiked: boolean;
+        count: number;
+    }>;
     removeShortlist(req: any, targetProfileId: string): Promise<{
         id: string;
         createdAt: Date;
         userId: string;
         targetProfileId: string;
     }>;
-    getShortlistedProfiles(req: any): Promise<{
+    getShortlistedProfiles(req: any): Promise<({
+        district: {
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            stateId: string;
+            isActive: boolean;
+            gujaratiName: string | null;
+            code: string | null;
+        };
+        taluka: {
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            districtId: string;
+            isActive: boolean;
+            gujaratiName: string | null;
+            code: string | null;
+        };
+        pargana: {
+            description: string | null;
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            contactPhone: string | null;
+            gujaratiName: string | null;
+            code: string | null;
+            villageCount: string | null;
+            districtRegion: string | null;
+            leaderName: string | null;
+            manualCount: number | null;
+            totalCount: number;
+        };
+        village: {
+            name: string;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            pincode: string | null;
+            talukaId: string | null;
+            parganaId: string | null;
+            isActive: boolean;
+            gujaratiName: string | null;
+            code: string | null;
+        };
+    } & {
+        state: string | null;
+        status: import(".prisma/client").$Enums.ProfileStatus;
         id: string;
+        gender: import(".prisma/client").$Enums.Gender;
         createdAt: Date;
+        updatedAt: Date;
         userId: string;
-        targetProfileId: string;
-    }[]>;
+        firstName: string;
+        lastName: string;
+        dateOfBirth: Date;
+        maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
+        religion: string | null;
+        caste: string | null;
+        subcaste: string | null;
+        nativePlace: string | null;
+        city: string | null;
+        country: string | null;
+        education: string | null;
+        occupation: string | null;
+        organizationName: string | null;
+        designation: string | null;
+        about: string | null;
+        photoUrl: string | null;
+        photos: string | null;
+        isPhysicallyDisabled: boolean;
+        pwbdCategory: string | null;
+        isAbroad: boolean;
+        abroadCountry: string | null;
+        businessIndustry: string | null;
+        businessService: string | null;
+        bloodGroup: string | null;
+        isVankar: boolean;
+        annualIncome: string | null;
+        fatherName: string | null;
+        fatherOccupation: string | null;
+        fatherContact: string | null;
+        motherName: string | null;
+        motherOccupation: string | null;
+        guardianContact: string | null;
+        siblings: string | null;
+        mamasVillage: string | null;
+        addressLine: string | null;
+        pincode: string | null;
+        altPhone: string | null;
+        contactEmail: string | null;
+        motherTongue: string | null;
+        stateId: string | null;
+        districtId: string | null;
+        talukaId: string | null;
+        parganaId: string | null;
+        villageId: string | null;
+        isVerified: boolean;
+        isFeatured: boolean;
+    })[]>;
+    getShortlistedIds(req: any): Promise<string[]>;
+    getShortlistCount(req: any): Promise<{
+        count: number;
+    }>;
 }

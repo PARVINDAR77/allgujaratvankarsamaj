@@ -25,11 +25,20 @@ let ShortlistsController = class ShortlistsController {
     async createShortlist(req, dto) {
         return this.shortlistsService.createShortlist(req.user.id, dto);
     }
+    async toggleShortlist(req, dto) {
+        return this.shortlistsService.toggleShortlist(req.user.id, dto.targetProfileId);
+    }
     async removeShortlist(req, targetProfileId) {
         return this.shortlistsService.removeShortlist(req.user.id, targetProfileId);
     }
     async getShortlistedProfiles(req) {
         return this.shortlistsService.getShortlistedProfiles(req.user.id);
+    }
+    async getShortlistedIds(req) {
+        return this.shortlistsService.getShortlistedIds(req.user.id);
+    }
+    async getShortlistCount(req) {
+        return this.shortlistsService.getShortlistCount(req.user.id);
     }
 };
 exports.ShortlistsController = ShortlistsController;
@@ -43,6 +52,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_shortlist_dto_1.CreateShortlistDto]),
     __metadata("design:returntype", Promise)
 ], ShortlistsController.prototype, "createShortlist", null);
+__decorate([
+    (0, common_1.Post)("toggle"),
+    (0, swagger_1.ApiOperation)({ summary: "Toggle like/shortlist for a profile" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Toggled like status" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_shortlist_dto_1.CreateShortlistDto]),
+    __metadata("design:returntype", Promise)
+], ShortlistsController.prototype, "toggleShortlist", null);
 __decorate([
     (0, common_1.Delete)(":targetProfileId"),
     (0, swagger_1.ApiOperation)({ summary: "Remove a profile from shortlists" }),
@@ -62,6 +81,24 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], ShortlistsController.prototype, "getShortlistedProfiles", null);
+__decorate([
+    (0, common_1.Get)("ids"),
+    (0, swagger_1.ApiOperation)({ summary: "Get all shortlisted profile IDs" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "List of shortlisted profile IDs" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ShortlistsController.prototype, "getShortlistedIds", null);
+__decorate([
+    (0, common_1.Get)("count"),
+    (0, swagger_1.ApiOperation)({ summary: "Get count of shortlisted profiles" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Count of shortlisted profiles" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], ShortlistsController.prototype, "getShortlistCount", null);
 exports.ShortlistsController = ShortlistsController = __decorate([
     (0, swagger_1.ApiTags)("Shortlists"),
     (0, swagger_1.ApiBearerAuth)(),

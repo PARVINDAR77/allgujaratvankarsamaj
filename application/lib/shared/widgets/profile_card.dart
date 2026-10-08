@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/profile/providers/liked_profiles_provider.dart';
 import '../../shared/models/profile_model.dart';
 
-class ProfileCard extends StatelessWidget {
+class ProfileCard extends ConsumerWidget {
   final ProfileModel profile;
 
   const ProfileCard({super.key, required this.profile});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final employmentStr = profile.displayProfession;
     final locationStr = profile.displayLocation;
+    final isLiked = ref.watch(isProfileLikedProvider(profile.id));
 
     return Card(
       color: Colors.white,
@@ -29,21 +32,42 @@ class ProfileCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar
-                  CircleAvatar(
-                    radius: 35,
-                    backgroundColor: const Color(0xFF0056D2).withValues(alpha: 0.1),
-                    backgroundImage: profile.fullPhotoUrl != null
-                        ? NetworkImage(profile.fullPhotoUrl!)
-                        : null,
-                    onBackgroundImageError: profile.fullPhotoUrl != null
-                        ? (_, __) {}
-                        : null,
-                    child: profile.fullPhotoUrl == null
-                        ? const Icon(Icons.person, size: 40, color: Color(0xFF0056D2))
-                        : null,
+                  // Avatar with Verified badge
+                  Stack(
+                    children: [
+                      CircleAvatar(
+                        radius: 35,
+                        backgroundColor: const Color(0xFF0056D2).withValues(alpha: 0.1),
+                        backgroundImage: profile.fullPhotoUrl != null
+                            ? NetworkImage(profile.fullPhotoUrl!)
+                            : null,
+                        onBackgroundImageError: profile.fullPhotoUrl != null
+                            ? (_, _) {}
+                            : null,
+                        child: profile.fullPhotoUrl == null
+                            ? const Icon(Icons.person, size: 40, color: Color(0xFF0056D2))
+                            : null,
+                      ),
+                      if (profile.isVerified == true)
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.verified,
+                              color: Color(0xFF0056D2),
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 14),
                   // Details
                   Expanded(
                     child: Column(
@@ -55,14 +79,16 @@ class ProfileCard extends StatelessWidget {
                               child: Text(
                                 profile.fullName,
                                 style: const TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF0056D2),
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
                                 color: profile.isFemale
                                     ? const Color(0xFFFCE4EC)
@@ -75,13 +101,34 @@ class ProfileCard extends StatelessWidget {
                                 ),
                               ),
                               child: Text(
-                                profile.isFemale ? '👰 Bride (કન્યા)' : '👨 Groom (વર)',
+                                profile.isFemale ? '👰 Bride' : '👨 Groom',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: profile.isFemale
                                       ? const Color(0xFFC2185B)
                                       : const Color(0xFF1976D2),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            // Quick Like Heart Button
+                            InkWell(
+                              borderRadius: BorderRadius.circular(20),
+                              onTap: () {
+                                ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 250),
+                                  transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                                  child: Icon(
+                                    isLiked ? Icons.favorite : Icons.favorite_border,
+                                    key: ValueKey<bool>(isLiked),
+                                    color: isLiked ? Colors.redAccent : Colors.grey.shade400,
+                                    size: 22,
+                                  ),
                                 ),
                               ),
                             ),
@@ -138,17 +185,44 @@ class ProfileCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: ElevatedButton(
+                    child: ElevatedButton.icon(
                       onPressed: () {
                         context.push('/candidate-profile-details', extra: profile);
                       },
+                      icon: const Icon(Icons.visibility_outlined, size: 16),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0056D2),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                       ),
-                      child: const Text('View Profile (પ્રોફાઈલ જુઓ)', style: TextStyle(fontSize: 13)),
+                      label: const Text('View Profile (પ્રોફાઈલ જુઓ)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context);
+                    },
+                    icon: Icon(
+                      isLiked ? Icons.favorite : Icons.favorite_border,
+                      size: 16,
+                      color: isLiked ? Colors.redAccent : Colors.grey.shade700,
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      side: BorderSide(
+                        color: isLiked ? Colors.red.shade300 : Colors.grey.shade300,
+                      ),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
+                    label: Text(
+                      isLiked ? 'પસંદ કરેલ' : 'પસંદ કરો',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: isLiked ? Colors.redAccent : Colors.grey.shade800,
+                      ),
                     ),
                   ),
                 ],

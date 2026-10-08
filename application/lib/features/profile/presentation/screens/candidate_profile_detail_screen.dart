@@ -6,6 +6,7 @@ import '../../../../app/theme/app_colors.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../providers/profile_provider.dart';
+import '../../providers/liked_profiles_provider.dart';
 
 class CandidateProfileDetailScreen extends ConsumerStatefulWidget {
   final ProfileModel? profile;
@@ -104,6 +105,7 @@ class _CandidateProfileDetailScreenState
     final themePrimary = profile.isFemale ? const Color(0xFFC2185B) : const Color(0xFF0056D2);
     final themeLight = profile.isFemale ? const Color(0xFFFCE4EC) : const Color(0xFFE3F2FD);
     final themeText = profile.isFemale ? const Color(0xFF880E4F) : const Color(0xFF0D47A1);
+    final isLiked = ref.watch(isProfileLikedProvider(profile.id));
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
@@ -127,11 +129,11 @@ class _CandidateProfileDetailScreenState
           ),
           IconButton(
             icon: Icon(
-              _isShortlisted ? Icons.favorite : Icons.favorite_border,
-              color: _isShortlisted ? Colors.redAccent : const Color(0xFFFFD700),
+              isLiked ? Icons.favorite : Icons.favorite_border,
+              color: isLiked ? Colors.redAccent : const Color(0xFFFFD700),
             ),
-            tooltip: 'Shortlist (પસંદ કરો)',
-            onPressed: () => _toggleShortlist(profile),
+            tooltip: isLiked ? 'પસંદ કરેલ લિસ્ટમાંથી દૂર કરો' : 'પસંદ કરો (Like Profile)',
+            onPressed: () => ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context),
           ),
         ],
       ),

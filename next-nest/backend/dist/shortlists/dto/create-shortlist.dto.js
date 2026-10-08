@@ -20,7 +20,7 @@ __decorate([
         description: "The profile ID of the person the user wants to shortlist",
     }),
     (0, class_validator_1.IsNotEmpty)(),
-    (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateShortlistDto.prototype, "targetProfileId", void 0);
 //# sourceMappingURL=create-shortlist.dto.js.map

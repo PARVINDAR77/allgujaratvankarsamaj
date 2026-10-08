@@ -277,6 +277,17 @@ CREATE TABLE IF NOT EXISTS \`education_content\` (
   PRIMARY KEY (\`id\`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS \`shortlists\` (
+  \`id\` varchar(191) NOT NULL,
+  \`user_id\` varchar(191) NOT NULL,
+  \`target_profile_id\` varchar(191) NOT NULL,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`),
+  UNIQUE KEY \`shortlists_user_id_target_profile_id_key\` (\`user_id\`, \`target_profile_id\`),
+  KEY \`shortlists_user_id_idx\` (\`user_id\`),
+  KEY \`shortlists_target_profile_id_idx\` (\`target_profile_id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 INSERT IGNORE INTO \`education_content\` (\`id\`, \`box1_title\`, \`box2_title\`, \`box2_content\`, \`box3_title\`, \`box4_title\`) VALUES ('default', 'શિક્ષણ માર્ગદર્શિકા અને પરિપત્રો (PDF)', 'શિક્ષણ પ્રેરણા સંદેશ & કારકિર્દી સલાહ', 'શિક્ષણ એ જીવનનો સૌથી મહત્વનો પાયો છે. આપણા વણકર સમાજના દરેક દીકરા અને દીકરી ઉચ્ચ શિક્ષણ મેળવી સમાજ અને દેશનું નામ રોશન કરે તે અમારો મુખ્ય સંકલ્પ છે. ધોરણ ૧૦ અને ૧૨ પછીના વિવિધ અભ્યાસક્રમો, સ્કોલરશીપ સહાય, અને સરકારી ભરતીઓની તૈયારી માટે સમાજ સદાય તમારી સાથે છે. જ્ઞાન એ જ શક્તિ છે, અને શિક્ષણ દ્વારા જ પ્રગતિ શક્ય છે.', 'શૈક્ષણિક સેમિનાર & કારકિર્દી માર્ગદર્શન', 'યુવા પ્રેરણા સંવાદ & સફળતાની વાર્તાઓ');
 
 

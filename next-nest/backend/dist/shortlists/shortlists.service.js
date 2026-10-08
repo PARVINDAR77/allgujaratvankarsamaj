@@ -50,10 +50,65 @@ let ShortlistsService = class ShortlistsService {
             throw new common_1.NotFoundException("Shortlist entry not found");
         }
     }
-    async getShortlistedProfiles(userId) {
-        return this.prisma.shortlist.findMany({
-            where: { userId },
+    async toggleShortlist(userId, targetProfileId) {
+        const existing = await this.prisma.shortlist.findUnique({
+            where: {
+                userId_targetProfileId: {
+                    userId,
+                    targetProfileId,
+                },
+            },
         });
+        if (existing) {
+            await this.prisma.shortlist.delete({
+                where: { id: existing.id },
+            });
+            const count = await this.prisma.shortlist.count({ where: { userId } });
+            return { isLiked: false, count };
+        }
+        else {
+            await this.prisma.shortlist.create({
+                data: {
+                    userId,
+                    targetProfileId,
+                },
+            });
+            const count = await this.prisma.shortlist.count({ where: { userId } });
+            return { isLiked: true, count };
+        }
+    }
+    async getShortlistedProfiles(userId) {
+        const list = await this.prisma.shortlist.findMany({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+        });
+        if (list.length === 0)
+            return [];
+        const targetIds = list.map((s) => s.targetProfileId);
+        const profiles = await this.prisma.matrimonialProfile.findMany({
+            where: { id: { in: targetIds } },
+            include: {
+                district: true,
+                taluka: true,
+                pargana: true,
+                village: true,
+            },
+        });
+        const profileMap = new Map(profiles.map((p) => [p.id, p]));
+        return targetIds
+            .map((id) => profileMap.get(id))
+            .filter((p) => p !== undefined);
+    }
+    async getShortlistedIds(userId) {
+        const list = await this.prisma.shortlist.findMany({
+            where: { userId },
+            select: { targetProfileId: true },
+        });
+        return list.map((s) => s.targetProfileId);
+    }
+    async getShortlistCount(userId) {
+        const count = await this.prisma.shortlist.count({ where: { userId } });
+        return { count };
     }
 };
 exports.ShortlistsService = ShortlistsService;

@@ -26,6 +26,7 @@ import '../../features/search/presentation/screens/advanced_search_screen.dart';
 import '../../features/search/presentation/screens/search_results_screen.dart';
 import '../../features/community/presentation/screens/samaj_ratna_screen.dart';
 import '../../features/profile/presentation/screens/candidate_profile_detail_screen.dart';
+import '../../features/profile/presentation/screens/liked_profiles_screen.dart';
 import '../../shared/models/profile_model.dart';
 
 import '../../shared/presentation/screens/main_navigation_screen.dart';
@@ -274,6 +275,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             profileId: profileId,
           );
         },
+      ),
+      GoRoute(
+        path: '/liked-profiles',
+        name: 'liked-profiles',
+        builder: (context, state) => const LikedProfilesScreen(),
       ),
       GoRoute(
         path: '/profile-details',

@@ -1,11 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsUUID } from "class-validator";
+import { IsNotEmpty, IsString } from "class-validator";
 
 export class CreateShortlistDto {
   @ApiProperty({
     description: "The profile ID of the person the user wants to shortlist",
   })
   @IsNotEmpty()
-  @IsUUID()
+  @IsString()
   targetProfileId: string;
 }
