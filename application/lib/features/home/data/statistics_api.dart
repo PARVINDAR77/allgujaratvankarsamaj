@@ -7,12 +7,12 @@ final statisticsApiProvider = Provider<StatisticsApi>((ref) {
   return StatisticsApi(dio);
 });
 
-final dashboardStatisticsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+final dashboardStatisticsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final api = ref.watch(statisticsApiProvider);
   return api.getDashboardStatistics();
 });
 
-final todaysBirthdaysProvider = FutureProvider<List<dynamic>>((ref) async {
+final todaysBirthdaysProvider = FutureProvider.autoDispose<List<dynamic>>((ref) async {
   final api = ref.watch(statisticsApiProvider);
   return api.getTodaysBirthdays();
 });
@@ -24,7 +24,10 @@ class StatisticsApi {
 
   Future<Map<String, dynamic>> getDashboardStatistics() async {
     try {
-      final response = await _dio.get('/statistics/dashboard');
+      final response = await _dio.get(
+        '/statistics/dashboard',
+        queryParameters: {'_t': DateTime.now().millisecondsSinceEpoch},
+      );
       if (response.data is Map<String, dynamic>) {
         return response.data as Map<String, dynamic>;
       }
@@ -33,7 +36,9 @@ class StatisticsApi {
       // Graceful fallback to keep the Live Counter screen functional without 500 error screens
       return {
         'totalCandidates': 0,
-        'today': {'boys': 0, 'girls': 0},
+        'totalBoys': 0,
+        'totalGirls': 0,
+        'today': {'total': 0, 'boys': 0, 'girls': 0},
         'departments': {
           'government': [
             {'name': 'Education (શિક્ષણ વિભાગ)', 'count': 0},

@@ -278,36 +278,77 @@ let StatisticsService = class StatisticsService {
     }
     async getPublicLiveStatistics() {
         try {
-            const totalCandidates = await this.prisma.matrimonialProfile.count({
-                where: { status: "APPROVED" },
-            });
-            const startOfDay = new Date();
-            startOfDay.setHours(0, 0, 0, 0);
-            const boysToday = await this.prisma.matrimonialProfile.count({
-                where: {
-                    gender: "MALE",
-                    createdAt: { gte: startOfDay },
-                },
-            });
-            const girlsToday = await this.prisma.matrimonialProfile.count({
-                where: {
-                    gender: "FEMALE",
-                    createdAt: { gte: startOfDay },
-                },
-            });
+            const validStatusFilter = { in: ["APPROVED", "PENDING"] };
+            const [totalCandidates, totalBoys, totalGirls] = await Promise.all([
+                this.prisma.matrimonialProfile.count({
+                    where: { status: validStatusFilter },
+                }),
+                this.prisma.matrimonialProfile.count({
+                    where: {
+                        gender: "MALE",
+                        status: validStatusFilter,
+                    },
+                }),
+                this.prisma.matrimonialProfile.count({
+                    where: {
+                        gender: "FEMALE",
+                        status: validStatusFilter,
+                    },
+                }),
+            ]);
+            const now = new Date();
+            const istOffsetMs = 5.5 * 60 * 60 * 1000;
+            const istTime = new Date(now.getTime() + istOffsetMs);
+            const istYear = istTime.getUTCFullYear();
+            const istMonth = istTime.getUTCMonth();
+            const istDate = istTime.getUTCDate();
+            const startOfDayUtc = new Date(Date.UTC(istYear, istMonth, istDate, 0, 0, 0) - istOffsetMs);
+            const [boysToday, girlsToday] = await Promise.all([
+                this.prisma.matrimonialProfile.count({
+                    where: {
+                        gender: "MALE",
+                        status: validStatusFilter,
+                        createdAt: { gte: startOfDayUtc },
+                    },
+                }),
+                this.prisma.matrimonialProfile.count({
+                    where: {
+                        gender: "FEMALE",
+                        status: validStatusFilter,
+                        createdAt: { gte: startOfDayUtc },
+                    },
+                }),
+            ]);
             let governmentStats = [];
             try {
                 const govtEmployees = await this.prisma.governmentEmployment.findMany({
                     where: { isActive: true },
                     include: {
                         department: { select: { id: true, name: true, gujaratiName: true } },
+                        profile: { select: { organizationName: true, occupation: true } },
                     },
                 });
                 const deptCountMap = new Map();
                 for (const g of govtEmployees) {
-                    const name = (g.department?.gujaratiName
-                        ? `${g.department.name} (${g.department.gujaratiName})`
-                        : g.department?.name) || "General Government (સરકારી વિભાગ)";
+                    let name = "";
+                    if (g.department?.gujaratiName) {
+                        name = `${g.department.name} (${g.department.gujaratiName})`;
+                    }
+                    else if (g.department?.name) {
+                        name = g.department.name;
+                    }
+                    else if (g.employmentType === 'CENTRAL_GOVT') {
+                        name = "Central Government (કેન્દ્ર સરકાર)";
+                    }
+                    else if (g.employmentType === 'STATE_GOVT') {
+                        name = "State Government (રાજ્ય સરકાર)";
+                    }
+                    else if (g.profile?.organizationName) {
+                        name = g.profile.organizationName;
+                    }
+                    else {
+                        name = "General Government (સરકારી વિભાગ)";
+                    }
                     deptCountMap.set(name, (deptCountMap.get(name) || 0) + 1);
                 }
                 governmentStats = Array.from(deptCountMap.entries())
@@ -435,7 +476,10 @@ let StatisticsService = class StatisticsService {
             }
             return {
                 totalCandidates,
+                totalBoys,
+                totalGirls,
                 today: {
+                    total: boysToday + girlsToday,
                     boys: boysToday,
                     girls: girlsToday,
                 },
@@ -449,7 +493,9 @@ let StatisticsService = class StatisticsService {
             console.error("Critical error in getPublicLiveStatistics:", globalError);
             return {
                 totalCandidates: 0,
-                today: { boys: 0, girls: 0 },
+                totalBoys: 0,
+                totalGirls: 0,
+                today: { total: 0, boys: 0, girls: 0 },
                 departments: {
                     government: [
                         { name: "Education (શિક્ષણ વિભાગ)", count: 0 },

@@ -53,7 +53,10 @@ export declare class StatisticsController {
     }>;
     getPublicDashboard(): Promise<{
         totalCandidates: number;
+        totalBoys: number;
+        totalGirls: number;
         today: {
+            total: number;
             boys: number;
             girls: number;
         };
