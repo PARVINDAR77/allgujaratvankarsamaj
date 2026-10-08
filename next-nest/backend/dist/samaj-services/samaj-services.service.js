@@ -380,12 +380,11 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                 },
                 orderBy: { createdAt: "desc" },
             });
-            if (res && res.length > 0)
-                return res;
+            return res;
         }
         catch {
+            return this.defaultPersons.filter((p) => p.serviceId === serviceId || serviceId === "all");
         }
-        return this.defaultPersons.filter((p) => p.serviceId === serviceId || serviceId === "all");
     }
     async getAllAdminServices() {
         try {

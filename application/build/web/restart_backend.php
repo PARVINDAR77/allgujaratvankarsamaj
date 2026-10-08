@@ -119,6 +119,15 @@ $results = [
     'actions_taken' => [],
 ];
 
+if ($action === 'deploy') {
+    if (function_exists('shell_exec')) {
+        $deployLog = shell_exec("cd " . escapeshellarg($project_dir) . " && git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1 && git pull origin main 2>&1 && cp -r application/build/web/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1 && cp -r next-nest/backend/dist/* " . escapeshellarg($backend_dir . "/dist/") . " 2>&1");
+        $results['deploy_log'] = $deployLog;
+        $results['actions_taken'][] = 'Pulled origin main and deployed web + backend dist';
+    }
+    @touch($trigger_file);
+}
+
 if ($action === 'fix_db') {
     fix_database_genders($project_dir, $results);
 }

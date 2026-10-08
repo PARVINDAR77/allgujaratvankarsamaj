@@ -1138,57 +1138,160 @@ export class ProfilesService implements OnModuleInit {
 
   private async syncSamajServicePerson(
     userId: string,
-    profile: MatrimonialProfile,
+    profile: any,
   ) {
-    if (
-      profile.occupation?.includes("Business") &&
-      profile.businessIndustry &&
-      profile.businessService
-    ) {
-      const service = await this.prisma.samajService.findFirst({
-        where: {
-          category: profile.businessIndustry,
-          title: profile.businessService,
-        },
-      });
-      if (service) {
-        const user = await this.prisma.user.findUnique({
-          where: { id: userId },
-        });
-        if (user && user.phone) {
-          const existingPerson = await this.prisma.samajServicePerson.findFirst(
-            {
-              where: { userId },
+    try {
+      if (!profile || !userId) return;
+
+      const occ = (profile.occupation || "").toLowerCase();
+      const isBusinessOrService =
+        occ.includes("business") ||
+        occ.includes("સ્વરોજગાર") ||
+        occ.includes("વેપાર") ||
+        occ.includes("દુકાન") ||
+        occ.includes("self") ||
+        Boolean(profile.businessIndustry && profile.businessIndustry !== "Select Industry") ||
+        Boolean(profile.businessService && profile.businessService !== "Select Service");
+
+      if (isBusinessOrService && (profile.businessService || profile.businessIndustry || profile.designation)) {
+        // 1. Resolve matching SamajService with flexible matching
+        let service: any = null;
+
+        if (profile.businessService && profile.businessService !== "Select Service") {
+          // Exact title match
+          service = await this.prisma.samajService.findFirst({
+            where: {
+              title: profile.businessService.trim(),
+              isActive: true,
             },
-          );
-          const data = {
-            serviceId: service.id,
-            name: `${profile.firstName} ${profile.lastName}`.trim(),
-            phone: user.phone,
-            photoUrl: profile.photoUrl,
-            city: profile.city,
-            address: profile.nativePlace,
-            description: profile.about,
-          };
-          if (existingPerson) {
-            await this.prisma.samajServicePerson.update({
-              where: { id: existingPerson.id },
-              data,
-            });
-          } else {
-            await this.prisma.samajServicePerson.create({
-              data: { ...data, userId },
-            });
+          });
+
+          // Flexible match by title or description
+          if (!service) {
+            const cleanTitle = profile.businessService
+              .replace(/\(.*?\)/g, "")
+              .replace(/[-—/]/g, " ")
+              .trim();
+            if (cleanTitle.length > 2) {
+              service = await this.prisma.samajService.findFirst({
+                where: {
+                  OR: [
+                    { title: { contains: cleanTitle } },
+                    { description: { contains: cleanTitle } },
+                  ],
+                  isActive: true,
+                },
+              });
+            }
           }
-          return;
+        }
+
+        // Fallback: match by category if service still not resolved
+        if (!service && profile.businessIndustry && profile.businessIndustry !== "Select Industry") {
+          const cleanCat = profile.businessIndustry.replace(/\(.*?\)/g, "").trim();
+          service = await this.prisma.samajService.findFirst({
+            where: {
+              category: { contains: cleanCat },
+              isActive: true,
+            },
+          });
+        }
+
+        if (service) {
+          // 2. Resolve Contact Phone with robust fallback chain
+          let phone = (profile.altPhone || "").trim();
+          if (!phone) {
+            const user = await this.prisma.user.findUnique({
+              where: { id: userId },
+              select: { phone: true },
+            });
+            phone = (user?.phone || "").trim();
+          }
+          if (!phone) {
+            phone = (profile.fatherContact || profile.guardianContact || "").trim();
+          }
+
+          if (phone && phone.length >= 8) {
+            const fullName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "Samaj Professional";
+            const businessName = (profile.organizationName || "").trim();
+            const designation = (profile.designation || "").trim();
+            const desc = businessName
+              ? `${businessName}${designation ? ` (${designation})` : ""} - ${profile.about || service.title}`
+              : (profile.about || designation || service.title);
+
+            // 3. Resolve location IDs (districtId, talukaId)
+            let districtId = profile.districtId || null;
+            if (!districtId && profile.state && profile.state.trim().length > 1) {
+              const d = await this.prisma.district.findFirst({
+                where: {
+                  OR: [
+                    { name: { contains: profile.state.trim() } },
+                    { gujaratiName: { contains: profile.state.trim() } },
+                  ],
+                },
+              });
+              if (d) districtId = d.id;
+            }
+
+            let talukaId = profile.talukaId || null;
+            if (!talukaId && profile.city && profile.city.trim().length > 1) {
+              const t = await this.prisma.taluka.findFirst({
+                where: {
+                  OR: [
+                    { name: { contains: profile.city.trim() } },
+                    { gujaratiName: { contains: profile.city.trim() } },
+                  ],
+                  ...(districtId ? { districtId } : {}),
+                },
+              });
+              if (t) talukaId = t.id;
+            }
+
+            const existingPerson = await this.prisma.samajServicePerson.findFirst({
+              where: { userId },
+            });
+
+            const personData: any = {
+              serviceId: service.id,
+              userId,
+              name: fullName,
+              gujaratiName: fullName,
+              phone: phone,
+              photoUrl: profile.photoUrl || null,
+              city: profile.city || profile.state || null,
+              address: profile.addressLine || profile.nativePlace || profile.city || null,
+              description: desc,
+              experience: "અનુભવી વ્યવસાયી (Experienced)",
+              districtId,
+              talukaId,
+              villageId: profile.villageId || null,
+              isActive: true,
+            };
+
+            if (existingPerson) {
+              await this.prisma.samajServicePerson.update({
+                where: { id: existingPerson.id },
+                data: personData,
+              });
+              this.logger.log(`Synced SamajServicePerson for user ${userId} under service: ${service.title}`);
+            } else {
+              await this.prisma.samajServicePerson.create({
+                data: personData,
+              });
+              this.logger.log(`Created new SamajServicePerson for user ${userId} under service: ${service.title}`);
+            }
+            return;
+          }
         }
       }
-    }
 
-    // If not business, remove existing
-    await this.prisma.samajServicePerson.deleteMany({
-      where: { userId },
-    });
+      // If user changed away from business, remove their entry from directory
+      await this.prisma.samajServicePerson.deleteMany({
+        where: { userId },
+      });
+    } catch (err: any) {
+      this.logger.warn(`Error syncing SamajServicePerson for user ${userId}: ${err?.message || err}`);
+    }
   }
 
   private async syncGovernmentEmployment(profile: any) {

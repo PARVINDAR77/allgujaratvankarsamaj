@@ -420,13 +420,13 @@ export class SamajServicesService {
         },
         orderBy: { createdAt: "desc" },
       });
-      if (res && res.length > 0) return res;
+      return res;
     } catch {
-      // Fallback
+      // Fallback only if DB fails
+      return this.defaultPersons.filter(
+        (p) => p.serviceId === serviceId || serviceId === "all",
+      );
     }
-    return this.defaultPersons.filter(
-      (p) => p.serviceId === serviceId || serviceId === "all",
-    );
   }
 
   // ==========================================

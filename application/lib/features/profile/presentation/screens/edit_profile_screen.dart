@@ -11,6 +11,8 @@ import '../../../../shared/models/profile_model.dart';
 import '../../../../shared/constants/gov_departments.dart';
 import '../../providers/master_data_provider.dart';
 import '../../../community/providers/samaj_services_provider.dart';
+import '../../../../shared/models/samaj_service.dart';
+import '../../../../shared/widgets/samaj_service_picker_sheet.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -111,25 +113,34 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
+  void _openSamajServicePicker(
+      BuildContext context, List<SamajService> services) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => SamajServicePickerSheet(
+        allServices: services,
+        initialCategory:
+            _businessIndustry != 'Select Industry' ? _businessIndustry : null,
+        initialService:
+            _businessService != 'Select Service' ? _businessService : null,
+        onSelected: (cat, srv) {
+          setState(() {
+            _businessIndustry = cat;
+            _businessService = srv;
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final myProfileAsync = ref.watch(myProfileProvider);
     final masterData = ref.watch(masterDataProvider);
     final samajServicesAsync = ref.watch(samajServicesProvider);
-    List<String> dynamicBusinessCategories = [];
-    List<String> dynamicBusinessServices = [];
-
-    samajServicesAsync.whenData((services) {
-      dynamicBusinessCategories = services.map((e) => e.category).toSet().toList();
-      String currentIndustry = _businessIndustry != 'Select Industry' ? _businessIndustry : (myProfileAsync.valueOrNull?.businessIndustry ?? 'Select Industry');
-      if (currentIndustry != 'Select Industry') {
-        dynamicBusinessServices = services
-            .where((e) => e.category == currentIndustry)
-            .map((e) => e.title)
-            .toSet()
-            .toList();
-      }
-    });
+    final samajServicesList = samajServicesAsync.value ?? [];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Light Background
@@ -176,6 +187,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _education = profile.education.isNotEmpty ? profile.education : 'Select Degree';
               _employmentType = profile.employmentType.isNotEmpty ? profile.employmentType : 'Government Sector (સરકારી નોકરી / સેકટર)';
               _department = profile.department;
+              _companyName = profile.department;
+              _businessIndustry = (profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty) ? profile.businessIndustry! : 'Select Industry';
+              _businessService = (profile.businessService != null && profile.businessService!.isNotEmpty) ? profile.businessService! : 'Select Service';
               _designation = profile.designation;
               _yearlyIncome = profile.annualIncome ?? 'Select Income';
               _fatherName = profile.fatherName;
@@ -490,31 +504,156 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
               ],
               if (_employmentType.contains('Business')) ...[
-                _buildDropdownField(
-                  'Business Industry / Category (વ્યવસાયનો પ્રકાર)',
-                  'Select Industry',
-                  Icons.storefront_outlined,
-                  ['Select Industry', ...dynamicBusinessCategories],
-                  value: dynamicBusinessCategories.contains(_businessIndustry) ? _businessIndustry : (profile.businessIndustry != null && dynamicBusinessCategories.contains(profile.businessIndustry) ? profile.businessIndustry : 'Select Industry'),
-                  onChanged: (v) => setState(() {
-                    _businessIndustry = v ?? 'Select Industry';
-                    _businessService = 'Select Service';
-                  }),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Business & Samaj Service (વ્યવસાય / સમાજ સેવા) *',
+                        style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      InkWell(
+                        onTap: () => _openSamajServicePicker(
+                            context, samajServicesList),
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _businessService != 'Select Service'
+                                  ? const Color(0xFF1D4ED8)
+                                  : Colors.grey.shade300,
+                              width: _businessService != 'Select Service'
+                                  ? 1.5
+                                  : 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.03),
+                                blurRadius: 4,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 44,
+                                height: 44,
+                                decoration: BoxDecoration(
+                                  color: _businessService != 'Select Service'
+                                      ? const Color(0xFFEFF6FF)
+                                      : const Color(0xFFF3F4F6),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  _businessService != 'Select Service'
+                                      ? Icons.storefront_rounded
+                                      : Icons.search_rounded,
+                                  color: const Color(0xFFD4AF37),
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      _businessService != 'Select Service'
+                                          ? _businessService
+                                          : 'સમાજ સેવા પસંદ કરો (Select Service)',
+                                      style: TextStyle(
+                                        color: _businessService != 'Select Service'
+                                            ? Colors.black87
+                                            : Colors.black45,
+                                        fontSize: 15,
+                                        fontWeight:
+                                            _businessService != 'Select Service'
+                                                ? FontWeight.bold
+                                                : FontWeight.w500,
+                                      ),
+                                    ),
+                                    if (_businessIndustry !=
+                                        'Select Industry') ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        _businessIndustry,
+                                        style: TextStyle(
+                                          color: Colors.grey.shade600,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEFF6FF),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _businessService != 'Select Service'
+                                      ? 'બદલો (Change)'
+                                      : 'શોધો (Browse)',
+                                  style: const TextStyle(
+                                    color: Color(0xFF1D4ED8),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                if ((_businessIndustry != 'Select Industry' || profile.businessIndustry != null) && dynamicBusinessServices.isNotEmpty)
-                  _buildDropdownField(
-                    'Business Service / Title',
-                    'Select Service',
-                    Icons.store_outlined,
-                    ['Select Service', ...dynamicBusinessServices],
-                    value: dynamicBusinessServices.contains(_businessService) ? _businessService : (profile.businessService != null && dynamicBusinessServices.contains(profile.businessService) ? profile.businessService : 'Select Service'),
-                    onChanged: (v) => setState(() => _businessService = v ?? 'Select Service'),
+                _buildTextField(
+                  'Company / Shop Name (પેઢી / દુકાનનું નામ)',
+                  'Enter Shop or Business Name (દા.ત. શ્રી ગણેશ ટ્રેડિંગ)',
+                  Icons.store_outlined,
+                  initialValue: _companyName ?? profile.department,
+                  onChanged: (v) => setState(() => _companyName = v),
+                ),
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFDE68A)),
                   ),
-                if (_businessIndustry == 'Select Industry' && profile.businessIndustry == null)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 16.0),
-                    child: Text('Please wait while loading categories...'),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.info_outline,
+                          color: Color(0xFF92400E), size: 20),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'તમારો વ્યવસાય તમારા સંપર્ક નંબર સાથે આપમેળે "સમાજ સર્વિસીસ" ડિરેક્ટરીમાં ઉમેરાઈ જશે જેથી સમાજના લોકો તમારો સંપર્ક કરી શકે.',
+                          style: TextStyle(
+                            color: Color(0xFF92400E),
+                            fontSize: 12,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+                ),
               ],
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, initialValue: profile.designation, onChanged: (v) => _designation = v),
               _buildDropdownField(
@@ -568,6 +707,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_employmentType.contains('Business')) {
                       updateData['businessIndustry'] = _businessIndustry != 'Select Industry' ? _businessIndustry : profile.businessIndustry;
                       updateData['businessService'] = _businessService != 'Select Service' ? _businessService : profile.businessService;
+                      if (_companyName != null && _companyName!.isNotEmpty) {
+                        updateData['organizationName'] = _companyName;
+                      }
                     }
                     if (_employmentType.contains('Private')) {
                       updateData['organizationName'] = _companyName ?? profile.department;
