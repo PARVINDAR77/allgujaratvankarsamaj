@@ -60,10 +60,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authNotifierProvider);
       final location = state.uri.toString();
       final isLoggingIn = location == '/login' || location == '/register';
+      final isCommunityPublicRoute = location.startsWith('/pavan-prernadata') ||
+          location.startsWith('/samaj-services') ||
+          location.startsWith('/samaj-super-stars') ||
+          location.startsWith('/government-employees');
+
       final isPublicRoute = isLoggingIn ||
           location == '/privacy-policy' ||
           location == '/delete-account' ||
-          location == '/privacy-contact';
+          location == '/privacy-contact' ||
+          isCommunityPublicRoute;
 
       if (authState.status == AuthStatus.initial) {
         return null;
@@ -83,7 +89,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           final isAllowedNoProfileRoute = location == '/profile/create' ||
               location == '/privacy-policy' ||
               location == '/delete-account' ||
-              location == '/privacy-contact';
+              location == '/privacy-contact' ||
+              isCommunityPublicRoute;
 
           if (!isAllowedNoProfileRoute) {
             return '/profile/create';
@@ -99,7 +106,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               location == '/profile/edit' ||
               location == '/privacy-policy' ||
               location == '/delete-account' ||
-              location == '/privacy-contact';
+              location == '/privacy-contact' ||
+              isCommunityPublicRoute;
 
           if (!isAllowedUnverifiedRoute) {
             return '/profile-under-review';
