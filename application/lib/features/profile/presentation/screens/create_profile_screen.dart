@@ -381,21 +381,33 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       return;
     }
 
-    // 9. ID Proof validation (Front & Back both mandatory)
+    // 9. ID Proof validation (Front & Back both mandatory for any document)
+    if (_idFrontBytes == null && _idBackBytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('કૃપા કરીને $_idProofType ના આગળ અને પાછળ બંને ફોટા અપલોડ કરો (Both Front and Back photos required)'),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
     if (_idFrontBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('સરકારી ઓળખપત્રનો આગળનો ફોટો (Front Side) ફરજિયાત છે (ID Proof Front photo is mandatory)'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text('કૃપા કરીને $_idProofType નો આગળનો ફોટો (Front Side) અપલોડ કરો (Front photo of $_idProofType is required)'),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 4),
         ),
       );
       return;
     }
     if (_idBackBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('સરકારી ઓળખપત્રનો પાછળનો ફોટો (Back Side) ફરજિયાત છે (ID Proof Back photo is mandatory)'),
-          backgroundColor: Colors.red,
+        SnackBar(
+          content: Text('કૃપા કરીને $_idProofType નો પાછળનો ફોટો (Back Side) અપલોડ કરો (Back photo of $_idProofType is required)'),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 4),
         ),
       );
       return;
@@ -1615,6 +1627,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   Widget _buildIdProofBox() {
     final hasFront = _idFrontBytes != null;
     final hasBack = _idBackBytes != null;
+    final isBothUploaded = hasFront && hasBack;
 
     return Container(
       width: double.infinity,
@@ -1623,7 +1636,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: (hasFront && hasBack) ? Colors.green.shade400 : const Color(0xFF1E3A8A).withOpacity(0.4),
+          color: isBothUploaded ? Colors.green.shade500 : const Color(0xFF1E3A8A).withOpacity(0.35),
           width: 1.5,
         ),
         boxShadow: [
@@ -1637,22 +1650,27 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1E3A8A).withOpacity(0.1),
+                  color: isBothUploaded ? Colors.green.shade50 : const Color(0xFF1E3A8A).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.badge_outlined, color: Color(0xFF1E3A8A), size: 22),
+                child: Icon(
+                  isBothUploaded ? Icons.verified_user : Icons.badge_outlined,
+                  color: isBothUploaded ? Colors.green.shade700 : const Color(0xFF1E3A8A),
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       'ID Proof Verification (ઓળખપત્ર વેરિફિકેશન)',
                       style: TextStyle(
                         color: Colors.black87,
@@ -1663,7 +1681,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     Text(
                       'સરકારી ઓળખપત્રના આગળ અને પાછળ બંને ફોટા ફરજિયાત છે *',
                       style: TextStyle(
-                        color: Colors.redAccent,
+                        color: isBothUploaded ? Colors.green.shade700 : Colors.red.shade700,
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1672,18 +1690,18 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: (hasFront && hasBack) ? Colors.green.shade50 : Colors.red.shade50,
+                  color: isBothUploaded ? Colors.green.shade50 : (hasFront || hasBack ? Colors.orange.shade50 : Colors.red.shade50),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: (hasFront && hasBack) ? Colors.green.shade400 : Colors.red.shade300,
+                    color: isBothUploaded ? Colors.green.shade400 : (hasFront || hasBack ? Colors.orange.shade400 : Colors.red.shade300),
                   ),
                 ),
                 child: Text(
-                  (hasFront && hasBack) ? '✓ Completed' : 'Required *',
+                  isBothUploaded ? '✓ Completed' : (hasFront || hasBack ? '⚠️ 1/2 Uploaded' : 'Required *'),
                   style: TextStyle(
-                    color: (hasFront && hasBack) ? Colors.green.shade800 : Colors.red.shade800,
+                    color: isBothUploaded ? Colors.green.shade800 : (hasFront || hasBack ? Colors.orange.shade900 : Colors.red.shade800),
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
                   ),
@@ -1693,28 +1711,82 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           ),
           const SizedBox(height: 14),
 
-          // ID Type Dropdown
+          // ID Type Dropdown Label
           const Text(
             'Select Document Type (ઓળખપત્રનો પ્રકાર) *',
-            style: TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.bold),
+            style: TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
+
+          // Dropdown Container with White Menu Background
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300, width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.02),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _idProofType,
                 isExpanded: true,
-                icon: const Icon(Icons.arrow_drop_down, color: Colors.black87),
+                dropdownColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                elevation: 8,
+                menuMaxHeight: 320,
+                focusColor: Colors.transparent,
+                icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF1E3A8A), size: 24),
+                style: const TextStyle(fontSize: 13, color: Colors.black87, fontWeight: FontWeight.w600),
                 items: _idProofOptions.map((opt) {
+                  final isSelected = opt == _idProofType;
                   return DropdownMenuItem<String>(
                     value: opt,
-                    child: Text(opt, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: isSelected ? const Color(0xFF1E3A8A).withOpacity(0.1) : const Color(0xFFF3F4F6),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(
+                            opt.contains('Aadhaar')
+                                ? Icons.badge_outlined
+                                : opt.contains('PAN')
+                                    ? Icons.credit_card
+                                    : opt.contains('Voter')
+                                        ? Icons.how_to_vote_outlined
+                                        : opt.contains('License')
+                                            ? Icons.directions_car_outlined
+                                            : opt.contains('Passport')
+                                                ? Icons.flight_takeoff_outlined
+                                                : Icons.assignment_ind_outlined,
+                            size: 18,
+                            color: isSelected ? const Color(0xFF1E3A8A) : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            opt,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                              color: isSelected ? const Color(0xFF1E3A8A) : Colors.black87,
+                            ),
+                          ),
+                        ),
+                        if (isSelected)
+                          const Icon(Icons.check_circle, size: 18, color: Color(0xFF1E3A8A)),
+                      ],
+                    ),
                   );
                 }).toList(),
                 onChanged: (val) {
@@ -1723,7 +1795,91 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
+
+          // Real-time Front & Back Status Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isBothUploaded
+                  ? const Color(0xFFECFDF5)
+                  : (hasFront || hasBack)
+                      ? const Color(0xFFFFFBEB)
+                      : const Color(0xFFFEF2F2),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: isBothUploaded
+                    ? const Color(0xFF10B981)
+                    : (hasFront || hasBack)
+                        ? const Color(0xFFF59E0B)
+                        : const Color(0xFFFCA5A5),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  isBothUploaded
+                      ? Icons.check_circle_rounded
+                      : (hasFront || hasBack)
+                          ? Icons.warning_amber_rounded
+                          : Icons.info_outline_rounded,
+                  color: isBothUploaded
+                      ? const Color(0xFF059669)
+                      : (hasFront || hasBack)
+                          ? const Color(0xFFD97706)
+                          : const Color(0xFFDC2626),
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isBothUploaded
+                            ? '✓ ઓળખપત્ર વેરિફિકેશન પૂર્ણ (ID Proof Complete)'
+                            : (!hasFront && !hasBack)
+                                ? '⚠️ આગળ અને પાછળ બંને બાજુના ફોટા અપલોડ કરવા જરૂરી છે'
+                                : (!hasFront)
+                                    ? '⚠️ આગળનો ફોટો (Front Side) અપલોડ કરવાનો બાકી છે'
+                                    : '⚠️ પાછળનો ફોટો (Back Side) અપલોડ કરવાનો બાકી છે',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: isBothUploaded
+                              ? const Color(0xFF065F46)
+                              : (hasFront || hasBack)
+                                  ? const Color(0xFF92400E)
+                                  : const Color(0xFF991B1B),
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isBothUploaded
+                            ? '$_idProofType ના આગળ અને પાછળ બંને બાજુના ફોટા અપલોડ થઈ ગયા છે.'
+                            : (!hasFront && !hasBack)
+                                ? 'કૃપા કરીને $_idProofType ના બંને ફોટા સ્પષ્ટ દેખાય તે રીતે અપલોડ કરો.'
+                                : (!hasFront)
+                                    ? 'કૃપા કરીને $_idProofType નો આગળનો ભાગ (Front Side) અપલોડ કરો.'
+                                    : 'કૃપા કરીને $_idProofType નો પાછળનો ભાગ (Back Side) અપલોડ કરો.',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isBothUploaded
+                              ? const Color(0xFF047857)
+                              : (hasFront || hasBack)
+                                  ? const Color(0xFFB45309)
+                                  : const Color(0xFFB91C1C),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
 
           // Two separate upload cards: Front & Back
           Row(
@@ -1731,7 +1887,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               // Front side card
               Expanded(
                 child: _buildIdCardSide(
-                  title: 'Front Side (આગળનો ભાગ) *',
+                  title: 'Front Side (આગળનો ભાગ)',
+                  sideLabel: 'આગળનો ફોટો (Front)',
                   imageBytes: _idFrontBytes,
                   onPick: _pickIdFront,
                   onRemove: () => setState(() => _idFrontBytes = null),
@@ -1741,7 +1898,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               // Back side card
               Expanded(
                 child: _buildIdCardSide(
-                  title: 'Back Side (પાછળનો ભાગ) *',
+                  title: 'Back Side (પાછળનો ભાગ)',
+                  sideLabel: 'પાછળનો ફોટો (Back)',
                   imageBytes: _idBackBytes,
                   onPick: _pickIdBack,
                   onRemove: () => setState(() => _idBackBytes = null),
@@ -1756,6 +1914,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
 
   Widget _buildIdCardSide({
     required String title,
+    required String sideLabel,
     required Uint8List? imageBytes,
     required VoidCallback onPick,
     required VoidCallback onRemove,
@@ -1765,10 +1924,10 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: hasImg ? const Color(0xFFF0FDF4) : const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: hasImg ? Colors.green.shade400 : Colors.grey.shade300,
+          color: hasImg ? Colors.green.shade400 : Colors.red.shade200,
           width: 1.2,
         ),
       ),
@@ -1789,23 +1948,35 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              if (hasImg)
-                GestureDetector(
-                  onTap: onRemove,
-                  child: const Icon(Icons.cancel, color: Colors.red, size: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: hasImg ? Colors.green.shade100 : Colors.red.shade100,
+                  borderRadius: BorderRadius.circular(6),
                 ),
+                child: Text(
+                  hasImg ? '✓ Uploaded' : '* Required',
+                  style: TextStyle(
+                    color: hasImg ? Colors.green.shade900 : Colors.red.shade900,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           GestureDetector(
             onTap: onPick,
             child: Container(
-              height: 110,
+              height: 115,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey.shade300),
+                border: Border.all(
+                  color: hasImg ? Colors.green.shade300 : Colors.grey.shade300,
+                ),
                 image: hasImg
                     ? DecorationImage(
                         image: MemoryImage(imageBytes),
@@ -1814,35 +1985,60 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     : null,
               ),
               child: hasImg
-                  ? Container(
-                      alignment: Alignment.bottomCenter,
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(4),
+                  ? Stack(
+                      children: [
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: GestureDetector(
+                            onTap: onRemove,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: const BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close, color: Colors.white, size: 14),
+                            ),
+                          ),
                         ),
-                        child: const Text(
-                          'Tap to change',
-                          style: TextStyle(color: Colors.white, fontSize: 10),
+                        Align(
+                          alignment: Alignment.bottomCenter,
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.65),
+                              borderRadius: const BorderRadius.only(
+                                bottomLeft: Radius.circular(7),
+                                bottomRight: Radius.circular(7),
+                              ),
+                            ),
+                            child: const Text(
+                              '✓ બદલવા માટે ટેપ કરો (Change)',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600),
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     )
-                  : const Column(
+                  : Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.camera_alt_outlined, color: Color(0xFFD4AF37), size: 28),
-                        SizedBox(height: 4),
+                        const Icon(Icons.add_a_photo_outlined, color: Color(0xFF1E3A8A), size: 26),
+                        const SizedBox(height: 4),
                         Text(
-                          'Upload Image',
-                          style: TextStyle(
+                          sideLabel,
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             color: Colors.black87,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        Text(
+                        const SizedBox(height: 2),
+                        const Text(
                           'Max 5 MB',
                           style: TextStyle(fontSize: 9, color: Colors.black45),
                         ),
