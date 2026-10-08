@@ -107,111 +107,151 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   }
 
   Widget _buildHeader(bool isDesktop, BuildContext context) {
-    return SizedBox(
-      height: isDesktop ? 240 : 200,
-      child: Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          SizedBox(
-            width: double.infinity,
-            height: isDesktop ? 200 : 160,
-            child: Image.asset(
-              'assets/images/home_poster_v3.jpg',
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: Colors.blue.shade100,
-                child: const Center(child: Text('Header Image')),
+    return Column(
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final bannerWidth = constraints.maxWidth;
+            // Native banner aspect ratio is 1600 x 592 (from WhatsApp Image 2026-10-07 at 5.33.44 PM)
+            final bannerHeight = bannerWidth * (592.0 / 1600.0);
+
+            return SizedBox(
+              width: bannerWidth,
+              height: bannerHeight,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: Image.asset(
+                      'assets/images/govt_section_banner_new.png',
+                      fit: BoxFit.fill,
+                      errorBuilder: (context, error, stackTrace) => Image.asset(
+                        'assets/images/vankar_header_banner.png',
+                        fit: BoxFit.fill,
+                        errorBuilder: (_, __, ___) => Container(
+                          height: 100,
+                          color: Colors.blue.shade100,
+                          child: const Center(child: Text('Header Image')),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Transparent touch target aligned with the banner's built-in "← પાછા જાઓ (Back)" button
+                  // Native coordinates: x: 20..480, y: 24..170 (out of 1600 x 592)
+                  Positioned(
+                    left: bannerWidth * (20.0 / 1600.0),
+                    top: bannerHeight * (24.0 / 592.0),
+                    width: bannerWidth * (460.0 / 1600.0),
+                    height: bannerHeight * (146.0 / 592.0),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(28),
+                        splashColor: Colors.white.withOpacity(0.35),
+                        highlightColor: Colors.white.withOpacity(0.15),
+                        onTap: () {
+                          if (context.canPop()) {
+                            context.pop();
+                          } else {
+                            context.go('/home');
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                  // Transparent touch target aligned with the banner's built-in "🔔" notification bell
+                  // Native coordinates: x: 1410..1550, y: 100..240 (out of 1600 x 592)
+                  Positioned(
+                    left: bannerWidth * (1410.0 / 1600.0),
+                    top: bannerHeight * (100.0 / 592.0),
+                    width: bannerWidth * (140.0 / 1600.0),
+                    height: bannerHeight * (140.0 / 592.0),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        customBorder: const CircleBorder(),
+                        splashColor: Colors.white.withOpacity(0.35),
+                        highlightColor: Colors.white.withOpacity(0.15),
+                        onTap: () {
+                          context.push('/notifications');
+                        },
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ),
+            );
+          },
+        ),
+        const SizedBox(height: 10),
+        Container(
+          padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 32 : 18, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: const Color(0xFFF3C34D), width: 2.2),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1A000000),
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
           ),
-          Positioned(
-            top: 8,
-            left: 8,
-            child: Container(
-              decoration: BoxDecoration(
-                color: const Color(0xFF041126),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () {
-                    if (context.canPop()) {
-                      context.pop();
-                    } else {
-                      context.go('/home');
-                    }
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    child: Row(
-                      children: [
-                        Icon(Icons.arrow_back, color: Color(0xFFD4AF37), size: 16),
-                        SizedBox(width: 4),
-                        Text('પાછા જાઓ (Back)',
-                            style: TextStyle(
-                                color: Color(0xFFD4AF37),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold)),
-                      ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: isDesktop ? 44 : 38,
+                height: isDesktop ? 44 : 38,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                  boxShadow: const [
+                    BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                  ],
+                ),
+                child: ClipOval(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => CircleAvatar(
+                      backgroundColor: const Color(0xFF0056D2),
+                      radius: isDesktop ? 22 : 19,
+                      child: Icon(Icons.groups, color: Colors.white, size: isDesktop ? 24 : 20),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            child: Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: isDesktop ? 40 : 20, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: const Color(0xFFF3C34D), width: 2.5),
-                boxShadow: const [
-                  BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))
-                ],
-              ),
-              child: Row(
+              const SizedBox(width: 10),
+              Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CircleAvatar(
-                    backgroundColor: const Color(0xFF0056D2),
-                    radius: isDesktop ? 24 : 20,
-                    child: Icon(Icons.groups,
-                        color: Colors.white, size: isDesktop ? 28 : 24),
+                  Text(
+                    'Government Employees',
+                    style: TextStyle(
+                      color: const Color(0xFF0056D2),
+                      fontSize: isDesktop ? 22 : 18,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.3,
+                    ),
                   ),
-                  const SizedBox(width: 12),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Government Employees',
-                        style: TextStyle(
-                            color: const Color(0xFF0056D2),
-                            fontSize: isDesktop ? 24 : 20,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        'સરકારી સેવા - સમાજની સેવા',
-                        style: TextStyle(
-                            color: const Color(0xFF0056D2),
-                            fontSize: isDesktop ? 14 : 12,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
+                  Text(
+                    'સરકારી સેવા - સમાજની સેવા',
+                    style: TextStyle(
+                      color: const Color(0xFF0056D2),
+                      fontSize: isDesktop ? 13 : 11,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ],
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 6),
+      ],
     );
   }
 
@@ -221,6 +261,8 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       margin: const EdgeInsets.only(top: 8),
       child: TabBar(
         controller: _tabController,
+        isScrollable: true,
+        tabAlignment: TabAlignment.center,
         labelColor: const Color(0xFF0056D2),
         unselectedLabelColor: Colors.grey.shade600,
         indicatorColor: const Color(0xFF0056D2),

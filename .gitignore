@@ -3,7 +3,7 @@ node_modules/
 .next/
 dist/
 !next-nest/backend/dist/
-build/
+/build/
 *.log
 .env
 !.env.example
