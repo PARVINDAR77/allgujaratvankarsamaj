@@ -116,7 +116,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
             width: double.infinity,
             height: isDesktop ? 200 : 160,
             child: Image.asset(
-              'assets/images/vankar_header_banner.png',
+              'assets/images/home_poster_v3.jpg',
               fit: BoxFit.cover,
               alignment: Alignment.topCenter,
               errorBuilder: (context, error, stackTrace) => Container(
