@@ -6,7 +6,7 @@ export declare class SamajServicesService {
     private readonly logger;
     constructor(prisma: PrismaService);
     private readonly defaultServices;
-    getPublicServices(): Promise<{
+    getPublicServices(search?: string, category?: string): Promise<{
         id: string;
         title: string;
         category: string;
@@ -54,7 +54,12 @@ export declare class SamajServicesService {
         contactPerson: string | null;
     }>;
     private readonly defaultPersons;
-    getPublicPersonsByServiceId(serviceId: string): Promise<{
+    getPublicPersonsByServiceId(serviceId: string, filters?: {
+        district?: string;
+        taluka?: string;
+        village?: string;
+        search?: string;
+    }): Promise<{
         id: string;
         serviceId: string;
         name: string;

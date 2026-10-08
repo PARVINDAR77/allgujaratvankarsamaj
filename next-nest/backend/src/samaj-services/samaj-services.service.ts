@@ -196,10 +196,24 @@ export class SamajServicesService {
     },
   ];
 
-  async getPublicServices() {
+  async getPublicServices(search?: string, category?: string) {
     try {
+      const whereClause: any = { isActive: true };
+      if (category && category.trim()) {
+        whereClause.category = category.trim();
+      }
+      if (search && search.trim()) {
+        const q = search.trim();
+        whereClause.OR = [
+          { title: { contains: q } },
+          { description: { contains: q } },
+          { category: { contains: q } },
+          { slug: { contains: q } },
+        ];
+      }
+
       const res = await this.prisma.samajService.findMany({
-        where: { isActive: true },
+        where: whereClause,
         orderBy: { createdAt: "desc" },
         include: {
           _count: {
@@ -211,7 +225,20 @@ export class SamajServicesService {
       return res;
     } catch (error) {
       this.logger.warn("DB unavailable, returning hardcoded fallback services");
-      return this.defaultServices;
+      let fallback = this.defaultServices;
+      if (category && category.trim()) {
+        fallback = fallback.filter((s) => s.category.toLowerCase().includes(category.trim().toLowerCase()));
+      }
+      if (search && search.trim()) {
+        const q = search.trim().toLowerCase();
+        fallback = fallback.filter(
+          (s) =>
+            s.title.toLowerCase().includes(q) ||
+            (s.description && s.description.toLowerCase().includes(q)) ||
+            s.category.toLowerCase().includes(q),
+        );
+      }
+      return fallback;
     }
   }
 
@@ -338,13 +365,49 @@ export class SamajServicesService {
     },
   ];
 
-  async getPublicPersonsByServiceId(serviceId: string) {
+  async getPublicPersonsByServiceId(
+    serviceId: string,
+    filters?: {
+      district?: string;
+      taluka?: string;
+      village?: string;
+      search?: string;
+    },
+  ) {
     try {
+      const whereClause: any = {
+        isActive: true,
+      };
+
+      if (serviceId !== "all") {
+        whereClause.serviceId = serviceId;
+      }
+
+      if (filters?.search && filters.search.trim()) {
+        const q = filters.search.trim();
+        whereClause.OR = [
+          { name: { contains: q } },
+          { gujaratiName: { contains: q } },
+          { description: { contains: q } },
+          { city: { contains: q } },
+          { address: { contains: q } },
+        ];
+      }
+
+      if (filters?.district && filters.district.trim()) {
+        whereClause.district = {
+          name: { contains: filters.district.trim() },
+        };
+      }
+
+      if (filters?.taluka && filters.taluka.trim()) {
+        whereClause.taluka = {
+          name: { contains: filters.taluka.trim() },
+        };
+      }
+
       const res = await this.prisma.samajServicePerson.findMany({
-        where: {
-          serviceId,
-          isActive: true,
-        },
+        where: whereClause,
         include: {
           service: {
             select: {

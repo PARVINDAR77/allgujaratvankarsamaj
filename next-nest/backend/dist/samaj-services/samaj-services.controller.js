@@ -23,14 +23,19 @@ let SamajServicesController = class SamajServicesController {
     constructor(samajServicesService) {
         this.samajServicesService = samajServicesService;
     }
-    async getPublicServices() {
-        return this.samajServicesService.getPublicServices();
+    async getPublicServices(search, category) {
+        return this.samajServicesService.getPublicServices(search, category);
     }
     async getPublicServiceById(id) {
         return this.samajServicesService.getPublicServiceById(id);
     }
-    async getPublicPersonsByServiceId(serviceId) {
-        return this.samajServicesService.getPublicPersonsByServiceId(serviceId);
+    async getPublicPersonsByServiceId(serviceId, district, taluka, village, search) {
+        return this.samajServicesService.getPublicPersonsByServiceId(serviceId, {
+            district,
+            taluka,
+            village,
+            search,
+        });
     }
     async getAdminServices() {
         return this.samajServicesService.getAllAdminServices();
@@ -64,8 +69,10 @@ __decorate([
     (0, swagger_1.ApiOperation)({
         summary: "Get active Samaj Services for Flutter App & Public Web",
     }),
+    __param(0, (0, common_1.Query)("search")),
+    __param(1, (0, common_1.Query)("category")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], SamajServicesController.prototype, "getPublicServices", null);
 __decorate([
@@ -84,8 +91,12 @@ __decorate([
         summary: "Get active service persons belonging to selected service ID",
     }),
     __param(0, (0, common_1.Param)("serviceId")),
+    __param(1, (0, common_1.Query)("district")),
+    __param(2, (0, common_1.Query)("taluka")),
+    __param(3, (0, common_1.Query)("village")),
+    __param(4, (0, common_1.Query)("search")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], SamajServicesController.prototype, "getPublicPersonsByServiceId", null);
 __decorate([

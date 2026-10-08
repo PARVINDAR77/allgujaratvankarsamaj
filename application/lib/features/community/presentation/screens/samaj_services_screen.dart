@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../shared/constants/app_data.dart';
 import '../../../../shared/models/samaj_service.dart';
 
 import '../../providers/samaj_services_provider.dart';
@@ -19,6 +18,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
   String? selectedTaluka;
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _villageController = TextEditingController();
+  String _searchQuery = '';
 
   // Colors for dynamic categories
   final List<Color> _categoryColors = [
@@ -32,6 +32,22 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     _searchController.dispose();
     _villageController.dispose();
     super.dispose();
+  }
+
+  void _performSearch() {
+    setState(() {
+      _searchQuery = _searchController.text.trim();
+    });
+  }
+
+  void _clearSearch() {
+    setState(() {
+      _searchController.clear();
+      _villageController.clear();
+      selectedDistrict = null;
+      selectedTaluka = null;
+      _searchQuery = '';
+    });
   }
 
   void _showServiceProviders(BuildContext context, String serviceId, String serviceName) {
@@ -497,8 +513,6 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
             .toList()
         : <String>[];
 
-    final servicesAsyncValue = ref.watch(samajServicesProvider);
-
     return Scaffold(
       backgroundColor: const Color(0xFFF4F9FF),
       body: SafeArea(
@@ -609,11 +623,29 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                             controller: _searchController,
                             style: const TextStyle(
                                 color: Colors.black, fontWeight: FontWeight.bold),
+                            textInputAction: TextInputAction.search,
+                            onChanged: (val) {
+                              setState(() {
+                                _searchQuery = val.trim();
+                              });
+                            },
+                            onSubmitted: (_) => _performSearch(),
                             decoration: InputDecoration(
-                              hintText: 'Search services, professions...',
+                              hintText: 'Search services, professions (e.g. Grain Trading)...',
                               hintStyle: const TextStyle(color: Colors.black54),
                               prefixIcon:
                                   const Icon(Icons.search, color: Color(0xFFD4AF37)),
+                              suffixIcon: _searchController.text.isNotEmpty
+                                  ? IconButton(
+                                      icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(() {
+                                          _searchQuery = '';
+                                        });
+                                      },
+                                    )
+                                  : null,
                               filled: true,
                               fillColor: const Color(0xFFF8FAFC),
                               border: OutlineInputBorder(
@@ -802,25 +834,45 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                           ),
 
                           const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Search backend is temporarily disconnected.')),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD4AF37),
-                              foregroundColor: const Color(0xFF041126),
-                              padding:
-                                  const EdgeInsets.symmetric(vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8)),
-                              elevation: 0,
-                            ),
-                            child: const Text('Search',
-                                style: TextStyle(fontWeight: FontWeight.bold)),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _performSearch,
+                                  icon: const Icon(Icons.search, size: 18),
+                                  label: const Text('Search | શોધો',
+                                      style: TextStyle(fontWeight: FontWeight.bold)),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFD4AF37),
+                                    foregroundColor: const Color(0xFF041126),
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    elevation: 0,
+                                  ),
+                                ),
+                              ),
+                              if (_searchQuery.isNotEmpty ||
+                                  selectedDistrict != null ||
+                                  selectedTaluka != null ||
+                                  _villageController.text.isNotEmpty) ...[
+                                const SizedBox(width: 8),
+                                OutlinedButton.icon(
+                                  onPressed: _clearSearch,
+                                  icon: const Icon(Icons.close, size: 16),
+                                  label: const Text('Clear'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xFF041126),
+                                    side: const BorderSide(color: Color(0xFFD4AF37)),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 12),
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                         ],
                       ),
@@ -835,22 +887,70 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                         },
                         child: ref.watch(samajServicesProvider).when(
                           data: (services) {
-                            if (services.isEmpty) {
+                            final query = _searchQuery.toLowerCase();
+                            final filteredServices = services.where((service) {
+                              if (query.isEmpty) return true;
+                              final t = service.title.toLowerCase();
+                              final c = service.category.toLowerCase();
+                              final d = service.description.toLowerCase();
+                              final s = service.slug.toLowerCase();
+                              return t.contains(query) ||
+                                  c.contains(query) ||
+                                  d.contains(query) ||
+                                  s.contains(query);
+                            }).toList();
+
+                            if (filteredServices.isEmpty) {
                               return ListView(
-                                children: const [
-                                  SizedBox(height: 100),
+                                children: [
+                                  const SizedBox(height: 60),
                                   Center(
-                                      child: Text('No Samaj Services Found',
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.search_off_rounded,
+                                            size: 64, color: Colors.grey.shade400),
+                                        const SizedBox(height: 16),
+                                        const Text(
+                                          'કોઈ સેવા મળી નથી (No Services Found)',
                                           style: TextStyle(
-                                              fontWeight: FontWeight.bold))),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF041126),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          '"$_searchQuery" માટે કોઈ મેળ ખાતી સેવા નથી',
+                                          style: const TextStyle(
+                                              fontSize: 13, color: Colors.black54),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        ElevatedButton.icon(
+                                          onPressed: _clearSearch,
+                                          icon: const Icon(Icons.refresh_rounded,
+                                              size: 18),
+                                          label: const Text(
+                                              'તમામ સેવાઓ જુઓ (Show All)'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(0xFFD4AF37),
+                                            foregroundColor: const Color(0xFF041126),
+                                            shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10)),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               );
                             }
 
-                            // Group services by category
+                            // Group filtered services by category
                             final Map<String, List<SamajService>>
                                 groupedServices = {};
-                            for (final service in services) {
+                            for (final service in filteredServices) {
                               groupedServices
                                   .putIfAbsent(service.category, () => [])
                                   .add(service);
@@ -859,12 +959,49 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                             final categories =
                                 groupedServices.keys.toList()..sort();
 
-                            return ListView.builder(
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 16, horizontal: 8),
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: categories.length,
-                              itemBuilder: (context, index) {
+                            return Column(
+                              children: [
+                                if (_searchQuery.isNotEmpty)
+                                  Container(
+                                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFEF3C7),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: const Color(0xFFFDE68A)),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'મળેલ પરિણામ: ${filteredServices.length} સેવાઓ',
+                                          style: const TextStyle(
+                                            color: Color(0xFF92400E),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        GestureDetector(
+                                          onTap: _clearSearch,
+                                          child: const Text(
+                                            'સાફ કરો (Clear)',
+                                            style: TextStyle(
+                                              color: Color(0xFF1D4ED8),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                Expanded(
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 16, horizontal: 8),
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: categories.length,
+                                    itemBuilder: (context, index) {
                                 final categoryName = categories[index];
                                 final List<SamajService> items =
                                     groupedServices[categoryName]!;
@@ -1001,7 +1138,10 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                   ),
                                 );
                               },
-                            );
+                            ),
+                          ),
+                        ],
+                      );
                           },
                           loading: () => const Center(
                               child: CircularProgressIndicator()),

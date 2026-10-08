@@ -10,9 +10,17 @@ class SamajServiceRepository {
 
   SamajServiceRepository(this._dio);
 
-  Future<List<SamajService>> fetchServices() async {
+  Future<List<SamajService>> fetchServices({String? search, String? category}) async {
     try {
-      final response = await _dio.get('/samaj-services');
+      final Map<String, dynamic> params = {};
+      if (search != null && search.trim().isNotEmpty) {
+        params['search'] = search.trim();
+      }
+      if (category != null && category.trim().isNotEmpty) {
+        params['category'] = category.trim();
+      }
+
+      final response = await _dio.get('/samaj-services', queryParameters: params.isNotEmpty ? params : null);
       dynamic raw = response.data;
       if (raw is String) {
         try {
@@ -33,9 +41,21 @@ class SamajServiceRepository {
     }
   }
 
-  Future<List<SamajServicePerson>> fetchPersonsByServiceId(String serviceId) async {
+  Future<List<SamajServicePerson>> fetchPersonsByServiceId(
+    String serviceId, {
+    String? district,
+    String? taluka,
+    String? village,
+    String? search,
+  }) async {
     try {
-      final response = await _dio.get('/samaj-services/$serviceId/persons');
+      final Map<String, dynamic> params = {};
+      if (district != null && district.trim().isNotEmpty) params['district'] = district.trim();
+      if (taluka != null && taluka.trim().isNotEmpty) params['taluka'] = taluka.trim();
+      if (village != null && village.trim().isNotEmpty) params['village'] = village.trim();
+      if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
+
+      final response = await _dio.get('/samaj-services/$serviceId/persons', queryParameters: params.isNotEmpty ? params : null);
       dynamic raw = response.data;
       if (raw is String) {
         try {

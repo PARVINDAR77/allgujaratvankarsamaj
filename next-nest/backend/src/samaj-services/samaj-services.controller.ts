@@ -28,8 +28,11 @@ export class SamajServicesController {
   @ApiOperation({
     summary: "Get active Samaj Services for Flutter App & Public Web",
   })
-  async getPublicServices() {
-    return this.samajServicesService.getPublicServices();
+  async getPublicServices(
+    @Query("search") search?: string,
+    @Query("category") category?: string,
+  ) {
+    return this.samajServicesService.getPublicServices(search, category);
   }
 
   @Public()
@@ -44,8 +47,19 @@ export class SamajServicesController {
   @ApiOperation({
     summary: "Get active service persons belonging to selected service ID",
   })
-  async getPublicPersonsByServiceId(@Param("serviceId") serviceId: string) {
-    return this.samajServicesService.getPublicPersonsByServiceId(serviceId);
+  async getPublicPersonsByServiceId(
+    @Param("serviceId") serviceId: string,
+    @Query("district") district?: string,
+    @Query("taluka") taluka?: string,
+    @Query("village") village?: string,
+    @Query("search") search?: string,
+  ) {
+    return this.samajServicesService.getPublicPersonsByServiceId(serviceId, {
+      district,
+      taluka,
+      village,
+      search,
+    });
   }
 
   // ==========================================

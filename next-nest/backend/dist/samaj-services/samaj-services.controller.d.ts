@@ -4,7 +4,7 @@ import { UpdateServicePersonDto } from "./dto/update-service-person.dto";
 export declare class SamajServicesController {
     private readonly samajServicesService;
     constructor(samajServicesService: SamajServicesService);
-    getPublicServices(): Promise<{
+    getPublicServices(search?: string, category?: string): Promise<{
         id: string;
         title: string;
         category: string;
@@ -51,7 +51,7 @@ export declare class SamajServicesController {
         contactPhone: string | null;
         contactPerson: string | null;
     }>;
-    getPublicPersonsByServiceId(serviceId: string): Promise<{
+    getPublicPersonsByServiceId(serviceId: string, district?: string, taluka?: string, village?: string, search?: string): Promise<{
         id: string;
         serviceId: string;
         name: string;
