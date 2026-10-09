@@ -617,6 +617,24 @@ export default function AdminServicesPage() {
                       onChange={(e) => setSvcCategory(e.target.value)}
                       style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(212, 175, 55, 0.4)", color: "#FFF" }}
                     >
+                      <optgroup label="🎉 10. લગ્ન પ્રસંગ સેવાઓ (Wedding & Events)">
+                        <option value="Wedding">🎉 Wedding (Main Category - લગ્ન પ્રસંગ સેવાઓ)</option>
+                        <option value="Mandap & Decoration">🎪 Mandap & Decoration (મંડપ ડેકોરેશન)</option>
+                        <option value="Photography & Cinematography">📸 Photography & Video (ફોટોગ્રાફી & શૂટિંગ)</option>
+                        <option value="Catering & Halwai">🍲 Catering & Halwai (કેટરિંગ & રસોઈ)</option>
+                        <option value="Wedding Car Rental">🚗 Wedding Car Rental (લગ્ન કાર રેન્ટલ)</option>
+                        <option value="DJ & Sound System">🎵 DJ & Sound System (ડીજે સાઉન્ડ)</option>
+                        <option value="Brass Band & Dhol">🥁 Brass Band & Dhol (બેન્ડ-વાજા & ઢોલ)</option>
+                        <option value="Bridal Makeup">💄 Bridal Makeup (બ્રાઇડલ મેકઅપ)</option>
+                        <option value="Mehendi Artist">🎨 Mehendi Artist (મહેંદી ડિઝાઇનર)</option>
+                        <option value="Banquet Hall & Party Plot">🏰 Banquet Hall (વાડી & હોલ બુકિંગ)</option>
+                        <option value="Kankotri Printing">💌 Kankotri Printing (કંકોતરી પ્રિન્ટિંગ)</option>
+                        <option value="Stage & Flower Decor">🌸 Stage & Flower Decor (સ્ટેજ ડેકોર)</option>
+                        <option value="Live YouTube Streaming">🎥 Live Streaming (યુટ્યુબ લાઇવ)</option>
+                        <option value="Jan Transport">🚌 Jan / Barat Transport (જાન બસ)</option>
+                        <option value="Jewelry & Attire Rental">💍 Jewelry & Attire Rental (દાગીના રેન્ટલ)</option>
+                        <option value="Groom Buggy & Vintage Car">🚘 Groom Buggy (વરરાજા બગી)</option>
+                      </optgroup>
                       <optgroup label="🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Home & Daily Life)">
                         <option value="Home & Daily Life Services">🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Main Category)</option>
                         <option value="Construction">🏠 ઘર બાંધકામ / Construction</option>

@@ -1005,8 +1005,16 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                 final categoryName = categories[index];
                                 final List<SamajService> items =
                                     groupedServices[categoryName]!;
-                                final Color color = _categoryColors[
-                                    index % _categoryColors.length];
+                                final bool isWedding = categoryName.toLowerCase().contains('wedding');
+                                final Color color = isWedding
+                                    ? const Color(0xFFE65100)
+                                    : _categoryColors[index % _categoryColors.length];
+                                final IconData iconData = isWedding
+                                    ? Icons.celebration
+                                    : Icons.category;
+                                final String displayCategoryTitle = isWedding
+                                    ? (categoryName == 'Wedding' ? 'Wedding Services (લગ્ન પ્રસંગ સેવાઓ)' : categoryName)
+                                    : categoryName;
 
                                 return Container(
                                   margin: const EdgeInsets.only(
@@ -1020,26 +1028,45 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 16, vertical: 12),
                                         decoration: BoxDecoration(
-                                          color: color.withValues(alpha: 0.1),
+                                          color: isWedding
+                                              ? const Color(0xFFFFF7ED)
+                                              : color.withValues(alpha: 0.1),
                                           borderRadius:
                                               BorderRadius.circular(12),
                                           border: Border.all(
-                                              color: color.withValues(
-                                                  alpha: 0.3)),
+                                              color: isWedding
+                                                  ? const Color(0xFFFDBA74)
+                                                  : color.withValues(alpha: 0.3)),
                                         ),
                                         child: Row(
                                           children: [
-                                            Icon(Icons.category,
-                                                color: color, size: 20),
+                                            Icon(iconData,
+                                                color: color, size: 22),
                                             const SizedBox(width: 12),
                                             Expanded(
                                               child: Text(
-                                                categoryName,
+                                                displayCategoryTitle,
                                                 style: TextStyle(
                                                   fontSize: 16,
                                                   fontWeight: FontWeight.bold,
                                                   color: color.withValues(
-                                                      alpha: 0.9),
+                                                      alpha: 0.95),
+                                                ),
+                                              ),
+                                            ),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 8, vertical: 4),
+                                              decoration: BoxDecoration(
+                                                color: color.withValues(alpha: 0.15),
+                                                borderRadius: BorderRadius.circular(12),
+                                              ),
+                                              child: Text(
+                                                '${items.length} સેવાઓ',
+                                                style: TextStyle(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w600,
+                                                  color: color,
                                                 ),
                                               ),
                                             ),
@@ -1084,12 +1111,13 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                                 borderRadius:
                                                     BorderRadius.circular(12),
                                                 border: Border.all(
-                                                    color:
-                                                        Colors.grey.shade200),
+                                                    color: isWedding
+                                                        ? const Color(0xFFFFEDD5)
+                                                        : Colors.grey.shade200),
                                                 boxShadow: [
                                                   BoxShadow(
-                                                    color: Colors.black
-                                                        .withValues(alpha: 0.03),
+                                                    color: (isWedding ? const Color(0xFFEA580C) : Colors.black)
+                                                        .withValues(alpha: isWedding ? 0.05 : 0.03),
                                                     blurRadius: 4,
                                                     offset:
                                                         const Offset(0, 2),
