@@ -15,8 +15,8 @@ class LoginScreen extends ConsumerStatefulWidget {
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   late final PageController _pageController;
-  final _emailController = TextEditingController(text: 'panjabiparvindar77@gmail.com');
-  final _passwordController = TextEditingController(text: 'Parvindar@123');
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   bool _isLoading = false;
   int _currentPage = 0;
 
@@ -38,8 +38,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _performLogin([String? email, String? password]) async {
     if (_isLoading) return;
 
-    final inputEmail = _emailController.text.trim().toLowerCase();
-    final inputPassword = _passwordController.text;
+    final inputEmail = (email ?? _emailController.text).trim().toLowerCase();
+    final inputPassword = (password ?? _passwordController.text);
+
+    if (inputEmail.isEmpty || inputPassword.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને તમારો ઈમેલ અને પાસવર્ડ દાખલ કરો (Please enter your email and password)'),
+          backgroundColor: Colors.orangeAccent,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
 
     if (inputEmail.contains('reject') || inputPassword.contains('reject')) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -56,8 +67,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     try {
       final success = await ref.read(authNotifierProvider.notifier).login(
-            email ?? _emailController.text.trim(),
-            password ?? _passwordController.text,
+            inputEmail,
+            inputPassword,
           );
 
       if (mounted) {
@@ -95,64 +106,128 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _showCustomLoginDialog() {
+    _emailController.clear();
+    _passwordController.clear();
+    bool obscurePassword = true;
+
     showDialog(
       context: context,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF041126),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-        ),
-        title: const Text(
-          'Account Login (લોગિન)',
-          style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: _emailController,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Email Address',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFD4AF37)),
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF041126),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.lock_person_outlined, color: Color(0xFFD4AF37), size: 24),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Account Login (લોગિન)',
+                  style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'તમારું ઈમેલ અને પાસવર્ડ દાખલ કરો:',
+                style: TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
+                autocorrect: false,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFD4AF37), size: 20),
+                  labelText: 'Email Address (ઈમેલ)',
+                  hintText: 'example@gmail.com',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _passwordController,
+                obscureText: obscurePassword,
+                autocorrect: false,
+                enableSuggestions: false,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFD4AF37), size: 20),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.white60,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setDialogState(() {
+                        obscurePassword = !obscurePassword;
+                      });
+                    },
+                  ),
+                  labelText: 'Password (પાસવર્ડ)',
+                  hintText: '••••••••',
+                  labelStyle: const TextStyle(color: Colors.white70),
+                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+                  enabledBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                  ),
+                  focusedBorder: const UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text('Cancel (રદ કરો)', style: TextStyle(color: Colors.white60)),
             ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              style: const TextStyle(color: Colors.white),
-              decoration: const InputDecoration(
-                labelText: 'Password',
-                labelStyle: TextStyle(color: Colors.white70),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                ),
+            ElevatedButton(
+              onPressed: () {
+                final emailText = _emailController.text.trim();
+                final passText = _passwordController.text;
+
+                if (emailText.isEmpty || passText.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('કૃપા કરીને ઈમેલ અને પાસવર્ડ દાખલ કરો (Please enter email & password)'),
+                      backgroundColor: Colors.orangeAccent,
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  return;
+                }
+
+                Navigator.pop(dialogCtx);
+                _performLogin(emailText, passText);
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1565C0),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
               ),
+              child: const Text('Login (લોગિન)', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogCtx),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(dialogCtx);
-              _performLogin();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1565C0),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Login'),
-          ),
-        ],
       ),
     );
   }
