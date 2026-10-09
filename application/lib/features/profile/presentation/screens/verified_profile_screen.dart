@@ -196,7 +196,7 @@ class _VerifiedProfileScreenState
                 children: [
                   // ── Status card ──────────────────────────────────────────
                   _buildStatusCard(isVerified),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 24),
 
                   if (isVerified) ...[
                     // ── Verified state ───────────────────────────────────
@@ -205,6 +205,11 @@ class _VerifiedProfileScreenState
                     // ── Not verified: show submit form ───────────────────
                     _buildSubmitForm(submitState),
                   ],
+
+                  const SizedBox(height: 28),
+
+                  // ── Official Verification Guide & Poster ─────────────
+                  _buildOfficialVerificationGuide(context),
                 ],
               ),
             );
@@ -329,6 +334,423 @@ class _VerifiedProfileScreenState
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOfficialVerificationGuide(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.secondary.withValues(alpha: 0.35),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 15,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header with Icon & Bilingual Title
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.secondary.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.verified_user, color: AppColors.secondary, size: 24),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'દસ્તાવેજ ચકાસણી માર્ગદર્શિકા',
+                      style: TextStyle(
+                        color: Colors.black87,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'Official Verification Checklist & Guide',
+                      style: TextStyle(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+
+          // Poster Graphic with Tap to Zoom
+          GestureDetector(
+            onTap: () => _showFullscreenPoster(context),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(maxHeight: 460),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppColors.secondary.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Image.asset(
+                      'assets/images/5 (6).jpeg',
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(32.0),
+                          child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 12,
+                  right: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.75),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: AppColors.secondary.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.zoom_in, color: AppColors.secondary, size: 16),
+                        SizedBox(width: 6),
+                        Text(
+                          'મોટું જોવા માટે ટેપ કરો (Tap to Zoom)',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Self-verification Warning Notice Banner
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFBEB),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFDE68A), width: 1.2),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.campaign, color: Color(0xFFD97706), size: 24),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'If you are interested, you should verify the other documents and other details yourself.',
+                        style: TextStyle(
+                          color: Color(0xFF92400E),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          height: 1.3,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'જો તમને રસ હોય, તો સામેવાળા પાર્ટનરના દસ્તાવેજો (ડોક્યુમેન્ટ્સ) અને અન્ય વિગતોની ચકાસણી તમે જાતે કરો.',
+                        style: TextStyle(
+                          color: Color(0xFFB45309),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Category 1: Income & Occupation
+          _buildCategoryCard(
+            number: '1',
+            titleEn: 'Income & Occupation',
+            titleGu: 'આવક અને વ્યવસાય',
+            color: const Color(0xFF059669),
+            items: const [
+              'Income Tax Returns (ITR) (ઇન્કમ ટેક્સ રિટર્ન / આવકવેરા રિટર્ન)',
+              'Salary Slips (પગારની સ્લિપ)',
+              'Bank Statements (બેંક સ્ટેટમેન્ટ / બેંક પાસબુકની નકલ)',
+              'Business Proof (વ્યવસાયના પુરાવા / બિઝનેસ પ્રૂફ)',
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Category 2: Caste & Religion
+          _buildCategoryCard(
+            number: '2',
+            titleEn: 'Caste & Religion',
+            titleGu: 'જાતિ અને ધર્મ',
+            color: const Color(0xFFE11D48),
+            items: const [
+              'School Leaving Certificate (L.C.) (શાળા છોડ્યાનું પ્રમાણપત્ર - લિવિંગ સર્ટિફિકેટ)',
+              'Caste Certificate (જાતિનો દાખલો - કાસ્ટ સર્ટિફિકેટ)',
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Category 3: Properties & Assets
+          _buildCategoryCard(
+            number: '3',
+            titleEn: 'Properties & Assets',
+            titleGu: 'મિલકત અને સંપત્તિ',
+            color: const Color(0xFFD97706),
+            items: const [
+              'Property Deeds (Dastavel) (મિલકતના દસ્તાવેજ)',
+              'Property Tax Bills (પ્રોપર્ટી ટેક્સ બિલ / મિલકત વેરાની પહોંચ)',
+              'Land Records (7/12 & 8-A Extracts) (જમીનના ઉતારા ૭/૧૨ અને ૮-અ)',
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Category 4: Identity, Age & Background
+          _buildCategoryCard(
+            number: '4',
+            titleEn: 'Identity, Age & Background',
+            titleGu: 'ઓળખ, ઉંમર અને બેકગ્રાઉન્ડ',
+            color: const Color(0xFF7C3AED),
+            items: const [
+              'Government IDs (સરકારી ઓળખ કાર્ડ - આધાર કાર્ડ, પાન કાર્ડ વગેરે)',
+              'Birth Certificate (જન્મનો દાખલો)',
+              'Divorce Decree (If applicable) (છૂટાછેડાનો હુકમ / ડિવોર્સ ડિક્રી - જો અગાઉ લગ્ન થયા હોય તો)',
+              'Medical Reports (તબીબી તપાસના રિપોર્ટ)',
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Responsibility Disclaimer Notice
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFBBF7D0), width: 1.2),
+            ),
+            child: const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.handshake_outlined, color: Color(0xFF16A34A), size: 24),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'The responsibility of verifying all documents before marriage will be yours.',
+                        style: TextStyle(
+                          color: Color(0xFF166534),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          height: 1.3,
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        'લગ્ન પહેલાં બધા ડોક્યુમેન્ટ્સ (દસ્તાવેજો) તપાસવાની જવાબદારી તમારી રહેશે.',
+                        style: TextStyle(
+                          color: Color(0xFF15803D),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          height: 1.3,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showFullscreenPoster(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: InteractiveViewer(
+                  minScale: 0.8,
+                  maxScale: 4.0,
+                  child: Image.asset(
+                    'assets/images/5 (6).jpeg',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 10,
+              right: 10,
+              child: Material(
+                color: Colors.black54,
+                shape: const CircleBorder(),
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 24),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard({
+    required String number,
+    required String titleEn,
+    required String titleGu,
+    required Color color,
+    required List<String> items,
+  }) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withValues(alpha: 0.35), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.06),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(10),
+                topRight: Radius.circular(10),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 22,
+                  height: 22,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    number,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '$titleEn / $titleGu',
+                    style: TextStyle(
+                      color: color,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: items.map((item) {
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_circle_outline, color: color, size: 16),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item,
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 12,
+                            height: 1.35,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ],
