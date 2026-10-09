@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/profile/providers/liked_profiles_provider.dart';
@@ -11,6 +12,8 @@ class ProfileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isGirl = profile.isFemale;
+    final primaryColor = isGirl ? const Color(0xFFC2185B) : const Color(0xFF0056D2);
     final employmentStr = profile.displayProfession;
     final locationStr = profile.displayLocation;
     final isLiked = ref.watch(isProfileLikedProvider(profile.id));
@@ -78,10 +81,10 @@ class ProfileCard extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 profile.fullName,
-                                style: const TextStyle(
-                                  fontSize: 17,
+                                style: TextStyle(
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF0056D2),
+                                  color: primaryColor,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -90,22 +93,22 @@ class ProfileCard extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
-                                color: profile.isFemale
+                                color: isGirl
                                     ? const Color(0xFFFCE4EC)
                                     : const Color(0xFFE3F2FD),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: profile.isFemale
+                                  color: isGirl
                                       ? const Color(0xFFF06292)
                                       : const Color(0xFF64B5F6),
                                 ),
                               ),
                               child: Text(
-                                profile.isFemale ? '👰 Bride' : '👨 Groom',
+                                isGirl ? '👰 Bride' : '👨 Groom',
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: profile.isFemale
+                                  color: isGirl
                                       ? const Color(0xFFC2185B)
                                       : const Color(0xFF1976D2),
                                 ),
@@ -137,22 +140,61 @@ class ProfileCard extends ConsumerWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.shade50,
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: Colors.blue.shade200),
-                              ),
-                              child: Text(
-                                'ID: ${profile.id}',
-                                style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF0056D2)),
+                            InkWell(
+                              onTap: () {
+                                if (profile.id.isNotEmpty) {
+                                  Clipboard.setData(ClipboardData(text: profile.id));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('ID કોપી થયો: ${profile.id}'),
+                                      backgroundColor: primaryColor,
+                                      duration: const Duration(seconds: 2),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: isGirl ? const Color(0xFFFCE4EC) : Colors.blue.shade50,
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isGirl ? const Color(0xFFF48FB1) : Colors.blue.shade200,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'ID: ${profile.displayId}',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: isGirl ? const Color(0xFFC2185B) : const Color(0xFF0056D2),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 3),
+                                    Icon(
+                                      Icons.copy_rounded,
+                                      size: 10,
+                                      color: isGirl ? const Color(0xFFC2185B).withValues(alpha: 0.7) : const Color(0xFF0056D2).withValues(alpha: 0.7),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
-                                '${profile.age != null ? "${profile.age} Yrs • " : ""}${profile.maritalStatus}',
+                                [
+                                  if (profile.age != null) "${profile.age} Yrs",
+                                  if (profile.maritalStatus.isNotEmpty &&
+                                      profile.maritalStatus != 'Not specified' &&
+                                      profile.maritalStatus != 'Not Specified')
+                                    profile.maritalStatus,
+                                ].join(' • '),
                                 style: const TextStyle(fontSize: 11, color: Colors.black87, fontWeight: FontWeight.w500),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -161,20 +203,22 @@ class ProfileCard extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 4),
-                        if (profile.education.isNotEmpty && profile.education != 'Not Specified') ...[
+                        if (profile.education.isNotEmpty &&
+                            profile.education != 'Not Specified' &&
+                            profile.education != 'Not specified') ...[
                           _buildInfoRow(Icons.school, profile.education),
                           const SizedBox(height: 4),
                         ],
                         _buildInfoRow(
                           Icons.work, 
                           employmentStr.isEmpty 
-                              ? 'Not Specified' 
-                              : (profile.annualIncome != null ? '$employmentStr • ${profile.annualIncome}' : employmentStr),
+                              ? (isGirl ? 'ગૃહકાર્ય / અભ્યાસ' : 'ખાનગી / નોકરી')
+                              : (profile.annualIncome != null && profile.annualIncome!.isNotEmpty && profile.annualIncome != 'Not specified' ? '$employmentStr • ${profile.annualIncome}' : employmentStr),
                         ),
                         const SizedBox(height: 4),
                         _buildInfoRow(
                           Icons.location_on, 
-                          locationStr.isEmpty ? 'Location Not Specified' : locationStr,
+                          locationStr.isEmpty ? 'ગુજરાત (Gujarat)' : locationStr,
                         ),
                       ],
                     ),
@@ -191,7 +235,7 @@ class ProfileCard extends ConsumerWidget {
                       },
                       icon: const Icon(Icons.visibility_outlined, size: 16),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0056D2),
+                        backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

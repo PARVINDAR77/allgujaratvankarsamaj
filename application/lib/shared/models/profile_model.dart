@@ -141,6 +141,21 @@ class ProfileModel {
 
   String get fullName => '$firstName $lastName'.trim().isEmpty ? 'Member' : '$firstName $lastName'.trim();
 
+  String get shortId {
+    if (id.isEmpty) return 'AGVS';
+    if (id.contains('-')) {
+      final prefix = id.split('-').first.toUpperCase();
+      return prefix;
+    }
+    if (id.length > 8) {
+      return id.substring(0, 8).toUpperCase();
+    }
+    return id.toUpperCase();
+  }
+
+  String get displayId => '#$shortId';
+
+
   bool get isFemale {
     final s = gender.toUpperCase();
     if (s.contains('FEMALE') ||
@@ -348,7 +363,11 @@ class ProfileModel {
   String get displayLocation {
     final parts = <String>[];
     void addPart(String? p) {
-      if (p != null && p.trim().isNotEmpty && p != 'Not specified' && !parts.contains(p.trim())) {
+      if (p != null &&
+          p.trim().isNotEmpty &&
+          p != 'Not specified' &&
+          p != 'Not Specified' &&
+          !parts.contains(p.trim())) {
         parts.add(p.trim());
       }
     }
@@ -358,20 +377,27 @@ class ProfileModel {
     if (country != null && country != 'India' && country!.isNotEmpty) {
       addPart(country);
     }
-    return parts.isEmpty ? 'Not specified' : parts.join(', ');
+    return parts.isEmpty ? 'ગુજરાત (Gujarat)' : parts.join(', ');
   }
 
   String get displayProfession {
     final parts = <String>[];
     void addPart(String? p) {
-      if (p != null && p.trim().isNotEmpty && p != 'Not specified' && !parts.contains(p.trim())) {
+      if (p != null &&
+          p.trim().isNotEmpty &&
+          p != 'Not specified' &&
+          p != 'Not Specified' &&
+          !parts.contains(p.trim())) {
         parts.add(p.trim());
       }
     }
     addPart(designation);
     addPart(employmentType);
     addPart(department);
-    return parts.isEmpty ? 'Not specified' : parts.join(' - ');
+    if (parts.isEmpty) {
+      return isFemale ? 'ગૃહકાર્ય / અભ્યાસ' : 'ખાનગી / વ્યવસાય';
+    }
+    return parts.join(' - ');
   }
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {

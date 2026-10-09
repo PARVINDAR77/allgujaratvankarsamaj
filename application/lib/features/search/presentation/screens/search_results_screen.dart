@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
@@ -926,197 +927,278 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     final lightColor = isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE3F2FD);
     final borderColor = isGirl ? const Color(0xFFF48FB1) : const Color(0xFF90CAF9);
 
+    final ageStr = profile.age != null ? "${profile.age} Yrs" : "";
+    final maritalStr = (profile.maritalStatus.isNotEmpty &&
+            profile.maritalStatus != 'Not specified' &&
+            profile.maritalStatus != 'Not Specified')
+        ? profile.maritalStatus
+        : "";
+    final statusStr = [if (ageStr.isNotEmpty) ageStr, if (maritalStr.isNotEmpty) maritalStr].join(' • ');
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border(
-          left: BorderSide(color: primaryColor, width: 5),
-          top: BorderSide(color: Colors.grey.shade200),
-          right: BorderSide(color: Colors.grey.shade200),
-          bottom: BorderSide(color: Colors.grey.shade200),
-        ),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
+            color: primaryColor.withValues(alpha: 0.06),
+            blurRadius: 10,
             offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: InkWell(
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          context.push('/candidate-profile-details', extra: profile);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
+        child: IntrinsicHeight(
           child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Candidate Avatar with gender-colored ring
+              // Theme color strip on left
               Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: borderColor, width: 2.5),
-                ),
-                child: CircleAvatar(
-                  radius: 36,
-                  backgroundColor: lightColor,
-                  backgroundImage: profile.fullPhotoUrl != null ? NetworkImage(profile.fullPhotoUrl!) : null,
-                  onBackgroundImageError: profile.fullPhotoUrl != null ? (exception, stackTrace) {} : null,
-                  child: profile.fullPhotoUrl == null
-                      ? Icon(isGirl ? Icons.face_3 : Icons.face, size: 42, color: primaryColor)
-                      : null,
-                ),
+                width: 5,
+                color: primaryColor,
               ),
-              const SizedBox(width: 14),
 
-              // Candidate Details
+              // Card content
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Name & Gender Tag
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                child: InkWell(
+                  onTap: () {
+                    context.push('/candidate-profile-details', extra: profile);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(
-                          child: Text(
-                            profile.fullName,
-                            style: TextStyle(
-                              fontSize: 16.5,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
-                            ),
-                          ),
-                        ),
+                        // Candidate Avatar with gender-colored ring
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
-                            color: lightColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: borderColor),
-                          ),
-                          child: Text(
-                            isGirl ? '👰 કન્યા (Bride)' : '👨 વર (Groom)',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: primaryColor,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-
-                    // ID & Age / Status
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.blue.shade50,
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(color: Colors.blue.shade200),
-                          ),
-                          child: Text(
-                            'ID: ${profile.id}',
-                            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF0056D2)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '${profile.age != null ? "${profile.age} Yrs • " : ""}${profile.maritalStatus}',
-                            style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w500),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Education
-                    if (profile.education.isNotEmpty && profile.education != 'Not Specified')
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 2),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.school, size: 14, color: Colors.black54),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                profile.education,
-                                style: const TextStyle(color: Colors.black87, fontSize: 12),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: borderColor, width: 2.2),
+                            boxShadow: [
+                              BoxShadow(
+                                color: primaryColor.withValues(alpha: 0.12),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 34,
+                            backgroundColor: lightColor,
+                            backgroundImage: profile.fullPhotoUrl != null ? NetworkImage(profile.fullPhotoUrl!) : null,
+                            onBackgroundImageError: profile.fullPhotoUrl != null ? (exception, stackTrace) {} : null,
+                            child: profile.fullPhotoUrl == null
+                                ? Icon(isGirl ? Icons.face_3_rounded : Icons.face_rounded, size: 38, color: primaryColor)
+                                : null,
+                          ),
                         ),
-                      ),
+                        const SizedBox(width: 12),
 
-                    // Profession & Income
-                    Row(
-                      children: [
-                        const Icon(Icons.work, size: 14, color: Colors.black54),
-                        const SizedBox(width: 4),
+                        // Candidate Details
                         Expanded(
-                          child: Text(
-                            '${profile.displayProfession}${profile.annualIncome != null ? " • ${profile.annualIncome}" : ""}',
-                            style: const TextStyle(color: Colors.black87, fontSize: 12),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Name & Gender Tag
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      profile.fullName,
+                                      style: TextStyle(
+                                        fontSize: 15.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: primaryColor,
+                                        height: 1.2,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                    decoration: BoxDecoration(
+                                      color: lightColor,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: borderColor),
+                                    ),
+                                    child: Text(
+                                      isGirl ? '👰 કન્યા (Bride)' : '👨 વર (Groom)',
+                                      style: TextStyle(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: primaryColor,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+
+                              // ID Capsule & Age / Status
+                              Row(
+                                children: [
+                                  InkWell(
+                                    onTap: () {
+                                      if (profile.id.isNotEmpty) {
+                                        Clipboard.setData(ClipboardData(text: profile.id));
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('ID કોપી થયો: ${profile.id}'),
+                                            backgroundColor: primaryColor,
+                                            duration: const Duration(seconds: 2),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: isGirl ? const Color(0xFFFCE4EC) : Colors.blue.shade50,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: isGirl ? const Color(0xFFF48FB1) : Colors.blue.shade200,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'ID: ${profile.displayId}',
+                                            style: TextStyle(
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: isGirl ? const Color(0xFFC2185B) : const Color(0xFF0056D2),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 3),
+                                          Icon(
+                                            Icons.copy_rounded,
+                                            size: 10,
+                                            color: isGirl ? const Color(0xFFC2185B).withValues(alpha: 0.7) : const Color(0xFF0056D2).withValues(alpha: 0.7),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (statusStr.isNotEmpty) ...[
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: Text(
+                                        statusStr,
+                                        style: const TextStyle(fontSize: 11.5, color: Colors.black87, fontWeight: FontWeight.w500),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+
+                              // Education (if available)
+                              if (profile.education.isNotEmpty &&
+                                  profile.education != 'Not Specified' &&
+                                  profile.education != 'Not specified')
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 2.5),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.school_rounded, size: 13.5, color: primaryColor.withValues(alpha: 0.8)),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          profile.education,
+                                          style: const TextStyle(color: Colors.black87, fontSize: 11.5, fontWeight: FontWeight.w500),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              // Profession & Income
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2.5),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.work_outline_rounded, size: 13.5, color: Colors.black54),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        '${profile.displayProfession}${profile.annualIncome != null && profile.annualIncome!.isNotEmpty && profile.annualIncome != 'Not specified' && profile.annualIncome != 'Not Specified' ? " • ${profile.annualIncome}" : ""}',
+                                        style: const TextStyle(color: Colors.black87, fontSize: 11.5, fontWeight: FontWeight.w500),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // Location
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 2.5),
+                                child: Row(
+                                  children: [
+                                    const Icon(Icons.location_on_outlined, size: 13.5, color: Colors.black54),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        profile.displayLocation,
+                                        style: const TextStyle(color: Colors.black87, fontSize: 11.5, fontWeight: FontWeight.w500),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+
+                              // Action buttons
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () {
+                                        context.push('/candidate-profile-details', extra: profile);
+                                      },
+                                      icon: const Icon(Icons.remove_red_eye_outlined, size: 15),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: primaryColor,
+                                        foregroundColor: Colors.white,
+                                        elevation: 1.5,
+                                        shadowColor: primaryColor.withValues(alpha: 0.35),
+                                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                      ),
+                                      label: const Text(
+                                        'View Profile (વિગતવાર જુઓ)',
+                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _FavoriteIconButton(profile: profile),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 2),
-
-                    // Location
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on, size: 14, color: Colors.black54),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            profile.displayLocation,
-                            style: const TextStyle(color: Colors.black87, fontSize: 12),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-
-                    // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              context.push('/candidate-profile-details', extra: profile);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: Colors.white,
-                              elevation: 1,
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            ),
-                            child: const Text('View Profile (વિગતવાર જુઓ)', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _FavoriteIconButton(profile: profile),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -1140,25 +1222,41 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: () {
-        setState(() {
-          _isLiked = !_isLiked;
-        });
-        if (_isLiked) {
+    return Container(
+      decoration: BoxDecoration(
+        color: _isLiked ? Colors.pink.shade50 : Colors.grey.shade50,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: _isLiked ? Colors.pink.shade200 : Colors.grey.shade300,
+          width: 1,
+        ),
+      ),
+      child: IconButton(
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+        padding: EdgeInsets.zero,
+        iconSize: 20,
+        tooltip: _isLiked ? 'પસંદ કરેલ (Liked)' : 'પસંદ કરો (Like)',
+        onPressed: () {
+          setState(() {
+            _isLiked = !_isLiked;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('તમે ${widget.profile.fullName} ની પ્રોફાઇલ પસંદ કરી છે!'),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
+              content: Text(
+                _isLiked
+                    ? '${widget.profile.fullName} ની પ્રોફાઇલ પસંદ કરી છે!'
+                    : '${widget.profile.fullName} લિસ્ટમાંથી દૂર થઈ',
+              ),
+              backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
+              duration: const Duration(seconds: 1),
+              behavior: SnackBarBehavior.floating,
             ),
           );
-        }
-      },
-      icon: Icon(
-        _isLiked ? Icons.favorite : Icons.favorite_border,
-        color: _isLiked ? Colors.red : Colors.grey,
-        size: 26,
+        },
+        icon: Icon(
+          _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+          color: _isLiked ? const Color(0xFFE91E63) : Colors.grey.shade600,
+        ),
       ),
     );
   }
