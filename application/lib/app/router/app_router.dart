@@ -268,8 +268,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/candidate-profile-details',
         name: 'candidate-profile-details',
         builder: (context, state) {
-          final profile = state.extra is ProfileModel ? state.extra as ProfileModel : null;
-          final profileId = state.uri.queryParameters['id'];
+          ProfileModel? profile;
+          String? profileId = state.uri.queryParameters['id'] ?? state.uri.queryParameters['profileId'];
+
+          if (state.extra is ProfileModel) {
+            profile = state.extra as ProfileModel;
+            profileId ??= profile.id;
+          } else if (state.extra is String) {
+            final str = (state.extra as String).trim();
+            if (str.isNotEmpty) {
+              profileId ??= str;
+            }
+          } else if (state.extra is Map) {
+            final map = state.extra as Map;
+            final extractedId = map['id'] ?? map['profileId'];
+            if (extractedId != null && extractedId.toString().trim().isNotEmpty) {
+              profileId ??= extractedId.toString().trim();
+            }
+            if (map.containsKey('firstName') ||
+                map.containsKey('first_name') ||
+                map.containsKey('fullName') ||
+                map.containsKey('name')) {
+              try {
+                profile = ProfileModel.fromJson(Map<String, dynamic>.from(map));
+              } catch (_) {}
+            }
+          }
+
           return CandidateProfileDetailScreen(
             profile: profile,
             profileId: profileId,

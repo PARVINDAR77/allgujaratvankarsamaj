@@ -325,12 +325,32 @@ class ProfileModel {
       return val.toString().trim();
     }
 
-    final rawDistrict = extractString(json['district'] ?? json['state']);
-    final rawTaluka = extractString(json['taluka'] ?? json['city']);
-    final rawPargana = extractString(json['pargana'] ?? json['nativePlace'] ?? json['native_place']);
-    final rawEmployment = extractString(json['employmentType'] ?? json['occupation']);
-    final rawDepartment = extractString(json['department'] ?? json['organizationName'] ?? json['organization_name']);
-    final rawDesignation = extractString(json['designation']);
+    var rawDistrict = extractString(json['district'] ?? json['state']);
+    var rawTaluka = extractString(json['taluka'] ?? json['city']);
+    var rawPargana = extractString(json['pargana'] ?? json['nativePlace'] ?? json['native_place']);
+    var rawEmployment = extractString(json['employmentType'] ?? json['occupation']);
+    var rawDepartment = extractString(json['department'] ?? json['organizationName'] ?? json['organization_name']);
+    var rawDesignation = extractString(json['designation']);
+
+    // Fallbacks from nested governmentEmployment relation if present
+    if (json['governmentEmployment'] is Map) {
+      final govt = json['governmentEmployment'] as Map;
+      if (rawDepartment.isEmpty) {
+        rawDepartment = extractString(govt['department']);
+        if (rawDepartment.isEmpty && govt['employmentType'] != null) {
+          rawDepartment = govt['employmentType'] == 'CENTRAL_GOVT' ? 'Central Government (કેન્દ્ર સરકાર)' : 'State Government (રાજ્ય સરકાર)';
+        }
+      }
+      if (rawDesignation.isEmpty) {
+        rawDesignation = extractString(govt['designation']);
+      }
+      if (rawEmployment.isEmpty) {
+        rawEmployment = extractString(govt['employmentType']);
+        if (rawEmployment.isEmpty) {
+          rawEmployment = 'Government Sector (સરકારી નોકરી / સેકટર)';
+        }
+      }
+    }
 
     // Extract user contact if nested
     String? userPhone;
@@ -340,13 +360,25 @@ class ProfileModel {
       userEmail = json['user']['email']?.toString();
     }
 
-    final rawFirst = (json['firstName'] ?? json['first_name'] ?? '').toString().toUpperCase().trim();
+    var rawFirst = (json['firstName'] ?? json['first_name'] ?? '').toString().trim();
+    var rawLast = (json['lastName'] ?? json['last_name'] ?? '').toString().trim();
+    if (rawFirst.isEmpty && (json['fullName'] != null || json['name'] != null)) {
+      final combined = (json['fullName'] ?? json['name']).toString().trim();
+      final parts = combined.split(' ');
+      if (parts.isNotEmpty) {
+        rawFirst = parts.first;
+        if (parts.length > 1) {
+          rawLast = parts.sublist(1).join(' ');
+        }
+      }
+    }
+    final rawFirstUpper = rawFirst.toUpperCase();
     String resolvedGender = normalizeGenderToDisplay(json['gender']);
-    if (rawFirst.endsWith('BEN') ||
-        rawFirst.endsWith('BAHEN') ||
-        rawFirst.contains('બેન') ||
-        rawFirst.contains('બહેન') ||
-        ['DIPIKA', 'SAKSHI', 'POOJA', 'PRIYA', 'DULA', 'DULABEN', 'HEENA', 'PAYAL', 'KINJAL'].contains(rawFirst)) {
+    if (rawFirstUpper.endsWith('BEN') ||
+        rawFirstUpper.endsWith('BAHEN') ||
+        rawFirstUpper.contains('બેન') ||
+        rawFirstUpper.contains('બહેન') ||
+        ['DIPIKA', 'SAKSHI', 'POOJA', 'PRIYA', 'DULA', 'DULABEN', 'HEENA', 'PAYAL', 'KINJAL'].contains(rawFirstUpper)) {
       resolvedGender = 'Female (સ્ત્રી)';
     }
 
@@ -376,8 +408,8 @@ class ProfileModel {
 
     return ProfileModel(
       id: (json['id'] ?? '').toString(),
-      firstName: (json['firstName'] ?? json['first_name'] ?? '').toString(),
-      lastName: (json['lastName'] ?? json['last_name'] ?? '').toString(),
+      firstName: rawFirst,
+      lastName: rawLast,
       photoUrl: (json['photoUrl'] ?? json['photo_url']) as String?,
       photos: parsedPhotos,
       idProofType: idDocType,

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../../../shared/models/profile_model.dart';
 
 class PrivateEmployeesScreen extends ConsumerStatefulWidget {
   const PrivateEmployeesScreen({super.key});
@@ -1059,7 +1060,22 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
             ElevatedButton.icon(
               onPressed: () {
                 Navigator.pop(ctx);
-                context.push('/candidate-profile-details', extra: data['profile']);
+                final profileObj = data['profile'];
+                String? pId;
+                if (profileObj is ProfileModel) {
+                  pId = profileObj.id;
+                } else if (profileObj is Map) {
+                  pId = profileObj['id']?.toString() ?? profileObj['profileId']?.toString();
+                } else if (profileObj is String) {
+                  pId = profileObj;
+                }
+                pId ??= data['profileId']?.toString() ?? data['id']?.toString();
+
+                if (pId != null && pId.isNotEmpty) {
+                  context.push('/candidate-profile-details?id=$pId', extra: profileObj ?? {'id': pId});
+                } else {
+                  context.push('/candidate-profile-details', extra: profileObj);
+                }
               },
               icon: const Icon(Icons.person_search, size: 16),
               label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),

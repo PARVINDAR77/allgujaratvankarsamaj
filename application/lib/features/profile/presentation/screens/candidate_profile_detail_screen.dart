@@ -30,74 +30,89 @@ class _CandidateProfileDetailScreenState
 
   @override
   Widget build(BuildContext context) {
+    final id = (widget.profileId != null && widget.profileId!.trim().isNotEmpty)
+        ? widget.profileId!.trim()
+        : widget.profile?.id.trim();
+
+    if (id != null && id.isNotEmpty) {
+      final profileAsync = ref.watch(candidateProfileByIdProvider(id));
+
+      return profileAsync.when(
+        data: (loadedProfile) => _buildContent(context, loadedProfile),
+        loading: () {
+          // If a preview profile was passed in extra, display it immediately
+          if (widget.profile != null) {
+            return _buildContent(context, widget.profile!);
+          }
+          return Scaffold(
+            backgroundColor: const Color(0xFF070C18),
+            appBar: AppBar(
+              title: const Text('Loading Profile...', style: TextStyle(color: Color(0xFFFFD700))),
+              backgroundColor: const Color(0xFF070C18),
+              iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
+            ),
+            body: const Center(
+              child: CircularProgressIndicator(color: Color(0xFF0056D2)),
+            ),
+          );
+        },
+        error: (err, stack) {
+          // If network fetch fails but we have the preview profile, display it gracefully
+          if (widget.profile != null) {
+            return _buildContent(context, widget.profile!);
+          }
+          return Scaffold(
+            backgroundColor: const Color(0xFF070C18),
+            appBar: AppBar(
+              title: const Text('Profile Details', style: TextStyle(color: Color(0xFFFFD700))),
+              backgroundColor: const Color(0xFF070C18),
+              iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
+            ),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Failed to load candidate profile.\nઆ ઉમેદવારની પ્રોફાઇલ લોડ થઈ શકી નથી.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(color: Colors.white70, fontSize: 16),
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: () => ref.refresh(candidateProfileByIdProvider(id)),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry (ફરી પ્રયાસ કરો)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0056D2),
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    }
+
     if (widget.profile != null) {
       return _buildContent(context, widget.profile!);
     }
 
-    final id = widget.profileId;
-    if (id == null || id.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Profile Details (પ્રોફાઈલ વિગત)'),
-          backgroundColor: const Color(0xFF070C18),
-          foregroundColor: const Color(0xFFFFD700),
-        ),
-        body: const Center(
-          child: Text('Profile not specified (પ્રોફાઈલ મળેલ નથી)'),
-        ),
-      );
-    }
-
-    final profileAsync = ref.watch(candidateProfileByIdProvider(id));
-
-    return profileAsync.when(
-      loading: () => Scaffold(
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Profile Details (પ્રોફાઈલ વિગત)'),
         backgroundColor: const Color(0xFF070C18),
-        appBar: AppBar(
-          title: const Text('Loading Profile...', style: TextStyle(color: Color(0xFFFFD700))),
-          backgroundColor: const Color(0xFF070C18),
-          iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF0056D2)),
-        ),
+        foregroundColor: const Color(0xFFFFD700),
       ),
-      error: (err, stack) => Scaffold(
-        backgroundColor: const Color(0xFF070C18),
-        appBar: AppBar(
-          title: const Text('Profile Details', style: TextStyle(color: Color(0xFFFFD700))),
-          backgroundColor: const Color(0xFF070C18),
-          iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
-        ),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
-                const SizedBox(height: 16),
-                const Text(
-                  'Failed to load candidate profile.\nઆ ઉમેદવારની પ્રોફાઇલ લોડ થઈ શકી નથી.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () => ref.refresh(candidateProfileByIdProvider(id)),
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Retry (ફરી પ્રયાસ કરો)'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0056D2),
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      body: const Center(
+        child: Text('Profile not specified (પ્રોફાઈલ મળેલ નથી)'),
       ),
-      data: (loadedProfile) => _buildContent(context, loadedProfile),
     );
   }
 

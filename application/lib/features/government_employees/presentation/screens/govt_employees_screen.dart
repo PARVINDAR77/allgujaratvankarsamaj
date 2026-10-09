@@ -978,159 +978,200 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   }
 
   void _showGovtEmployeeDetails(GovtEmployeeModel emp) {
+    final deptDisplay = (emp.departmentGujaratiName.isNotEmpty &&
+            emp.departmentGujaratiName.trim() != emp.departmentName.trim())
+        ? '${emp.departmentName} (${emp.departmentGujaratiName})'
+        : emp.departmentName;
+
+    final desigDisplay = (emp.designationGujaratiName.isNotEmpty &&
+            emp.designationGujaratiName.trim() != emp.designationName.trim())
+        ? '${emp.designationName} (${emp.designationGujaratiName})'
+        : emp.designationName;
+
+    final districtGuj = emp.districtName != null ? _districtTranslations[emp.districtName!] : null;
+    final districtDisplay = (districtGuj != null &&
+            districtGuj.trim().isNotEmpty &&
+            districtGuj.trim() != emp.districtName!.trim())
+        ? '${emp.districtName!} ($districtGuj)'
+        : (emp.districtName ?? '');
+
     showDialog(
       context: context,
       barrierDismissible: true,
       builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        clipBehavior: Clip.antiAlias,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 500),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF0056D2), Color(0xFF0A2540)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+          child: Material(
+            color: Colors.white,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF0056D2), Color(0xFF0A2540)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                   ),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 26,
-                      backgroundColor: Colors.white24,
-                      backgroundImage: (emp.photoUrl != null && emp.photoUrl!.isNotEmpty)
-                          ? NetworkImage(emp.photoUrl!)
-                          : null,
-                      child: (emp.photoUrl == null || emp.photoUrl!.isEmpty)
-                          ? const Icon(Icons.person, color: Colors.white, size: 30)
-                          : null,
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            emp.fullName,
-                            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF4CAF50),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.verified, size: 11, color: Colors.white),
-                                    SizedBox(width: 3),
-                                    Text('Verified Govt (પ્રમાણિત)', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                emp.employmentType == 'CENTRAL_GOVT' ? 'Central Gov' : 'Gujarat Gov',
-                                style: const TextStyle(color: Colors.white70, fontSize: 11),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Details Body
-              Flexible(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
+                  child: Row(
                     children: [
-                      _buildDetailRow(Icons.account_balance, 'Department (વિભાગ)', '${emp.departmentName} (${emp.departmentGujaratiName})'),
-                      const Divider(height: 16),
-                      _buildDetailRow(Icons.badge, 'Post / Role (હોદ્દો)', '${emp.designationName} (${emp.designationGujaratiName})'),
-                      const Divider(height: 16),
-                      if (emp.officeLocation != null && emp.officeLocation!.isNotEmpty) ...[
-                        _buildDetailRow(Icons.business, 'Office / Posting (કચેરી)', emp.officeLocation!),
-                        const Divider(height: 16),
-                      ],
-                      if (emp.districtName != null && emp.districtName!.isNotEmpty) ...[
-                        _buildDetailRow(Icons.location_on, 'District (જિલ્લો)', '${emp.districtName!} (${_districtTranslations[emp.districtName!] ?? ''})'),
-                        const Divider(height: 16),
-                      ],
-                      if (emp.joiningYear != null) ...[
-                        _buildDetailRow(Icons.calendar_today, 'Joining Year (સેવા વર્ષ)', '${emp.joiningYear}'),
-                        const Divider(height: 16),
-                      ],
-                      if (emp.education != null && emp.education!.isNotEmpty) ...[
-                        _buildDetailRow(Icons.school, 'Education (શિક્ષણ)', emp.education!),
-                        const Divider(height: 16),
-                      ],
-                      if (emp.age != null) ...[
-                        _buildDetailRow(Icons.cake, 'Age (ઉંમર)', '${emp.age} Years (વર્ષ)'),
-                      ],
+                      CircleAvatar(
+                        radius: 26,
+                        backgroundColor: Colors.white24,
+                        backgroundImage: (emp.photoUrl != null && emp.photoUrl!.isNotEmpty)
+                            ? NetworkImage(emp.photoUrl!)
+                            : null,
+                        child: (emp.photoUrl == null || emp.photoUrl!.isEmpty)
+                            ? const Icon(Icons.person, color: Colors.white, size: 30)
+                            : null,
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              emp.fullName,
+                              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF4CAF50),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.verified, size: 11, color: Colors.white),
+                                      SizedBox(width: 3),
+                                      Text('Verified Govt (પ્રમાણિત)', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  emp.employmentType == 'CENTRAL_GOVT' ? 'Central Gov' : 'Gujarat Gov',
+                                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.white),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
                     ],
                   ),
                 ),
-              ),
 
-              // Footer
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: const BoxDecoration(
-                  color: Colors.white,
-                  border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
-                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-                ),
-                child: Row(
-                  children: [
-                    OutlinedButton(
-                      onPressed: () => Navigator.pop(ctx),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF475569),
-                        side: const BorderSide(color: Color(0xFFCBD5E1)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                // Details Body
+                Flexible(
+                  child: Container(
+                    color: Colors.white,
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          _buildDetailRow(Icons.account_balance, 'Department (વિભાગ)', deptDisplay),
+                          const Divider(height: 16),
+                          _buildDetailRow(Icons.badge, 'Post / Role (હોદ્દો)', desigDisplay),
+                          const Divider(height: 16),
+                          if (emp.officeLocation != null && emp.officeLocation!.isNotEmpty) ...[
+                            _buildDetailRow(Icons.business, 'Office / Posting (કચેરી)', emp.officeLocation!),
+                            const Divider(height: 16),
+                          ],
+                          if (districtDisplay.isNotEmpty) ...[
+                            _buildDetailRow(Icons.location_on, 'District (જિલ્લો)', districtDisplay),
+                            const Divider(height: 16),
+                          ],
+                          if (emp.joiningYear != null) ...[
+                            _buildDetailRow(Icons.calendar_today, 'Joining Year (સેવા વર્ષ)', '${emp.joiningYear}'),
+                            const Divider(height: 16),
+                          ],
+                          if (emp.education != null && emp.education!.isNotEmpty) ...[
+                            _buildDetailRow(Icons.school, 'Education (શિક્ષણ)', emp.education!),
+                            const Divider(height: 16),
+                          ],
+                          if (emp.age != null) ...[
+                            _buildDetailRow(Icons.cake, 'Age (ઉંમર)', '${emp.age} Years (વર્ષ)'),
+                          ],
+                        ],
                       ),
-                      child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                     ),
-                    const Spacer(),
-                    if (emp.profileId.isNotEmpty)
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          context.push('/candidate-profile-details', extra: {'id': emp.profileId});
-                        },
-                        icon: const Icon(Icons.person_search, size: 16),
-                        label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0056D2),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        ),
-                      ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+
+                // Footer
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+                    borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  ),
+                  child: Row(
+                    children: [
+                      OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFF475569),
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        ),
+                        child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                      ),
+                      const Spacer(),
+                      if (emp.profileId.isNotEmpty)
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            context.push(
+                              '/candidate-profile-details?id=${emp.profileId}',
+                              extra: {
+                                'id': emp.profileId,
+                                'fullName': emp.fullName,
+                                'gender': emp.gender,
+                                'age': emp.age,
+                                'education': emp.education,
+                                'maritalStatus': emp.maritalStatus,
+                                'photoUrl': emp.photoUrl,
+                                'district': emp.districtName,
+                                'taluka': emp.talukaName,
+                                'employmentType': emp.employmentType,
+                                'department': emp.departmentName,
+                                'designation': emp.designationName,
+                              },
+                            );
+                          },
+                          icon: const Icon(Icons.person_search, size: 16),
+                          label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0056D2),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -1147,7 +1188,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.w500)),
+              Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
               const SizedBox(height: 2),
               Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
             ],
