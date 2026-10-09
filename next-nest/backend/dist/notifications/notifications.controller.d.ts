@@ -11,6 +11,25 @@ export declare class NotificationsController {
         message: string;
         target: string;
     }[]>;
+    findUserNotifications(req: any): Promise<{
+        type: string;
+        id: string;
+        createdAt: Date;
+        userId: string;
+        title: string;
+        message: string;
+        metadata: string | null;
+        isRead: boolean;
+    }[]>;
+    getUnreadCount(req: any): Promise<{
+        unreadCount: number;
+    }>;
+    markAsRead(req: any, id: string): Promise<import(".prisma/client").Prisma.BatchPayload | {
+        success: boolean;
+    }>;
+    markAllAsRead(req: any): Promise<import(".prisma/client").Prisma.BatchPayload | {
+        success: boolean;
+    }>;
     findAllAdmin(): Promise<{
         id: string;
         createdAt: Date;

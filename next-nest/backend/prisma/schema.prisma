@@ -626,3 +626,49 @@ model EducationContent {
   @@map("education_content")
 }
 
+model UserNotification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  title     String
+  message   String   @db.Text
+  type      String   @default("CONNECTION_REQUEST") // CONNECTION_REQUEST, REQUEST_ACCEPTED, NEW_MESSAGE, SYSTEM
+  metadata  String?  @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("user_notifications")
+}
+
+model ChatConversation {
+  id             String        @id @default(uuid())
+  participant1Id String        @map("participant_1_id")
+  participant2Id String        @map("participant_2_id")
+  lastMessage    String?       @db.Text @map("last_message")
+  lastMessageAt  DateTime?     @map("last_message_at")
+  createdAt      DateTime      @default(now()) @map("created_at")
+  updatedAt      DateTime      @updatedAt @map("updated_at")
+  messages       ChatMessage[]
+
+  @@unique([participant1Id, participant2Id])
+  @@index([participant1Id])
+  @@index([participant2Id])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String           @id @default(uuid())
+  conversationId String           @map("conversation_id")
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       String           @map("sender_id")
+  receiverId     String           @map("receiver_id")
+  content        String           @db.Text
+  isRead         Boolean          @default(false) @map("is_read")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@map("chat_messages")
+}
+

@@ -254,6 +254,47 @@ CREATE TABLE IF NOT EXISTS \`system_notifications\` (
   PRIMARY KEY (\`id\`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS \`user_notifications\` (
+  \`id\` varchar(191) NOT NULL,
+  \`user_id\` varchar(191) NOT NULL,
+  \`title\` varchar(191) NOT NULL,
+  \`message\` text NOT NULL,
+  \`type\` varchar(191) NOT NULL DEFAULT 'CONNECTION_REQUEST',
+  \`metadata\` text DEFAULT NULL,
+  \`is_read\` tinyint(1) NOT NULL DEFAULT 0,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`),
+  KEY \`user_notifications_user_id_idx\` (\`user_id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS \`chat_conversations\` (
+  \`id\` varchar(191) NOT NULL,
+  \`participant_1_id\` varchar(191) NOT NULL,
+  \`participant_2_id\` varchar(191) NOT NULL,
+  \`last_message\` text DEFAULT NULL,
+  \`last_message_at\` datetime(3) DEFAULT NULL,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`),
+  UNIQUE KEY \`chat_conversations_participants_unique\` (\`participant_1_id\`, \`participant_2_id\`),
+  KEY \`chat_conversations_p1_idx\` (\`participant_1_id\`),
+  KEY \`chat_conversations_p2_idx\` (\`participant_2_id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS \`chat_messages\` (
+  \`id\` varchar(191) NOT NULL,
+  \`conversation_id\` varchar(191) NOT NULL,
+  \`sender_id\` varchar(191) NOT NULL,
+  \`receiver_id\` varchar(191) NOT NULL,
+  \`content\` text NOT NULL,
+  \`is_read\` tinyint(1) NOT NULL DEFAULT 0,
+  \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (\`id\`),
+  KEY \`chat_messages_conv_idx\` (\`conversation_id\`),
+  KEY \`chat_messages_sender_idx\` (\`sender_id\`),
+  KEY \`chat_messages_receiver_idx\` (\`receiver_id\`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS \`education_content\` (
   \`id\` varchar(191) NOT NULL DEFAULT 'default',
   \`header_title\` varchar(191) DEFAULT 'Education for Better Tomorrow',

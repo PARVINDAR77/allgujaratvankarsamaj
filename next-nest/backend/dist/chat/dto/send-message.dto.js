@@ -9,18 +9,36 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateInterestDto = void 0;
+exports.SendMessageDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
-class CreateInterestDto {
+class SendMessageDto {
 }
-exports.CreateInterestDto = CreateInterestDto;
+exports.SendMessageDto = SendMessageDto;
 __decorate([
     (0, swagger_1.ApiProperty)({
-        description: "The profile ID of the person the user is interested in",
+        description: "Conversation ID if already initiated",
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SendMessageDto.prototype, "conversationId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: "Recipient candidate profile ID",
+        required: false,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SendMessageDto.prototype, "receiverProfileId", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: "Message content text",
     }),
     (0, class_validator_1.IsNotEmpty)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], CreateInterestDto.prototype, "targetProfileId", void 0);
-//# sourceMappingURL=create-interest.dto.js.map
+], SendMessageDto.prototype, "content", void 0);
+//# sourceMappingURL=send-message.dto.js.map

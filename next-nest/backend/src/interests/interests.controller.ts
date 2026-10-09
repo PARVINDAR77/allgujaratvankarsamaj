@@ -25,11 +25,27 @@ import { CreateInterestDto } from "./dto/create-interest.dto";
 export class InterestsController {
   constructor(private readonly interestsService: InterestsService) {}
 
+  @Post()
+  @ApiOperation({ summary: "Send an interest to another profile" })
+  @ApiResponse({ status: 201, description: "Interest sent successfully" })
+  async sendInterestRoot(@Request() req: any, @Body() dto: CreateInterestDto) {
+    return this.interestsService.sendInterest(req.user.id, dto);
+  }
+
   @Post("send")
   @ApiOperation({ summary: "Send an interest to another profile" })
   @ApiResponse({ status: 201, description: "Interest sent successfully" })
   async sendInterest(@Request() req: any, @Body() dto: CreateInterestDto) {
     return this.interestsService.sendInterest(req.user.id, dto);
+  }
+
+  @Get("status/:targetProfileId")
+  @ApiOperation({ summary: "Check connection/interest status with a target profile" })
+  async getInterestStatus(
+    @Request() req: any,
+    @Param("targetProfileId") targetProfileId: string,
+  ) {
+    return this.interestsService.getInterestStatus(req.user.id, targetProfileId);
   }
 
   @Patch(":id/accept")

@@ -27,6 +27,7 @@ import { PavanPrernadataModule } from './pavan-prernadata/pavan-prernadata.modul
 import { SamajSuperStarsModule } from './samaj-super-stars/samaj-super-stars.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { EducationModule } from './education/education.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { EducationModule } from './education/education.module';
     SamajSuperStarsModule,
     NotificationsModule,
     EducationModule,
+    ChatModule,
   ],
 })
 export class AppModule implements NestModule {

@@ -36,4 +36,23 @@ export declare class NotificationsService {
         message: string;
         target: string;
     }>;
+    getUserNotifications(userId: string): Promise<{
+        type: string;
+        id: string;
+        createdAt: Date;
+        userId: string;
+        title: string;
+        message: string;
+        metadata: string | null;
+        isRead: boolean;
+    }[]>;
+    markAsRead(userId: string, notificationId: string): Promise<import(".prisma/client").Prisma.BatchPayload | {
+        success: boolean;
+    }>;
+    markAllAsRead(userId: string): Promise<import(".prisma/client").Prisma.BatchPayload | {
+        success: boolean;
+    }>;
+    getUnreadCount(userId: string): Promise<{
+        unreadCount: number;
+    }>;
 }

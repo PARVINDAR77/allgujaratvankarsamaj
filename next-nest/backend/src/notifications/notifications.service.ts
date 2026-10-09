@@ -53,4 +53,55 @@ export class NotificationsService {
       where: { id },
     });
   }
+
+  // --- User Notifications (Personal connection requests, accepts, chat alerts) ---
+
+  async getUserNotifications(userId: string) {
+    try {
+      const userNotifs = await this.prisma.userNotification.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
+      return userNotifs;
+    } catch (err: any) {
+      this.logger.warn("Could not query user_notifications:", err?.message);
+      return [];
+    }
+  }
+
+  async markAsRead(userId: string, notificationId: string) {
+    try {
+      return await this.prisma.userNotification.updateMany({
+        where: { id: notificationId, userId },
+        data: { isRead: true },
+      });
+    } catch (err: any) {
+      this.logger.warn("Could not mark notification as read:", err?.message);
+      return { success: false };
+    }
+  }
+
+  async markAllAsRead(userId: string) {
+    try {
+      return await this.prisma.userNotification.updateMany({
+        where: { userId, isRead: false },
+        data: { isRead: true },
+      });
+    } catch (err: any) {
+      this.logger.warn("Could not mark all notifications as read:", err?.message);
+      return { success: false };
+    }
+  }
+
+  async getUnreadCount(userId: string) {
+    try {
+      const count = await this.prisma.userNotification.count({
+        where: { userId, isRead: false },
+      });
+      return { unreadCount: count };
+    } catch (err: any) {
+      return { unreadCount: 0 };
+    }
+  }
 }

@@ -18,12 +18,25 @@ const swagger_1 = require("@nestjs/swagger");
 const notifications_service_1 = require("./notifications.service");
 const create_notification_dto_1 = require("./dto/create-notification.dto");
 const public_decorator_1 = require("../auth/decorators/public.decorator");
+const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 let NotificationsController = class NotificationsController {
     constructor(notificationsService) {
         this.notificationsService = notificationsService;
     }
     async findAllPublic() {
         return this.notificationsService.findAllPublic();
+    }
+    async findUserNotifications(req) {
+        return this.notificationsService.getUserNotifications(req.user.id);
+    }
+    async getUnreadCount(req) {
+        return this.notificationsService.getUnreadCount(req.user.id);
+    }
+    async markAsRead(req, id) {
+        return this.notificationsService.markAsRead(req.user.id, id);
+    }
+    async markAllAsRead(req) {
+        return this.notificationsService.markAllAsRead(req.user.id);
     }
     async findAllAdmin() {
         return this.notificationsService.findAllAdmin();
@@ -44,6 +57,47 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], NotificationsController.prototype, "findAllPublic", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)("user/notifications"),
+    (0, swagger_1.ApiOperation)({ summary: "Get personal notifications for authenticated user" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "findUserNotifications", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Get)("user/notifications/unread-count"),
+    (0, swagger_1.ApiOperation)({ summary: "Get unread count of personal notifications" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "getUnreadCount", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Patch)("user/notifications/:id/read"),
+    (0, swagger_1.ApiOperation)({ summary: "Mark a personal notification as read" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "markAsRead", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)("user/notifications/read-all"),
+    (0, swagger_1.ApiOperation)({ summary: "Mark all personal notifications as read" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NotificationsController.prototype, "markAllAsRead", null);
 __decorate([
     (0, common_1.Get)("admin/notifications"),
     (0, swagger_1.ApiOperation)({ summary: "Get all notifications for admin management" }),

@@ -38,6 +38,8 @@ import '../../features/advertisements/presentation/screens/advertisements_screen
 import '../../features/government_employees/presentation/screens/govt_employees_screen.dart';
 import '../../features/government_employees/presentation/screens/private_employees_screen.dart';
 import '../../features/education/presentation/screens/education_screen.dart';
+import '../../features/chat/presentation/screens/chat_room_screen.dart';
+import '../../features/chat/presentation/screens/conversations_list_screen.dart';
 
 class AuthRouterListenable extends ChangeNotifier {
   AuthRouterListenable(Ref ref) {
@@ -318,6 +320,25 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      GoRoute(
+        path: '/conversations',
+        name: 'conversations',
+        builder: (context, state) => const ConversationsListScreen(),
+      ),
+      GoRoute(
+        path: '/chat/:conversationId',
+        name: 'chat-room',
+        builder: (context, state) {
+          final conversationId = state.pathParameters['conversationId'] ?? '';
+          final extra = state.extra as Map<String, dynamic>?;
+          return ChatRoomScreen(
+            conversationId: conversationId,
+            partnerName: extra?['partnerName']?.toString(),
+            partnerPhotoUrl: extra?['partnerPhotoUrl']?.toString(),
+            partnerGender: extra?['partnerGender']?.toString(),
+          );
+        },
+      ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainNavigationScreen(navigationShell: navigationShell);
@@ -378,17 +399,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/messages',
                 name: 'messages',
-                builder: (context, state) => Scaffold(
-                  backgroundColor: const Color(0xFF061121),
-                  appBar: AppBar(
-                    title: const Text('Messages (મેસેજ)', style: TextStyle(color: Color(0xFFFFD700))),
-                    backgroundColor: const Color(0xFF061121),
-                    iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
-                  ),
-                  body: const Center(
-                    child: Text('No active conversations', style: TextStyle(color: Colors.white70)),
-                  ),
-                ),
+                builder: (context, state) => const ConversationsListScreen(),
               ),
             ],
           ),

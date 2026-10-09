@@ -62,6 +62,55 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
             where: { id },
         });
     }
+    async getUserNotifications(userId) {
+        try {
+            const userNotifs = await this.prisma.userNotification.findMany({
+                where: { userId },
+                orderBy: { createdAt: "desc" },
+                take: 50,
+            });
+            return userNotifs;
+        }
+        catch (err) {
+            this.logger.warn("Could not query user_notifications:", err?.message);
+            return [];
+        }
+    }
+    async markAsRead(userId, notificationId) {
+        try {
+            return await this.prisma.userNotification.updateMany({
+                where: { id: notificationId, userId },
+                data: { isRead: true },
+            });
+        }
+        catch (err) {
+            this.logger.warn("Could not mark notification as read:", err?.message);
+            return { success: false };
+        }
+    }
+    async markAllAsRead(userId) {
+        try {
+            return await this.prisma.userNotification.updateMany({
+                where: { userId, isRead: false },
+                data: { isRead: true },
+            });
+        }
+        catch (err) {
+            this.logger.warn("Could not mark all notifications as read:", err?.message);
+            return { success: false };
+        }
+    }
+    async getUnreadCount(userId) {
+        try {
+            const count = await this.prisma.userNotification.count({
+                where: { userId, isRead: false },
+            });
+            return { unreadCount: count };
+        }
+        catch (err) {
+            return { unreadCount: 0 };
+        }
+    }
 };
 exports.NotificationsService = NotificationsService;
 exports.NotificationsService = NotificationsService = NotificationsService_1 = __decorate([

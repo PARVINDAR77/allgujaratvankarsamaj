@@ -22,8 +22,14 @@ let InterestsController = class InterestsController {
     constructor(interestsService) {
         this.interestsService = interestsService;
     }
+    async sendInterestRoot(req, dto) {
+        return this.interestsService.sendInterest(req.user.id, dto);
+    }
     async sendInterest(req, dto) {
         return this.interestsService.sendInterest(req.user.id, dto);
+    }
+    async getInterestStatus(req, targetProfileId) {
+        return this.interestsService.getInterestStatus(req.user.id, targetProfileId);
     }
     async acceptInterest(req, interestId) {
         return this.interestsService.acceptInterest(req.user.id, interestId);
@@ -40,6 +46,16 @@ let InterestsController = class InterestsController {
 };
 exports.InterestsController = InterestsController;
 __decorate([
+    (0, common_1.Post)(),
+    (0, swagger_1.ApiOperation)({ summary: "Send an interest to another profile" }),
+    (0, swagger_1.ApiResponse)({ status: 201, description: "Interest sent successfully" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_interest_dto_1.CreateInterestDto]),
+    __metadata("design:returntype", Promise)
+], InterestsController.prototype, "sendInterestRoot", null);
+__decorate([
     (0, common_1.Post)("send"),
     (0, swagger_1.ApiOperation)({ summary: "Send an interest to another profile" }),
     (0, swagger_1.ApiResponse)({ status: 201, description: "Interest sent successfully" }),
@@ -49,6 +65,15 @@ __decorate([
     __metadata("design:paramtypes", [Object, create_interest_dto_1.CreateInterestDto]),
     __metadata("design:returntype", Promise)
 ], InterestsController.prototype, "sendInterest", null);
+__decorate([
+    (0, common_1.Get)("status/:targetProfileId"),
+    (0, swagger_1.ApiOperation)({ summary: "Check connection/interest status with a target profile" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("targetProfileId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], InterestsController.prototype, "getInterestStatus", null);
 __decorate([
     (0, common_1.Patch)(":id/accept"),
     (0, swagger_1.ApiOperation)({ summary: "Accept a received interest" }),

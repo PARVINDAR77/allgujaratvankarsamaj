@@ -87,45 +87,110 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
         connectTimeout: const Duration(seconds: 5),
         receiveTimeout: const Duration(seconds: 5),
       ));
-      final res = await dio.get('${AppConfig.baseUrl}/notifications');
-      dynamic raw = res.data;
-      if (raw is String) {
-        try {
-          raw = jsonDecode(raw);
-        } catch (_) {}
-      }
-      if (raw is Map && raw.containsKey('data')) {
-        raw = raw['data'];
-      }
-      if (raw is List) {
-        for (final item in raw) {
-          if (item is! Map) continue;
-          final map = Map<String, dynamic>.from(item);
-          final id = map['id']?.toString() ?? '';
-          if (id.isEmpty) continue;
-          final title = map['title']?.toString() ?? '';
-          final message = map['message']?.toString() ?? '';
-          final route = map['route']?.toString();
-          final createdAtStr = map['createdAt']?.toString();
-          final time = createdAtStr != null
-              ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
-              : DateTime.now();
-          final isRead = _readIds.contains(id);
 
-          items.insert(
-            0,
-            AppNotification(
-              id: id,
-              title: title,
-              message: message,
-              time: time,
-              isRead: isRead,
-              route: route,
-              icon: Icons.notifications_active,
-            ),
-          );
+      // 1. Fetch broadcast system notifications
+      try {
+        final res = await dio.get('${AppConfig.baseUrl}/notifications');
+        dynamic raw = res.data;
+        if (raw is String) {
+          try {
+            raw = jsonDecode(raw);
+          } catch (_) {}
         }
-      }
+        if (raw is Map && raw.containsKey('data')) {
+          raw = raw['data'];
+        }
+        if (raw is List) {
+          for (final item in raw) {
+            if (item is! Map) continue;
+            final map = Map<String, dynamic>.from(item);
+            final id = map['id']?.toString() ?? '';
+            if (id.isEmpty) continue;
+            final title = map['title']?.toString() ?? '';
+            final message = map['message']?.toString() ?? '';
+            final route = map['route']?.toString();
+            final createdAtStr = map['createdAt']?.toString();
+            final time = createdAtStr != null
+                ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
+                : DateTime.now();
+            final isRead = _readIds.contains(id);
+
+            items.insert(
+              0,
+              AppNotification(
+                id: id,
+                title: title,
+                message: message,
+                time: time,
+                isRead: isRead,
+                route: route,
+                icon: Icons.notifications_active,
+              ),
+            );
+          }
+        }
+      } catch (_) {}
+
+      // 2. Fetch authenticated user personal notifications (Connection requests, accepts, chat alerts)
+      try {
+        final token = await _storage.read(key: 'jwt_token');
+        if (token != null && token.isNotEmpty) {
+          final res = await dio.get(
+            '${AppConfig.baseUrl}/user/notifications',
+            options: Options(headers: {'Authorization': 'Bearer $token'}),
+          );
+          if (res.data is List) {
+            for (final item in res.data as List) {
+              if (item is! Map) continue;
+              final map = Map<String, dynamic>.from(item);
+              final id = map['id']?.toString() ?? '';
+              if (id.isEmpty) continue;
+              final title = map['title']?.toString() ?? '';
+              final message = map['message']?.toString() ?? '';
+              final type = map['type']?.toString() ?? 'SYSTEM';
+              final isReadBackend = map['isRead'] == true || map['is_read'] == 1;
+              final isRead = isReadBackend || _readIds.contains(id);
+
+              String? route;
+              IconData icon = Icons.notifications_active_rounded;
+
+              if (map['metadata'] != null) {
+                try {
+                  final meta = jsonDecode(map['metadata'].toString()) as Map<String, dynamic>?;
+                  if (type == 'CONNECTION_REQUEST') {
+                    final senderId = meta?['senderProfileId']?.toString();
+                    if (senderId != null) route = '/candidate-profile-details?id=$senderId';
+                    icon = Icons.person_add_rounded;
+                  } else if (type == 'REQUEST_ACCEPTED' || type == 'NEW_MESSAGE') {
+                    final convId = meta?['conversationId']?.toString();
+                    if (convId != null) {
+                      route = '/chat/$convId';
+                    } else {
+                      route = '/messages';
+                    }
+                    icon = Icons.chat_bubble_rounded;
+                  }
+                } catch (_) {}
+              }
+
+              items.insert(
+                0,
+                AppNotification(
+                  id: id,
+                  title: title,
+                  message: message,
+                  time: map['createdAt'] != null
+                      ? DateTime.tryParse(map['createdAt'].toString()) ?? DateTime.now()
+                      : DateTime.now(),
+                  isRead: isRead,
+                  route: route,
+                  icon: icon,
+                ),
+              );
+            }
+          }
+        }
+      } catch (_) {}
     } catch (_) {}
 
     state = items;

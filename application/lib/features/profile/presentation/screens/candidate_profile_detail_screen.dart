@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/models/chat_models.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/liked_profiles_provider.dart';
+import '../../../chat/providers/chat_provider.dart';
 
 class CandidateProfileDetailScreen extends ConsumerStatefulWidget {
   final ProfileModel? profile;
@@ -852,6 +855,13 @@ class _CandidateProfileDetailScreenState
   }
 
   Widget _buildBottomActionBar(BuildContext context, ProfileModel profile) {
+    final authState = ref.watch(authNotifierProvider);
+    final myProfile = ref.watch(myProfileProvider).valueOrNull;
+    final isOwner = (authState.user?.id != null && authState.user!.id == profile.id) ||
+                    (myProfile != null && myProfile.id == profile.id);
+
+    final connStatusAsync = ref.watch(connectionStatusProvider(profile.id));
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -888,28 +898,168 @@ class _CandidateProfileDetailScreenState
             ),
             const SizedBox(width: 12),
 
-            // Express Interest / Contact Button
+            // Dynamic Action Button based on connection status
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => _expressInterest(context, profile),
-                icon: const Icon(Icons.send_rounded, size: 18),
-                label: const Text(
-                  'સંપર્ક કરો (Express Interest)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0056D2),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  elevation: 2,
-                ),
-              ),
+              child: isOwner
+                  ? Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        'આ તમારી પોતાની પ્રોફાઇલ છે (Your Own Profile)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey),
+                      ),
+                    )
+                  : connStatusAsync.when(
+                      loading: () => const Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      error: (_, __) => _buildConnectButton(context, profile),
+                      data: (status) => _buildConnectionButton(context, profile, status),
+                    ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildConnectionButton(BuildContext context, ProfileModel profile, ConnectionStatusResponse status) {
+    if (status.status == 'ACCEPTED') {
+      return ElevatedButton.icon(
+        onPressed: () => _openChat(context, profile, status.conversationId),
+        icon: const Icon(Icons.chat_bubble_rounded, size: 18),
+        label: const Text(
+          '💬 ચેટ શરૂ કરો (Chat Now)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF10B981),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 2,
+        ),
+      );
+    }
+
+    if (status.status == 'PENDING_SENT') {
+      return OutlinedButton.icon(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('તમારી કનેક્શન વિનંતી મોકલાઈ ગઈ છે. ઉમેદવારના સ્વીકારની રાહ જોવાઈ રહી છે.'),
+              backgroundColor: Colors.amber,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        },
+        icon: const Icon(Icons.hourglass_top_rounded, size: 18, color: Color(0xFFD97706)),
+        label: const Text(
+          'વિનંતી મોકલાઈ ગઈ છે (Pending)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFFD97706)),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          backgroundColor: const Color(0xFFFFFBEB),
+        ),
+      );
+    }
+
+    if (status.status == 'PENDING_RECEIVED' && status.interestId != null) {
+      return Row(
+        children: [
+          Expanded(
+            child: ElevatedButton.icon(
+              onPressed: () => _acceptConnectionRequest(context, profile, status.interestId!),
+              icon: const Icon(Icons.check_circle_rounded, size: 17),
+              label: const Text('સ્વીકારો (Accept)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          OutlinedButton(
+            onPressed: () => _declineConnectionRequest(context, profile, status.interestId!),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('નકારો', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5, color: Colors.grey)),
+          ),
+        ],
+      );
+    }
+
+    return _buildConnectButton(context, profile);
+  }
+
+  Widget _buildConnectButton(BuildContext context, ProfileModel profile) {
+    return ElevatedButton.icon(
+      onPressed: () => _expressInterest(context, profile),
+      icon: const Icon(Icons.person_add_rounded, size: 18),
+      label: const Text(
+        'કનેક્શન વિનંતી મોકલો (Connect)',
+        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+      ),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF0056D2),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 2,
+      ),
+    );
+  }
+
+  Future<void> _openChat(BuildContext context, ProfileModel profile, String? conversationId) async {
+    if (conversationId != null && conversationId.isNotEmpty) {
+      context.push(
+        '/chat/$conversationId',
+        extra: {
+          'partnerName': profile.fullName,
+          'partnerPhotoUrl': profile.fullPhotoUrl,
+          'partnerGender': profile.gender,
+        },
+      );
+    } else {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+      final res = await ref.read(chatRepositoryProvider).getOrCreateConversation(profile.id);
+      if (context.mounted) {
+        Navigator.pop(context);
+        if (res != null && res['conversationId'] != null) {
+          context.push(
+            '/chat/${res['conversationId']}',
+            extra: {
+              'partnerName': profile.fullName,
+              'partnerPhotoUrl': profile.fullPhotoUrl,
+              'partnerGender': profile.gender,
+            },
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('ચેટ રૂમ ખોલવામાં સમસ્યા આવી')),
+          );
+        }
+      }
+    }
   }
 
   Future<void> _toggleShortlist(ProfileModel profile) async {
@@ -923,15 +1073,11 @@ class _CandidateProfileDetailScreenState
       if (newShortlistState) {
         try {
           await dio.post('/shortlists', data: {'targetProfileId': profile.id});
-        } catch (_) {
-          // Fallback gracefully if already exists or memory mode
-        }
+        } catch (_) {}
       } else {
         try {
           await dio.delete('/shortlists/${profile.id}');
-        } catch (_) {
-          // Fallback gracefully
-        }
+        } catch (_) {}
       }
 
       if (mounted) {
@@ -983,17 +1129,17 @@ class _CandidateProfileDetailScreenState
                 ),
               ),
               const SizedBox(height: 20),
-              const Icon(Icons.favorite, size: 50, color: Color(0xFFC2185B)),
+              const Icon(Icons.person_add_rounded, size: 50, color: Color(0xFF0056D2)),
               const SizedBox(height: 12),
-              Text(
-                'રસ દર્શાવો (Express Interest)',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              const Text(
+                'કનેક્શન વિનંતી મોકલો (Send Connection Request)',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                'શું તમે ${profile.fullName} ની પ્રોફાઇલમાં રસ દર્શાવવા માંગો છો?\nતમારી વિગતો ઉમેદવારને મોકલવામાં આવશે.',
+                'શું તમે ${profile.fullName} ને કનેક્શન વિનંતી મોકલવા માંગો છો?\nતેઓ વિનંતી સ્વીકાર્યા પછી તમે બંને એકબીજા સાથે સુરક્ષિત રીતે ચેટ કરી શકશો.',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: const TextStyle(fontSize: 13.5, color: Colors.black87, height: 1.4),
               ),
               const SizedBox(height: 24),
               Row(
@@ -1021,7 +1167,7 @@ class _CandidateProfileDetailScreenState
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('હા, રસ દર્શાવો (Send)'),
+                      child: const Text('હા, વિનંતી મોકલો (Send)'),
                     ),
                   ),
                 ],
@@ -1034,24 +1180,64 @@ class _CandidateProfileDetailScreenState
   }
 
   Future<void> _sendInterestRequest(ProfileModel profile) async {
+    final repo = ref.read(chatRepositoryProvider);
+    final res = await repo.sendConnectionRequest(profile.id);
+
     try {
       final dio = ref.read(apiClientProvider);
-      try {
-        await dio.post('/shortlists', data: {'targetProfileId': profile.id});
-      } catch (_) {}
+      await dio.post('/shortlists', data: {'targetProfileId': profile.id});
+    } catch (_) {}
 
-      if (mounted) {
+    ref.invalidate(connectionStatusProvider(profile.id));
+
+    if (mounted) {
+      if (res['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${profile.fullName} ને તમારી રુચિ મોકલી દેવાઈ છે! (Interest Sent Successfully!)',
+              '${profile.fullName} ને કનેક્શન વિનંતી સફળતાપૂર્વક મોકલી દેવાઈ છે! (Connection Request Sent!)',
             ),
             backgroundColor: Colors.green,
             duration: const Duration(seconds: 3),
           ),
         );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message']?.toString() ?? 'વિનંતી મોકલી શકાઈ નથી'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
       }
-    } catch (_) {}
+    }
+  }
+
+  Future<void> _acceptConnectionRequest(BuildContext context, ProfileModel profile, String interestId) async {
+    final repo = ref.read(chatRepositoryProvider);
+    final res = await repo.acceptConnectionRequest(interestId);
+    ref.invalidate(connectionStatusProvider(profile.id));
+    if (mounted) {
+      if (res['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${profile.fullName} ની કનેક્શન વિનંતી સ્વીકારી લીધી છે! ચેટ અનલૉક થઈ ગઈ છે.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _openChat(context, profile, res['conversationId']?.toString());
+      }
+    }
+  }
+
+  Future<void> _declineConnectionRequest(BuildContext context, ProfileModel profile, String interestId) async {
+    final repo = ref.read(chatRepositoryProvider);
+    await repo.declineConnectionRequest(interestId);
+    ref.invalidate(connectionStatusProvider(profile.id));
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('વિનંતી નકારવામાં આવી છે.')),
+      );
+    }
   }
 
   void _shareProfile(ProfileModel profile) {
