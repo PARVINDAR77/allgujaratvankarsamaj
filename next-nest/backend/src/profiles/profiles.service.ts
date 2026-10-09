@@ -43,6 +43,13 @@ export class ProfilesService implements OnModuleInit {
   async onModuleInit() {
     try {
       await this.prisma.$executeRawUnsafe(`
+        ALTER TABLE matrimonial_profiles ADD COLUMN privacy_settings TEXT NULL;
+      `);
+      this.logger.log('Matrimonial profile privacy_settings column checked/added.');
+    } catch (_) {}
+
+    try {
+      await this.prisma.$executeRawUnsafe(`
         ALTER TABLE matrimonial_profiles MODIFY COLUMN marital_status ENUM('NEVER_MARRIED', 'MARRIED', 'DIVORCED', 'WIDOWED', 'SEPARATED') NOT NULL DEFAULT 'NEVER_MARRIED';
       `);
       this.logger.log('Matrimonial profile marital_status ENUM updated in database.');
@@ -227,6 +234,30 @@ export class ProfilesService implements OnModuleInit {
       dto.photoUrl ||
       (Array.isArray(dto.photos) && dto.photos.length > 0 ? dto.photos[0] : null);
 
+    const isGirlCandidate =
+      gender === Gender.FEMALE ||
+      (dto.firstName && (
+        dto.firstName.toLowerCase().endsWith("ben") ||
+        dto.firstName.toLowerCase().endsWith("bahen") ||
+        dto.firstName.includes("બેન") ||
+        dto.firstName.includes("બહેન")
+      ));
+
+    let resolvedPrivacySettings: string;
+    if (dto.privacySettings) {
+      resolvedPrivacySettings = typeof dto.privacySettings === 'string'
+        ? dto.privacySettings
+        : JSON.stringify(dto.privacySettings);
+    } else {
+      resolvedPrivacySettings = JSON.stringify({
+        mobile: isGirlCandidate ? "માત્ર મને" : (dto.mobilePrivacy || "બધા માટે"),
+        email: isGirlCandidate ? "માત્ર મને" : (dto.emailPrivacy || "બધા માટે"),
+        address: dto.addressPrivacy || "પરિવારજનો",
+        guardian: dto.guardianPrivacy || "બધા માટે",
+        shareClassGroup: dto.shareClassGroup === true || dto.shareClassGroup === 'true',
+      });
+    }
+
     try {
       const existingProfile = await this.prisma.matrimonialProfile.findUnique({
         where: { userId },
@@ -281,6 +312,7 @@ export class ProfilesService implements OnModuleInit {
         altPhone: dto.altPhone ? dto.altPhone.trim() : null,
         contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
         motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
+        privacySettings: resolvedPrivacySettings,
       };
 
       if (existingProfile) {
@@ -426,6 +458,7 @@ export class ProfilesService implements OnModuleInit {
         altPhone: dto.altPhone ? dto.altPhone.trim() : null,
         contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
         motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
+        privacySettings: resolvedPrivacySettings,
         stateId: null,
         districtId: null,
         talukaId: null,
@@ -711,6 +744,31 @@ export class ProfilesService implements OnModuleInit {
         updateData.contactEmail = dto.contactEmail ? dto.contactEmail.trim() : null;
       if (dto.motherTongue !== undefined)
         updateData.motherTongue = dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)";
+
+      if (dto.privacySettings !== undefined) {
+        updateData.privacySettings = typeof dto.privacySettings === 'string'
+          ? dto.privacySettings
+          : JSON.stringify(dto.privacySettings);
+      } else if (
+        dto.mobilePrivacy !== undefined ||
+        dto.emailPrivacy !== undefined ||
+        dto.addressPrivacy !== undefined ||
+        dto.guardianPrivacy !== undefined ||
+        dto.shareClassGroup !== undefined
+      ) {
+        let currentPrivacy: any = {};
+        try {
+          if ((existingProfile as any).privacySettings) {
+            currentPrivacy = JSON.parse((existingProfile as any).privacySettings);
+          }
+        } catch (_) {}
+        if (dto.mobilePrivacy !== undefined) currentPrivacy.mobile = dto.mobilePrivacy;
+        if (dto.emailPrivacy !== undefined) currentPrivacy.email = dto.emailPrivacy;
+        if (dto.addressPrivacy !== undefined) currentPrivacy.address = dto.addressPrivacy;
+        if (dto.guardianPrivacy !== undefined) currentPrivacy.guardian = dto.guardianPrivacy;
+        if (dto.shareClassGroup !== undefined) currentPrivacy.shareClassGroup = dto.shareClassGroup === true || dto.shareClassGroup === 'true';
+        updateData.privacySettings = JSON.stringify(currentPrivacy);
+      }
 
       const updatedProfile = await this.prisma.matrimonialProfile.update({
         where: { userId },
@@ -1324,6 +1382,7 @@ export class ProfilesService implements OnModuleInit {
         abroadCountry: p.abroadCountry,
         businessIndustry: p.businessIndustry,
         businessService: p.businessService,
+        privacySettings: p.privacySettings,
         user: p.user,
       };
     });

@@ -409,6 +409,7 @@ export declare class GovernmentEmployeesService {
                 altPhone: string | null;
                 contactEmail: string | null;
                 motherTongue: string | null;
+                privacySettings: string | null;
                 stateId: string | null;
                 districtId: string | null;
                 talukaId: string | null;
@@ -547,6 +548,7 @@ export declare class GovernmentEmployeesService {
                 altPhone: string | null;
                 contactEmail: string | null;
                 motherTongue: string | null;
+                privacySettings: string | null;
                 stateId: string | null;
                 districtId: string | null;
                 talukaId: string | null;

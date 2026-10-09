@@ -115,6 +115,7 @@ export declare class ShortlistsController {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;

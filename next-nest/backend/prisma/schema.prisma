@@ -132,6 +132,7 @@ model MatrimonialProfile {
   altPhone         String?       @map("alt_phone")
   contactEmail     String?       @map("contact_email")
   motherTongue     String?       @default("Gujarati (ગુજરાતી)") @map("mother_tongue")
+  privacySettings  String?       @db.Text @map("privacy_settings")
 
   stateId    String?   @map("state_id")
   districtId String?   @map("district_id")

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../app/theme/app_colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../auth/providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../providers/liked_profiles_provider.dart';
 
@@ -122,6 +122,13 @@ class _CandidateProfileDetailScreenState
     final themeText = profile.isFemale ? const Color(0xFF880E4F) : const Color(0xFF0D47A1);
     final isLiked = ref.watch(isProfileLikedProvider(profile.id));
 
+    final authState = ref.watch(authNotifierProvider);
+    final myProfile = ref.watch(myProfileProvider).valueOrNull;
+    final isOwner = (authState.user?.id != null && authState.user!.id == profile.id) ||
+                    (myProfile != null && myProfile.id == profile.id);
+    final isMobileBlocked = profile.isMobileBlockedForViewer(isOwner: isOwner);
+    final isEmailBlocked = profile.isEmailBlockedForViewer(isOwner: isOwner);
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FB),
       appBar: AppBar(
@@ -201,11 +208,21 @@ class _CandidateProfileDetailScreenState
                       _buildDetailRow('પિતાનું નામ (Father\'s Name)', profile.fatherName ?? 'Not specified'),
                       _buildDetailRow('પિતાનો વ્યવસાય (Father\'s Occupation)', profile.fatherOccupation ?? 'Not specified'),
                       if (profile.fatherContact != null && profile.fatherContact!.isNotEmpty)
-                        _buildDetailRow('પિતાનો ફોન (Father\'s Contact)', profile.fatherContact!),
+                        _buildContactRowWithAction(
+                          'પિતાનો ફોન (Father\'s Contact)',
+                          profile.fatherContact!,
+                          Icons.phone,
+                          Colors.green,
+                        ),
                       _buildDetailRow('માતાનું નામ (Mother\'s Name)', profile.motherName ?? 'Not specified'),
                       _buildDetailRow('માતાનો વ્યવસાય (Mother\'s Occupation)', profile.motherOccupation ?? 'Not specified'),
                       if (profile.guardianContact != null && profile.guardianContact!.isNotEmpty)
-                        _buildDetailRow('વાલીનો સંપર્ક (Guardian Contact)', profile.guardianContact!),
+                        _buildContactRowWithAction(
+                          'વાલીનો સંપર્ક (Guardian Contact)',
+                          profile.guardianContact!,
+                          Icons.phone,
+                          Colors.teal,
+                        ),
                       _buildDetailRow('ભાઈ-બહેનની વિગત (Brothers & Sisters)', profile.siblings ?? 'Not specified'),
                       _buildDetailRow('મોસાળ / મોસાળનું ગામ (Mama\'s Village / Mosal)', profile.mamasVillage ?? 'Not specified'),
                       _buildDetailRow('મૂળ વતન / પરગણું (Native Place / Pargana)', profile.nativePlace ?? (profile.pargana.isNotEmpty ? profile.pargana : 'Not specified')),
@@ -280,15 +297,59 @@ class _CandidateProfileDetailScreenState
                     icon: Icons.phone_android,
                     iconColor: const Color(0xFF00897B),
                     items: [
-                      _buildDetailRow(
-                        'મોબાઈલ નંબર (Mobile Number)',
-                        profile.contactPhone != null && profile.contactPhone!.isNotEmpty
-                            ? profile.contactPhone!
-                            : 'Available upon Express Interest',
-                      ),
-                      if (profile.altPhone != null && profile.altPhone!.isNotEmpty)
-                        _buildDetailRow('વોટ્સએપ / અન્ય ફોન (WhatsApp / Alt)', profile.altPhone!),
-                      if (profile.contactEmail != null && profile.contactEmail!.isNotEmpty)
+                      if (isMobileBlocked) ...[
+                        _buildDetailRow(
+                          'મોબાઈલ નંબર (Mobile Number)',
+                          '🔒 ગોપનીય (માત્ર મને - સુરક્ષા માટે ગુપ્ત)',
+                          valueColor: const Color(0xFFC2185B),
+                          isBold: true,
+                        ),
+                        Container(
+                          margin: const EdgeInsets.only(top: 4, bottom: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFF7ED),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFFDBA74)),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(Icons.shield_outlined, color: Color(0xFFE65100), size: 18),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'આ ઉમેદવારનો અંગત સંપર્ક નંબર સુરક્ષા માટે ગુપ્ત છે. લગ્ન સંબંધ માટે ઉપર આપેલ પિતા અથવા વાલીના નંબર પર સંપર્ક કરવો.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Color(0xFF9A3412),
+                                    fontWeight: FontWeight.w600,
+                                    height: 1.3,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else ...[
+                        _buildDetailRow(
+                          'મોબાઈલ નંબર (Mobile Number)',
+                          (profile.contactPhone != null && profile.contactPhone!.isNotEmpty)
+                              ? (isOwner && profile.effectiveMobilePrivacy == 'માત્ર મને'
+                                  ? '${profile.contactPhone!} (🔒 માત્ર મને - અન્ય લોકો માટે ગુપ્ત)'
+                                  : profile.contactPhone!)
+                              : 'Available upon Express Interest',
+                        ),
+                        if (profile.altPhone != null && profile.altPhone!.isNotEmpty)
+                          _buildDetailRow('વોટ્સએપ / અન્ય ફોન (WhatsApp / Alt)', profile.altPhone!),
+                      ],
+                      if (isEmailBlocked)
+                        _buildDetailRow(
+                          'ઈમેઈલ (Email)',
+                          '🔒 ગોપનીય (Privacy Protected - માત્ર મને)',
+                          valueColor: const Color(0xFFC2185B),
+                          isBold: true,
+                        )
+                      else if (profile.contactEmail != null && profile.contactEmail!.isNotEmpty)
                         _buildDetailRow('ઈમેઈલ (Email)', profile.contactEmail!),
                     ],
                   ),
@@ -679,7 +740,7 @@ class _CandidateProfileDetailScreenState
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailRow(String label, String value, {Color? valueColor, bool isBold = false}) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -701,11 +762,88 @@ class _CandidateProfileDetailScreenState
             flex: 5,
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
-                color: Colors.black87,
-                fontWeight: FontWeight.w600,
+                color: valueColor ?? Colors.black87,
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactRowWithAction(String label, String phone, IconData icon, Color color) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 5,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    phone,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                InkWell(
+                  onTap: () async {
+                    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                    final uri = Uri.parse('tel:$cleanPhone');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.green.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.call, size: 14, color: Colors.green),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                InkWell(
+                  onTap: () async {
+                    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                    final uri = Uri.parse('https://wa.me/91$cleanPhone');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.teal.shade50,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.chat, size: 14, color: Colors.teal),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

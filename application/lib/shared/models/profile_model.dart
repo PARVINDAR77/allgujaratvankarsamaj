@@ -72,6 +72,14 @@ class ProfileModel {
   final String? country;
   final String? nativePlace;
 
+  // Privacy Settings
+  final String? privacySettings;
+  final String? mobilePrivacy;
+  final String? emailPrivacy;
+  final String? addressPrivacy;
+  final String? guardianPrivacy;
+  final bool shareClassGroup;
+
   const ProfileModel({
     required this.id,
     required this.firstName,
@@ -123,6 +131,12 @@ class ProfileModel {
     this.state,
     this.country,
     this.nativePlace,
+    this.privacySettings,
+    this.mobilePrivacy,
+    this.emailPrivacy,
+    this.addressPrivacy,
+    this.guardianPrivacy,
+    this.shareClassGroup = false,
   });
 
   String get fullName => '$firstName $lastName'.trim().isEmpty ? 'Member' : '$firstName $lastName'.trim();
@@ -160,6 +174,48 @@ class ProfileModel {
   bool get isMale => !isFemale;
 
   String get displayGender => isFemale ? 'Female (સ્ત્રી)' : 'Male (પુરુષ)';
+
+  // Privacy Resolution
+  String get effectiveMobilePrivacy => mobilePrivacy?.trim().isNotEmpty == true
+      ? mobilePrivacy!
+      : (isFemale ? 'માત્ર મને' : 'બધા માટે');
+
+  String get effectiveEmailPrivacy => emailPrivacy?.trim().isNotEmpty == true
+      ? emailPrivacy!
+      : (isFemale ? 'માત્ર મને' : 'બધા માટે');
+
+  String get effectiveAddressPrivacy => addressPrivacy?.trim().isNotEmpty == true
+      ? addressPrivacy!
+      : 'પરિવારજનો';
+
+  String get effectiveGuardianPrivacy => guardianPrivacy?.trim().isNotEmpty == true
+      ? guardianPrivacy!
+      : 'બધા માટે';
+
+  bool isMobileBlockedForViewer({bool isOwner = false}) {
+    if (isOwner) return false;
+    final priv = effectiveMobilePrivacy;
+    if (priv == 'માત્ર મને') return true;
+    if (priv == 'બધા માટે') return false;
+    if (isFemale) return true;
+    return false;
+  }
+
+  bool isEmailBlockedForViewer({bool isOwner = false}) {
+    if (isOwner) return false;
+    final priv = effectiveEmailPrivacy;
+    if (priv == 'માત્ર મને') return true;
+    if (priv == 'બધા માટે') return false;
+    if (isFemale) return true;
+    return false;
+  }
+
+  bool isAddressBlockedForViewer({bool isOwner = false}) {
+    if (isOwner) return false;
+    final priv = effectiveAddressPrivacy;
+    if (priv == 'માત્ર મને') return true;
+    return false;
+  }
 
   static String normalizeGenderToDisplay(dynamic val) {
     if (val == null) return 'Male (પુરુષ)';
@@ -406,6 +462,29 @@ class ProfileModel {
       idDocBack ??= json['verification']['documentBackUrl']?.toString();
     }
 
+    // Extract privacy settings
+    String? rawPrivacy = json['privacySettings']?.toString() ?? json['privacy_settings']?.toString();
+    String? mobPriv = json['mobilePrivacy']?.toString();
+    String? emPriv = json['emailPrivacy']?.toString();
+    String? addrPriv = json['addressPrivacy']?.toString();
+    String? guardPriv = json['guardianPrivacy']?.toString();
+    bool shareClass = json['shareClassGroup'] == true;
+
+    if (rawPrivacy != null && rawPrivacy.trim().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawPrivacy);
+        if (decoded is Map) {
+          mobPriv ??= decoded['mobile']?.toString();
+          emPriv ??= decoded['email']?.toString();
+          addrPriv ??= decoded['address']?.toString();
+          guardPriv ??= decoded['guardian']?.toString();
+          if (decoded['shareClassGroup'] != null) {
+            shareClass = decoded['shareClassGroup'] == true;
+          }
+        }
+      } catch (_) {}
+    }
+
     return ProfileModel(
       id: (json['id'] ?? '').toString(),
       firstName: rawFirst,
@@ -457,6 +536,12 @@ class ProfileModel {
       state: extractString(json['state']),
       country: (json['country']) as String?,
       nativePlace: (json['nativePlace'] ?? json['native_place']) as String?,
+      privacySettings: rawPrivacy,
+      mobilePrivacy: mobPriv,
+      emailPrivacy: emPriv,
+      addressPrivacy: addrPriv,
+      guardianPrivacy: guardPriv,
+      shareClassGroup: shareClass,
     );
   }
 
@@ -508,6 +593,12 @@ class ProfileModel {
       'altPhone': altPhone,
       'contactPhone': contactPhone,
       'contactEmail': contactEmail,
+      if (privacySettings != null) 'privacySettings': privacySettings,
+      if (mobilePrivacy != null) 'mobilePrivacy': mobilePrivacy,
+      if (emailPrivacy != null) 'emailPrivacy': emailPrivacy,
+      if (addressPrivacy != null) 'addressPrivacy': addressPrivacy,
+      if (guardianPrivacy != null) 'guardianPrivacy': guardianPrivacy,
+      'shareClassGroup': shareClassGroup,
     };
 
     return map;

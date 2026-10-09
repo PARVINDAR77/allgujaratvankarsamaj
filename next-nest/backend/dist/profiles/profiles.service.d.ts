@@ -70,6 +70,7 @@ export declare class ProfilesService implements OnModuleInit {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -125,6 +126,7 @@ export declare class ProfilesService implements OnModuleInit {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -180,6 +182,7 @@ export declare class ProfilesService implements OnModuleInit {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -235,6 +238,7 @@ export declare class ProfilesService implements OnModuleInit {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -290,6 +294,7 @@ export declare class ProfilesService implements OnModuleInit {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -389,6 +394,7 @@ export declare class ProfilesService implements OnModuleInit {
             altPhone: string | null;
             contactEmail: string | null;
             motherTongue: string | null;
+            privacySettings: string | null;
             stateId: string | null;
             districtId: string | null;
             talukaId: string | null;
@@ -456,6 +462,7 @@ export declare class ProfilesService implements OnModuleInit {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            privacySettings: any;
             user: any;
         }[];
         items: ({
@@ -548,6 +555,7 @@ export declare class ProfilesService implements OnModuleInit {
             altPhone: string | null;
             contactEmail: string | null;
             motherTongue: string | null;
+            privacySettings: string | null;
             stateId: string | null;
             districtId: string | null;
             talukaId: string | null;

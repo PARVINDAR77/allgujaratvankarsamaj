@@ -45,4 +45,10 @@ export declare class CreateProfileDto {
     altPhone?: string;
     contactEmail?: string;
     motherTongue?: string;
+    privacySettings?: any;
+    mobilePrivacy?: string;
+    emailPrivacy?: string;
+    addressPrivacy?: string;
+    guardianPrivacy?: string;
+    shareClassGroup?: any;
 }

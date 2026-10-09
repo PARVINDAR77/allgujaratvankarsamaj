@@ -476,4 +476,41 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "motherTongue", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "Privacy settings JSON string",
+        example: '{"mobile":"માત્ર મને","email":"માત્ર મને","address":"પરિવારજનો","guardian":"બધા માટે","shareClassGroup":false}',
+    }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProfileDto.prototype, "privacySettings", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Mobile privacy setting" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "mobilePrivacy", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Email privacy setting" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "emailPrivacy", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Address privacy setting" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "addressPrivacy", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Guardian contact privacy setting" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "guardianPrivacy", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Share in class group" }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProfileDto.prototype, "shareClassGroup", void 0);
 //# sourceMappingURL=create-profile.dto.js.map

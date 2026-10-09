@@ -542,6 +542,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       altPhone: _whatsappNumber.isNotEmpty ? _whatsappNumber : null,
       contactEmail: _emailAddress.isNotEmpty ? _emailAddress : null,
       about: _aboutMe.isNotEmpty ? _aboutMe : null,
+      mobilePrivacy: ProfileModel.normalizeGenderToDisplay(_gender).contains('Female') || _firstName.toLowerCase().endsWith('ben') ? 'માત્ર મને' : 'બધા માટે',
+      emailPrivacy: ProfileModel.normalizeGenderToDisplay(_gender).contains('Female') || _firstName.toLowerCase().endsWith('ben') ? 'માત્ર મને' : 'બધા માટે',
+      addressPrivacy: 'પરિવારજનો',
+      guardianPrivacy: 'બધા માટે',
+      shareClassGroup: false,
     );
 
     String finalProfileId = uniqueId;
@@ -771,6 +776,34 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               // Contact Details Section
               _buildSectionHeader(Icons.phone_android, 'Contact Details (સંપર્ક માહિતી)'),
               const SizedBox(height: 16),
+              if (_gender != null && ProfileModel.normalizeGenderToDisplay(_gender).contains('Female'))
+                Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFCE4EC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF48FB1)),
+                  ),
+                  child: const Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.security, color: Color(0xFFC2185B), size: 22),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          '🛡️ દીકરીઓની સુરક્ષા માટે:\nતમારો વ્યક્તિગત મોબાઇલ નંબર અને ઈમેઈલ આપમેળે ગુપ્ત (🔒 માત્ર મને) રહેશે. લગ્ન સંબંધ માટે નીચે દર્શાવેલ પિતા/વાલીનો સંપર્ક ખુલ્લો રહેશે. તમે કોઈપણ સમયે Privacy Settings માંથી આ બદલી શકો છો.',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF880E4F),
+                            fontWeight: FontWeight.bold,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               _buildTextField(
                 'Mobile Number (મોબાઈલ નંબર - 10 અંક) *',
                 'Enter 10-digit Mobile Number',

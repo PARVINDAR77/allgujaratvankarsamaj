@@ -97,6 +97,7 @@ export declare class ProfilesController {
             altPhone: string | null;
             contactEmail: string | null;
             motherTongue: string | null;
+            privacySettings: string | null;
             stateId: string | null;
             districtId: string | null;
             talukaId: string | null;
@@ -164,6 +165,7 @@ export declare class ProfilesController {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            privacySettings: any;
             user: any;
         }[];
         items: ({
@@ -256,6 +258,7 @@ export declare class ProfilesController {
             altPhone: string | null;
             contactEmail: string | null;
             motherTongue: string | null;
+            privacySettings: string | null;
             stateId: string | null;
             districtId: string | null;
             talukaId: string | null;
@@ -323,6 +326,7 @@ export declare class ProfilesController {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            privacySettings: any;
             user: any;
         }[];
         items: ({
@@ -415,6 +419,7 @@ export declare class ProfilesController {
             altPhone: string | null;
             contactEmail: string | null;
             motherTongue: string | null;
+            privacySettings: string | null;
             stateId: string | null;
             districtId: string | null;
             talukaId: string | null;
@@ -512,6 +517,7 @@ export declare class ProfilesController {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -567,6 +573,7 @@ export declare class ProfilesController {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -622,6 +629,7 @@ export declare class ProfilesController {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -677,6 +685,7 @@ export declare class ProfilesController {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -732,6 +741,7 @@ export declare class ProfilesController {
         altPhone: string | null;
         contactEmail: string | null;
         motherTongue: string | null;
+        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;

@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../providers/profile_provider.dart';
+import '../../../../shared/models/profile_model.dart';
 
-class PrivacyContactScreen extends StatefulWidget {
+class PrivacyContactScreen extends ConsumerStatefulWidget {
   const PrivacyContactScreen({super.key});
 
   @override
-  State<PrivacyContactScreen> createState() => _PrivacyContactScreenState();
+  ConsumerState<PrivacyContactScreen> createState() => _PrivacyContactScreenState();
 }
 
-class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
+class _PrivacyContactScreenState extends ConsumerState<PrivacyContactScreen> {
   // Privacy Options
   final List<String> _privacyOptions = ['માત્ર મને', 'પરિવારજનો', 'બધા માટે'];
 
@@ -16,16 +19,108 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
   String _mobilePrivacy = 'માત્ર મને';
   String _emailPrivacy = 'માત્ર મને';
   String _addressPrivacy = 'પરિવારજનો';
-  String _guardianPrivacy = 'માત્ર મને';
+  String _guardianPrivacy = 'બધા માટે';
   bool _shareClassGroup = false;
+
+  bool _isInitialized = false;
+  bool _isSaving = false;
+
+  void _syncFromProfile(ProfileModel profile) {
+    if (_isInitialized) return;
+    _mobilePrivacy = profile.effectiveMobilePrivacy;
+    _emailPrivacy = profile.effectiveEmailPrivacy;
+    _addressPrivacy = profile.effectiveAddressPrivacy;
+    _guardianPrivacy = profile.effectiveGuardianPrivacy;
+    _shareClassGroup = profile.shareClassGroup;
+    _isInitialized = true;
+  }
+
+  Future<void> _updatePrivacySetting({
+    String? mobile,
+    String? email,
+    String? address,
+    String? guardian,
+    bool? shareClass,
+  }) async {
+    setState(() {
+      if (mobile != null) _mobilePrivacy = mobile;
+      if (email != null) _emailPrivacy = email;
+      if (address != null) _addressPrivacy = address;
+      if (guardian != null) _guardianPrivacy = guardian;
+      if (shareClass != null) _shareClassGroup = shareClass;
+      _isSaving = true;
+    });
+
+    try {
+      final privacyData = {
+        'mobilePrivacy': _mobilePrivacy,
+        'emailPrivacy': _emailPrivacy,
+        'addressPrivacy': _addressPrivacy,
+        'guardianPrivacy': _guardianPrivacy,
+        'shareClassGroup': _shareClassGroup,
+        'privacySettings': {
+          'mobile': _mobilePrivacy,
+          'email': _emailPrivacy,
+          'address': _addressPrivacy,
+          'guardian': _guardianPrivacy,
+          'shareClassGroup': _shareClassGroup,
+        },
+      };
+
+      await ref.read(profileRepositoryProvider).updateMyProfile(privacyData);
+      ref.invalidate(myProfileProvider);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Color(0xFFD4AF37), size: 18),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'ગોપનીયતા સેટિંગ્સ સફળતાપૂર્વક સાચવવામાં આવી (Privacy settings updated)',
+                    style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF041126),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('સેટિંગ્સ સાચવવામાં ભૂલ આવી: $e'),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 600;
 
+    final profileAsync = ref.watch(myProfileProvider);
+    profileAsync.whenData((profile) => _syncFromProfile(profile));
+
+    final isFemale = profileAsync.valueOrNull?.isFemale ?? false;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F7F2), // Light cream background from mockup
+      backgroundColor: const Color(0xFFF9F7F2), // Light cream background
       appBar: AppBar(
         backgroundColor: const Color(0xFFF9F7F2),
         title: const Text(
@@ -35,6 +130,22 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
         iconTheme: const IconThemeData(color: Colors.black87),
         elevation: 0,
         centerTitle: true,
+        actions: [
+          if (_isSaving)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Center(
+                child: SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFD4AF37)),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         child: Center(
@@ -72,10 +183,12 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                             children: [
                               const Icon(Icons.security, color: Color(0xFFD4AF37), size: 28),
                               const SizedBox(width: 12),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
-                                  'તમારો સંપર્ક નંબર અન્ય વ્યક્તિઓથી ગુપ્ત રાખી શકો છો.\nમાહિતી માત્ર ઓથોરાઇઝ સભ્યોને જ દેખાશે.',
-                                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                                  isFemale
+                                      ? 'દીકરીઓની સુરક્ષા માટે તમારો મોબાઈલ નંબર અને ઈમેઈલ આપમેળે ગુપ્ત (🔒 માત્ર મને) રહે છે.\nલગ્ન સંબંધ માટે પિતા/વાલીનો નંબર ખુલ્લો રહેશે. તમે અહીંથી ગમે ત્યારે બદલી શકો છો.'
+                                      : 'તમારો સંપર્ક નંબર અન્ય વ્યક્તિઓથી ગુપ્ત રાખી શકો છો.\nમાહિતી માત્ર ઓથોરાઇઝ સભ્યોને જ દેખાશે.',
+                                  style: const TextStyle(color: Colors.white, fontSize: 11, height: 1.3),
                                 ),
                               ),
                             ],
@@ -94,7 +207,9 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                           title: 'મોબાઈલ નંબર',
                           subtitle: 'તમારો મોબાઈલ નંબર કોણ જોઈ શકે તે પસંદ કરો.',
                           value: _mobilePrivacy,
-                          onChanged: (val) => setState(() => _mobilePrivacy = val!),
+                          onChanged: (val) {
+                            if (val != null) _updatePrivacySetting(mobile: val);
+                          },
                         ),
                         _buildDivider(),
                         _buildPrivacyDropdownRow(
@@ -102,7 +217,9 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                           title: 'ઈમેઈલ સરનામું',
                           subtitle: 'તમારું ઈમેઈલ સરનામું કોણ જોઈ શકે તે પસંદ કરો.',
                           value: _emailPrivacy,
-                          onChanged: (val) => setState(() => _emailPrivacy = val!),
+                          onChanged: (val) {
+                            if (val != null) _updatePrivacySetting(email: val);
+                          },
                         ),
                         _buildDivider(),
                         _buildPrivacyDropdownRow(
@@ -110,7 +227,9 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                           title: 'ઘરનું સરનામું',
                           subtitle: 'તમારું સરનામું કોણ જોઈ શકે તે પસંદ કરો.',
                           value: _addressPrivacy,
-                          onChanged: (val) => setState(() => _addressPrivacy = val!),
+                          onChanged: (val) {
+                            if (val != null) _updatePrivacySetting(address: val);
+                          },
                         ),
                         _buildDivider(),
                         _buildPrivacyDropdownRow(
@@ -118,7 +237,9 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                           title: 'વાલીનો સંપર્ક',
                           subtitle: 'તમારા સંપર્કની માહિતી અન્ય વાલીઓને દેખાડવી કે નહી.',
                           value: _guardianPrivacy,
-                          onChanged: (val) => setState(() => _guardianPrivacy = val!),
+                          onChanged: (val) {
+                            if (val != null) _updatePrivacySetting(guardian: val);
+                          },
                         ),
                         _buildDivider(),
                         
@@ -150,8 +271,8 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                                 children: [
                                   CupertinoSwitch(
                                     value: _shareClassGroup,
-                                    activeColor: const Color(0xFF1565C0),
-                                    onChanged: (val) => setState(() => _shareClassGroup = val),
+                                    activeTrackColor: const Color(0xFF1565C0),
+                                    onChanged: (val) => _updatePrivacySetting(shareClass: val),
                                   ),
                                   const SizedBox(width: 8),
                                   Text(_shareClassGroup ? 'ચાલુ' : 'બંધ', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
@@ -184,6 +305,8 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                         _buildSummaryRow('ઈમેઈલ સરનામું', _emailPrivacy),
                         _buildDivider(),
                         _buildSummaryRow('ઘરનું સરનામું', _addressPrivacy),
+                        _buildDivider(),
+                        _buildSummaryRow('વાલીનો સંપર્ક', _guardianPrivacy),
                       ],
                     ),
                   ),
@@ -203,15 +326,17 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                       children: [
                         const Icon(Icons.verified_user, color: Color(0xFF1565C0), size: 40),
                         const SizedBox(width: 16),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('નોંધ', style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold, fontSize: 16)),
-                              SizedBox(height: 4),
+                              const Text('સુરક્ષા નોંધ (Security Note)', style: TextStyle(color: Color(0xFF1565C0), fontWeight: FontWeight.bold, fontSize: 15)),
+                              const SizedBox(height: 4),
                               Text(
-                                'શાળા વ્યવસ્થા અથવા અધિકૃત શિક્ષક જ તમારા સંપર્કની માહિતી જોઈ શકે છે. તમારી પરવાનગી વગર તમારી માહિતી કોઈ સાથે શેર કરવામાં આવશે નહિ.',
-                                style: TextStyle(color: Colors.black87, fontSize: 12, height: 1.4),
+                                isFemale
+                                    ? 'સમાજની દીકરીઓની અંગત સુરક્ષા માટે મોબાઇલ અને ઇમેઇલ માત્ર તમને જ દેખાશે. લગ્ન વિષયક પૂછપરછ માટે પિતા અને વાલીનો નંબર ઉપલબ્ધ રહેશે.'
+                                    : 'અધિકૃત સભ્યો જ તમારી પરવાનગી મુજબ સંપર્ક વિગતો જોઈ શકશે. તમારી પરવાનગી વગર તમારી માહિતી કોઈ સાથે શેર કરવામાં આવશે નહિ.',
+                                style: const TextStyle(color: Colors.black87, fontSize: 12, height: 1.4),
                               ),
                             ],
                           ),
@@ -222,14 +347,14 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Original Contact Support Footer
+                  // Contact Support Footer
                   Container(
                     height: 8,
                     width: double.infinity,
                     color: Colors.grey.shade200,
                   ),
                   Container(
-                    color: Colors.white, // White theme for the bottom section
+                    color: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                     width: double.infinity,
                     child: Column(
@@ -314,7 +439,7 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                value: value,
+                value: _privacyOptions.contains(value) ? value : _privacyOptions.first,
                 icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFFD4AF37), size: 16),
                 dropdownColor: const Color(0xFF041126),
                 style: const TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold),
@@ -323,7 +448,11 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
                     value: val,
                     child: Row(
                       children: [
-                        const Icon(Icons.lock, color: Color(0xFFD4AF37), size: 14),
+                        Icon(
+                          val == 'માત્ર મને' ? Icons.lock : (val == 'પરિવારજનો' ? Icons.groups : Icons.public),
+                          color: const Color(0xFFD4AF37),
+                          size: 14,
+                        ),
                         const SizedBox(width: 6),
                         Text(val),
                       ],
@@ -341,8 +470,14 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
 
   Widget _buildSummaryRow(String title, String value) {
     IconData iconData = Icons.lock;
-    if (value == 'પરિવારજનો') iconData = Icons.groups;
-    if (value == 'બધા માટે') iconData = Icons.public;
+    Color iconColor = const Color(0xFFC2185B);
+    if (value == 'પરિવારજનો') {
+      iconData = Icons.groups;
+      iconColor = const Color(0xFF1565C0);
+    } else if (value == 'બધા માટે') {
+      iconData = Icons.public;
+      iconColor = const Color(0xFF2E7D32);
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -352,9 +487,12 @@ class _PrivacyContactScreenState extends State<PrivacyContactScreen> {
           Text(title, style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold)),
           Row(
             children: [
-              Icon(iconData, color: const Color(0xFFD4AF37), size: 16),
+              Icon(iconData, color: iconColor, size: 16),
               const SizedBox(width: 6),
-              Text(value, style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold)),
+              Text(
+                value,
+                style: TextStyle(color: iconColor, fontSize: 13, fontWeight: FontWeight.bold),
+              ),
             ],
           ),
         ],

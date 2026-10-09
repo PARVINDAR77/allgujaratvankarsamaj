@@ -426,4 +426,35 @@ export class CreateProfileDto {
   @IsOptional()
   @IsString()
   motherTongue?: string;
+
+  @ApiPropertyOptional({
+    description: "Privacy settings JSON string",
+    example: '{"mobile":"માત્ર મને","email":"માત્ર મને","address":"પરિવારજનો","guardian":"બધા માટે","shareClassGroup":false}',
+  })
+  @IsOptional()
+  privacySettings?: any;
+
+  @ApiPropertyOptional({ description: "Mobile privacy setting" })
+  @IsOptional()
+  @IsString()
+  mobilePrivacy?: string;
+
+  @ApiPropertyOptional({ description: "Email privacy setting" })
+  @IsOptional()
+  @IsString()
+  emailPrivacy?: string;
+
+  @ApiPropertyOptional({ description: "Address privacy setting" })
+  @IsOptional()
+  @IsString()
+  addressPrivacy?: string;
+
+  @ApiPropertyOptional({ description: "Guardian contact privacy setting" })
+  @IsOptional()
+  @IsString()
+  guardianPrivacy?: string;
+
+  @ApiPropertyOptional({ description: "Share in class group" })
+  @IsOptional()
+  shareClassGroup?: any;
 }
