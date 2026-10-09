@@ -1031,9 +1031,57 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     return const Divider(height: 12, thickness: 0.7, color: Color(0xFFF1F5F9));
   }
 
+  ProfileModel _resolveCandidateProfile(Map<String, dynamic> data) {
+    if (data['profile'] is ProfileModel) {
+      return data['profile'] as ProfileModel;
+    }
+
+    final rawName = (data['name'] ?? '').toString().trim();
+    String firstName = rawName;
+    String lastName = '';
+    final nameParts = rawName.split(' ');
+    if (nameParts.isNotEmpty) {
+      firstName = nameParts.first;
+      if (nameParts.length > 1) {
+        lastName = nameParts.sublist(1).join(' ');
+      }
+    }
+
+    final company = data['company']?.toString() ?? '';
+    final dept = data['dept']?.toString() ?? '';
+    final departmentDisplay = company.isNotEmpty
+        ? (dept.isNotEmpty ? '$company ($dept)' : company)
+        : dept;
+
+    final rawId = (data['profileId'] ?? data['id'] ?? '1001').toString();
+
+    return ProfileModel(
+      id: rawId,
+      firstName: firstName,
+      lastName: lastName,
+      education: data['education']?.toString() ?? '',
+      employmentType: 'Private Sector (ખાનગી નોકરી / સેકટર)',
+      department: departmentDisplay,
+      designation: data['post']?.toString() ?? 'Professional',
+      district: data['district']?.toString() ?? '',
+      taluka: data['taluka']?.toString() ?? '',
+      pargana: data['pargana']?.toString() ?? '',
+      nativePlace: data['nativePlace']?.toString(),
+      addressLine: data['address']?.toString(),
+      contactPhone: data['phone']?.toString(),
+      contactEmail: data['email']?.toString(),
+      about: data['about']?.toString(),
+      photoUrl: data['photoUrl']?.toString(),
+      isVerified: data['isVerified'] == true,
+      gender: 'Male (પુરુષ)',
+      maritalStatus: 'Never Married (અપરિણીત)',
+      dateOfBirth: '',
+    );
+  }
+
   Widget _buildModalFooter(BuildContext ctx, Map<String, dynamic> data) {
-    final hasProfile = data['profile'] != null;
     final hasPhone = data['phone'] != null && data['phone'].toString().trim().isNotEmpty;
+    final profile = _resolveCandidateProfile(data);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -1050,43 +1098,13 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
               foregroundColor: const Color(0xFF475569),
               side: const BorderSide(color: Color(0xFFCBD5E1)),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             ),
             child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
           ),
           const Spacer(),
-          // Profile button if real profile
-          if (hasProfile) ...[
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(ctx);
-                final profileObj = data['profile'];
-                String? pId;
-                if (profileObj is ProfileModel) {
-                  pId = profileObj.id;
-                } else if (profileObj is Map) {
-                  pId = profileObj['id']?.toString() ?? profileObj['profileId']?.toString();
-                } else if (profileObj is String) {
-                  pId = profileObj;
-                }
-                pId ??= data['profileId']?.toString() ?? data['id']?.toString();
-
-                if (pId != null && pId.isNotEmpty) {
-                  context.push('/candidate-profile-details?id=$pId', extra: profileObj ?? {'id': pId});
-                } else {
-                  context.push('/candidate-profile-details', extra: profileObj);
-                }
-              },
-              icon: const Icon(Icons.person_search, size: 16),
-              label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0056D2),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              ),
-            ),
-          ] else if (hasPhone) ...[
+          // Call button if available
+          if (hasPhone) ...[
             ElevatedButton.icon(
               onPressed: () async {
                 final uri = Uri.parse('tel:${data['phone'].toString().replaceAll(' ', '')}');
@@ -1094,16 +1112,37 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                   await launchUrl(uri);
                 }
               },
-              icon: const Icon(Icons.call, size: 16),
+              icon: const Icon(Icons.call, size: 15),
               label: const Text('કોલ કરો (Call)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2E7D32),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               ),
             ),
+            const SizedBox(width: 8),
           ],
+          // View Profile button - ALWAYS VISIBLE FOR ALL CANDIDATES
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.pop(ctx);
+              final pId = profile.id;
+              if (pId.isNotEmpty) {
+                context.push('/candidate-profile-details?id=$pId', extra: profile);
+              } else {
+                context.push('/candidate-profile-details', extra: profile);
+              }
+            },
+            icon: const Icon(Icons.person_search, size: 15),
+            label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0056D2),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
         ],
       ),
     );
