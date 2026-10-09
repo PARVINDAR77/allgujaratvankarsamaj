@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef, useEffect, UIEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -47,7 +47,6 @@ const menuSections = [
     title: "CONTENT & SETTINGS",
     items: [
       { name: "Home Screen", href: "/admin/home-screen", icon: "📱" },
-      { name: "Education (4 Boxes)", href: "/admin/education", icon: "🎓" },
       { name: "Advertisements", href: "/admin/advertisements", icon: "📢" },
       { name: "Notifications", href: "/admin/notifications", icon: "🔔" },
       { name: "Reports", href: "/admin/reports", icon: "📈" },
@@ -60,8 +59,70 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
   const pathname = usePathname();
   const router = useRouter();
 
+  const navContainerRef = useRef<HTMLDivElement>(null);
+  const activeLinkRef = useRef<HTMLAnchorElement>(null);
+
+  // Restore scroll position or scroll active item into view on route change
+  useEffect(() => {
+    const restoreScrollPosition = () => {
+      if (!navContainerRef.current) return;
+
+      const savedScroll = sessionStorage.getItem("admin_sidebar_scroll_top");
+      if (savedScroll !== null) {
+        const parsed = parseInt(savedScroll, 10);
+        if (!isNaN(parsed)) {
+          navContainerRef.current.scrollTop = parsed;
+        }
+      }
+
+      // Ensure the active menu button is visible in the viewport
+      if (activeLinkRef.current && navContainerRef.current) {
+        const container = navContainerRef.current;
+        const link = activeLinkRef.current;
+        const containerRect = container.getBoundingClientRect();
+        const linkRect = link.getBoundingClientRect();
+
+        const isAbove = linkRect.top < containerRect.top + 10;
+        const isBelow = linkRect.bottom > containerRect.bottom - 10;
+
+        if (isAbove || isBelow) {
+          link.scrollIntoView({ block: "nearest", inline: "nearest" });
+          try {
+            sessionStorage.setItem("admin_sidebar_scroll_top", String(container.scrollTop));
+          } catch {}
+        }
+      }
+    };
+
+    // Run immediately and after paint to guarantee accurate scroll placement
+    restoreScrollPosition();
+    const frameId = requestAnimationFrame(restoreScrollPosition);
+    const timer = setTimeout(restoreScrollPosition, 60);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      clearTimeout(timer);
+    };
+  }, [pathname]);
+
+  const handleNavScroll = (e: UIEvent<HTMLDivElement>) => {
+    try {
+      sessionStorage.setItem("admin_sidebar_scroll_top", String(e.currentTarget.scrollTop));
+    } catch {}
+  };
+
+  const handleLinkClick = () => {
+    if (navContainerRef.current) {
+      try {
+        sessionStorage.setItem("admin_sidebar_scroll_top", String(navContainerRef.current.scrollTop));
+      } catch {}
+    }
+    onClose();
+  };
+
   const handleLogout = async () => {
     if (typeof window !== "undefined") {
+      sessionStorage.removeItem("admin_sidebar_scroll_top");
       localStorage.removeItem("adminUser");
       const { adminApi } = await import("../../lib/admin-api");
       try {
@@ -79,37 +140,74 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
       {isOpen && (
         <div
           onClick={onClose}
-           style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.75)", zIndex: 40 }} className="fixed"
+          style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.75)", zIndex: 40 }}
+          className="fixed md:hidden"
         />
       )}
 
       {/* Sidebar Navigation Drawer */}
       <aside
-         style={{ position: "sticky", height: "100vh", width: "270px", minWidth: "270px", backgroundColor: "#061224", borderRight: "1.5px solid rgba(153, 125, 32, 0.4)", zIndex: 50, boxSizing: "border-box", boxShadow: "5px 0 25px rgba(0, 0, 0, 0.5)", fontFamily: "'Inter', system-ui, sans-serif" }} className="flex flex-col top-0 left-0"
+        style={{
+          position: "sticky",
+          top: 0,
+          height: "100dvh",
+          maxHeight: "100vh",
+          width: "270px",
+          minWidth: "270px",
+          backgroundColor: "#061224",
+          borderRight: "1.5px solid rgba(153, 125, 32, 0.4)",
+          zIndex: 50,
+          boxSizing: "border-box",
+          boxShadow: "5px 0 25px rgba(0, 0, 0, 0.5)",
+          fontFamily: "'Inter', system-ui, sans-serif",
+          overflow: "hidden",
+        }}
+        className={`flex flex-col left-0 transition-transform duration-200 md:translate-x-0 ${
+          isOpen ? "translate-x-0 fixed inset-y-0" : "-translate-x-full md:translate-x-0 fixed md:sticky"
+        }`}
       >
         {/* Brand Header */}
         <div
-           style={{ padding: "22px 20px", borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)" }} className="flex items-center shrink-0 gap-[14px]"
+          style={{
+            padding: "20px 18px",
+            borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)",
+          }}
+          className="flex items-center shrink-0 gap-[14px]"
         >
           {/* Logo Image */}
           <div
-             style={{ width: "48px", height: "48px", border: "2px solid #D4AF37", boxShadow: "0 0 15px rgba(212, 175, 55, 0.4)" }} className="flex justify-center items-center overflow-hidden shrink-0 rounded-full bg-admin-card"
+            style={{
+              width: "46px",
+              height: "46px",
+              border: "2px solid #D4AF37",
+              boxShadow: "0 0 15px rgba(212, 175, 55, 0.4)",
+            }}
+            className="flex justify-center items-center overflow-hidden shrink-0 rounded-full bg-admin-card"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/logo.png"
               alt="Vankar Samaj Logo"
-               style={{ objectFit: "cover" }} className="w-full h-full"
+              style={{ objectFit: "cover" }}
+              className="w-full h-full"
             />
           </div>
           <div>
             <h1
-               style={{ fontSize: "15px", fontWeight: 900, letterSpacing: "1.2px", margin: 0, lineHeight: "1.2" }} className="text-admin-gold"
+              style={{
+                fontSize: "15px",
+                fontWeight: 900,
+                letterSpacing: "1.2px",
+                margin: 0,
+                lineHeight: "1.2",
+              }}
+              className="text-admin-gold"
             >
               ALL GUJARAT
             </h1>
             <p
-                style={{ color: "rgba(243, 229, 171, 0.9)", margin: 0 }} className="font-bold uppercase text-[11px] tracking-[1px]" 
+              style={{ color: "rgba(243, 229, 171, 0.9)", margin: 0 }}
+              className="font-bold uppercase text-[11px] tracking-[1px]"
             >
               Vankar Samaj Admin
             </p>
@@ -118,23 +216,39 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
 
         {/* Scrollable Navigation Menu */}
         <div
-           style={{ overflowY: "auto", padding: "20px 14px", gap: "22px" }} className="flex flex-col flex-1"
+          ref={navContainerRef}
+          onScroll={handleNavScroll}
+          style={{
+            overflowY: "auto",
+            padding: "20px 14px 40px 14px",
+            gap: "22px",
+            minHeight: 0,
+          }}
+          className="flex flex-col flex-1"
         >
           {menuSections.map((section, idx) => (
-            <div key={idx}  style={{ gap: "6px" }} className="flex flex-col">
+            <div key={idx} style={{ gap: "6px" }} className="flex flex-col">
               <h2
-                 style={{ color: "rgba(212, 175, 55, 0.75)", letterSpacing: "1.5px", padding: "0 10px", margin: "0 0 4px 0" }} className="font-extrabold uppercase text-[11px]"
+                style={{
+                  color: "rgba(212, 175, 55, 0.75)",
+                  letterSpacing: "1.5px",
+                  padding: "0 10px",
+                  margin: "0 0 4px 0",
+                }}
+                className="font-extrabold uppercase text-[11px]"
               >
                 {section.title}
               </h2>
-              <div  style={{ gap: "4px" }} className="flex flex-col">
+              <div style={{ gap: "4px" }} className="flex flex-col">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href;
                   return (
                     <Link
                       key={item.href}
+                      ref={isActive ? activeLinkRef : undefined}
                       href={item.href}
-                      onClick={() => onClose()}
+                      scroll={false}
+                      onClick={handleLinkClick}
                       style={{
                         display: "flex",
                         alignItems: "center",
@@ -147,7 +261,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                         transition: "all 0.2s ease-in-out",
                         ...(isActive
                           ? {
-                              background: "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+                              background:
+                                "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
                               color: "#000000",
                               boxShadow: "0 0 15px rgba(212, 175, 55, 0.35)",
                             }
@@ -157,7 +272,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                             }),
                       }}
                     >
-                      <span  className="shrink-0 text-base">{item.icon}</span>
+                      <span className="shrink-0 text-base">{item.icon}</span>
                       <span>{item.name}</span>
                     </Link>
                   );
@@ -169,11 +284,24 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
 
         {/* Footer Logout Section */}
         <div
-            style={{ borderTop: "1.5px solid rgba(153, 125, 32, 0.3)" }} className="shrink-0 p-4" 
+          style={{
+            borderTop: "1.5px solid rgba(153, 125, 32, 0.3)",
+            backgroundColor: "#061224",
+            padding: "12px 14px",
+          }}
+          className="shrink-0"
         >
           <button
             onClick={handleLogout}
-             style={{ padding: "12px 16px", borderRadius: "14px", backgroundColor: "rgba(136, 19, 55, 0.3)", border: "1.5px solid rgba(244, 63, 94, 0.4)", color: "#fecdd3", transition: "all 0.2s ease-in-out" }} className="flex justify-center items-center w-full font-extrabold cursor-pointer text-[13px] gap-2"
+            style={{
+              padding: "11px 16px",
+              borderRadius: "14px",
+              backgroundColor: "rgba(136, 19, 55, 0.3)",
+              border: "1.5px solid rgba(244, 63, 94, 0.4)",
+              color: "#fecdd3",
+              transition: "all 0.2s ease-in-out",
+            }}
+            className="flex justify-center items-center w-full font-extrabold cursor-pointer text-[13px] gap-2 hover:bg-rose-900/50"
           >
             <span>🚪</span>
             <span>Logout Session</span>
