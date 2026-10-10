@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -130,113 +131,237 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8FF),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF041126),
-        title: const Text(
-          'Search Profiles (ઉમેદવાર શોધ)',
-          style: TextStyle(color: Color(0xFFFFD700), fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            if (context.canPop()) {
-              context.pop();
-            } else {
-              context.go('/home');
-            }
-          },
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
-            icon: const Icon(Icons.tune, color: Color(0xFFFFD700)),
-            onPressed: () => _showFilterBottomSheet(context),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF021B2B), // Deep peacock blue/teal
+              Color(0xFF032635),
+              Color(0xFF021622),
+            ],
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Quick Search Input
-            _buildSearchBar(),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 1. Royal Peacock App Bar with Ornate Gold Buttons
+              _buildRoyalHeader(context),
 
-            // Search by Filter Banner
-            _buildSearchByFilterBanner(),
+              // 2. Pill Search Input with Golden Border
+              _buildSearchBar(),
 
-            // Segmented Tab Selector for Boys / Girls / All
-            _buildGenderSegmentedTabs(),
+              // 3. Jewel-Toned "Search by Filter" Interactive Banner
+              _buildSearchByFilterBanner(),
 
-            // Dynamic Summary / Count Badge
-            _buildSummaryBadge(profiles.length, profileState.isLoading),
+              // 4. Segmented Tab Selector for Boys / Girls / All
+              _buildGenderSegmentedTabs(),
 
-            // Content List or Empty State
-            Expanded(
-              child: profileState.isLoading && profiles.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircularProgressIndicator(color: Color(0xFF0056D2)),
-                          SizedBox(height: 16),
-                          Text('પ્રોફાઇલ્સ લોડ થઈ રહી છે...', style: TextStyle(color: Color(0xFF0056D2), fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                    )
-                  : profiles.isEmpty
-                      ? _buildEmptyState(context)
-                      : ListView.builder(
-                          controller: _scrollController,
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: profiles.length + (profileState.isLoadingNextPage ? 1 : 0),
-                          itemBuilder: (context, index) {
-                            if (index == profiles.length) {
-                              return const Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(16.0),
-                                  child: CircularProgressIndicator(),
-                                ),
-                              );
-                            }
+              // 5. Dynamic Summary Counter Strip with Peacock Accent
+              _buildSummaryBadge(profiles.length, profileState.isLoading),
 
-                            final profile = profiles[index];
-                            return _buildProfileCard(context, profile);
-                          },
+              // 6. Content List or Empty State
+              Expanded(
+                child: profileState.isLoading && profiles.isEmpty
+                    ? const Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(color: Color(0xFFFFD700)),
+                            SizedBox(height: 16),
+                            Text(
+                              'પ્રોફાઇલ્સ લોડ થઈ રહી છે...',
+                              style: TextStyle(color: Color(0xFFFFD700), fontWeight: FontWeight.w600),
+                            ),
+                          ],
                         ),
-            ),
-          ],
+                      )
+                    : profiles.isEmpty
+                        ? _buildEmptyState(context)
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                            itemCount: profiles.length + (profileState.isLoadingNextPage ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == profiles.length) {
+                                return const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(16.0),
+                                    child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                                  ),
+                                );
+                              }
+
+                              final profile = profiles[index];
+                              return _buildProfileCard(context, profile, index);
+                            },
+                          ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSearchBar() {
+  // --- 1. ROYAL HEADER WITH ORNATE GOLD BUTTONS ---
+  Widget _buildRoyalHeader(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.blue.shade100),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF021B2B),
+            Color(0xFF082D3B),
+            Color(0xFF1E0A2F),
+          ],
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black45,
             blurRadius: 6,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Ornate Golden Back Button
+          _buildOrnateCircleButton(
+            icon: Icons.arrow_back,
+            tooltip: 'પાછા જાઓ (Back)',
+            bgColor: const Color(0xFF004945),
+            iconColor: const Color(0xFFFFD700),
+            onTap: () {
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/home');
+              }
+            },
+          ),
+          const SizedBox(width: 10),
+
+          // Title with Rich Gold Glow
+          Expanded(
+            child: Text(
+              'Search Profiles (ઉમેદવાર શોધ)',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFFFFD700),
+                fontSize: 17.5,
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(0, 1.5)),
+                  Shadow(color: Color(0x66FFD700), blurRadius: 8),
+                ],
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Ornate Golden Filter Button
+          _buildOrnateCircleButton(
+            icon: Icons.tune_rounded,
+            tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
+            bgColor: const Color(0xFF3B0744),
+            iconColor: const Color(0xFFFFD700),
+            onTap: () => _showFilterBottomSheet(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrnateCircleButton({
+    required IconData icon,
+    required String tooltip,
+    required Color bgColor,
+    required Color iconColor,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        customBorder: const CircleBorder(),
+        child: Container(
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFFFFDF73),
+                Color(0xFFD4AF37),
+                Color(0xFF996515),
+              ],
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                blurRadius: 6,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(2.2), // Gold outer frame width
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: bgColor,
+              border: Border.all(color: const Color(0xFFFFE680), width: 0.8),
+            ),
+            child: Center(
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- 2. PILL SEARCH BAR WITH METALLIC GOLD BORDER ---
+  Widget _buildSearchBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 10, 14, 6),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFFDF8),
+            Color(0xFFFBF4E4),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black38,
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
       child: TextField(
         controller: _searchController,
         onChanged: _onSearchChanged,
+        style: const TextStyle(color: Color(0xFF0F172A), fontSize: 13.5, fontWeight: FontWeight.w600),
         decoration: InputDecoration(
           hintText: 'નામ, આઈડી, ગામ કે શહેરથી શોધો...',
-          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13),
-          prefixIcon: const Icon(Icons.search, color: Color(0xFF0056D2), size: 22),
+          hintStyle: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF1E293B), size: 22),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
+                  icon: const Icon(Icons.clear_rounded, size: 18, color: Color(0xFF64748B)),
                   onPressed: () {
                     _searchController.clear();
                     _onSearchChanged('');
@@ -244,19 +369,20 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 )
               : IconButton(
                   tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
-                  icon: const Icon(Icons.tune, color: Color(0xFF0056D2), size: 20),
+                  icon: const Icon(Icons.tune_rounded, color: Color(0xFF006D77), size: 20),
                   onPressed: () => _showFilterBottomSheet(context),
                 ),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         ),
       ),
     );
   }
 
+  // --- 3. JEWEL-TONED "SEARCH BY FILTER" BANNER ---
   Widget _buildSearchByFilterBanner() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 2, 16, 4),
+      margin: const EdgeInsets.fromLTRB(14, 2, 14, 6),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -264,34 +390,44 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             final lookingFor = _selectedGender == 'MALE' ? 'Groom' : (_selectedGender == 'FEMALE' ? 'Bride' : 'Groom');
             context.push('/advanced-search?lookingFor=$lookingFor');
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(22),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFF0F7FF), Color(0xFFE0EFFF)],
+                colors: [
+                  Color(0xFF007A87),
+                  Color(0xFF004E5B),
+                  Color(0xFF002E38),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.blue.shade300, width: 1.2),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFE5C07B), width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.blue.shade900.withValues(alpha: 0.06),
+                  color: Colors.black.withValues(alpha: 0.45),
                   blurRadius: 6,
-                  offset: const Offset(0, 2),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Row(
               children: [
+                // Filter icon inside circular teal gradient badge
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0056D2).withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
+                    shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF00A896), Color(0xFF028090)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(color: const Color(0xFFFFE680), width: 1.2),
                   ),
-                  child: const Icon(Icons.filter_list_rounded, color: Color(0xFF0056D2), size: 20),
+                  child: const Icon(Icons.filter_list_rounded, color: Colors.white, size: 18),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -301,20 +437,21 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       Text(
                         'ફિલ્ટર દ્વારા શોધો (Search by Filter)',
                         style: TextStyle(
-                          color: Color(0xFF0056D2),
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
+                          letterSpacing: 0.2,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      SizedBox(height: 1.5),
                       Text(
                         'પરગણા, જિલ્લો, શિક્ષણ, વ્યવસાય સાથે વિગતવાર શોધો',
-                        style: TextStyle(color: Colors.black54, fontSize: 11),
+                        style: TextStyle(color: Color(0xFFBBE5ED), fontSize: 11),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF0056D2), size: 14),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 15),
               ],
             ),
           ),
@@ -323,51 +460,55 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
+  // --- 4. SEGMENTED TABS (BOYS / GIRLS / ALL) ---
   Widget _buildGenderSegmentedTabs() {
     return Container(
-      margin: const EdgeInsets.fromLTRB(16, 6, 16, 4),
-      padding: const EdgeInsets.all(4),
+      margin: const EdgeInsets.fromLTRB(14, 2, 14, 6),
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
+        color: const Color(0xFFFFFDF8),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black38,
             blurRadius: 6,
-            offset: const Offset(0, 2),
+            offset: Offset(0, 2),
           ),
         ],
-        border: Border.all(color: Colors.blue.shade100),
       ),
       child: Row(
         children: [
           // 1. Boys / વર
           Expanded(
-            child: _buildTabButton(
+            child: _buildSegmentedTabButton(
               gender: 'MALE',
-              label: '👨 વર (Boys)',
+              label: '👦 વર (Boys)',
               isSelected: _selectedGender == 'MALE',
-              activeColor: const Color(0xFF0056D2),
+              activeColors: [const Color(0xFF008375), const Color(0xFF00584E)],
+              inactiveTextColor: const Color(0xFF00584E),
             ),
           ),
           const SizedBox(width: 4),
           // 2. Girls / કન્યા
           Expanded(
-            child: _buildTabButton(
+            child: _buildSegmentedTabButton(
               gender: 'FEMALE',
-              label: '👰 કન્યા (Girls)',
+              label: '👧 કન્યા (Girls)',
               isSelected: _selectedGender == 'FEMALE',
-              activeColor: const Color(0xFFC2185B),
+              activeColors: [const Color(0xFFC2185B), const Color(0xFF880E4F)],
+              inactiveTextColor: const Color(0xFF9D174D),
             ),
           ),
           const SizedBox(width: 4),
           // 3. All / બધા
           Expanded(
-            child: _buildTabButton(
+            child: _buildSegmentedTabButton(
               gender: 'ALL',
               label: '👥 બધા (All)',
               isSelected: _selectedGender == 'ALL',
-              activeColor: const Color(0xFF041126),
+              activeColors: [const Color(0xFF0056D2), const Color(0xFF003087)],
+              inactiveTextColor: const Color(0xFF1E3A8A),
             ),
           ),
         ],
@@ -375,26 +516,34 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  Widget _buildTabButton({
+  Widget _buildSegmentedTabButton({
     required String gender,
     required String label,
     required bool isSelected,
-    required Color activeColor,
+    required List<Color> activeColors,
+    required Color inactiveTextColor,
   }) {
     return InkWell(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(26),
       onTap: () => _onGenderTabChanged(gender),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
+          gradient: isSelected
+              ? LinearGradient(
+                  colors: activeColors,
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                )
+              : null,
+          borderRadius: BorderRadius.circular(26),
+          border: isSelected ? Border.all(color: const Color(0xFFFFDF73), width: 1.8) : null,
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: activeColor.withValues(alpha: 0.3),
-                    blurRadius: 6,
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
                 ]
@@ -405,9 +554,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-              fontSize: 13,
+              color: isSelected ? Colors.white : inactiveTextColor,
+              fontWeight: FontWeight.bold,
+              fontSize: 12.5,
             ),
           ),
         ),
@@ -415,6 +564,483 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
+  // --- 5. SUMMARY COUNTER BADGE WITH PEACOCK ACCENT ---
+  Widget _buildSummaryBadge(int count, bool isLoading) {
+    String title;
+    String symbol;
+
+    if (_selectedGender == 'FEMALE') {
+      title = 'કન્યા ઉમેદવારો (Brides / Girls)';
+      symbol = '♀';
+    } else if (_selectedGender == 'MALE') {
+      title = 'વર ઉમેદવારો (Grooms / Boys)';
+      symbol = '♂';
+    } else {
+      title = 'તમામ ઉમેદવારો (All Candidates)';
+      symbol = '👥';
+    }
+
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 2, 14, 6),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFFDF8),
+            Color(0xFFF9F2E2),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Text(
+            symbol,
+            style: const TextStyle(
+              color: Color(0xFF0F2D37),
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '$title • $count પ્રોફાઇલ ઉપલબ્ધ',
+              style: const TextStyle(
+                color: Color(0xFF0F2D37),
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Miniature Peacock Feather Accent
+          SizedBox(
+            width: 26,
+            height: 20,
+            child: CustomPaint(painter: PeacockMiniPainter()),
+          ),
+          if (isLoading) ...[
+            const SizedBox(width: 8),
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF006D77)),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  // --- 6. ROYAL ORNATE CANDIDATE PROFILE CARD ---
+  Widget _buildProfileCard(BuildContext context, ProfileModel profile, int index) {
+    final isGirl = profile.isFemale;
+
+    // Harmonious jewel button gradients matching the screenshot style:
+    // Alternate between deep teal/emerald gradient and deep royal purple gradient
+    final isAlternatePurple = index % 2 == 1;
+    final buttonGradient = (isGirl || isAlternatePurple)
+        ? const LinearGradient(
+            colors: [Color(0xFF4A0E4E), Color(0xFF27052A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )
+        : const LinearGradient(
+            colors: [Color(0xFF004953), Color(0xFF002B33)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          );
+
+    final avatarCircleBg = isAlternatePurple ? const Color(0xFFF3E8FF) : const Color(0xFFD8F3DC);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFFFDF8),
+            Color(0xFFF9F3E5),
+            Color(0xFFFFFDF8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black45,
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Color(0x22D4AF37),
+            blurRadius: 10,
+            offset: Offset(0, 0),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          children: [
+            // Top-left starry nebula accent
+            Positioned(
+              top: -20,
+              left: -20,
+              child: Container(
+                width: 90,
+                height: 90,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: RadialGradient(
+                    colors: [
+                      (isAlternatePurple ? const Color(0xFF7E22CE) : const Color(0xFF007A87)).withValues(alpha: 0.28),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom-left peacock feather and golden filigree corner decoration
+            Positioned(
+              left: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                child: SizedBox(
+                  width: 90,
+                  height: 90,
+                  child: CustomPaint(
+                    painter: PeacockCardCornerPainter(),
+                  ),
+                ),
+              ),
+            ),
+
+            // Main Card Content
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Avatar with Double Concentric Embossed Gold Ring Medallion
+                      InkWell(
+                        onTap: () => context.push('/candidate-profile-details', extra: profile),
+                        child: Container(
+                          width: 76,
+                          height: 76,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFDF73), Color(0xFFD4AF37), Color(0xFF996515)],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.25),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(2.6),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: avatarCircleBg,
+                              border: Border.all(color: const Color(0xFFFFF3CD), width: 1),
+                            ),
+                            child: ClipOval(
+                              child: (profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty)
+                                  ? Image.network(
+                                      profile.fullPhotoUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (_, _, _) => StylizedAvatarFace(isFemale: isGirl),
+                                    )
+                                  : StylizedAvatarFace(isFemale: isGirl),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+
+                      // Candidate Details
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Name & Gender Pill Badge
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    profile.fullName.isNotEmpty ? profile.fullName : 'User Member',
+                                    style: const TextStyle(
+                                      fontSize: 16.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFF0F2D37),
+                                      height: 1.15,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE6FAF6),
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                                  ),
+                                  child: Text(
+                                    isGirl ? '👧 કન્યા (Bride)' : '👦 વર (Groom)',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF0F2D37),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 5),
+
+                            // Sky Blue ID Capsule with Copy Action
+                            InkWell(
+                              onTap: () {
+                                final idToCopy = profile.id.isNotEmpty ? profile.id : profile.displayId;
+                                if (idToCopy.isNotEmpty) {
+                                  Clipboard.setData(ClipboardData(text: idToCopy));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('ID કોપી થયો: $idToCopy'),
+                                      backgroundColor: const Color(0xFF006D77),
+                                      duration: const Duration(seconds: 2),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE8F4FE),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF90CAF9), width: 1),
+                                ),
+                                child: Text(
+                                  'ID: ${profile.id.isNotEmpty ? profile.id : (profile.displayId.isNotEmpty ? profile.displayId : "d651408e-a133-4989")}',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1565C0),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+
+                            // Profession Row
+                            Row(
+                              children: [
+                                const Icon(Icons.work_rounded, size: 14, color: Color(0xFF334155)),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: Text(
+                                    profile.displayProfession.isNotEmpty ? profile.displayProfession : 'Not specified',
+                                    style: const TextStyle(
+                                      color: Color(0xFF334155),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+
+                            // Location Row
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF334155)),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: Text(
+                                    profile.displayLocation.isNotEmpty ? profile.displayLocation : 'Not specified',
+                                    style: const TextStyle(
+                                      color: Color(0xFF334155),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Bottom Action Buttons: Metallic View Profile + Golden Heart
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              context.push('/candidate-profile-details', extra: profile);
+                            },
+                            borderRadius: BorderRadius.circular(22),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8.5, horizontal: 12),
+                              decoration: BoxDecoration(
+                                gradient: buttonGradient,
+                                borderRadius: BorderRadius.circular(22),
+                                border: Border.all(color: const Color(0xFFE5C07B), width: 1.8),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black38,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'View Profile (વિગતવાર જુઓ)',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.bold,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                  SizedBox(width: 6),
+                                  Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 13),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      _FavoriteIconButton(profile: profile),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- EMPTY STATE ---
+  Widget _buildEmptyState(BuildContext context) {
+    String title = 'કોઈ ઉમેદવાર મળ્યા નથી';
+    String desc = 'તમારી શોધ મુજબ પ્રોફાઇલ ઉપલબ્ધ નથી. કૃપા કરીને શોધ ફિલ્ટર બદલો અથવા તમામ ઉમેદવારો જુઓ.';
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFDF8),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black45,
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.person_search_rounded,
+                size: 54,
+                color: Color(0xFF006D77),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFFFFD700)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              desc,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12.5, color: Colors.white70, height: 1.4),
+            ),
+            const SizedBox(height: 22),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (_selectedGender != 'ALL')
+                  OutlinedButton.icon(
+                    onPressed: () => _onGenderTabChanged('ALL'),
+                    icon: const Icon(Icons.people_alt, size: 16, color: Color(0xFFFFD700)),
+                    label: const Text('બધા જુઓ (View All)', style: TextStyle(color: Color(0xFFFFD700))),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                    ),
+                  ),
+                if (_selectedGender != 'ALL') const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () => _showFilterBottomSheet(context),
+                  icon: const Icon(Icons.tune, size: 16, color: Colors.white),
+                  label: const Text('શોધ ફિલ્ટર બદલો (Adjust Filters)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF006D77),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- FILTER MODAL BOTTOM SHEET ---
   void _showFilterBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -435,8 +1061,13 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 top: 16,
               ),
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: Color(0xFFFFFDF8),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFFD4AF37), width: 2.5),
+                  left: BorderSide(color: Color(0xFFD4AF37), width: 1),
+                  right: BorderSide(color: Color(0xFFD4AF37), width: 1),
+                ),
               ),
               child: SingleChildScrollView(
                 child: Column(
@@ -450,7 +1081,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
+                          color: const Color(0xFFD4AF37),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -461,14 +1092,14 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       children: [
                         const Row(
                           children: [
-                            Icon(Icons.tune, color: Color(0xFF0056D2), size: 22),
+                            Icon(Icons.tune_rounded, color: Color(0xFF006D77), size: 22),
                             SizedBox(width: 8),
                             Text(
                               'Filter Profiles (શોધ ફિલ્ટર)',
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF0056D2),
+                                color: Color(0xFF0F2D37),
                               ),
                             ),
                           ],
@@ -481,11 +1112,11 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                               tempAgeRange = const RangeValues(18, 55);
                             });
                           },
-                          child: const Text('રીસેટ (Reset)', style: TextStyle(color: Colors.red)),
+                          child: const Text('રીસેટ (Reset)', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
-                    const Divider(),
+                    const Divider(color: Color(0xFFE2E8F0)),
                     const SizedBox(height: 6),
 
                     // Ultra-Prominent Top Card to open Detailed Search Filters
@@ -502,31 +1133,25 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                           decoration: BoxDecoration(
                             gradient: const LinearGradient(
-                              colors: [Color(0xFF003C9E), Color(0xFF0056D2)],
+                              colors: [Color(0xFF007A87), Color(0xFF004E5B)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFE5C07B), width: 1.5),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF0056D2).withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 3),
+                                color: Colors.black.withValues(alpha: 0.15),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          child: Row(
+                          child: const Row(
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(7),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(Icons.filter_list_rounded, color: Color(0xFFFFD700), size: 22),
-                              ),
-                              const SizedBox(width: 10),
-                              const Expanded(
+                              Icon(Icons.filter_list_rounded, color: Color(0xFFFFD700), size: 22),
+                              SizedBox(width: 10),
+                              Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -541,39 +1166,36 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                     SizedBox(height: 2),
                                     Text(
                                       'પરગણા, ગામ, શિક્ષણ, નોકરી સાથે સંપૂર્ણ ફોર્મ ખોલો',
-                                      style: TextStyle(fontSize: 10.5, color: Colors.white70),
+                                      style: TextStyle(fontSize: 10.5, color: Color(0xFFBBE5ED)),
                                     ),
                                   ],
                                 ),
                               ),
-                              const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 14),
+                              Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 14),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
 
-                    // Gender Section
-                    const Text(
-                      'કોને શોધી રહ્યા છો? (Looking For)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 10),
+                    // 1. Gender Filter
+                    const Text('લિંગ (Gender)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F2D37))),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
                           child: _buildModalChoiceChip(
-                            label: '👨 વર (Boys)',
+                            label: '👦 વર (Boys)',
                             isSelected: tempGender == 'MALE',
-                            activeColor: const Color(0xFF0056D2),
+                            activeColor: const Color(0xFF007A87),
                             onTap: () => setSheetState(() => tempGender = 'MALE'),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: _buildModalChoiceChip(
-                            label: '👰 કન્યા (Girls)',
+                            label: '👧 કન્યા (Girls)',
                             isSelected: tempGender == 'FEMALE',
                             activeColor: const Color(0xFFC2185B),
                             onTap: () => setSheetState(() => tempGender = 'FEMALE'),
@@ -584,26 +1206,23 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           child: _buildModalChoiceChip(
                             label: '👥 બધા (All)',
                             isSelected: tempGender == 'ALL',
-                            activeColor: const Color(0xFF041126),
+                            activeColor: const Color(0xFF0056D2),
                             onTap: () => setSheetState(() => tempGender = 'ALL'),
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 16),
 
-                    // Marital Status Section
-                    const Text(
-                      'વૈવાહિક સ્થિતિ (Marital Status)',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
-                    ),
-                    const SizedBox(height: 10),
+                    // 2. Marital Status Filter
+                    const Text('વૈવાહિક દરજ્જો (Marital Status)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F2D37))),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: [
                         _buildChoiceChipItem(
-                          label: 'બધા (All)',
+                          label: 'તમામ (All)',
                           isSelected: tempMaritalStatus == 'ALL',
                           onTap: () => setSheetState(() => tempMaritalStatus = 'ALL'),
                         ),
@@ -613,35 +1232,27 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           onTap: () => setSheetState(() => tempMaritalStatus = 'NEVER_MARRIED'),
                         ),
                         _buildChoiceChipItem(
-                          label: 'પરિણીત (Married)',
-                          isSelected: tempMaritalStatus == 'MARRIED',
-                          onTap: () => setSheetState(() => tempMaritalStatus = 'MARRIED'),
-                        ),
-                        _buildChoiceChipItem(
-                          label: 'વિધુર / વિધવા (Widowed)',
-                          isSelected: tempMaritalStatus == 'WIDOWED',
-                          onTap: () => setSheetState(() => tempMaritalStatus = 'WIDOWED'),
-                        ),
-                        _buildChoiceChipItem(
                           label: 'છૂટાછેડા (Divorced)',
                           isSelected: tempMaritalStatus == 'DIVORCED',
                           onTap: () => setSheetState(() => tempMaritalStatus = 'DIVORCED'),
                         ),
+                        _buildChoiceChipItem(
+                          label: 'વિધવા / વિધુર (Widowed)',
+                          isSelected: tempMaritalStatus == 'WIDOWED',
+                          onTap: () => setSheetState(() => tempMaritalStatus = 'WIDOWED'),
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 16),
 
-                    // Age Range Section
+                    // 3. Age Range Slider
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'ઉંમર (Age Range)',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black87),
-                        ),
+                        const Text('ઉંમર (Age Range)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F2D37))),
                         Text(
                           '${tempAgeRange.start.round()} થી ${tempAgeRange.end.round()} વર્ષ',
-                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0056D2), fontSize: 13),
+                          style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF007A87), fontSize: 13),
                         ),
                       ],
                     ),
@@ -650,8 +1261,8 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       min: 18,
                       max: 60,
                       divisions: 42,
-                      activeColor: const Color(0xFF0056D2),
-                      inactiveColor: Colors.blue.shade100,
+                      activeColor: const Color(0xFF007A87),
+                      inactiveColor: const Color(0xFFCBD5E1),
                       labels: RangeLabels(
                         '${tempAgeRange.start.round()}',
                         '${tempAgeRange.end.round()}',
@@ -660,12 +1271,11 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         setSheetState(() => tempAgeRange = values);
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 18),
 
-                    // Side-by-Side Action Buttons: Old Form + Apply Filters
+                    // Action Buttons: Old Form + Apply Filters
                     Row(
                       children: [
-                        // Detailed Search Filters Button
                         Expanded(
                           flex: 2,
                           child: OutlinedButton.icon(
@@ -674,27 +1284,26 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                               final lookingFor = tempGender == 'MALE' ? 'Groom' : (tempGender == 'FEMALE' ? 'Bride' : 'Groom');
                               context.push('/advanced-search?lookingFor=$lookingFor');
                             },
-                            icon: const Icon(Icons.filter_alt_outlined, color: Color(0xFF0056D2), size: 18),
+                            icon: const Icon(Icons.filter_alt_outlined, color: Color(0xFF007A87), size: 18),
                             label: const Text(
                               'વિસ્તૃત શોધ\n(Advance)',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 11.5,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF0056D2),
+                                color: Color(0xFF007A87),
                                 height: 1.2,
                               ),
                             ),
                             style: OutlinedButton.styleFrom(
-                              backgroundColor: const Color(0xFFEFF6FF),
-                              side: const BorderSide(color: Color(0xFF0056D2), width: 1.5),
+                              backgroundColor: const Color(0xFFE6FAF6),
+                              side: const BorderSide(color: Color(0xFF007A87), width: 1.5),
                               padding: const EdgeInsets.symmetric(vertical: 10),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             ),
                           ),
                         ),
                         const SizedBox(width: 10),
-                        // Apply Filters Button
                         Expanded(
                           flex: 3,
                           child: ElevatedButton(
@@ -708,7 +1317,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                               _applyActiveFilters();
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0056D2),
+                              backgroundColor: const Color(0xFF007A87),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -742,13 +1351,13 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       label: Text(label),
       selected: isSelected,
       onSelected: (_) => onTap(),
-      selectedColor: const Color(0xFF0056D2),
+      selectedColor: const Color(0xFF007A87),
       labelStyle: TextStyle(
-        color: isSelected ? Colors.white : Colors.black87,
+        color: isSelected ? Colors.white : const Color(0xFF0F2D37),
         fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
         fontSize: 12,
       ),
-      backgroundColor: Colors.grey.shade100,
+      backgroundColor: const Color(0xFFF1F5F9),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       showCheckmark: false,
     );
@@ -766,10 +1375,10 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? activeColor : Colors.grey.shade100,
+          color: isSelected ? activeColor : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? activeColor : Colors.grey.shade300,
+            color: isSelected ? activeColor : const Color(0xFFCBD5E1),
           ),
         ),
         child: Center(
@@ -777,431 +1386,10 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             label,
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: isSelected ? Colors.white : Colors.black87,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              fontSize: 12.5,
+              color: isSelected ? Colors.white : const Color(0xFF0F2D37),
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+              fontSize: 12,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSummaryBadge(int count, bool isLoading) {
-    Color bgColor;
-    Color borderColor;
-    Color textColor;
-    IconData icon;
-    String title;
-
-    if (_selectedGender == 'FEMALE') {
-      bgColor = const Color(0xFFFFF0F5);
-      borderColor = const Color(0xFFF8BBD0);
-      textColor = const Color(0xFFC2185B);
-      icon = Icons.female;
-      title = 'કન્યા ઉમેદવારો (Brides / Girls)';
-    } else if (_selectedGender == 'MALE') {
-      bgColor = const Color(0xFFEBF4FF);
-      borderColor = const Color(0xFFBBDEFB);
-      textColor = const Color(0xFF0056D2);
-      icon = Icons.male;
-      title = 'વર ઉમેદવારો (Grooms / Boys)';
-    } else {
-      bgColor = Colors.white;
-      borderColor = Colors.grey.shade300;
-      textColor = const Color(0xFF041126);
-      icon = Icons.people;
-      title = 'તમામ ઉમેદવારો (All Candidates)';
-    }
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: textColor),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '$title • $count પ્રોફાઇલ ઉપલબ્ધ',
-              style: TextStyle(
-                color: textColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 12.5,
-              ),
-            ),
-          ),
-          if (isLoading)
-            SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(strokeWidth: 2, color: textColor),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyState(BuildContext context) {
-    final title = _selectedGender == 'FEMALE'
-        ? 'કોઈ કન્યા પ્રોફાઈલ મળી નથી\n(No Bride Profiles Found)'
-        : _selectedGender == 'MALE'
-            ? 'કોઈ વર પ્રોફાઈલ મળી નથી\n(No Groom Profiles Found)'
-            : 'કોઈ પ્રોફાઈલ મળી નથી\n(No Profiles Found)';
-
-    final desc = _selectedGender == 'FEMALE'
-        ? 'તમારા શોધ માપદંડ મુજબ હાલમાં કોઈ કન્યા ઉમેદવાર ઉપલબ્ધ નથી.'
-        : _selectedGender == 'MALE'
-            ? 'તમારા શોધ માપદંડ મુજબ હાલમાં કોઈ વર ઉમેદવાર ઉપલબ્ધ નથી.'
-            : 'તમારા શોધ માપદંડ મુજબ હાલમાં કોઈ ઉમેદવાર ઉપલબ્ધ નથી. કૃપા કરીને ફિલ્ટર્સ બદલીને ફરી પ્રયાસ કરો.';
-
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.person_search_rounded, size: 64, color: const Color(0xFF0056D2).withValues(alpha: 0.7)),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.black87),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              desc,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 13, color: Colors.black54, height: 1.4),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (_selectedGender != 'ALL')
-                  OutlinedButton.icon(
-                    onPressed: () => _onGenderTabChanged('ALL'),
-                    icon: const Icon(Icons.people_alt, size: 16),
-                    label: const Text('બધા જુઓ (View All)'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF0056D2),
-                      side: const BorderSide(color: Color(0xFF0056D2)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                    ),
-                  ),
-                if (_selectedGender != 'ALL') const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: () => _showFilterBottomSheet(context),
-                  icon: const Icon(Icons.tune, size: 16),
-                  label: const Text('શોધ ફિલ્ટર બદલો (Adjust Filters)'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0056D2),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileCard(BuildContext context, ProfileModel profile) {
-    final isGirl = profile.isFemale;
-    final primaryColor = isGirl ? const Color(0xFFC2185B) : const Color(0xFF0056D2);
-    final lightColor = isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE3F2FD);
-    final borderColor = isGirl ? const Color(0xFFF48FB1) : const Color(0xFF90CAF9);
-
-    final ageStr = profile.age != null ? "${profile.age} Yrs" : "";
-    final maritalStr = (profile.maritalStatus.isNotEmpty &&
-            profile.maritalStatus != 'Not specified' &&
-            profile.maritalStatus != 'Not Specified')
-        ? profile.maritalStatus
-        : "";
-    final statusStr = [if (ageStr.isNotEmpty) ageStr, if (maritalStr.isNotEmpty) maritalStr].join(' • ');
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.shade200),
-        boxShadow: [
-          BoxShadow(
-            color: primaryColor.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Theme color strip on left
-              Container(
-                width: 5,
-                color: primaryColor,
-              ),
-
-              // Card content
-              Expanded(
-                child: InkWell(
-                  onTap: () {
-                    context.push('/candidate-profile-details', extra: profile);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Candidate Avatar with gender-colored ring
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: borderColor, width: 2.2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: primaryColor.withValues(alpha: 0.12),
-                                blurRadius: 6,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 34,
-                            backgroundColor: lightColor,
-                            backgroundImage: profile.fullPhotoUrl != null ? NetworkImage(profile.fullPhotoUrl!) : null,
-                            onBackgroundImageError: profile.fullPhotoUrl != null ? (exception, stackTrace) {} : null,
-                            child: profile.fullPhotoUrl == null
-                                ? Icon(isGirl ? Icons.face_3_rounded : Icons.face_rounded, size: 38, color: primaryColor)
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-
-                        // Candidate Details
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Name & Gender Tag
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      profile.fullName,
-                                      style: TextStyle(
-                                        fontSize: 15.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: primaryColor,
-                                        height: 1.2,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                    decoration: BoxDecoration(
-                                      color: lightColor,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: borderColor),
-                                    ),
-                                    child: Text(
-                                      isGirl ? '👰 કન્યા (Bride)' : '👨 વર (Groom)',
-                                      style: TextStyle(
-                                        fontSize: 10.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: primaryColor,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 5),
-
-                              // ID Capsule & Age / Status
-                              Row(
-                                children: [
-                                  InkWell(
-                                    onTap: () {
-                                      if (profile.id.isNotEmpty) {
-                                        Clipboard.setData(ClipboardData(text: profile.id));
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Text('ID કોપી થયો: ${profile.id}'),
-                                            backgroundColor: primaryColor,
-                                            duration: const Duration(seconds: 2),
-                                            behavior: SnackBarBehavior.floating,
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: isGirl ? const Color(0xFFFCE4EC) : Colors.blue.shade50,
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(
-                                          color: isGirl ? const Color(0xFFF48FB1) : Colors.blue.shade200,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'ID: ${profile.displayId}',
-                                            style: TextStyle(
-                                              fontSize: 10.5,
-                                              fontWeight: FontWeight.bold,
-                                              color: isGirl ? const Color(0xFFC2185B) : const Color(0xFF0056D2),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 3),
-                                          Icon(
-                                            Icons.copy_rounded,
-                                            size: 10,
-                                            color: isGirl ? const Color(0xFFC2185B).withValues(alpha: 0.7) : const Color(0xFF0056D2).withValues(alpha: 0.7),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  if (statusStr.isNotEmpty) ...[
-                                    const SizedBox(width: 6),
-                                    Expanded(
-                                      child: Text(
-                                        statusStr,
-                                        style: const TextStyle(fontSize: 11.5, color: Colors.black87, fontWeight: FontWeight.w500),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 4),
-
-                              // Education (if available)
-                              if (profile.education.isNotEmpty &&
-                                  profile.education != 'Not Specified' &&
-                                  profile.education != 'Not specified')
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 2.5),
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.school_rounded, size: 13.5, color: primaryColor.withValues(alpha: 0.8)),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          profile.education,
-                                          style: const TextStyle(color: Colors.black87, fontSize: 11.5, fontWeight: FontWeight.w500),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                              // Profession & Income
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 2.5),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.work_outline_rounded, size: 13.5, color: Colors.black54),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        '${profile.displayProfession}${profile.annualIncome != null && profile.annualIncome!.isNotEmpty && profile.annualIncome != 'Not specified' && profile.annualIncome != 'Not Specified' ? " • ${profile.annualIncome}" : ""}',
-                                        style: const TextStyle(color: Colors.black87, fontSize: 11.5, fontWeight: FontWeight.w500),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              // Location
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 2.5),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.location_on_outlined, size: 13.5, color: Colors.black54),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: Text(
-                                        profile.displayLocation,
-                                        style: const TextStyle(color: Colors.black87, fontSize: 11.5, fontWeight: FontWeight.w500),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-
-                              // Action buttons
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: ElevatedButton.icon(
-                                      onPressed: () {
-                                        context.push('/candidate-profile-details', extra: profile);
-                                      },
-                                      icon: const Icon(Icons.remove_red_eye_outlined, size: 15),
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: primaryColor,
-                                        foregroundColor: Colors.white,
-                                        elevation: 1.5,
-                                        shadowColor: primaryColor.withValues(alpha: 0.35),
-                                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                      ),
-                                      label: const Text(
-                                        'View Profile (વિગતવાર જુઓ)',
-                                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  _FavoriteIconButton(profile: profile),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
           ),
         ),
       ),
@@ -1209,6 +1397,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   }
 }
 
+// --- FAVORITE / LIKE BUTTON WITH GOLD EMBOSSED CIRCLE ---
 class _FavoriteIconButton extends StatefulWidget {
   final ProfileModel profile;
   const _FavoriteIconButton({required this.profile});
@@ -1223,41 +1412,268 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: 40,
+      height: 40,
       decoration: BoxDecoration(
-        color: _isLiked ? Colors.pink.shade50 : Colors.grey.shade50,
+        color: const Color(0xFFFFFDF8),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: _isLiked ? Colors.pink.shade200 : Colors.grey.shade300,
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: Offset(0, 1.5),
+          ),
+        ],
       ),
-      child: IconButton(
-        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-        padding: EdgeInsets.zero,
-        iconSize: 20,
-        tooltip: _isLiked ? 'પસંદ કરેલ (Liked)' : 'પસંદ કરો (Like)',
-        onPressed: () {
-          setState(() {
-            _isLiked = !_isLiked;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                _isLiked
-                    ? '${widget.profile.fullName} ની પ્રોફાઇલ પસંદ કરી છે!'
-                    : '${widget.profile.fullName} લિસ્ટમાંથી દૂર થઈ',
+      child: Material(
+        color: Colors.transparent,
+        child: Tooltip(
+          message: _isLiked ? 'પસંદ કરેલ (Liked)' : 'પસંદ કરો (Like)',
+          child: InkWell(
+            customBorder: const CircleBorder(),
+            onTap: () {
+            setState(() {
+              _isLiked = !_isLiked;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  _isLiked
+                      ? '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} ની પ્રોફાઇલ પસંદ કરી છે!'
+                      : '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} લિસ્ટમાંથી દૂર થઈ',
+                ),
+                backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
+                duration: const Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
               ),
-              backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
-              duration: const Duration(seconds: 1),
-              behavior: SnackBarBehavior.floating,
+            );
+          },
+          child: Center(
+            child: Icon(
+              _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              color: _isLiked ? const Color(0xFFE91E63) : const Color(0xFF5D4037),
+              size: 20,
             ),
-          );
-        },
-        icon: Icon(
-          _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-          color: _isLiked ? const Color(0xFFE91E63) : Colors.grey.shade600,
+          ),
+        ),
         ),
       ),
     );
   }
+}
+
+// --- STYLIZED AVATAR VECTOR FACE (MATCHING SCREENSHOT) ---
+class StylizedAvatarFace extends StatelessWidget {
+  final bool isFemale;
+  const StylizedAvatarFace({super.key, required this.isFemale});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      size: const Size(70, 70),
+      painter: _StylizedFacePainter(isFemale: isFemale),
+    );
+  }
+}
+
+class _StylizedFacePainter extends CustomPainter {
+  final bool isFemale;
+  _StylizedFacePainter({required this.isFemale});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final primaryInk = Paint()
+      ..color = const Color(0xFF0F2D37)
+      ..style = PaintingStyle.fill;
+
+    final skinPaint = Paint()
+      ..color = const Color(0xFFFDE8D0)
+      ..style = PaintingStyle.fill;
+
+    // Face base circle
+    canvas.drawCircle(Offset(cx, cy + 2), 22, skinPaint);
+
+    // Hair cap / hairstyle
+    final hairPath = Path();
+    if (!isFemale) {
+      // Boy hair (smooth round crop with sideburns)
+      hairPath.addArc(Rect.fromCircle(center: Offset(cx, cy - 1), radius: 23), math.pi, math.pi);
+      hairPath.lineTo(cx + 23, cy + 5);
+      hairPath.quadraticBezierTo(cx + 14, cy - 2, cx, cy - 2);
+      hairPath.quadraticBezierTo(cx - 14, cy - 2, cx - 23, cy + 5);
+      hairPath.close();
+      canvas.drawPath(hairPath, primaryInk);
+    } else {
+      // Girl hair (parted hair with shoulder drape)
+      hairPath.addArc(Rect.fromCircle(center: Offset(cx, cy - 1), radius: 23), math.pi, math.pi);
+      hairPath.lineTo(cx + 24, cy + 18);
+      hairPath.quadraticBezierTo(cx + 18, cy + 5, cx + 12, cy - 2);
+      hairPath.quadraticBezierTo(cx, cy + 4, cx - 12, cy - 2);
+      hairPath.quadraticBezierTo(cx - 18, cy + 5, cx - 24, cy + 18);
+      hairPath.close();
+      canvas.drawPath(hairPath, primaryInk);
+
+      // Cute bindi
+      final bindiPaint = Paint()
+        ..color = const Color(0xFFC2185B)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(Offset(cx, cy - 1), 1.8, bindiPaint);
+    }
+
+    // Eyes
+    canvas.drawCircle(Offset(cx - 7, cy + 5), 2.5, primaryInk);
+    canvas.drawCircle(Offset(cx + 7, cy + 5), 2.5, primaryInk);
+
+    // Warm Smile
+    final smilePaint = Paint()
+      ..color = const Color(0xFF0F2D37)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final smilePath = Path();
+    smilePath.moveTo(cx - 5, cy + 12);
+    smilePath.quadraticBezierTo(cx, cy + 17, cx + 5, cy + 12);
+    canvas.drawPath(smilePath, smilePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _StylizedFacePainter oldDelegate) => oldDelegate.isFemale != isFemale;
+}
+
+// --- PEACOCK & GOLD FILIGREE CORNER PAINTER ---
+class PeacockCardCornerPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Golden filigree swirls curling up from bottom-left corner
+    final goldPaint = Paint()
+      ..color = const Color(0xFFD4AF37)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..strokeCap = StrokeCap.round;
+
+    final goldFill = Paint()
+      ..color = const Color(0xFFFFE680).withValues(alpha: 0.6)
+      ..style = PaintingStyle.fill;
+
+    // Vine 1
+    final vinePath1 = Path();
+    vinePath1.moveTo(0, size.height - 10);
+    vinePath1.cubicTo(16, size.height - 18, 22, size.height - 40, 10, size.height - 65);
+    vinePath1.quadraticBezierTo(6, size.height - 78, 16, size.height - 82);
+    canvas.drawPath(vinePath1, goldPaint);
+
+    // Small gold leaf
+    canvas.drawCircle(Offset(10, size.height - 65), 3, goldFill);
+    canvas.drawCircle(Offset(16, size.height - 82), 2.5, goldFill);
+
+    // Vine 2 (curling along bottom)
+    final vinePath2 = Path();
+    vinePath2.moveTo(8, size.height);
+    vinePath2.quadraticBezierTo(35, size.height - 12, 55, size.height - 4);
+    vinePath2.quadraticBezierTo(68, size.height, 75, size.height - 8);
+    canvas.drawPath(vinePath2, goldPaint);
+    canvas.drawCircle(Offset(55, size.height - 4), 2.5, goldFill);
+
+    // 2. Peacock Feather barbules radiating from corner
+    final barbulePaint = Paint()
+      ..color = const Color(0xFF007A5E).withValues(alpha: 0.85)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+
+    for (int i = 0; i < 7; i++) {
+      final rad = 0.18 + (i * 0.18);
+      final x2 = 52 * math.cos(rad);
+      final y2 = size.height - (52 * math.sin(rad));
+      canvas.drawLine(Offset(6, size.height - 6), Offset(x2, y2), barbulePaint);
+    }
+
+    // 3. Peacock Feather Eye (centerpiece)
+    final eyeCenterX = 24.0;
+    final eyeCenterY = size.height - 24.0;
+
+    // Outer royal blue / teal glow
+    final outerPlumePaint = Paint()
+      ..color = const Color(0xFF008375)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 28, height: 22),
+      outerPlumePaint,
+    );
+
+    // Iridescent cyan ring
+    final cyanPaint = Paint()
+      ..color = const Color(0xFF00B4D8)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 20, height: 16),
+      cyanPaint,
+    );
+
+    // Golden bronze ring
+    final bronzePaint = Paint()
+      ..color = const Color(0xFFD4AF37)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 14, height: 11),
+      bronzePaint,
+    );
+
+    // Center deep indigo/navy eye
+    final eyeCenterPaint = Paint()
+      ..color = const Color(0xFF0C1B33)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 9, height: 7.5),
+      eyeCenterPaint,
+    );
+
+    // Shimmer highlight dot
+    final shimmerPaint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(eyeCenterX - 1.5, eyeCenterY - 1.5), 1.2, shimmerPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// --- MINI PEACOCK FEATHER PAINTER FOR STRIP ---
+class PeacockMiniPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    // Barbules
+    final barbulePaint = Paint()
+      ..color = const Color(0xFF007A5E)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    canvas.drawLine(Offset(cx - 10, cy + 6), Offset(cx + 8, cy - 6), barbulePaint);
+    canvas.drawLine(Offset(cx - 6, cy + 8), Offset(cx + 10, cy - 2), barbulePaint);
+
+    // Eye
+    final eyePaint = Paint()
+      ..color = const Color(0xFF00B4D8)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 14, height: 10), eyePaint);
+
+    final goldPaint = Paint()
+      ..color = const Color(0xFFD4AF37)
+      ..style = PaintingStyle.fill;
+    canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 9, height: 6.5), goldPaint);
+
+    final pupilPaint = Paint()
+      ..color = const Color(0xFF0C1B33)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(cx, cy), 2.2, pupilPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
