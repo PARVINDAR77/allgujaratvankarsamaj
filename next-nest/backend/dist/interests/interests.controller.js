@@ -43,6 +43,9 @@ let InterestsController = class InterestsController {
     async getReceivedInterests(req) {
         return this.interestsService.getReceivedInterests(req.user.id);
     }
+    async getMutualInterests(req) {
+        return this.interestsService.getMutualInterests(req.user.id);
+    }
 };
 exports.InterestsController = InterestsController;
 __decorate([
@@ -112,6 +115,15 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], InterestsController.prototype, "getReceivedInterests", null);
+__decorate([
+    (0, common_1.Get)("mutual"),
+    (0, swagger_1.ApiOperation)({ summary: "Get all mutual accepted connections" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "List of mutual connections" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], InterestsController.prototype, "getMutualInterests", null);
 exports.InterestsController = InterestsController = __decorate([
     (0, swagger_1.ApiTags)("Interests"),
     (0, swagger_1.ApiBearerAuth)(),

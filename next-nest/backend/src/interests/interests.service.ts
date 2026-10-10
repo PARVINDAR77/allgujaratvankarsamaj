@@ -304,4 +304,54 @@ export class InterestsService {
       senderProfile: profileMap.get(i.senderProfileId) || null,
     }));
   }
+
+  async getMutualInterests(userId: string) {
+    const myProfile = await this.prisma.matrimonialProfile.findUnique({ where: { userId } });
+    if (!myProfile) return [];
+
+    const interests = await this.prisma.matchInterest.findMany({
+      where: {
+        status: "ACCEPTED",
+        OR: [
+          { senderProfileId: myProfile.id },
+          { receiverProfileId: myProfile.id },
+        ],
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const otherProfileIds = interests.map((i) =>
+      i.senderProfileId === myProfile.id ? i.receiverProfileId : i.senderProfileId,
+    );
+
+    const profiles = await this.prisma.matrimonialProfile.findMany({
+      where: { id: { in: otherProfileIds } },
+    });
+    const profileMap = new Map(profiles.map((p) => [p.id, p]));
+
+    const conversations = await this.prisma.chatConversation.findMany({
+      where: {
+        OR: [
+          { participant1Id: userId },
+          { participant2Id: userId },
+        ],
+      },
+    });
+
+    return interests.map((i) => {
+      const otherProfileId = i.senderProfileId === myProfile.id ? i.receiverProfileId : i.senderProfileId;
+      const otherProfile = profileMap.get(otherProfileId) || null;
+      const matchedConv = conversations.find(
+        (c) =>
+          otherProfile &&
+          (c.participant1Id === otherProfile.userId || c.participant2Id === otherProfile.userId),
+      );
+
+      return {
+        ...i,
+        otherProfile,
+        conversationId: matchedConv?.id || null,
+      };
+    });
+  }
 }

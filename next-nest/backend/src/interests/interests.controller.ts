@@ -75,4 +75,11 @@ export class InterestsController {
   async getReceivedInterests(@Request() req: any) {
     return this.interestsService.getReceivedInterests(req.user.id);
   }
+
+  @Get("mutual")
+  @ApiOperation({ summary: "Get all mutual accepted connections" })
+  @ApiResponse({ status: 200, description: "List of mutual connections" })
+  async getMutualInterests(@Request() req: any) {
+    return this.interestsService.getMutualInterests(req.user.id);
+  }
 }

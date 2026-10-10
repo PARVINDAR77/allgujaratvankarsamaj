@@ -141,4 +141,40 @@ class ChatRepository {
       return {'success': false, 'message': e.toString()};
     }
   }
+
+  Future<List<Map<String, dynamic>>> getMutualInterests() async {
+    try {
+      final res = await _dio.get('/interests/mutual');
+      if (res.data is List) {
+        return List<Map<String, dynamic>>.from(res.data);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getReceivedInterests() async {
+    try {
+      final res = await _dio.get('/interests/received');
+      if (res.data is List) {
+        return List<Map<String, dynamic>>.from(res.data);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getSentInterests() async {
+    try {
+      final res = await _dio.get('/interests/sent');
+      if (res.data is List) {
+        return List<Map<String, dynamic>>.from(res.data);
+      }
+      return [];
+    } catch (_) {
+      return [];
+    }
+  }
 }
