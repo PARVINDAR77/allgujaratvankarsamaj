@@ -137,16 +137,16 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF021B2B), // Deep peacock blue/teal
-              Color(0xFF032635),
-              Color(0xFF021622),
+              Color(0xFF011A28), // Deep midnight peacock teal
+              Color(0xFF042636),
+              Color(0xFF01121C),
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // 1. Royal Peacock App Bar with Ornate Gold Buttons
+              // 1. Royal Peacock App Bar with Ornate Gold Buttons & Filigree
               _buildRoyalHeader(context),
 
               // 2. Pill Search Input with Golden Border
@@ -158,7 +158,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               // 4. Segmented Tab Selector for Boys / Girls / All
               _buildGenderSegmentedTabs(),
 
-              // 5. Dynamic Summary Counter Strip with Peacock Accent
+              // 5. Dynamic Summary Counter Strip with Peacock Feather Accent
               _buildSummaryBadge(profiles.length, profileState.isLoading),
 
               // 6. Content List or Empty State
@@ -205,73 +205,88 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  // --- 1. ROYAL HEADER WITH ORNATE GOLD BUTTONS ---
+  // --- 1. ROYAL HEADER WITH ORNATE GOLD BUTTONS & FILIGREE ---
   Widget _buildRoyalHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF021B2B),
+            Color(0xFF011C2B),
             Color(0xFF082D3B),
-            Color(0xFF1E0A2F),
+            Color(0xFF220A35),
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black45,
-            blurRadius: 6,
-            offset: Offset(0, 2),
+            color: Colors.black54,
+            blurRadius: 8,
+            offset: Offset(0, 3),
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
         children: [
-          // Ornate Golden Back Button
-          _buildOrnateCircleButton(
-            icon: Icons.arrow_back,
-            tooltip: 'પાછા જાઓ (Back)',
-            bgColor: const Color(0xFF004945),
-            iconColor: const Color(0xFFFFD700),
-            onTap: () {
-              if (context.canPop()) {
-                context.pop();
-              } else {
-                context.go('/home');
-              }
-            },
-          ),
-          const SizedBox(width: 10),
-
-          // Title with Rich Gold Glow
-          Expanded(
-            child: Text(
-              'Search Profiles (ઉમેદવાર શોધ)',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Color(0xFFFFD700),
-                fontSize: 17.5,
-                fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(0, 1.5)),
-                  Shadow(color: Color(0x66FFD700), blurRadius: 8),
-                ],
+          // Background Peacock & Golden Filigree Ornaments
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: PeacockHeaderOrnamentPainter(),
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ),
-          const SizedBox(width: 10),
 
-          // Ornate Golden Filter Button
-          _buildOrnateCircleButton(
-            icon: Icons.tune_rounded,
-            tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
-            bgColor: const Color(0xFF3B0744),
-            iconColor: const Color(0xFFFFD700),
-            onTap: () => _showFilterBottomSheet(context),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            child: Row(
+              children: [
+                // Ornate Golden Back Button (Circular)
+                _buildOrnateCircleButton(
+                  icon: Icons.arrow_back,
+                  tooltip: 'પાછા જાઓ (Back)',
+                  bgColor: const Color(0xFF003834),
+                  iconColor: const Color(0xFFFFD700),
+                  onTap: () {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/home');
+                    }
+                  },
+                ),
+                const SizedBox(width: 8),
+
+                // Title with Rich Gold Glow
+                Expanded(
+                  child: Text(
+                    'Search Profiles (ઉમેદવાર શોધ)',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Color(0xFFFFDF00),
+                      fontSize: 17.5,
+                      fontWeight: FontWeight.bold,
+                      shadows: [
+                        Shadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 2)),
+                        Shadow(color: Color(0x88FFD700), blurRadius: 10),
+                      ],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Ornate Golden Filter Button (Circular)
+                _buildOrnateCircleButton(
+                  icon: Icons.tune_rounded,
+                  tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
+                  bgColor: const Color(0xFF380036),
+                  iconColor: const Color(0xFFFFD700),
+                  onTap: () => _showFilterBottomSheet(context),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -291,36 +306,36 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: Container(
-          width: 42,
-          height: 42,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Color(0xFFFFDF73),
+                Color(0xFFFFEA88),
                 Color(0xFFD4AF37),
-                Color(0xFF996515),
+                Color(0xFF8B5A10),
               ],
             ),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                color: const Color(0xFFFFD700).withValues(alpha: 0.4),
                 blurRadius: 6,
-                offset: const Offset(0, 1),
+                offset: const Offset(0, 2),
               ),
             ],
           ),
-          padding: const EdgeInsets.all(2.2), // Gold outer frame width
+          padding: const EdgeInsets.all(2.5), // Shiny embossed gold frame
           child: Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: bgColor,
-              border: Border.all(color: const Color(0xFFFFE680), width: 0.8),
+              border: Border.all(color: const Color(0xFFFFDF73), width: 1.0),
             ),
             child: Center(
-              child: Icon(icon, color: iconColor, size: 20),
+              child: Icon(icon, color: iconColor, size: 21),
             ),
           ),
         ),
@@ -338,14 +353,14 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           end: Alignment.bottomCenter,
           colors: [
             Color(0xFFFFFDF8),
-            Color(0xFFFBF4E4),
+            Color(0xFFF6EEDA),
           ],
         ),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2.2),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black38,
+            color: Colors.black45,
             blurRadius: 6,
             offset: Offset(0, 2),
           ),
@@ -369,7 +384,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 )
               : IconButton(
                   tooltip: 'Filter Profiles (શોધ ફિલ્ટર)',
-                  icon: const Icon(Icons.tune_rounded, color: Color(0xFF006D77), size: 20),
+                  icon: const Icon(Icons.tune_rounded, color: Color(0xFF006D77), size: 21),
                   onPressed: () => _showFilterBottomSheet(context),
                 ),
           border: InputBorder.none,
@@ -390,34 +405,34 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             final lookingFor = _selectedGender == 'MALE' ? 'Groom' : (_selectedGender == 'FEMALE' ? 'Bride' : 'Groom');
             context.push('/advanced-search?lookingFor=$lookingFor');
           },
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(24),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9.5),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [
-                  Color(0xFF007A87),
-                  Color(0xFF004E5B),
-                  Color(0xFF002E38),
+                  Color(0xFF007580),
+                  Color(0xFF004B54),
+                  Color(0xFF00282E),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFE5C07B), width: 2),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFE5C07B), width: 2.2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.45),
-                  blurRadius: 6,
+                  color: Colors.black.withValues(alpha: 0.5),
+                  blurRadius: 8,
                   offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Row(
               children: [
-                // Filter icon inside circular teal gradient badge
+                // Filter circular icon badge
                 Container(
-                  padding: const EdgeInsets.all(7),
+                  padding: const EdgeInsets.all(7.5),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: const LinearGradient(
@@ -425,9 +440,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    border: Border.all(color: const Color(0xFFFFE680), width: 1.2),
+                    border: Border.all(color: const Color(0xFFFFDF73), width: 1.4),
                   ),
-                  child: const Icon(Icons.filter_list_rounded, color: Colors.white, size: 18),
+                  child: const Icon(Icons.filter_list_rounded, color: Colors.white, size: 19),
                 ),
                 const SizedBox(width: 12),
                 const Expanded(
@@ -439,14 +454,14 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 13.5,
                           letterSpacing: 0.2,
                         ),
                       ),
                       SizedBox(height: 1.5),
                       Text(
                         'પરગણા, જિલ્લો, શિક્ષણ, વ્યવસાય સાથે વિગતવાર શોધો',
-                        style: TextStyle(color: Color(0xFFBBE5ED), fontSize: 11),
+                        style: TextStyle(color: Color(0xFFC7ECF2), fontSize: 11),
                       ),
                     ],
                   ),
@@ -464,11 +479,11 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   Widget _buildGenderSegmentedTabs() {
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 2, 14, 6),
-      padding: const EdgeInsets.all(3),
+      padding: const EdgeInsets.all(3.5),
       decoration: BoxDecoration(
         color: const Color(0xFFFFFDF8),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2.0),
         boxShadow: const [
           BoxShadow(
             color: Colors.black38,
@@ -485,7 +500,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               gender: 'MALE',
               label: '👦 વર (Boys)',
               isSelected: _selectedGender == 'MALE',
-              activeColors: [const Color(0xFF008375), const Color(0xFF00584E)],
+              activeColors: [const Color(0xFF008272), const Color(0xFF005349)],
               inactiveTextColor: const Color(0xFF00584E),
             ),
           ),
@@ -564,7 +579,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  // --- 5. SUMMARY COUNTER BADGE WITH PEACOCK ACCENT ---
+  // --- 5. SUMMARY COUNTER BADGE WITH REAL PEACOCK FEATHER ACCENT ---
   Widget _buildSummaryBadge(int count, bool isLoading) {
     String title;
     String symbol;
@@ -582,7 +597,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 2, 14, 6),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           colors: [
@@ -590,7 +605,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             Color(0xFFF9F2E2),
           ],
         ),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
         boxShadow: const [
           BoxShadow(
@@ -607,7 +622,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             style: const TextStyle(
               color: Color(0xFF0F2D37),
               fontWeight: FontWeight.w900,
-              fontSize: 16,
+              fontSize: 17,
             ),
           ),
           const SizedBox(width: 8),
@@ -617,7 +632,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               style: const TextStyle(
                 color: Color(0xFF0F2D37),
                 fontWeight: FontWeight.bold,
-                fontSize: 12,
+                fontSize: 12.2,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -625,8 +640,8 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           ),
           // Miniature Peacock Feather Accent
           SizedBox(
-            width: 26,
-            height: 20,
+            width: 32,
+            height: 22,
             child: CustomPaint(painter: PeacockMiniPainter()),
           ),
           if (isLoading) ...[
@@ -642,41 +657,41 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  // --- 6. ROYAL ORNATE CANDIDATE PROFILE CARD ---
+  // --- 6. ROYAL ORNATE CANDIDATE PROFILE CARD (EXACT AS SCREENSHOT) ---
   Widget _buildProfileCard(BuildContext context, ProfileModel profile, int index) {
     final isGirl = profile.isFemale;
 
-    // Harmonious jewel button gradients matching the screenshot style:
-    // Alternate between deep teal/emerald gradient and deep royal purple gradient
+    // Harmonious jewel button gradients:
+    // Alternate between deep teal/emerald glossy gradient and royal purple glossy gradient
     final isAlternatePurple = index % 2 == 1;
     final buttonGradient = (isGirl || isAlternatePurple)
         ? const LinearGradient(
-            colors: [Color(0xFF4A0E4E), Color(0xFF27052A)],
+            colors: [Color(0xFF3D0A42), Color(0xFF200324)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           )
         : const LinearGradient(
-            colors: [Color(0xFF004953), Color(0xFF002B33)],
+            colors: [Color(0xFF003D3D), Color(0xFF001F22)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           );
 
-    final avatarCircleBg = isAlternatePurple ? const Color(0xFFF3E8FF) : const Color(0xFFD8F3DC);
+    final avatarCircleBg = isAlternatePurple ? const Color(0xFFEEDBFF) : const Color(0xFFDDF3EB);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             Color(0xFFFFFDF8),
-            Color(0xFFF9F3E5),
+            Color(0xFFFAF3E5),
             Color(0xFFFFFDF8),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFD4AF37), width: 2.2),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2.4),
         boxShadow: const [
           BoxShadow(
             color: Colors.black45,
@@ -694,18 +709,18 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            // Top-left starry nebula accent
+            // Top-left starry nebula accent (purple for card 2, emerald for card 1 & 3)
             Positioned(
-              top: -20,
-              left: -20,
+              top: -24,
+              left: -24,
               child: Container(
-                width: 90,
-                height: 90,
+                width: 105,
+                height: 105,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: RadialGradient(
                     colors: [
-                      (isAlternatePurple ? const Color(0xFF7E22CE) : const Color(0xFF007A87)).withValues(alpha: 0.28),
+                      (isAlternatePurple ? const Color(0xFF8B1FA6) : const Color(0xFF008375)).withValues(alpha: 0.32),
                       Colors.transparent,
                     ],
                   ),
@@ -719,8 +734,8 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               bottom: 0,
               child: IgnorePointer(
                 child: SizedBox(
-                  width: 90,
-                  height: 90,
+                  width: 115,
+                  height: 115,
                   child: CustomPaint(
                     painter: PeacockCardCornerPainter(),
                   ),
@@ -730,7 +745,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
             // Main Card Content
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
               child: Column(
                 children: [
                   Row(
@@ -740,38 +755,38 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       InkWell(
                         onTap: () => context.push('/candidate-profile-details', extra: profile),
                         child: Container(
-                          width: 76,
-                          height: 76,
+                          width: 80,
+                          height: 80,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             gradient: const LinearGradient(
-                              colors: [Color(0xFFFFDF73), Color(0xFFD4AF37), Color(0xFF996515)],
+                              colors: [Color(0xFFFFEA88), Color(0xFFD4AF37), Color(0xFF8B5A10)],
                               begin: Alignment.topLeft,
                               end: Alignment.bottomRight,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.25),
+                                color: Colors.black.withValues(alpha: 0.3),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
                             ],
                           ),
-                          padding: const EdgeInsets.all(2.6),
+                          padding: const EdgeInsets.all(2.8),
                           child: Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: avatarCircleBg,
-                              border: Border.all(color: const Color(0xFFFFF3CD), width: 1),
+                              border: Border.all(color: const Color(0xFFFFDF73), width: 1.2),
                             ),
                             child: ClipOval(
                               child: (profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty)
                                   ? Image.network(
                                       profile.fullPhotoUrl!,
                                       fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => StylizedAvatarFace(isFemale: isGirl),
+                                      errorBuilder: (_, _, _) => StylizedAvatarFace(isFemale: isGirl, isPurple: isAlternatePurple),
                                     )
-                                  : StylizedAvatarFace(isFemale: isGirl),
+                                  : StylizedAvatarFace(isFemale: isGirl, isPurple: isAlternatePurple),
                             ),
                           ),
                         ),
@@ -804,7 +819,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFE6FAF6),
+                                    color: const Color(0xFFE8FAF4),
                                     borderRadius: BorderRadius.circular(14),
                                     border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
                                   ),
@@ -839,18 +854,18 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                               },
                               borderRadius: BorderRadius.circular(6),
                               child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFE8F4FE),
+                                  color: const Color(0xFFE0F2FE),
                                   borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF90CAF9), width: 1),
+                                  border: Border.all(color: const Color(0xFF7DD3FC), width: 1.2),
                                 ),
                                 child: Text(
-                                  'ID: ${profile.id.isNotEmpty ? profile.id : (profile.displayId.isNotEmpty ? profile.displayId : "d651408e-a133-4989")}',
+                                  'ID: ${profile.id.isNotEmpty ? profile.id : (profile.displayId.isNotEmpty ? profile.displayId : "d651408e-a133-4989-ae72-3a5efdaba695")}',
                                   style: const TextStyle(
-                                    fontSize: 10,
+                                    fontSize: 10.2,
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1565C0),
+                                    color: Color(0xFF0284C7),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -916,13 +931,13 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             onTap: () {
                               context.push('/candidate-profile-details', extra: profile);
                             },
-                            borderRadius: BorderRadius.circular(22),
+                            borderRadius: BorderRadius.circular(24),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8.5, horizontal: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 12),
                               decoration: BoxDecoration(
                                 gradient: buttonGradient,
-                                borderRadius: BorderRadius.circular(22),
-                                border: Border.all(color: const Color(0xFFE5C07B), width: 1.8),
+                                borderRadius: BorderRadius.circular(24),
+                                border: Border.all(color: const Color(0xFFFFDF73), width: 2.0),
                                 boxShadow: const [
                                   BoxShadow(
                                     color: Colors.black38,
@@ -1412,12 +1427,12 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 40,
-      height: 40,
+      width: 44,
+      height: 44,
       decoration: BoxDecoration(
         color: const Color(0xFFFFFDF8),
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFD4AF37), width: 1.8),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2.0),
         boxShadow: const [
           BoxShadow(
             color: Colors.black26,
@@ -1433,209 +1448,226 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
           child: InkWell(
             customBorder: const CircleBorder(),
             onTap: () {
-            setState(() {
-              _isLiked = !_isLiked;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  _isLiked
-                      ? '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} ની પ્રોફાઇલ પસંદ કરી છે!'
-                      : '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} લિસ્ટમાંથી દૂર થઈ',
+              setState(() {
+                _isLiked = !_isLiked;
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    _isLiked
+                        ? '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} ની પ્રોફાઇલ પસંદ કરી છે!'
+                        : '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} લિસ્ટમાંથી દૂર થઈ',
+                  ),
+                  backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
+                  duration: const Duration(seconds: 1),
+                  behavior: SnackBarBehavior.floating,
                 ),
-                backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
-                duration: const Duration(seconds: 1),
-                behavior: SnackBarBehavior.floating,
+              );
+            },
+            child: Center(
+              child: Icon(
+                _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                color: _isLiked ? const Color(0xFFE91E63) : const Color(0xFF4A3525),
+                size: 22,
               ),
-            );
-          },
-          child: Center(
-            child: Icon(
-              _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-              color: _isLiked ? const Color(0xFFE91E63) : const Color(0xFF5D4037),
-              size: 20,
             ),
           ),
-        ),
         ),
       ),
     );
   }
 }
 
-// --- STYLIZED AVATAR VECTOR FACE (MATCHING SCREENSHOT) ---
+// --- STYLIZED AVATAR VECTOR FACE (EXACTLY AS IN SCREENSHOT) ---
 class StylizedAvatarFace extends StatelessWidget {
   final bool isFemale;
-  const StylizedAvatarFace({super.key, required this.isFemale});
+  final bool isPurple;
+  const StylizedAvatarFace({super.key, required this.isFemale, this.isPurple = false});
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(70, 70),
-      painter: _StylizedFacePainter(isFemale: isFemale),
+    final faceBgColor = isPurple ? const Color(0xFF381245) : const Color(0xFF0A2E35);
+    return Center(
+      child: Container(
+        width: 54,
+        height: 54,
+        decoration: BoxDecoration(
+          color: faceBgColor,
+          shape: BoxShape.circle,
+        ),
+        child: CustomPaint(
+          painter: _CuteFacePainter(),
+        ),
+      ),
     );
   }
 }
 
-class _StylizedFacePainter extends CustomPainter {
-  final bool isFemale;
-  _StylizedFacePainter({required this.isFemale});
-
+class _CuteFacePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final cx = size.width / 2;
     final cy = size.height / 2;
-    final primaryInk = Paint()
-      ..color = const Color(0xFF0F2D37)
+
+    final eyePaint = Paint()
+      ..color = Colors.white
       ..style = PaintingStyle.fill;
 
-    final skinPaint = Paint()
-      ..color = const Color(0xFFFDE8D0)
-      ..style = PaintingStyle.fill;
+    // Two friendly white dot eyes
+    canvas.drawCircle(Offset(cx - 9, cy - 2), 3.4, eyePaint);
+    canvas.drawCircle(Offset(cx + 9, cy - 2), 3.4, eyePaint);
 
-    // Face base circle
-    canvas.drawCircle(Offset(cx, cy + 2), 22, skinPaint);
-
-    // Hair cap / hairstyle
-    final hairPath = Path();
-    if (!isFemale) {
-      // Boy hair (smooth round crop with sideburns)
-      hairPath.addArc(Rect.fromCircle(center: Offset(cx, cy - 1), radius: 23), math.pi, math.pi);
-      hairPath.lineTo(cx + 23, cy + 5);
-      hairPath.quadraticBezierTo(cx + 14, cy - 2, cx, cy - 2);
-      hairPath.quadraticBezierTo(cx - 14, cy - 2, cx - 23, cy + 5);
-      hairPath.close();
-      canvas.drawPath(hairPath, primaryInk);
-    } else {
-      // Girl hair (parted hair with shoulder drape)
-      hairPath.addArc(Rect.fromCircle(center: Offset(cx, cy - 1), radius: 23), math.pi, math.pi);
-      hairPath.lineTo(cx + 24, cy + 18);
-      hairPath.quadraticBezierTo(cx + 18, cy + 5, cx + 12, cy - 2);
-      hairPath.quadraticBezierTo(cx, cy + 4, cx - 12, cy - 2);
-      hairPath.quadraticBezierTo(cx - 18, cy + 5, cx - 24, cy + 18);
-      hairPath.close();
-      canvas.drawPath(hairPath, primaryInk);
-
-      // Cute bindi
-      final bindiPaint = Paint()
-        ..color = const Color(0xFFC2185B)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(cx, cy - 1), 1.8, bindiPaint);
-    }
-
-    // Eyes
-    canvas.drawCircle(Offset(cx - 7, cy + 5), 2.5, primaryInk);
-    canvas.drawCircle(Offset(cx + 7, cy + 5), 2.5, primaryInk);
-
-    // Warm Smile
+    // Warm white curved smile
     final smilePaint = Paint()
-      ..color = const Color(0xFF0F2D37)
+      ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0
+      ..strokeWidth = 2.4
       ..strokeCap = StrokeCap.round;
 
     final smilePath = Path();
-    smilePath.moveTo(cx - 5, cy + 12);
-    smilePath.quadraticBezierTo(cx, cy + 17, cx + 5, cy + 12);
+    smilePath.moveTo(cx - 7, cy + 7);
+    smilePath.quadraticBezierTo(cx, cy + 13, cx + 7, cy + 7);
     canvas.drawPath(smilePath, smilePaint);
   }
 
   @override
-  bool shouldRepaint(covariant _StylizedFacePainter oldDelegate) => oldDelegate.isFemale != isFemale;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // --- PEACOCK & GOLD FILIGREE CORNER PAINTER ---
 class PeacockCardCornerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Golden filigree swirls curling up from bottom-left corner
+    // 1. Ornate golden filigree curves sweeping along bottom and left
     final goldPaint = Paint()
       ..color = const Color(0xFFD4AF37)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
+      ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
     final goldFill = Paint()
-      ..color = const Color(0xFFFFE680).withValues(alpha: 0.6)
+      ..color = const Color(0xFFFFDF73)
       ..style = PaintingStyle.fill;
 
-    // Vine 1
-    final vinePath1 = Path();
-    vinePath1.moveTo(0, size.height - 10);
-    vinePath1.cubicTo(16, size.height - 18, 22, size.height - 40, 10, size.height - 65);
-    vinePath1.quadraticBezierTo(6, size.height - 78, 16, size.height - 82);
-    canvas.drawPath(vinePath1, goldPaint);
+    // Golden vine curling up left side
+    final vineLeft = Path();
+    vineLeft.moveTo(0, size.height - 12);
+    vineLeft.cubicTo(18, size.height - 25, 24, size.height - 55, 12, size.height - 85);
+    vineLeft.quadraticBezierTo(6, size.height - 98, 18, size.height - 105);
+    canvas.drawPath(vineLeft, goldPaint);
 
-    // Small gold leaf
-    canvas.drawCircle(Offset(10, size.height - 65), 3, goldFill);
-    canvas.drawCircle(Offset(16, size.height - 82), 2.5, goldFill);
+    // Golden vine curling right along bottom
+    final vineBottom = Path();
+    vineBottom.moveTo(10, size.height);
+    vineBottom.cubicTo(45, size.height - 16, 75, size.height - 8, 98, size.height - 12);
+    canvas.drawPath(vineBottom, goldPaint);
 
-    // Vine 2 (curling along bottom)
-    final vinePath2 = Path();
-    vinePath2.moveTo(8, size.height);
-    vinePath2.quadraticBezierTo(35, size.height - 12, 55, size.height - 4);
-    vinePath2.quadraticBezierTo(68, size.height, 75, size.height - 8);
-    canvas.drawPath(vinePath2, goldPaint);
-    canvas.drawCircle(Offset(55, size.height - 4), 2.5, goldFill);
+    // Golden leaves / scroll beads
+    canvas.drawCircle(Offset(12, size.height - 85), 3.5, goldFill);
+    canvas.drawCircle(Offset(18, size.height - 105), 2.8, goldFill);
+    canvas.drawCircle(Offset(75, size.height - 8), 3.2, goldFill);
+    canvas.drawCircle(Offset(98, size.height - 12), 2.5, goldFill);
 
-    // 2. Peacock Feather barbules radiating from corner
-    final barbulePaint = Paint()
-      ..color = const Color(0xFF007A5E).withValues(alpha: 0.85)
+    // 2. Peacock Feather barbules (emerald green and turquoise)
+    final barbulePaint1 = Paint()
+      ..color = const Color(0xFF00A86B).withValues(alpha: 0.9)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8;
+
+    final barbulePaint2 = Paint()
+      ..color = const Color(0xFF00B4D8).withValues(alpha: 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.4;
 
-    for (int i = 0; i < 7; i++) {
-      final rad = 0.18 + (i * 0.18);
-      final x2 = 52 * math.cos(rad);
-      final y2 = size.height - (52 * math.sin(rad));
-      canvas.drawLine(Offset(6, size.height - 6), Offset(x2, y2), barbulePaint);
+    for (int i = 0; i < 9; i++) {
+      final rad = 0.15 + (i * 0.16);
+      final x2 = 68 * math.cos(rad);
+      final y2 = size.height - (68 * math.sin(rad));
+      canvas.drawLine(Offset(8, size.height - 8), Offset(x2, y2), i % 2 == 0 ? barbulePaint1 : barbulePaint2);
     }
 
-    // 3. Peacock Feather Eye (centerpiece)
-    final eyeCenterX = 24.0;
-    final eyeCenterY = size.height - 24.0;
+    // 3. Peacock Feather Eye (prominent centerpiece)
+    final eyeCenterX = 32.0;
+    final eyeCenterY = size.height - 32.0;
 
-    // Outer royal blue / teal glow
+    // Outer rich emerald / cobalt plume
     final outerPlumePaint = Paint()
-      ..color = const Color(0xFF008375)
+      ..color = const Color(0xFF007A65)
       ..style = PaintingStyle.fill;
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 28, height: 22),
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 38, height: 30),
       outerPlumePaint,
     );
 
-    // Iridescent cyan ring
+    // Turquoise ring
     final cyanPaint = Paint()
-      ..color = const Color(0xFF00B4D8)
+      ..color = const Color(0xFF00E5FF)
       ..style = PaintingStyle.fill;
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 20, height: 16),
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 28, height: 22),
       cyanPaint,
     );
 
-    // Golden bronze ring
+    // Golden metallic bronze ring
     final bronzePaint = Paint()
-      ..color = const Color(0xFFD4AF37)
+      ..color = const Color(0xFFFFD700)
       ..style = PaintingStyle.fill;
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 14, height: 11),
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 19, height: 15),
       bronzePaint,
     );
 
-    // Center deep indigo/navy eye
+    // Deep midnight indigo center eye
     final eyeCenterPaint = Paint()
-      ..color = const Color(0xFF0C1B33)
+      ..color = const Color(0xFF051026)
       ..style = PaintingStyle.fill;
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 9, height: 7.5),
+      Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 12, height: 10),
       eyeCenterPaint,
     );
 
-    // Shimmer highlight dot
+    // Shimmer white highlight dot
     final shimmerPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(eyeCenterX - 1.5, eyeCenterY - 1.5), 1.2, shimmerPaint);
+    canvas.drawCircle(Offset(eyeCenterX - 2, eyeCenterY - 2), 1.8, shimmerPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// --- PEACOCK HEADER ORNAMENT PAINTER ---
+class PeacockHeaderOrnamentPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final goldPaint = Paint()
+      ..color = const Color(0xFFD4AF37)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6;
+
+    final cyanPaint = Paint()..color = const Color(0xFF00E5FF)..style = PaintingStyle.fill;
+    final goldFill = Paint()..color = const Color(0xFFFFD700)..style = PaintingStyle.fill;
+    final darkEye = Paint()..color = const Color(0xFF051026)..style = PaintingStyle.fill;
+
+    // Top-left peacock feather eye
+    canvas.drawOval(Rect.fromCenter(center: const Offset(54, 12), width: 18, height: 12), cyanPaint);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(54, 12), width: 12, height: 8), goldFill);
+    canvas.drawCircle(const Offset(54, 12), 3, darkEye);
+
+    // Top-right peacock feather eye
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width - 54, 12), width: 18, height: 12), cyanPaint);
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width - 54, 12), width: 12, height: 8), goldFill);
+    canvas.drawCircle(Offset(size.width - 54, 12), 3, darkEye);
+
+    // Decorative golden scroll curves under title
+    final scrollPath = Path();
+    final cx = size.width / 2;
+    final cy = size.height - 4;
+    scrollPath.moveTo(cx - 85, cy);
+    scrollPath.quadraticBezierTo(cx - 40, cy + 3.5, cx, cy);
+    scrollPath.quadraticBezierTo(cx + 40, cy + 3.5, cx + 85, cy);
+    canvas.drawPath(scrollPath, goldPaint);
   }
 
   @override
@@ -1651,27 +1683,26 @@ class PeacockMiniPainter extends CustomPainter {
 
     // Barbules
     final barbulePaint = Paint()
-      ..color = const Color(0xFF007A5E)
+      ..color = const Color(0xFF00A86B)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-    canvas.drawLine(Offset(cx - 10, cy + 6), Offset(cx + 8, cy - 6), barbulePaint);
-    canvas.drawLine(Offset(cx - 6, cy + 8), Offset(cx + 10, cy - 2), barbulePaint);
+      ..strokeWidth = 1.2;
+
+    canvas.drawLine(Offset(cx - 12, cy + 6), Offset(cx + 10, cy - 6), barbulePaint);
+    canvas.drawLine(Offset(cx - 8, cy + 8), Offset(cx + 12, cy - 3), barbulePaint);
+    canvas.drawLine(Offset(cx - 5, cy + 9), Offset(cx + 14, cy), barbulePaint);
 
     // Eye
-    final eyePaint = Paint()
-      ..color = const Color(0xFF00B4D8)
-      ..style = PaintingStyle.fill;
-    canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 14, height: 10), eyePaint);
+    final cyanPaint = Paint()..color = const Color(0xFF00E5FF)..style = PaintingStyle.fill;
+    canvas.drawOval(Rect.fromCenter(center: Offset(cx + 2, cy), width: 18, height: 12), cyanPaint);
 
-    final goldPaint = Paint()
-      ..color = const Color(0xFFD4AF37)
-      ..style = PaintingStyle.fill;
-    canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 9, height: 6.5), goldPaint);
+    final goldPaint = Paint()..color = const Color(0xFFFFD700)..style = PaintingStyle.fill;
+    canvas.drawOval(Rect.fromCenter(center: Offset(cx + 2, cy), width: 12, height: 8), goldPaint);
 
-    final pupilPaint = Paint()
-      ..color = const Color(0xFF0C1B33)
-      ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(cx, cy), 2.2, pupilPaint);
+    final pupilPaint = Paint()..color = const Color(0xFF051026)..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(cx + 2, cy), 2.8, pupilPaint);
+
+    // Shimmer
+    canvas.drawCircle(Offset(cx + 1, cy - 1), 0.8, Paint()..color = Colors.white);
   }
 
   @override
