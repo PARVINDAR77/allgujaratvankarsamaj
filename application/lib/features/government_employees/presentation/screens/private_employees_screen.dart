@@ -555,6 +555,9 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     final hasAddress = data['address'] != null && data['address'].toString().trim().isNotEmpty;
     final hasAbout = data['about'] != null && data['about'].toString().trim().isNotEmpty;
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final maxModalHeight = (screenHeight * 0.86).clamp(480.0, 740.0);
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -564,23 +567,27 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
         elevation: 20,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         clipBehavior: Clip.antiAlias,
-        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 560, maxHeight: 760),
+          constraints: BoxConstraints(maxWidth: 540, maxHeight: maxModalHeight),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               // 1. Header Banner
               _buildModalHeader(ctx, data),
 
-              // 2. Scrollable Content Body
+              // 2. Scrollable Content Body with Visible Scrollbar
               Flexible(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  radius: const Radius.circular(8),
+                  thickness: 5,
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       // Section A: Work & Profession
                       _buildModalSectionHeader('કારકિર્દી અને સંસ્થા (Profession & Workplace)', Icons.work_outline, const Color(0xFF0056D2)),
                       _buildModalCard(
@@ -797,10 +804,12 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                           ),
                         ),
                       ],
+                      const SizedBox(height: 12),
                     ],
                   ),
                 ),
               ),
+            ),
 
               // 3. Modal Footer Actions
               _buildModalFooter(ctx, data),
@@ -903,7 +912,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        data['dept']?.toString() ?? '',
+                        _getTranslatedText(data['dept']?.toString() ?? ''),
                         style: const TextStyle(
                           fontSize: 11,
                           color: Color(0xFFBFDBFE),
@@ -1084,66 +1093,100 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     final profile = _resolveCandidateProfile(data);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
-      ),
-      child: Row(
-        children: [
-          // Close button
-          OutlinedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF475569),
-              side: const BorderSide(color: Color(0xFFCBD5E1)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            ),
-            child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
-          ),
-          const Spacer(),
-          // Call button if available
-          if (hasPhone) ...[
-            ElevatedButton.icon(
-              onPressed: () async {
-                final uri = Uri.parse('tel:${data['phone'].toString().replaceAll(' ', '')}');
-                if (await canLaunchUrl(uri)) {
-                  await launchUrl(uri);
-                }
-              },
-              icon: const Icon(Icons.call, size: 15),
-              label: const Text('કોલ કરો (Call)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          // View Profile button - ALWAYS VISIBLE FOR ALL CANDIDATES
-          ElevatedButton.icon(
-            onPressed: () {
-              Navigator.pop(ctx);
-              final pId = profile.id;
-              if (pId.isNotEmpty) {
-                context.push('/candidate-profile-details?id=$pId', extra: profile);
-              } else {
-                context.push('/candidate-profile-details', extra: profile);
-              }
-            },
-            icon: const Icon(Icons.person_search, size: 15),
-            label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0056D2),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            ),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x0A000000),
+            blurRadius: 6,
+            offset: Offset(0, -2),
           ),
         ],
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isCompact = constraints.maxWidth < 450;
+          return Row(
+            children: [
+              // Close button
+              OutlinedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF475569),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: EdgeInsets.symmetric(horizontal: isCompact ? 10 : 14, vertical: 10),
+                  minimumSize: const Size(0, 40),
+                ),
+                child: Text(
+                  isCompact ? 'બંધ (Close)' : 'બંધ કરો (Close)',
+                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 11.5),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Call button if available
+              if (hasPhone) ...[
+                Expanded(
+                  flex: isCompact ? 3 : 2,
+                  child: ElevatedButton.icon(
+                    onPressed: () async {
+                      final uri = Uri.parse('tel:${data['phone'].toString().replaceAll(' ', '')}');
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri);
+                      }
+                    },
+                    icon: const Icon(Icons.call, size: 14),
+                    label: Text(
+                      isCompact ? 'કોલ (Call)' : 'કોલ કરો (Call)',
+                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      foregroundColor: Colors.white,
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                      minimumSize: const Size(0, 40),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              // View Profile button - ALWAYS VISIBLE FOR ALL CANDIDATES
+              Expanded(
+                flex: isCompact ? 4 : 3,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    final pId = profile.id;
+                    if (pId.isNotEmpty) {
+                      context.push('/candidate-profile-details?id=$pId', extra: profile);
+                    } else {
+                      context.push('/candidate-profile-details', extra: profile);
+                    }
+                  },
+                  icon: const Icon(Icons.person_search, size: 15),
+                  label: Text(
+                    isCompact ? 'સંપૂર્ણ પ્રોફાઇલ' : 'સંપૂર્ણ પ્રોફાઇલ (Profile)',
+                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0056D2),
+                    foregroundColor: Colors.white,
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                    minimumSize: const Size(0, 40),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -1185,7 +1228,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                   errorBuilder: (context, error, stackTrace) => Image.asset(
                                     'assets/images/vankar_header_banner.png',
                                     fit: BoxFit.fill,
-                                    errorBuilder: (_, __, _) => Container(
+                                    errorBuilder: (_, _, _) => Container(
                                       decoration: const BoxDecoration(
                                         gradient: LinearGradient(
                                           colors: [Color(0xFF041126), Color(0xFF0A2540)],
