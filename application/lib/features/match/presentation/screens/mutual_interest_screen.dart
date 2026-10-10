@@ -41,7 +41,7 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (_) => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
+        builder: (_) => const Center(child: CircularProgressIndicator(color: Color(0xFF0056D2))),
       );
       final res = await ref.read(chatRepositoryProvider).getOrCreateConversation(profile.id);
       if (context.mounted) {
@@ -69,19 +69,20 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
     final matchState = ref.watch(matchProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF040A18),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text(
           'મેળ અને સંબંધો (Matches & Interests)',
-          style: TextStyle(color: Color(0xFFFFD700), fontSize: 17, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Color(0xFF0F172A), fontSize: 17, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF041126),
-        iconTheme: const IconThemeData(color: Color(0xFFFFD700)),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
+        iconTheme: const IconThemeData(color: Color(0xFF0056D2)),
         centerTitle: true,
-        elevation: 2,
+        elevation: 0.5,
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh, color: Color(0xFFFFD700), size: 20),
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF0056D2), size: 22),
             tooltip: 'રીફ્રેશ કરો (Refresh)',
             onPressed: () => ref.read(matchProvider.notifier).loadAll(),
           ),
@@ -89,14 +90,19 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(48),
           child: Container(
-            color: const Color(0xFF020712),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
+            ),
             child: TabBar(
               controller: _tabController,
               isScrollable: true,
-              indicatorColor: const Color(0xFFFFD700),
+              indicatorColor: const Color(0xFF0056D2),
               indicatorWeight: 3,
-              labelColor: const Color(0xFFFFD700),
-              unselectedLabelColor: Colors.white60,
+              labelColor: const Color(0xFF0056D2),
+              unselectedLabelColor: const Color(0xFF64748B),
               labelStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
               unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
               tabAlignment: TabAlignment.start,
@@ -112,12 +118,12 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
       ),
       body: SafeArea(
         child: RefreshIndicator(
-          color: const Color(0xFFFFD700),
-          backgroundColor: const Color(0xFF041126),
+          color: const Color(0xFF0056D2),
+          backgroundColor: Colors.white,
           onRefresh: () => ref.read(matchProvider.notifier).loadAll(),
           child: matchState.isLoading
               ? const Center(
-                  child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                  child: CircularProgressIndicator(color: Color(0xFF0056D2)),
                 )
               : TabBarView(
                   controller: _tabController,
@@ -162,7 +168,7 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
   Widget _buildMutualTab(MatchState state) {
     if (state.mutualInterests.isEmpty) {
       return _buildEmptyState(
-        icon: Icons.favorite,
+        icon: Icons.favorite_rounded,
         iconColor: const Color(0xFFEC4899),
         title: 'હજી સુધી કોઈ પરસ્પર મેળ નથી',
         subtitle: 'જ્યારે તમે અને અન્ય ઉમેદવાર એકબીજાની વિનંતી સ્વીકારો ત્યારે અહીં સંબંધ દેખાશે.',
@@ -183,17 +189,24 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCandidateTile(p, badgeText: 'પરસ્પર જોડાયેલા (Connected)', badgeColor: const Color(0xFF10B981)),
-              const Divider(color: Color(0xFF1E293B), height: 16),
+              _buildCandidateTile(
+                p,
+                badgeText: 'પરસ્પર જોડાયેલા (Connected)',
+                badgeColor: const Color(0xFFDCFCE7),
+                badgeTextColor: const Color(0xFF15803D),
+                badgeBorderColor: const Color(0xFF86EFAC),
+              ),
+              const Divider(color: Color(0xFFF1F5F9), height: 16),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => context.push('/candidate-profile-details?id=${p.id}', extra: p),
-                      icon: const Icon(Icons.person, size: 15, color: Color(0xFFFFD700)),
-                      label: const Text('પ્રોફાઇલ જુઓ (View)', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                      icon: const Icon(Icons.person_outline_rounded, size: 15, color: Color(0xFF0056D2)),
+                      label: const Text('પ્રોફાઇલ જુઓ (View)', style: TextStyle(color: Color(0xFF1E293B), fontSize: 12, fontWeight: FontWeight.w600)),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFFFD700)),
+                        backgroundColor: const Color(0xFFF8FAFC),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -203,7 +216,7 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () => _openChat(context, p, item.conversationId),
-                      icon: const Icon(Icons.chat, size: 15, color: Colors.white),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Colors.white),
                       label: const Text('વાતચીત કરો (Chat)', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0056D2),
@@ -244,8 +257,14 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildCandidateTile(p, badgeText: 'આવેલી વિનંતી (Received)', badgeColor: const Color(0xFFF59E0B)),
-              const Divider(color: Color(0xFF1E293B), height: 16),
+              _buildCandidateTile(
+                p,
+                badgeText: 'આવેલી વિનંતી (Received)',
+                badgeColor: const Color(0xFFFEF3C7),
+                badgeTextColor: const Color(0xFFB45309),
+                badgeBorderColor: const Color(0xFFFCD34D),
+              ),
+              const Divider(color: Color(0xFFF1F5F9), height: 16),
               Row(
                 children: [
                   Expanded(
@@ -259,11 +278,12 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
                         }
                       },
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF64748B)),
+                        backgroundColor: Colors.white,
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('નકારો (Decline)', style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+                      child: const Text('નકારો (Decline)', style: TextStyle(color: Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.w600)),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -280,7 +300,7 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
                           );
                         }
                       },
-                      icon: const Icon(Icons.check_circle, size: 15, color: Colors.white),
+                      icon: const Icon(Icons.check_circle_outline_rounded, size: 15, color: Colors.white),
                       label: const Text('સ્વીકારો (Accept)', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF10B981),
@@ -327,18 +347,21 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
               _buildCandidateTile(
                 p,
                 badgeText: isAccepted ? 'સ્વીકારાઈ (Accepted)' : 'ચકાસણી હેઠળ (Pending)',
-                badgeColor: isAccepted ? const Color(0xFF10B981) : const Color(0xFF3B82F6),
+                badgeColor: isAccepted ? const Color(0xFFDCFCE7) : const Color(0xFFEFF6FF),
+                badgeTextColor: isAccepted ? const Color(0xFF15803D) : const Color(0xFF1D4ED8),
+                badgeBorderColor: isAccepted ? const Color(0xFF86EFAC) : const Color(0xFFBFDBFE),
               ),
-              const Divider(color: Color(0xFF1E293B), height: 16),
+              const Divider(color: Color(0xFFF1F5F9), height: 16),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => context.push('/candidate-profile-details?id=${p.id}', extra: p),
-                      icon: const Icon(Icons.person, size: 15, color: Color(0xFFFFD700)),
-                      label: const Text('પ્રોફાઇલ જુઓ (View)', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                      icon: const Icon(Icons.person_outline_rounded, size: 15, color: Color(0xFF0056D2)),
+                      label: const Text('પ્રોફાઇલ જુઓ (View)', style: TextStyle(color: Color(0xFF1E293B), fontSize: 12, fontWeight: FontWeight.w600)),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFFFD700)),
+                        backgroundColor: const Color(0xFFF8FAFC),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -349,7 +372,7 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () => _openChat(context, p, item.conversationId),
-                        icon: const Icon(Icons.chat, size: 15, color: Colors.white),
+                        icon: const Icon(Icons.chat_bubble_outline_rounded, size: 15, color: Colors.white),
                         label: const Text('વાતચીત કરો (Chat)', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0056D2),
@@ -393,7 +416,9 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
               _buildCandidateTile(
                 p,
                 badgeText: '${item.matchScore}% સુમેળ (Match)',
-                badgeColor: const Color(0xFFEC4899),
+                badgeColor: const Color(0xFFFFF1F2),
+                badgeTextColor: const Color(0xFFE11D48),
+                badgeBorderColor: const Color(0xFFFECDD3),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -403,27 +428,28 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
+                      color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFF334155), width: 0.8),
+                      border: Border.all(color: const Color(0xFFE2E8F0), width: 0.8),
                     ),
                     child: Text(
                       '• $r',
-                      style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 11),
+                      style: const TextStyle(color: Color(0xFF475569), fontSize: 11),
                     ),
                   );
                 }).toList(),
               ),
-              const Divider(color: Color(0xFF1E293B), height: 16),
+              const Divider(color: Color(0xFFF1F5F9), height: 16),
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => context.push('/candidate-profile-details?id=${p.id}', extra: p),
-                      icon: const Icon(Icons.person, size: 15, color: Color(0xFFFFD700)),
-                      label: const Text('પ્રોફાઇલ જુઓ (View)', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                      icon: const Icon(Icons.person_outline_rounded, size: 15, color: Color(0xFF0056D2)),
+                      label: const Text('પ્રોફાઇલ જુઓ (View)', style: TextStyle(color: Color(0xFF1E293B), fontSize: 12, fontWeight: FontWeight.w600)),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFFFD700)),
+                        backgroundColor: const Color(0xFFF8FAFC),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
@@ -443,7 +469,7 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
                           );
                         }
                       },
-                      icon: const Icon(Icons.favorite, size: 15, color: Colors.white),
+                      icon: const Icon(Icons.favorite_rounded, size: 15, color: Colors.white),
                       label: const Text('રસ દર્શાવો (Connect)', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE11D48),
@@ -467,13 +493,13 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1E293B), width: 1.2),
+        border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black45,
-            blurRadius: 6,
+            color: Color(0x0A000000),
+            blurRadius: 8,
             offset: Offset(0, 3),
           ),
         ],
@@ -482,7 +508,13 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
     );
   }
 
-  Widget _buildCandidateTile(ProfileModel p, {required String badgeText, required Color badgeColor}) {
+  Widget _buildCandidateTile(
+    ProfileModel p, {
+    required String badgeText,
+    required Color badgeColor,
+    Color? badgeTextColor,
+    Color? badgeBorderColor,
+  }) {
     final photo = p.fullPhotoUrl;
     final hasPhoto = photo != null && photo.isNotEmpty;
 
@@ -495,7 +527,7 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
           height: 58,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+            border: Border.all(color: const Color(0xFFCBD5E1), width: 1.5),
           ),
           child: ClipOval(
             child: hasPhoto
@@ -518,27 +550,27 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
                   Flexible(
                     child: Text(
                       p.fullName.isNotEmpty ? p.fullName : 'ઉમેદવાર (Candidate)',
-                      style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                      style: const TextStyle(color: Color(0xFF0F172A), fontSize: 15, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   if (p.isVerified == true) ...[
                     const SizedBox(width: 5),
-                    const Icon(Icons.verified, color: Color(0xFFFFD700), size: 16),
+                    const Icon(Icons.verified, color: Color(0xFF0056D2), size: 16),
                   ],
                 ],
               ),
               const SizedBox(height: 3),
               Text(
                 '${p.age != null ? "${p.age} વર્ષ • " : ""}${p.displayGender} • ${p.district.isNotEmpty ? p.district : "ગુજરાત"}',
-                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12),
+                style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
               if (p.education.isNotEmpty || p.displayProfession.isNotEmpty) ...[
                 const SizedBox(height: 2),
                 Text(
                   [if (p.education.isNotEmpty) p.education, if (p.displayProfession.isNotEmpty) p.displayProfession].join(' • '),
-                  style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11.5),
+                  style: const TextStyle(color: Color(0xFF0056D2), fontSize: 11.5, fontWeight: FontWeight.w500),
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -550,13 +582,13 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: badgeColor.withValues(alpha: 0.18),
+            color: badgeColor,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: badgeColor, width: 0.8),
+            border: Border.all(color: badgeBorderColor ?? badgeColor, width: 0.8),
           ),
           child: Text(
             badgeText,
-            style: TextStyle(color: badgeColor, fontSize: 10.5, fontWeight: FontWeight.bold),
+            style: TextStyle(color: badgeTextColor ?? badgeColor, fontSize: 10.5, fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -566,11 +598,11 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
   Widget _fallbackAvatar(ProfileModel p) {
     final isFemale = p.gender.toLowerCase().contains('female');
     return Container(
-      color: isFemale ? const Color(0xFF831843) : const Color(0xFF1E3A8A),
+      color: isFemale ? const Color(0xFFFCE7F3) : const Color(0xFFEFF6FF),
       child: Center(
         child: Icon(
           isFemale ? Icons.woman : Icons.man,
-          color: Colors.white70,
+          color: isFemale ? const Color(0xFFDB2777) : const Color(0xFF2563EB),
           size: 32,
         ),
       ),
@@ -595,33 +627,33 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: iconColor.withValues(alpha: 0.12),
+                color: iconColor.withValues(alpha: 0.1),
               ),
               child: Icon(icon, size: 54, color: iconColor),
             ),
             const SizedBox(height: 20),
             Text(
               title,
-              style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+              style: const TextStyle(color: Color(0xFF0F172A), fontSize: 17, fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
-              style: const TextStyle(color: Colors.white60, fontSize: 13, height: 1.4),
+              style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, height: 1.4),
               textAlign: TextAlign.center,
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 22),
               ElevatedButton.icon(
                 onPressed: onAction,
-                icon: const Icon(Icons.explore, size: 16, color: Colors.black87),
+                icon: const Icon(Icons.explore_rounded, size: 16, color: Colors.white),
                 label: Text(
                   actionLabel,
-                  style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFD700),
+                  backgroundColor: const Color(0xFF0056D2),
                   padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
