@@ -1167,106 +1167,137 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                 constraints: const BoxConstraints(maxWidth: 1000),
                 child: Column(
                   children: [
-                    // Header Stack
-                    SizedBox(
-                      height: isDesktop ? 240 : 200,
-                      child: Stack(
-                        alignment: Alignment.topCenter,
-                        children: [
-                          SizedBox(
-                            width: double.infinity,
-                            height: isDesktop ? 200 : 160,
-                            child: Image.asset(
-                              'assets/images/vankar_header_banner.png',
-                              fit: BoxFit.cover,
-                              alignment: Alignment.topCenter,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Color(0xFF041126), Color(0xFF0A2540)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'VANKAR SAMAJ',
-                                    style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            top: 8,
-                            left: 8,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF041126),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
-                              ),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(20),
-                                  onTap: () {
-                                    if (context.canPop()) {
-                                      context.pop();
-                                    } else {
-                                      context.go('/home');
-                                    }
-                                  },
-                                  child: const Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.arrow_back, color: Color(0xFFD4AF37), size: 16),
-                                        SizedBox(width: 4),
-                                        Text('પાછા જાઓ (Back)', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
-                                      ],
+                    // Header Banner with True Proportional Aspect Ratio (1600 x 592)
+                    LayoutBuilder(
+                      builder: (context, bannerConstraints) {
+                        final bannerWidth = bannerConstraints.maxWidth;
+                        final bannerHeight = bannerWidth * (592.0 / 1600.0);
+
+                        return SizedBox(
+                          width: bannerWidth,
+                          height: bannerHeight,
+                          child: Stack(
+                            children: [
+                              Positioned.fill(
+                                child: Image.asset(
+                                  'assets/images/govt_section_banner_new.png',
+                                  fit: BoxFit.fill,
+                                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                                    'assets/images/vankar_header_banner.png',
+                                    fit: BoxFit.fill,
+                                    errorBuilder: (_, __, _) => Container(
+                                      decoration: const BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [Color(0xFF041126), Color(0xFF0A2540)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                      ),
+                                      child: const Center(
+                                        child: Text(
+                                          'VANKAR SAMAJ',
+                                          style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
+                              // Transparent touch target aligned with the banner's built-in "← પાછા જાઓ (Back)" button
+                              // Native coordinates: x: 20..480, y: 24..170 (out of 1600 x 592)
+                              Positioned(
+                                left: bannerWidth * (20.0 / 1600.0),
+                                top: bannerHeight * (24.0 / 592.0),
+                                width: bannerWidth * (460.0 / 1600.0),
+                                height: bannerHeight * (146.0 / 592.0),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(28),
+                                    splashColor: const Color(0x59FFFFFF),
+                                    highlightColor: const Color(0x26FFFFFF),
+                                    onTap: () {
+                                      if (context.canPop()) {
+                                        context.pop();
+                                      } else {
+                                        context.go('/home');
+                                      }
+                                    },
+                                  ),
+                                ),
+                              ),
+                              // Transparent touch target aligned with the banner's built-in "🔔" notification bell
+                              // Native coordinates: x: 1410..1550, y: 100..240 (out of 1600 x 592)
+                              Positioned(
+                                left: bannerWidth * (1410.0 / 1600.0),
+                                top: bannerHeight * (100.0 / 592.0),
+                                width: bannerWidth * (140.0 / 1600.0),
+                                height: bannerHeight * (140.0 / 592.0),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+                                    splashColor: const Color(0x59FFFFFF),
+                                    highlightColor: const Color(0x26FFFFFF),
+                                    onTap: () {
+                                      context.push('/notifications');
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                          Positioned(
-                            bottom: 0,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: isDesktop ? 40 : 20, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(color: const Color(0xFFF3C34D), width: 2.5),
-                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 4))],
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    // Title Capsule Badge
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                          horizontal: isDesktop ? 32 : 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30),
+                        border: Border.all(color: const Color(0xFFF3C34D), width: 2.2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x1A000000),
+                            blurRadius: 8,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          CircleAvatar(
+                            backgroundColor: const Color(0xFF0056D2),
+                            radius: isDesktop ? 22 : 18,
+                            child: Icon(Icons.business_center, color: Colors.white, size: isDesktop ? 26 : 22),
+                          ),
+                          const SizedBox(width: 10),
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Private Job & Business Directory',
+                                style: TextStyle(
+                                  color: const Color(0xFF0056D2),
+                                  fontSize: isDesktop ? 20 : 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.3,
+                                ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircleAvatar(
-                                    backgroundColor: const Color(0xFF0056D2),
-                                    radius: isDesktop ? 24 : 20,
-                                    child: Icon(Icons.business_center, color: Colors.white, size: isDesktop ? 28 : 24),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        'Private Job & Business Directory',
-                                        style: TextStyle(color: const Color(0xFF0056D2), fontSize: isDesktop ? 22 : 18, fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(
-                                        'ખાનગી નોકરી અને વેપાર ડિરેક્ટરી',
-                                        style: TextStyle(color: const Color(0xFF0056D2), fontSize: isDesktop ? 14 : 12, fontWeight: FontWeight.bold),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                              Text(
+                                'ખાનગી નોકરી અને વેપાર ડિરેક્ટરી',
+                                style: TextStyle(
+                                  color: const Color(0xFF0056D2),
+                                  fontSize: isDesktop ? 13 : 11.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                            ),
+                            ],
                           ),
                         ],
                       ),
