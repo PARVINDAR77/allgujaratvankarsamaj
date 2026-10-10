@@ -105,12 +105,12 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                             children: [
                               Flexible(
                                 child: Text(
-                                  '${family.nameGuj} (${family.nameEng})',
+                                  family.nameGuj.isNotEmpty ? family.nameGuj : 'વણકર પરિવાર',
                                   style: const TextStyle(
-                                    fontSize: 16.5,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
-                                    letterSpacing: 0.2,
+                                    letterSpacing: 0.3,
                                   ),
                                 ),
                               ),
@@ -120,13 +120,27 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                               ],
                             ],
                           ),
+                          if ((family.headName != null && family.headName!.isNotEmpty) ||
+                              (family.candidateName != null && family.candidateName!.isNotEmpty && family.candidateName != family.surname)) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              (family.headNameGuj != null && family.headNameGuj!.isNotEmpty && family.headName != null && family.headName!.isNotEmpty)
+                                  ? '${family.headNameGuj} (${family.headName})'
+                                  : (family.candidateName ?? family.nameEng),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFF3C34D),
+                              ),
+                            ),
+                          ],
                           const SizedBox(height: 3),
                           Text(
                             '${family.cityGuj} (${family.cityEng})',
                             style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFFF3C34D),
+                              color: Colors.white70,
                             ),
                           ),
                           const SizedBox(height: 3),
@@ -810,6 +824,8 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                             return f.nameGuj.toLowerCase().contains(q) ||
                                 f.nameEng.toLowerCase().contains(q) ||
                                 f.surname.toLowerCase().contains(q) ||
+                                (f.headName != null && f.headName!.toLowerCase().contains(q)) ||
+                                (f.headNameGuj != null && f.headNameGuj!.toLowerCase().contains(q)) ||
                                 f.cityGuj.toLowerCase().contains(q) ||
                                 f.cityEng.toLowerCase().contains(q) ||
                                 (f.mosal != null && f.mosal!.toLowerCase().contains(q)) ||
@@ -924,11 +940,12 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                         children: [
                           Flexible(
                             child: Text(
-                              '${f.nameGuj} (${f.nameEng})',
+                              f.nameGuj.isNotEmpty ? f.nameGuj : 'વણકર પરિવાર',
                               style: const TextStyle(
                                 color: Color(0xFFD4AF37),
-                                fontSize: 15.5,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -939,6 +956,21 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                           ],
                         ],
                       ),
+                      if ((f.headName != null && f.headName!.isNotEmpty) ||
+                          (f.candidateName != null && f.candidateName!.isNotEmpty && f.candidateName != f.surname)) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          (f.headNameGuj != null && f.headNameGuj!.isNotEmpty && f.headName != null && f.headName!.isNotEmpty)
+                              ? '${f.headNameGuj} (${f.headName})'
+                              : (f.candidateName ?? f.nameEng),
+                          style: const TextStyle(
+                            color: Color(0xFF1E293B),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                       const SizedBox(height: 3),
                       Row(
                         children: [

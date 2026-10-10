@@ -1241,7 +1241,7 @@ class _CandidateProfileDetailScreenState
   }
 
   void _shareProfile(ProfileModel profile) {
-    final text = 'સમસ્ત ગુજરાત વાંકર સમાજ મેટ્રિમોનિયલ પ્રોફાઇલ:\n'
+    final text = 'સમસ્ત ગુજરાત વણકર સમાજ મેટ્રિમોનિયલ પ્રોફાઇલ:\n'
         'નામ: ${profile.fullName}\n'
         'જાતિ: ${profile.displayGender}\n'
         'ઉંમર: ${profile.displayDob}\n'

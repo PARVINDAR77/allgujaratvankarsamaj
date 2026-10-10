@@ -578,6 +578,8 @@ export declare class ProfilesService implements OnModuleInit {
         nameGuj: string;
         nameEng: string;
         surname: string;
+        headName: string;
+        headNameGuj: string;
         cityGuj: string;
         cityEng: string;
         details: string;
@@ -603,6 +605,8 @@ export declare class ProfilesService implements OnModuleInit {
         photoUrl: string;
         isVerified: boolean;
     }[]>;
+    private isGujaratiScript;
     private translateSurnameGuj;
+    private translateGivenNameGuj;
     private translateCityGuj;
 }

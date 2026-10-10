@@ -1663,18 +1663,50 @@ export class ProfilesService implements OnModuleInit {
       });
 
       return profiles.map((p) => {
-        const surnameEng = p.lastName || "Vankar";
+        // Smart Name & Surname Extraction
+        let rawLast = (p.lastName || "").trim();
+        let rawFirst = (p.firstName || "").trim();
+
+        // Fallback if both are empty
+        if (!rawLast && !rawFirst) {
+          rawLast = "Vankar";
+        }
+
+        // If lastName has multiple tokens like "KARASANBHAI VANKAR", separate headName and surname
+        let headNameEng = rawFirst;
+        let surnameEng = rawLast;
+
+        if (rawLast.includes(" ")) {
+          const parts = rawLast.split(/\s+/);
+          surnameEng = parts[parts.length - 1]; // last token is clan surname
+          if (!headNameEng) {
+            headNameEng = parts.slice(0, parts.length - 1).join(" ");
+          }
+        }
+
+        if (!surnameEng) surnameEng = "Vankar";
+
         const surnameGuj = this.translateSurnameGuj(surnameEng);
+        const headNameGuj = headNameEng ? this.translateGivenNameGuj(headNameEng) : "";
+
+        // Properly formatted Family Title
+        const nameGuj = `${surnameGuj} પરિવાર`;
+        const nameEng = headNameEng ? `${headNameEng} ${surnameEng} Family` : `${surnameEng} Family`;
+
         const cityEng = p.city || p.district?.name || p.state || "Gujarat";
         const cityGuj = p.district?.gujaratiName || this.translateCityGuj(cityEng);
         const mosal = p.mamasVillage || p.nativePlace || "Gujarat";
         const details = `મોસાળ: ${mosal} | Masal: ${mosal}`;
 
+        const candidateFullName = `${rawFirst} ${rawLast}`.trim() || surnameEng;
+
         return {
           id: p.id,
-          nameGuj: `${surnameGuj} પરિવાર`,
-          nameEng: `${surnameEng} Family`,
+          nameGuj,
+          nameEng,
           surname: surnameEng,
+          headName: headNameEng,
+          headNameGuj,
           cityGuj,
           cityEng,
           details,
@@ -1692,7 +1724,7 @@ export class ProfilesService implements OnModuleInit {
           siblings: p.siblings || "",
           address: p.addressLine || "",
           pincode: p.pincode || "",
-          candidateName: `${p.firstName} ${p.lastName}`.trim(),
+          candidateName: candidateFullName,
           candidateGender: p.gender,
           candidateAge: p.dateOfBirth
             ? Math.floor((Date.now() - new Date(p.dateOfBirth).getTime()) / (365.25 * 24 * 3600 * 1000))
@@ -1709,39 +1741,144 @@ export class ProfilesService implements OnModuleInit {
     }
   }
 
+  private isGujaratiScript(text: string): boolean {
+    return /[\u0A80-\u0AFF]/.test(text);
+  }
+
   private translateSurnameGuj(name: string): string {
+    if (!name || name.trim() === "") return "વણકર";
+    const trimmed = name.trim();
+    if (this.isGujaratiScript(trimmed)) return trimmed;
+
+    const lower = trimmed.toLowerCase();
+
+    // Direct community surname dictionary
     const map: Record<string, string> = {
-      Kapadiya: "કપડીયા",
-      Vankar: "વાંકર",
-      Solanki: "સોલંકી",
-      Chauhan: "ચૌહાણ",
-      Patel: "પટેલ",
-      Parmar: "પરમાર",
-      Makwana: "મકવાણા",
-      Rathod: "રાઠોડ",
-      Jadav: "જાદવ",
-      Vaghela: "વાઘેલા",
-      Gohel: "ગોહેલ",
-      Chavda: "ચાવડા",
-      Maru: "મારુ",
-      Dabhi: "ડાભી",
-      Rohit: "રોહિત",
-      Shrimali: "શ્રીમાળી",
-      Baraiya: "બારૈયા",
-      Tank: "ટાંક",
-      Bhati: "ભાટી",
-      Vegda: "વેગડા",
-      Purani: "પુરાણી",
-      Maheria: "મહેરિયા",
-      Rentiya: "રેંટિયા",
-      Patil: "પાટીલ",
+      vankar: "વણકર",
+      bunkar: "વણકર",
+      banker: "વણકર",
+      sutariya: "સુતરિયા",
+      sutaria: "સુતરિયા",
+      kapadiya: "કપડિયા",
+      kapadia: "કપડિયા",
+      solanki: "સોલંકી",
+      chauhan: "ચૌહાણ",
+      chavhan: "ચૌહાણ",
+      patel: "પટેલ",
+      parmar: "પરમાર",
+      makwana: "મકવાણા",
+      rathod: "રાઠોડ",
+      jadav: "જાદવ",
+      vaghela: "વાઘેલા",
+      waghela: "વાઘેલા",
+      gohel: "ગોહેલ",
+      chavda: "ચાવડા",
+      maru: "મારુ",
+      dabhi: "ડાભી",
+      rohit: "રોહિત",
+      shrimali: "શ્રીમાળી",
+      baraiya: "બારૈયા",
+      tank: "ટાંક",
+      bhati: "ભાટી",
+      vegda: "વેગડા",
+      purani: "પુરાણી",
+      maheria: "મહેરિયા",
+      rentiya: "રેંટિયા",
+      patil: "પાટીલ",
+      prajapati: "પ્રજાપતિ",
+      raval: "રાવળ",
+      darji: "દરજી",
+      shah: "શાહ",
+      pandya: "પંડ્યા",
+      dave: "દવે",
+      chudasama: "ચુડાસમા",
+      mori: "મોરી",
+      zala: "ઝાલા",
+      jhala: "ઝાલા",
+      koli: "કોળી",
+      nayak: "નાયક",
+      someshwar: "સોમેશ્વર",
+      maheshwari: "મહેશ્વરી",
+      khant: "ખાંટ",
+      pandav: "પાંડવ",
+      desai: "દેસાઈ",
+      mehta: "મહેતા",
+      trivedi: "ત્રિવેદી",
+      bhatt: "ભટ્ટ",
+      borisagar: "બોરીસાગર",
+      dudhrejia: "દુધરેજીયા",
+      vadhel: "વાઢેલ",
+      danidhariya: "દાણીધારિયા",
+      motavaras: "મોટાવારસ",
+      chaudhari: "ચૌધરી",
+      choudhary: "ચૌધરી",
+      tadvi: "તડવી",
+      gamit: "ગામીત",
+      vasava: "વસાવા",
     };
+
     for (const key of Object.keys(map)) {
-      if (name.toLowerCase().includes(key.toLowerCase())) {
+      if (lower.includes(key)) {
         return map[key];
       }
     }
-    return name;
+
+    return trimmed;
+  }
+
+  private translateGivenNameGuj(name: string): string {
+    if (!name || name.trim() === "") return "";
+    const trimmed = name.trim();
+    if (this.isGujaratiScript(trimmed)) return trimmed;
+
+    const lower = trimmed.toLowerCase();
+
+    const map: Record<string, string> = {
+      karasanbhai: "કરશનભાઈ",
+      karsanbhai: "કરશનભાઈ",
+      karshanbhai: "કરશનભાઈ",
+      keshavlal: "કેશવલાલ",
+      vijaykumar: "વિજયકુમાર",
+      vasantbhai: "વસંતભાઈ",
+      parvindar: "પરવિંદર",
+      parvinder: "પરવિંદર",
+      rameshbhai: "રમેશભાઈ",
+      sureshbhai: "સુરેશભાઈ",
+      dineshbhai: "દિનેશભાઈ",
+      maheshbhai: "મહેશભાઈ",
+      nareshbhai: "નરેશભાઈ",
+      bharatbhai: "ભરતભાઈ",
+      pravinbhai: "પ્રવીણભાઈ",
+      mukeshbhai: "મુકેશભાઈ",
+      hiteshbhai: "હિતેશભાઈ",
+      pankajbhai: "પંકજભાઈ",
+      rajeshbhai: "રાજેશભાઈ",
+      jagdishbhai: "જગદીશભાઈ",
+      ashokbhai: "અશોકભાઈ",
+      kantilal: "કાંતિલાલ",
+      mohanlal: "મોહનલાલ",
+      chhaganlal: "છગનલાલ",
+      govindbhai: "ગોવિંદભાઈ",
+      manishbhai: "મનીષભાઈ",
+      sanjaybhai: "સંજયભાઈ",
+      bipinbhai: "બિપીનભાઈ",
+      kamleshbhai: "કમલેશભાઈ",
+      jayantibhai: "જયંતિભાઈ",
+      shantilal: "શાંતિલાલ",
+      babubhai: "બાબુભાઈ",
+      laljibhai: "લાલજીભાઈ",
+      amrutbhai: "અમૃતભાઈ",
+      naranbhai: "નારણભાઈ",
+      bhikhabhai: "ભીખાભાઈ",
+    };
+
+    for (const key of Object.keys(map)) {
+      if (lower.includes(key)) {
+        return map[key];
+      }
+    }
+
+    return trimmed;
   }
 
   private translateCityGuj(city: string): string {
@@ -1755,6 +1892,7 @@ export class ProfilesService implements OnModuleInit {
       Junagadh: "જૂનાગઢ",
       Gandhinagar: "ગાંધીનગર",
       Himatnagar: "હિંમતનગર",
+      Himmatnagar: "હિંમતનગર",
       Patan: "પાટણ",
       Mehsana: "મહેસાણા",
       Idar: "ઈડર",
@@ -1772,6 +1910,8 @@ export class ProfilesService implements OnModuleInit {
       Porbandar: "પોરબંદર",
       Palanpur: "પાલનપુર",
       Godhra: "ગોધરા",
+      Kaniyol: "કાનિયોલ",
+      Jadar: "જાદર",
     };
     for (const key of Object.keys(map)) {
       if (city.toLowerCase().includes(key.toLowerCase())) {

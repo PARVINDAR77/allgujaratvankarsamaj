@@ -440,6 +440,8 @@ export declare class ProfilesController {
         nameGuj: string;
         nameEng: string;
         surname: string;
+        headName: string;
+        headNameGuj: string;
         cityGuj: string;
         cityEng: string;
         details: string;

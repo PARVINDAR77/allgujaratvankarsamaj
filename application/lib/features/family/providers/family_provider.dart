@@ -51,8 +51,29 @@ final familyDirectoryProvider = FutureProvider.autoDispose<List<FamilyModel>>((r
       final items = raw['items'] as List;
       final liveList = items.map((json) {
         final map = Map<String, dynamic>.from(json as Map);
-        final surname = map['lastName']?.toString().isNotEmpty == true ? map['lastName'].toString() : 'Vankar';
-        final surnameGuj = FamilyModel.translateSurnameToGuj(surname);
+        String rawLast = (map['lastName'] ?? '').toString().trim();
+        String rawFirst = (map['firstName'] ?? '').toString().trim();
+        if (rawLast.isEmpty && rawFirst.isEmpty) {
+          rawLast = 'Vankar';
+        }
+
+        String headNameEng = rawFirst;
+        String surnameEng = rawLast;
+
+        if (rawLast.contains(' ')) {
+          final parts = rawLast.split(RegExp(r'\s+'));
+          surnameEng = parts.last;
+          if (headNameEng.isEmpty) {
+            headNameEng = parts.sublist(0, parts.length - 1).join(' ');
+          }
+        }
+        if (surnameEng.isEmpty) surnameEng = 'Vankar';
+
+        final surnameGuj = FamilyModel.translateSurnameToGuj(surnameEng);
+        final headNameGuj = headNameEng.isNotEmpty ? FamilyModel.translateGivenNameToGuj(headNameEng) : '';
+        final nameGuj = '$surnameGuj પરિવાર';
+        final nameEng = headNameEng.isNotEmpty ? '$headNameEng $surnameEng Family' : '$surnameEng Family';
+
         final city = map['city']?.toString().isNotEmpty == true
             ? map['city'].toString()
             : (map['state']?.toString().isNotEmpty == true ? map['state'].toString() : 'Gujarat');
@@ -63,9 +84,11 @@ final familyDirectoryProvider = FutureProvider.autoDispose<List<FamilyModel>>((r
 
         return FamilyModel(
           id: map['id']?.toString() ?? '',
-          nameGuj: '$surnameGuj પરિવાર',
-          nameEng: '$surname Family',
-          surname: surname,
+          nameGuj: nameGuj,
+          nameEng: nameEng,
+          surname: surnameEng,
+          headName: headNameEng,
+          headNameGuj: headNameGuj,
           cityGuj: cityGuj,
           cityEng: city,
           details: 'મોસાળ: $mosal | Masal: $mosal',

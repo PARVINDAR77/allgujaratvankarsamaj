@@ -10,6 +10,8 @@ class FamilyModel {
   final String cityGuj;
   final String cityEng;
   final String details;
+  final String? headName;
+  final String? headNameGuj;
   final String? mosal;
   final String? nativePlace;
   final String? pargana;
@@ -43,6 +45,8 @@ class FamilyModel {
     required this.cityGuj,
     required this.cityEng,
     required this.details,
+    this.headName,
+    this.headNameGuj,
     this.mosal,
     this.nativePlace,
     this.pargana,
@@ -70,15 +74,43 @@ class FamilyModel {
   });
 
   factory FamilyModel.fromJson(Map<String, dynamic> json) {
-    final surname = json['surname']?.toString() ?? json['nameEng']?.toString().replaceAll(' Family', '') ?? 'Vankar';
+    String rawSurname = (json['surname'] ?? json['nameEng']?.toString().replaceAll(' Family', '') ?? 'Vankar').toString().trim();
+    String rawNameGuj = (json['nameGuj'] ?? '').toString().trim();
+    String? headName = json['headName']?.toString().trim();
+    String? headNameGuj = json['headNameGuj']?.toString().trim();
+
+    // Clean up compound names if not yet split
+    if (rawSurname.contains(' ')) {
+      final parts = rawSurname.split(RegExp(r'\s+'));
+      rawSurname = parts.last;
+      if (headName == null || headName.isEmpty) {
+        headName = parts.sublist(0, parts.length - 1).join(' ');
+      }
+    }
+    if (rawSurname.isEmpty) rawSurname = 'Vankar';
+
+    final surnameGuj = translateSurnameToGuj(rawSurname);
+    if (headName != null && headName.isNotEmpty && (headNameGuj == null || headNameGuj.isEmpty)) {
+      headNameGuj = translateGivenNameToGuj(headName);
+    }
+
+    // Fix incorrect 'વાંકર' in incoming nameGuj to 'વણકર'
+    if (rawNameGuj.isNotEmpty) {
+      rawNameGuj = rawNameGuj.replaceAll('વાંકર', 'વણકર');
+    }
+    final nameGuj = rawNameGuj.isNotEmpty ? rawNameGuj : '$surnameGuj પરિવાર';
+    final nameEng = (headName != null && headName.isNotEmpty) ? '$headName $rawSurname Family' : '$rawSurname Family';
+
     final mosalVal = json['mosal']?.toString() ?? 'Gujarat';
     final detailsVal = json['details']?.toString() ?? 'મોસાળ: $mosalVal | Masal: $mosalVal';
 
     return FamilyModel(
       id: json['id']?.toString() ?? '',
-      nameGuj: json['nameGuj']?.toString() ?? '$surname પરિવાર',
-      nameEng: json['nameEng']?.toString() ?? '$surname Family',
-      surname: surname,
+      nameGuj: nameGuj,
+      nameEng: json['nameEng']?.toString() ?? nameEng,
+      surname: rawSurname,
+      headName: headName,
+      headNameGuj: headNameGuj,
       cityGuj: json['cityGuj']?.toString() ?? 'ગુજરાત',
       cityEng: json['cityEng']?.toString() ?? 'Gujarat',
       details: detailsVal,
@@ -105,13 +137,35 @@ class FamilyModel {
       photoUrl: AppConfig.resolveMediaUrl(json['photoUrl']?.toString()),
       isVerified: json['isVerified'] == true,
       isLiveMember: true,
-      icon: _iconForSurname(surname),
+      icon: _iconForSurname(rawSurname),
     );
   }
 
   factory FamilyModel.fromProfile(ProfileModel p) {
-    final surnameEng = p.lastName.isNotEmpty ? p.lastName : 'Vankar';
+    String rawLast = p.lastName.trim();
+    String rawFirst = p.firstName.trim();
+    if (rawLast.isEmpty && rawFirst.isEmpty) {
+      rawLast = 'Vankar';
+    }
+
+    String headNameEng = rawFirst;
+    String surnameEng = rawLast;
+
+    if (rawLast.contains(' ')) {
+      final parts = rawLast.split(RegExp(r'\s+'));
+      surnameEng = parts.last;
+      if (headNameEng.isEmpty) {
+        headNameEng = parts.sublist(0, parts.length - 1).join(' ');
+      }
+    }
+    if (surnameEng.isEmpty) surnameEng = 'Vankar';
+
     final surnameGuj = translateSurnameToGuj(surnameEng);
+    final headNameGuj = headNameEng.isNotEmpty ? translateGivenNameToGuj(headNameEng) : '';
+
+    final nameGuj = '$surnameGuj પરિવાર';
+    final nameEng = headNameEng.isNotEmpty ? '$headNameEng $surnameEng Family' : '$surnameEng Family';
+
     final cityEng = p.city != null && p.city!.isNotEmpty ? p.city! : (p.district.isNotEmpty ? p.district : 'Gujarat');
     final cityGuj = translateCityToGuj(cityEng);
     final mosalVal = (p.mamasVillage != null && p.mamasVillage!.isNotEmpty)
@@ -121,9 +175,11 @@ class FamilyModel {
 
     return FamilyModel(
       id: p.id,
-      nameGuj: '$surnameGuj પરિવાર',
-      nameEng: '$surnameEng Family',
+      nameGuj: nameGuj,
+      nameEng: nameEng,
       surname: surnameEng,
+      headName: headNameEng,
+      headNameGuj: headNameGuj,
       cityGuj: cityGuj,
       cityEng: cityEng,
       details: detailsStr,
@@ -167,10 +223,23 @@ class FamilyModel {
     return Icons.holiday_village;
   }
 
+  static bool isGujaratiScript(String text) {
+    return RegExp(r'[\u0A80-\u0AFF]').hasMatch(text);
+  }
+
   static String translateSurnameToGuj(String surname) {
+    if (surname.trim().isEmpty) return 'વણકર';
+    final trimmed = surname.trim();
+    if (isGujaratiScript(trimmed)) return trimmed;
+
     final map = {
-      'kapadiya': 'કપડીયા',
-      'vankar': 'વાંકર',
+      'kapadiya': 'કપડિયા',
+      'kapadia': 'કપડિયા',
+      'vankar': 'વણકર',
+      'bunkar': 'વણકર',
+      'banker': 'વણકર',
+      'sutariya': 'સુતરિયા',
+      'sutaria': 'સુતરિયા',
       'solanki': 'સોલંકી',
       'chauhan': 'ચૌહાણ',
       'patel': 'પટેલ',
@@ -193,12 +262,94 @@ class FamilyModel {
       'maheria': 'મહેરિયા',
       'rentiya': 'રેંટિયા',
       'patil': 'પાટીલ',
+      'prajapati': 'પ્રજાપતિ',
+      'raval': 'રાવળ',
+      'darji': 'દરજી',
+      'shah': 'શાહ',
+      'pandya': 'પંડ્યા',
+      'dave': 'દવે',
+      'chudasama': 'ચુડાસમા',
+      'mori': 'મોરી',
+      'zala': 'ઝાલા',
+      'jhala': 'ઝાલા',
+      'koli': 'કોળી',
+      'nayak': 'નાયક',
+      'someshwar': 'સોમેશ્વર',
+      'maheshwari': 'મહેશ્વરી',
+      'khant': 'ખાંટ',
+      'pandav': 'પાંડવ',
+      'desai': 'દેસાઈ',
+      'mehta': 'મહેતા',
+      'trivedi': 'ત્રિવેદી',
+      'bhatt': 'ભટ્ટ',
+      'borisagar': 'બોરીસાગર',
+      'dudhrejia': 'દુધરેજીયા',
+      'vadhel': 'વાઢેલ',
+      'danidhariya': 'દાણીધારિયા',
+      'motavaras': 'મોટાવારસ',
+      'chaudhari': 'ચૌધરી',
+      'choudhary': 'ચૌધરી',
+      'tadvi': 'તડવી',
+      'gamit': 'ગામીત',
+      'vasava': 'વસાવા',
     };
-    final s = surname.toLowerCase();
+    final s = trimmed.toLowerCase();
     for (final k in map.keys) {
       if (s.contains(k)) return map[k]!;
     }
-    return surname;
+    return trimmed;
+  }
+
+  static String translateGivenNameToGuj(String name) {
+    if (name.trim().isEmpty) return '';
+    final trimmed = name.trim();
+    if (isGujaratiScript(trimmed)) return trimmed;
+
+    final s = trimmed.toLowerCase();
+
+    final map = {
+      'karasanbhai': 'કરશનભાઈ',
+      'karsanbhai': 'કરશનભાઈ',
+      'karshanbhai': 'કરશનભાઈ',
+      'keshavlal': 'કેશવલાલ',
+      'vijaykumar': 'વિજયકુમાર',
+      'vasantbhai': 'વસંતભાઈ',
+      'parvindar': 'પરવિંદર',
+      'parvinder': 'પરવિંદર',
+      'rameshbhai': 'રમેશભાઈ',
+      'sureshbhai': 'સુરેશભાઈ',
+      'dineshbhai': 'દિનેશભાઈ',
+      'maheshbhai': 'મહેશભાઈ',
+      'nareshbhai': 'નરેશભાઈ',
+      'bharatbhai': 'ભરતભાઈ',
+      'pravinbhai': 'પ્રવીણભાઈ',
+      'mukeshbhai': 'મુકેશભાઈ',
+      'hiteshbhai': 'હિતેશભાઈ',
+      'pankajbhai': 'પંકજભાઈ',
+      'rajeshbhai': 'રાજેશભાઈ',
+      'jagdishbhai': 'જગદીશભાઈ',
+      'ashokbhai': 'અશોકભાઈ',
+      'kantilal': 'કાંતિલાલ',
+      'mohanlal': 'મોહનલાલ',
+      'chhaganlal': 'છગનલાલ',
+      'govindbhai': 'ગોવિંદભાઈ',
+      'manishbhai': 'મનીષભાઈ',
+      'sanjaybhai': 'સંજયભાઈ',
+      'bipinbhai': 'બિપીનભાઈ',
+      'kamleshbhai': 'કમલેશભાઈ',
+      'jayantibhai': 'જયંતિભાઈ',
+      'shantilal': 'શાંતિલાલ',
+      'babubhai': 'બાબુભાઈ',
+      'laljibhai': 'લાલજીભાઈ',
+      'amrutbhai': 'અમૃતભાઈ',
+      'naranbhai': 'નારણભાઈ',
+      'bhikhabhai': 'ભીખાભાઈ',
+    };
+
+    for (final k in map.keys) {
+      if (s.contains(k)) return map[k]!;
+    }
+    return trimmed;
   }
 
   static String translateCityToGuj(String city) {
@@ -212,6 +363,9 @@ class FamilyModel {
       'junagadh': 'જૂનાગઢ',
       'gandhinagar': 'ગાંધીનગર',
       'himatnagar': 'હિંમતનગર',
+      'himmatnagar': 'હિંમતનગર',
+      'kaniyol': 'કાનિયોલ',
+      'jadar': 'જાદર',
       'patan': 'પાટણ',
       'mehsana': 'મહેસાણા',
       'idar': 'ઈડર',
@@ -230,6 +384,7 @@ class FamilyModel {
       'palanpur': 'પાલનપુર',
       'godhra': 'ગોધરા',
     };
+    if (isGujaratiScript(city)) return city;
     final c = city.toLowerCase();
     for (final k in map.keys) {
       if (c.contains(k)) return map[k]!;
@@ -267,7 +422,7 @@ class FamilyModel {
     ),
     FamilyModel(
       id: 'fam_102',
-      nameGuj: 'વાંકર પરિવાર',
+      nameGuj: 'વણકર પરિવાર',
       nameEng: 'Vankar Family',
       surname: 'Vankar',
       cityGuj: 'અમદાવાદ',
@@ -278,15 +433,15 @@ class FamilyModel {
       pargana: 'અમદાવાદ ૩૫ પરગણા',
       district: 'Ahmedabad (અમદાવાદ)',
       taluka: 'Sanand',
-      fatherName: 'રમેશભાઈ પી. વાંકર',
+      fatherName: 'રમેશભાઈ પી. વણકર',
       fatherOccupation: 'સિનિયર એકાઉન્ટન્ટ (Senior Accountant)',
       fatherContact: '+91 98251 33445',
-      motherName: 'સવિતાબેન આર. વાંકર',
+      motherName: 'સવિતાબેન આર. વણકર',
       motherOccupation: 'ગૃહિણી (Home Maker)',
       guardianContact: '+91 98251 33445',
       siblings: '૧ ભાઈ (TCS સોફ્ટવેર એન્જિનિયર)',
       address: '૪૫, વંદેમાતરમ્ સિટી, ચાંદલોડિયા, અમદાવાદ - ૩૮૨૪૮૧',
-      candidateName: 'જિજ્ઞેશ આર. વાંકર',
+      candidateName: 'જિજ્ઞેશ આર. વણકર',
       candidateEducation: 'M.Sc. IT & Cloud Architect',
       candidateOccupation: 'ટેક્નિકલ લીડ',
       isVerified: true,
