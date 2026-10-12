@@ -871,53 +871,85 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             painter: RoyalCardWholeBoxPainter(isPurple: isAlternatePurple),
             child: Stack(
               children: [
-                // 1. Full-Height Seamless Royal Baroque Peacock Wing Asset (width 92)
+                // 1. Full-Height Seamless Royal Baroque Peacock Wing with Centered Medallion Avatar
                 Positioned(
                   left: 0,
                   top: 0,
                   bottom: 0,
                   width: 92,
-                  child: IgnorePointer(
-                    child: Image.asset(
-                      isAlternatePurple
-                          ? 'assets/images/royal_card_wing_purple_full.png'
-                          : 'assets/images/royal_card_wing_teal_full.png',
-                      fit: BoxFit.fill,
-                    ),
-                  ),
-                ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final cardHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 180.0;
+                      // Medallion Round Section Center:
+                      // X is 58.5px from left edge, Y tracks at 33.5% of the dynamic card height
+                      const medallionX = 58.5;
+                      final medallionY = cardHeight * 0.335;
+                      // Diameter is 64px to fill the golden medallion inner aperture cleanly
+                      const avatarDiameter = 64.0;
+                      final avatarLeft = medallionX - (avatarDiameter / 2);
+                      final avatarTop = medallionY - (avatarDiameter / 2);
 
-                // 2. Avatar Tap Target & Photo Overlay (inside the golden medallion)
-                Positioned(
-                  left: 0,
-                  top: 0,
-                  width: 92,
-                  height: 92,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => context.push('/candidate-profile-details', extra: profile),
-                      customBorder: const CircleBorder(),
-                      child: hasPhoto
-                          ? Center(
-                              child: Container(
-                                margin: const EdgeInsets.only(left: 6, top: 2),
-                                width: 44,
-                                height: 44,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                ),
-                                child: ClipOval(
-                                  child: Image.network(
-                                    profile.fullPhotoUrl!,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                      return Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // Peacock wing background
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              child: Image.asset(
+                                isAlternatePurple
+                                    ? 'assets/images/royal_card_wing_purple_full.png'
+                                    : 'assets/images/royal_card_wing_teal_full.png',
+                                fit: BoxFit.fill,
+                              ),
+                            ),
+                          ),
+
+                          // Mask & Avatar container centered precisely in the golden medallion
+                          Positioned(
+                            left: avatarLeft,
+                            top: avatarTop,
+                            width: avatarDiameter,
+                            height: avatarDiameter,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => context.push('/candidate-profile-details', extra: profile),
+                                customBorder: const CircleBorder(),
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE8F4FD),
+                                    border: Border.all(
+                                      color: const Color(0xFFFFD700),
+                                      width: 2.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.35),
+                                        blurRadius: 6,
+                                        spreadRadius: 0.5,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipOval(
+                                    child: hasPhoto
+                                        ? Image.network(
+                                            profile.fullPhotoUrl!,
+                                            fit: BoxFit.cover,
+                                            width: avatarDiameter,
+                                            height: avatarDiameter,
+                                            errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(isGirl, profile.fullName),
+                                          )
+                                        : _buildAvatarFallback(isGirl, profile.fullName),
                                   ),
                                 ),
                               ),
-                            )
-                          : const SizedBox.expand(),
-                    ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
 
@@ -1104,6 +1136,36 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- CANDIDATE AVATAR FALLBACK ---
+  Widget _buildAvatarFallback(bool isGirl, String name) {
+    final trimmed = name.trim();
+    final String initial = trimmed.isNotEmpty
+        ? trimmed.characters.first.toUpperCase()
+        : (isGirl ? 'B' : 'G');
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isGirl
+              ? const [Color(0xFFFCE4EC), Color(0xFFF8BBD0)]
+              : const [Color(0xFFE3F2FD), Color(0xFFBBDEFB)],
+        ),
+      ),
+      child: Center(
+        child: Text(
+          initial,
+          style: TextStyle(
+            color: isGirl ? const Color(0xFFAD1457) : const Color(0xFF0D47A1),
+            fontSize: 26,
+            fontWeight: FontWeight.w900,
           ),
         ),
       ),
