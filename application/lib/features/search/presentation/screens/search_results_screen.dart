@@ -809,12 +809,12 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            // 1. Full-Height Seamless Royal Baroque Peacock Wing Asset (width 82)
+            // 1. Full-Height Seamless Royal Baroque Peacock Wing Asset (width 92)
             Positioned(
               left: 0,
               top: 0,
               bottom: 0,
-              width: 82,
+              width: 92,
               child: IgnorePointer(
                 child: Image.asset(
                   isAlternatePurple
@@ -829,8 +829,8 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             Positioned(
               left: 0,
               top: 0,
-              width: 82,
-              height: 82,
+              width: 92,
+              height: 92,
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
@@ -839,7 +839,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                   child: hasPhoto
                       ? Center(
                           child: Container(
-                            margin: const EdgeInsets.only(left: 3, top: 2),
+                            margin: const EdgeInsets.only(left: 6, top: 2),
                             width: 44,
                             height: 44,
                             decoration: const BoxDecoration(
@@ -861,7 +861,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
             // 3. Main Candidate Details (Padded cleanly to the right of the ornate wing)
             Padding(
-              padding: const EdgeInsets.fromLTRB(86, 10, 10, 10),
+              padding: const EdgeInsets.fromLTRB(96, 11, 11, 10),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -995,13 +995,18 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             },
                             borderRadius: BorderRadius.circular(24),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 7.5, horizontal: 10),
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
                               decoration: BoxDecoration(
                                 gradient: buttonGradient,
                                 borderRadius: BorderRadius.circular(24),
-                                border: Border.all(color: const Color(0xFFFFDF73), width: 1.6),
-                                boxShadow: const [
+                                border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+                                boxShadow: [
                                   BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                                    blurRadius: 4,
+                                    offset: const Offset(0, 1),
+                                  ),
+                                  const BoxShadow(
                                     color: Colors.black26,
                                     blurRadius: 3,
                                     offset: Offset(0, 1.5),
@@ -1489,13 +1494,20 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFFDF8),
+      width: 40,
+      height: 40,
+      decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFD4AF37), width: 2.0),
-        boxShadow: const [
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFFEA88),
+            Color(0xFFD4AF37),
+            Color(0xFF8B5A10),
+          ],
+        ),
+        boxShadow: [
           BoxShadow(
             color: Colors.black26,
             blurRadius: 4,
@@ -1503,34 +1515,42 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: Tooltip(
-          message: _isLiked ? 'પસંદ કરેલ (Liked)' : 'પસંદ કરો (Like)',
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: () {
-              setState(() {
-                _isLiked = !_isLiked;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    _isLiked
-                        ? '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} ની પ્રોફાઇલ પસંદ કરી છે!'
-                        : '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} લિસ્ટમાંથી દૂર થઈ',
+      padding: const EdgeInsets.all(2.2),
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFFDF8),
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFFFFDF73), width: 1.0),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: Tooltip(
+            message: _isLiked ? 'પસંદ કરેલ (Liked)' : 'પસંદ કરો (Like)',
+            child: InkWell(
+              customBorder: const CircleBorder(),
+              onTap: () {
+                setState(() {
+                  _isLiked = !_isLiked;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      _isLiked
+                          ? '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} ની પ્રોફાઇલ પસંદ કરી છે!'
+                          : '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} લિસ્ટમાંથી દૂર થઈ',
+                    ),
+                    backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
                   ),
-                  backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
-                  duration: const Duration(seconds: 1),
-                  behavior: SnackBarBehavior.floating,
+                );
+              },
+              child: Center(
+                child: Icon(
+                  _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: _isLiked ? const Color(0xFFE91E63) : const Color(0xFF3E2723),
+                  size: 20,
                 ),
-              );
-            },
-            child: Center(
-              child: Icon(
-                _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                color: _isLiked ? const Color(0xFFE91E63) : const Color(0xFF4A3525),
-                size: 22,
               ),
             ),
           ),
