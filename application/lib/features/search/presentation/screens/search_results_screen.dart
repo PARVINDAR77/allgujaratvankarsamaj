@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -244,11 +243,43 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       ),
       child: Stack(
         children: [
-          // Background Peacock & Golden Filigree Ornaments
-          Positioned.fill(
+          // Background Real Peacock Feather Corner Ornaments
+          Positioned(
+            left: -6,
+            top: -8,
+            width: 46,
+            height: 58,
             child: IgnorePointer(
-              child: CustomPaint(
-                painter: PeacockHeaderOrnamentPainter(),
+              child: Transform.rotate(
+                angle: -0.35,
+                child: Opacity(
+                  opacity: 0.75,
+                  child: Image.asset(
+                    'assets/images/real_peacock_feather.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: -6,
+            top: -8,
+            width: 46,
+            height: 58,
+            child: IgnorePointer(
+              child: Transform.flip(
+                flipX: true,
+                child: Transform.rotate(
+                  angle: 0.35,
+                  child: Opacity(
+                    opacity: 0.75,
+                    child: Image.asset(
+                      'assets/images/real_peacock_feather.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -658,6 +689,13 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF006D77)),
             ),
           ],
+          const SizedBox(width: 6),
+          Image.asset(
+            'assets/images/real_peacock_feather.png',
+            width: 20,
+            height: 20,
+            fit: BoxFit.contain,
+          ),
         ],
       ),
     );
@@ -703,11 +741,28 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
         borderRadius: BorderRadius.circular(17),
         child: Stack(
           children: [
-            // Left decorative peacock wing with golden border & feather illustration
+            // Left decorative peacock wing with golden border
             Positioned.fill(
               child: IgnorePointer(
                 child: CustomPaint(
                   painter: PeacockCardWingPainter(isPurple: isAlternatePurple),
+                ),
+              ),
+            ),
+
+            // Authentic Photorealistic Royal Peacock Feather Ornament in lower corner
+            Positioned(
+              left: -10,
+              bottom: -6,
+              width: 88,
+              height: 100,
+              child: IgnorePointer(
+                child: Transform.rotate(
+                  angle: 0.28,
+                  child: Image.asset(
+                    'assets/images/real_peacock_feather.png',
+                    fit: BoxFit.contain,
+                  ),
                 ),
               ),
             ),
@@ -1558,67 +1613,6 @@ class PeacockCardWingPainter extends CustomPainter {
     ribbonPath.cubicTo(85, 0, 98, 40, 88, 80);
     ribbonPath.cubicTo(78, 110, 88, size.height - 25, 60, size.height);
     canvas.drawPath(ribbonPath, goldBorderPaint);
-
-    // 3. Peacock Feather in the lower corner of the wing
-    final featherBaseX = 8.0;
-    final featherBaseY = size.height - 8.0;
-
-    // Barbules radiating upwards and outwards
-    final barbulePaint1 = Paint()
-      ..color = const Color(0xFF00E676).withValues(alpha: 0.95)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6;
-
-    final barbulePaint2 = Paint()
-      ..color = const Color(0xFF00E5FF).withValues(alpha: 0.9)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4;
-
-    for (int i = 0; i < 11; i++) {
-      final rad = 0.12 + (i * 0.14);
-      final len = 42.0 + (i % 3) * 6.0;
-      final x2 = featherBaseX + (len * math.cos(rad));
-      final y2 = featherBaseY - (len * math.sin(rad));
-      canvas.drawLine(
-        Offset(featherBaseX, featherBaseY),
-        Offset(x2, y2),
-        i % 2 == 0 ? barbulePaint1 : barbulePaint2,
-      );
-    }
-
-    // Golden Central Quill
-    final quillPaint = Paint()
-      ..color = const Color(0xFFFFD700)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8;
-    final quillPath = Path();
-    quillPath.moveTo(featherBaseX, featherBaseY);
-    quillPath.quadraticBezierTo(featherBaseX + 18, featherBaseY - 25, featherBaseX + 28, featherBaseY - 45);
-    canvas.drawPath(quillPath, quillPaint);
-
-    // Peacock Feather Eye Centerpiece
-    final eyeCenterX = featherBaseX + 22.0;
-    final eyeCenterY = featherBaseY - 24.0;
-
-    // Outer rich emerald / cobalt plume oval
-    final outerPlume = Paint()..color = const Color(0xFF004D40);
-    canvas.drawOval(Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 28, height: 22), outerPlume);
-
-    // Vibrant cyan ring
-    final cyanRing = Paint()..color = const Color(0xFF00E5FF);
-    canvas.drawOval(Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 20, height: 15), cyanRing);
-
-    // Metallic gold / bronze ring
-    final goldRing = Paint()..color = const Color(0xFFFFD700);
-    canvas.drawOval(Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 13, height: 10), goldRing);
-
-    // Midnight indigo pupil
-    final pupil = Paint()..color = const Color(0xFF051026);
-    canvas.drawOval(Rect.fromCenter(center: Offset(eyeCenterX, eyeCenterY), width: 8, height: 6), pupil);
-
-    // Glint highlight dot
-    final glint = Paint()..color = Colors.white;
-    canvas.drawCircle(Offset(eyeCenterX - 1.2, eyeCenterY - 1.2), 1.2, glint);
   }
 
   @override
