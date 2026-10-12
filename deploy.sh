@@ -437,8 +437,8 @@ if [ ! -S "$SOCKET_FILE" ]; then
     tail -n 25 "$PROJECT_ROOT/next-nest/backend/backend.log" 2>/dev/null || true
 fi
 
-echo "⏰ Installing Keep-Alive Watchdog Cron Job (checks every minute)..."
-(crontab -l 2>/dev/null | grep -v "keep_backend_alive.sh"; echo "* * * * * $PROJECT_ROOT/keep_backend_alive.sh >/dev/null 2>&1") | crontab - 2>/dev/null || true
+echo "⏰ Installing Keep-Alive Watchdog Cron Job (checks every 5 minutes)..."
+(crontab -l 2>/dev/null | grep -v "keep_backend_alive.sh"; echo "*/5 * * * * /home/u796269890/domains/allgujaratvankarsamaj.com/project_source/keep_backend_alive.sh >/dev/null 2>&1") | crontab - 2>/dev/null || true
 
 # 2. Deploy Application (Atomic Merge: Next.js + Flutter)
 echo "Deploying Application..."
