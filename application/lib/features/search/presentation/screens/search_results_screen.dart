@@ -670,33 +670,31 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   // --- 5. SUMMARY COUNTER BADGE ---
   Widget _buildSummaryBadge(int count, bool isLoading) {
     String title;
-    String symbol;
 
     if (_selectedGender == 'FEMALE') {
       title = 'કન્યા ઉમેદવારો (Brides / Girls)';
-      symbol = '♀';
     } else if (_selectedGender == 'MALE') {
       title = 'વર ઉમેદવારો (Grooms / Boys)';
-      symbol = '♂';
     } else {
       title = 'તમામ ઉમેદવારો (All Candidates)';
-      symbol = '👥';
     }
 
     return Container(
-      margin: const EdgeInsets.fromLTRB(14, 2, 14, 6),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
+      margin: const EdgeInsets.fromLTRB(14, 2, 14, 8),
       decoration: BoxDecoration(
+        // Outer 3D Metallic Gold Rim
         gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            Color(0xFFFFFDF8),
-            Color(0xFFF8F2DB),
+            Color(0xFFFFF5B8), // Bright gold highlight
+            Color(0xFFD4AF37), // Metallic gold
+            Color(0xFF8B5A10), // Deep bevel shade
+            Color(0xFFFFD700), // Pure gold sheen
           ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
+          stops: [0.0, 0.35, 0.7, 1.0],
         ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFD4AF37), width: 2.0),
         boxShadow: const [
           BoxShadow(
             color: Colors.black26,
@@ -705,53 +703,100 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Text(
-            symbol,
-            style: const TextStyle(
-              color: Color(0xFF006D77),
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-            ),
+      padding: const EdgeInsets.all(2.2), // Crisp 3D metallic bevel thickness
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          // Inner Ivory Satin Plaque
+          gradient: const LinearGradient(
+            colors: [
+              Color(0xFFFFFDF8),
+              Color(0xFFFBF4E2),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '$title • $count પ્રોફાઇલ ઉપલબ્ધ',
-              style: const TextStyle(
-                color: Color(0xFF00382E),
-                fontWeight: FontWeight.bold,
-                fontSize: 12.5,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          if (isLoading) ...[
-            const SizedBox(width: 8),
-            const SizedBox(
-              width: 14,
-              height: 14,
-              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF006D77)),
-            ),
-          ],
-          const SizedBox(width: 6),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: SizedBox(
-              width: 32,
-              height: 20,
-              child: Transform.rotate(
-                angle: 1.57,
-                child: Image.asset(
-                  'assets/images/real_peacock_feather.png',
-                  fit: BoxFit.cover,
+          borderRadius: BorderRadius.circular(21.8),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(21.8),
+          child: Stack(
+            children: [
+              // 1. Right-side Seamless Peacock Feather Eye
+              Positioned(
+                right: -2,
+                top: -3,
+                bottom: -3,
+                width: 68,
+                child: IgnorePointer(
+                  child: Image.asset(
+                    'assets/images/summary_peacock_feather.png',
+                    fit: BoxFit.contain,
+                    alignment: Alignment.centerRight,
+                  ),
                 ),
               ),
-            ),
+
+              // 2. Foreground content (Symbol, Title & Count, Loading Spinner)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 50, 0),
+                child: Row(
+                  children: [
+                    // Gender Symbol
+                    if (_selectedGender == 'ALL')
+                      const Icon(
+                        Icons.people_alt_rounded,
+                        size: 16,
+                        color: Color(0xFF00382E),
+                      )
+                    else
+                      SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CustomPaint(
+                          painter: GenderSymbolPainter(
+                            gender: _selectedGender,
+                            color: const Color(0xFF00382E),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(width: 8),
+
+                    // Title & Count (FittedBox ensures 0 truncation on any screen size)
+                    Expanded(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          '$title • $count પ્રોફાઇલ ઉપલબ્ધ',
+                          style: const TextStyle(
+                            color: Color(0xFF00382E),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 12.0,
+                            letterSpacing: 0.1,
+                          ),
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+
+                    if (isLoading) ...[
+                      const SizedBox(width: 6),
+                      const SizedBox(
+                        width: 13,
+                        height: 13,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF006D77),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1885,3 +1930,56 @@ class PeacockMiniPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
+// --- CRISP GENDER SYMBOL PAINTER (EXACT MARS/VENUS VECTORS) ---
+class GenderSymbolPainter extends CustomPainter {
+  final String gender;
+  final Color color;
+  const GenderSymbolPainter({required this.gender, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final strokePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+
+    if (gender == 'MALE') {
+      // Mars symbol: circle at lower-left, arrow pointing to upper-right
+      const radius = 4.8;
+      final circleCenter = Offset(cx - 2.2, cy + 2.2);
+      canvas.drawCircle(circleCenter, radius, strokePaint);
+
+      final arrowEnd = Offset(cx + 6.2, cy - 6.2);
+      final arrowStart = Offset(
+        circleCenter.dx + radius * 0.7071,
+        circleCenter.dy - radius * 0.7071,
+      );
+      canvas.drawLine(arrowStart, arrowEnd, strokePaint);
+      // Arrowhead
+      canvas.drawLine(arrowEnd, Offset(arrowEnd.dx - 4.5, arrowEnd.dy), strokePaint);
+      canvas.drawLine(arrowEnd, Offset(arrowEnd.dx, arrowEnd.dy + 4.5), strokePaint);
+    } else if (gender == 'FEMALE') {
+      // Venus symbol: circle at upper-center, cross pointing downward
+      const radius = 4.8;
+      final circleCenter = Offset(cx, cy - 2.5);
+      canvas.drawCircle(circleCenter, radius, strokePaint);
+
+      final stemStart = Offset(cx, circleCenter.dy + radius);
+      final stemEnd = Offset(cx, cy + 7.0);
+      canvas.drawLine(stemStart, stemEnd, strokePaint);
+      // Crossbar
+      canvas.drawLine(Offset(cx - 3.5, cy + 3.8), Offset(cx + 3.5, cy + 3.8), strokePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant GenderSymbolPainter oldDelegate) =>
+      oldDelegate.gender != gender || oldDelegate.color != color;
+}
+
