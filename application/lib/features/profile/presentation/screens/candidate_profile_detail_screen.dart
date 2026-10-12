@@ -28,8 +28,6 @@ class CandidateProfileDetailScreen extends ConsumerStatefulWidget {
 
 class _CandidateProfileDetailScreenState
     extends ConsumerState<CandidateProfileDetailScreen> {
-  bool _isShortlisted = false;
-  bool _isProcessingShortlist = false;
 
   @override
   Widget build(BuildContext context) {
@@ -459,7 +457,7 @@ class _CandidateProfileDetailScreenState
                   ? NetworkImage(profile.fullPhotoUrl!)
                   : null,
               onBackgroundImageError: profile.fullPhotoUrl != null
-                  ? (_, __) {}
+                  ? (e, s) {}
                   : null,
               child: profile.fullPhotoUrl == null
                   ? const Icon(Icons.person, size: 55, color: Color(0xFFFFD700))
@@ -860,6 +858,7 @@ class _CandidateProfileDetailScreenState
     final isOwner = (authState.user?.id != null && authState.user!.id == profile.id) ||
                     (myProfile != null && myProfile.id == profile.id);
 
+    final isLiked = ref.watch(isProfileLikedProvider(profile.id));
     final connStatusAsync = ref.watch(connectionStatusProvider(profile.id));
 
     return Container(
@@ -879,21 +878,26 @@ class _CandidateProfileDetailScreenState
         top: false,
         child: Row(
           children: [
-            // Shortlist Icon Button
+            // Shortlist / Like Icon Button
             Container(
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: _isShortlisted ? Colors.redAccent : Colors.grey.shade300,
+                  color: isLiked ? Colors.redAccent : Colors.grey.shade300,
                 ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
-                onPressed: _isProcessingShortlist ? null : () => _toggleShortlist(profile),
-                icon: Icon(
-                  _isShortlisted ? Icons.favorite : Icons.favorite_border,
-                  color: _isShortlisted ? Colors.redAccent : Colors.grey.shade700,
+                onPressed: () => ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context),
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                  child: Icon(
+                    isLiked ? Icons.favorite : Icons.favorite_border,
+                    key: ValueKey<bool>(isLiked),
+                    color: isLiked ? Colors.redAccent : Colors.grey.shade700,
+                  ),
                 ),
-                tooltip: 'Shortlist (પસંદ કરો)',
+                tooltip: isLiked ? 'પસંદ કરેલ લિસ્ટમાંથી દૂર કરો' : 'Shortlist (પસંદ કરો)',
               ),
             ),
             const SizedBox(width: 12),
@@ -921,7 +925,7 @@ class _CandidateProfileDetailScreenState
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
-                      error: (_, __) => _buildConnectButton(context, profile),
+                      error: (e, s) => _buildConnectButton(context, profile),
                       data: (status) => _buildConnectionButton(context, profile, status),
                     ),
             ),
@@ -1062,51 +1066,7 @@ class _CandidateProfileDetailScreenState
     }
   }
 
-  Future<void> _toggleShortlist(ProfileModel profile) async {
-    if (_isProcessingShortlist) return;
-    setState(() => _isProcessingShortlist = true);
 
-    try {
-      final dio = ref.read(apiClientProvider);
-      final newShortlistState = !_isShortlisted;
-
-      if (newShortlistState) {
-        try {
-          await dio.post('/shortlists', data: {'targetProfileId': profile.id});
-        } catch (_) {}
-      } else {
-        try {
-          await dio.delete('/shortlists/${profile.id}');
-        } catch (_) {}
-      }
-
-      if (mounted) {
-        setState(() {
-          _isShortlisted = newShortlistState;
-          _isProcessingShortlist = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              _isShortlisted
-                  ? 'પ્રોફાઇલ પસંદ કરી શોર્ટલિસ્ટમાં ઉમેરી! (Profile Shortlisted!)'
-                  : 'શોર્ટલિસ્ટમાંથી દૂર કરી. (Removed from Shortlist)',
-            ),
-            backgroundColor: _isShortlisted ? Colors.green : Colors.grey.shade800,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    } catch (_) {
-      if (mounted) {
-        setState(() {
-          _isShortlisted = !_isShortlisted;
-          _isProcessingShortlist = false;
-        });
-      }
-    }
-  }
 
   void _expressInterest(BuildContext context, ProfileModel profile) {
     showModalBottomSheet(

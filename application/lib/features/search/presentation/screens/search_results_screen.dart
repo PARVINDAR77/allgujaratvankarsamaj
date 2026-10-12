@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
+import '../../../profile/providers/liked_profiles_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
@@ -1543,19 +1544,14 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 }
 
 // --- FAVORITE / LIKE BUTTON WITH GOLD EMBOSSED CIRCLE ---
-class _FavoriteIconButton extends StatefulWidget {
+class _FavoriteIconButton extends ConsumerWidget {
   final ProfileModel profile;
   const _FavoriteIconButton({required this.profile});
 
   @override
-  State<_FavoriteIconButton> createState() => _FavoriteIconButtonState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isLiked = ref.watch(isProfileLikedProvider(profile.id));
 
-class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
-  bool _isLiked = false;
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
       width: 40,
       height: 40,
@@ -1588,31 +1584,22 @@ class _FavoriteIconButtonState extends State<_FavoriteIconButton> {
         child: Material(
           color: Colors.transparent,
           child: Tooltip(
-            message: _isLiked ? 'પસંદ કરેલ (Liked)' : 'પસંદ કરો (Like)',
+            message: isLiked ? 'પસંદ કરેલ (Liked)' : 'પસંદ કરો (Like)',
             child: InkWell(
               customBorder: const CircleBorder(),
               onTap: () {
-                setState(() {
-                  _isLiked = !_isLiked;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      _isLiked
-                          ? '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} ની પ્રોફાઇલ પસંદ કરી છે!'
-                          : '${widget.profile.fullName.isNotEmpty ? widget.profile.fullName : "ઉમેદવાર"} લિસ્ટમાંથી દૂર થઈ',
-                    ),
-                    backgroundColor: _isLiked ? const Color(0xFFC2185B) : Colors.black87,
-                    duration: const Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
+                ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context);
               },
               child: Center(
-                child: Icon(
-                  _isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                  color: _isLiked ? const Color(0xFFE91E63) : const Color(0xFF3E2723),
-                  size: 20,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                  child: Icon(
+                    isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                    key: ValueKey<bool>(isLiked),
+                    color: isLiked ? const Color(0xFFE91E63) : const Color(0xFF3E2723),
+                    size: 20,
+                  ),
                 ),
               ),
             ),
