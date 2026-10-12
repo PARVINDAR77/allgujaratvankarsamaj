@@ -220,19 +220,11 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  // --- 1. ROYAL HEADER WITH ORNATE GOLD BUTTONS & FILIGREE ---
+  // --- 1. ROYAL HEADER WITH ORNATE GOLD BUTTONS & PEACOCK BANNER ---
   Widget _buildRoyalHeader(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF011C2B),
-            Color(0xFF082D3B),
-            Color(0xFF220A35),
-          ],
-        ),
+        color: Color(0xFF011C2B),
         boxShadow: [
           BoxShadow(
             color: Colors.black54,
@@ -243,42 +235,25 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       ),
       child: Stack(
         children: [
-          // Background Real Peacock Feather Corner Ornaments
-          Positioned(
-            left: -6,
-            top: -8,
-            width: 46,
-            height: 58,
-            child: IgnorePointer(
-              child: Transform.rotate(
-                angle: -0.35,
-                child: Opacity(
-                  opacity: 0.75,
-                  child: Image.asset(
-                    'assets/images/real_peacock_feather.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
+          // Background Luxury Peacock Nebula Banner
+          Positioned.fill(
+            child: Image.asset(
+              'assets/images/peacock_header_banner.jpg',
+              fit: BoxFit.cover,
+              alignment: Alignment.centerLeft,
             ),
           ),
-          Positioned(
-            right: -6,
-            top: -8,
-            width: 46,
-            height: 58,
-            child: IgnorePointer(
-              child: Transform.flip(
-                flipX: true,
-                child: Transform.rotate(
-                  angle: 0.35,
-                  child: Opacity(
-                    opacity: 0.75,
-                    child: Image.asset(
-                      'assets/images/real_peacock_feather.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.black.withValues(alpha: 0.25),
+                    Colors.transparent,
+                    const Color(0xFF220A35).withValues(alpha: 0.45),
+                  ],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
                 ),
               ),
             ),
@@ -304,22 +279,43 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 ),
                 const SizedBox(width: 8),
 
-                // Title with Rich Gold Glow
+                // Title with Rich 3D Gold Glow
                 Expanded(
-                  child: Text(
-                    'Search Profiles (ઉમેદવાર શોધ)',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFFFFDF00),
-                      fontSize: 17.5,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 2)),
-                        Shadow(color: Color(0x88FFD700), blurRadius: 10),
-                      ],
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        'Search Profiles (ઉમેદવાર શોધ)',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFFFFDF00),
+                          fontSize: 17.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
+                          shadows: [
+                            Shadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 2)),
+                            Shadow(color: Color(0xAAFFD700), blurRadius: 10),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Container(
+                        width: 140,
+                        height: 1.8,
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.transparent,
+                              Color(0xFFFFDF73),
+                              Color(0xFFD4AF37),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -458,38 +454,52 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [
-                  Color(0xFFE8F6F8),
-                  Color(0xFFF3FAFB),
+                  Color(0xFF00796B),
+                  Color(0xFF004D40),
+                  Color(0xFF00332B),
                 ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFF80DEEA), width: 1.5),
-              boxShadow: const [
+              border: Border.all(color: const Color(0xFFD4AF37), width: 2.2),
+              boxShadow: [
                 BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 4,
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+                const BoxShadow(
+                  color: Colors.black45,
+                  blurRadius: 5,
                   offset: Offset(0, 2),
                 ),
               ],
             ),
             child: Row(
               children: [
-                // Filter square-rounded tile (Electric Blue)
+                // Filter circular medallion badge
                 Container(
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFFFDF73), width: 1.6),
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF00A2FF), Color(0xFF0066CC)],
+                      colors: [Color(0xFF00A896), Color(0xFF028090)],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 3,
+                        offset: Offset(0, 1.5),
+                      ),
+                    ],
                   ),
                   child: const Center(
-                    child: Icon(Icons.tune_rounded, color: Colors.white, size: 22),
+                    child: Icon(Icons.filter_list_rounded, color: Colors.white, size: 21),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -500,21 +510,28 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       Text(
                         'ફિલ્ટર દ્વારા શોધો (Search by Filter)',
                         style: TextStyle(
-                          color: Color(0xFF0056B3),
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 13.5,
                           letterSpacing: 0.2,
+                          shadows: [
+                            Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(0, 1)),
+                          ],
                         ),
                       ),
                       SizedBox(height: 1.5),
                       Text(
                         'પરગણા, જિલ્લો, શિક્ષણ, વ્યવસાય સાથે વિગતવાર શોધો',
-                        style: TextStyle(color: Color(0xFF5A6E85), fontSize: 10.8),
+                        style: TextStyle(
+                          color: Color(0xFFB2DFDB),
+                          fontSize: 10.8,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF0056B3), size: 16),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 16),
               ],
             ),
           ),
@@ -647,14 +664,21 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       margin: const EdgeInsets.fromLTRB(14, 2, 14, 6),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7.5),
       decoration: BoxDecoration(
-        color: const Color(0xFFE0F7F6),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFFDF8),
+            Color(0xFFF8F2DB),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFF80CBC4), width: 1.5),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 2.0),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 3,
-            offset: Offset(0, 1.5),
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -663,7 +687,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
           Text(
             symbol,
             style: const TextStyle(
-              color: Color(0xFF00796B),
+              color: Color(0xFF006D77),
               fontWeight: FontWeight.w900,
               fontSize: 18,
             ),
@@ -673,7 +697,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             child: Text(
               '$title • $count પ્રોફાઇલ ઉપલબ્ધ',
               style: const TextStyle(
-                color: Color(0xFF004D40),
+                color: Color(0xFF00382E),
                 fontWeight: FontWeight.bold,
                 fontSize: 12.5,
               ),
@@ -690,11 +714,14 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             ),
           ],
           const SizedBox(width: 6),
-          Image.asset(
-            'assets/images/real_peacock_feather.png',
-            width: 20,
-            height: 20,
-            fit: BoxFit.contain,
+          Transform.rotate(
+            angle: 1.48, // horizontal peacock feather accent
+            child: Image.asset(
+              'assets/images/real_peacock_feather.png',
+              width: 24,
+              height: 24,
+              fit: BoxFit.contain,
+            ),
           ),
         ],
       ),
@@ -726,19 +753,36 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2D6A5), width: 1.6),
-        boxShadow: const [
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFFFDF8),
+            Color(0xFFFFFBEF),
+            Color(0xFFF7EED4),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: const Color(0xFFD4AF37),
+          width: 2.2,
+        ),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black26,
-            blurRadius: 6,
-            offset: Offset(0, 3),
+            color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+            blurRadius: 8,
+            spreadRadius: 1,
+            offset: const Offset(0, 2),
+          ),
+          const BoxShadow(
+            color: Colors.black38,
+            blurRadius: 8,
+            offset: Offset(0, 4),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(17),
+        borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
             // Left decorative peacock wing with golden border
@@ -750,19 +794,18 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               ),
             ),
 
-            // Authentic Photorealistic Royal Peacock Feather Ornament in lower corner
+            // Authentic Baroque Golden Filigree & Iridescent Peacock Feather
             Positioned(
-              left: -10,
-              bottom: -6,
-              width: 88,
-              height: 100,
+              left: 0,
+              bottom: 0,
+              width: 104,
+              height: 104,
               child: IgnorePointer(
-                child: Transform.rotate(
-                  angle: 0.28,
-                  child: Image.asset(
-                    'assets/images/real_peacock_feather.png',
-                    fit: BoxFit.contain,
-                  ),
+                child: Image.asset(
+                  isAlternatePurple
+                      ? 'assets/images/royal_peacock_corner_purple.png'
+                      : 'assets/images/royal_peacock_corner_teal.png',
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
