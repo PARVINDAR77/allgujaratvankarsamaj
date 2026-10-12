@@ -66,7 +66,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isCommunityPublicRoute = location.startsWith('/pavan-prernadata') ||
           location.startsWith('/samaj-services') ||
           location.startsWith('/samaj-super-stars') ||
-          location.startsWith('/government-employees');
+          location.startsWith('/government-employees') ||
+          location.startsWith('/private-employees') ||
+          location.startsWith('/statistics');
 
       final isPublicRoute = isLoggingIn ||
           location == '/privacy-policy' ||
