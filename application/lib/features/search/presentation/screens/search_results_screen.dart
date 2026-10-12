@@ -224,7 +224,15 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   Widget _buildRoyalHeader(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF011C2B),
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF011824),
+            Color(0xFF042838),
+            Color(0xFF1E062B),
+          ],
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black54,
@@ -235,25 +243,40 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       ),
       child: Stack(
         children: [
-          // Background Luxury Peacock Nebula Banner
-          Positioned.fill(
-            child: Image.asset(
-              'assets/images/peacock_header_banner.jpg',
-              fit: BoxFit.cover,
-              alignment: Alignment.centerLeft,
+          // Corner Royal Peacock Feather behind Back button
+          Positioned(
+            left: -6,
+            top: -12,
+            width: 65,
+            height: 78,
+            child: IgnorePointer(
+              child: Transform.rotate(
+                angle: -0.28,
+                child: Image.asset(
+                  'assets/images/real_peacock_feather.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
             ),
           ),
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withValues(alpha: 0.25),
-                    Colors.transparent,
-                    const Color(0xFF220A35).withValues(alpha: 0.45),
-                  ],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
+          // Subtle purple aura behind Filter button
+          Positioned(
+            right: -6,
+            top: -10,
+            width: 50,
+            height: 65,
+            child: IgnorePointer(
+              child: Transform.flip(
+                flipX: true,
+                child: Transform.rotate(
+                  angle: 0.32,
+                  child: Opacity(
+                    opacity: 0.55,
+                    child: Image.asset(
+                      'assets/images/real_peacock_feather.png',
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -714,13 +737,18 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             ),
           ],
           const SizedBox(width: 6),
-          Transform.rotate(
-            angle: 1.48, // horizontal peacock feather accent
-            child: Image.asset(
-              'assets/images/real_peacock_feather.png',
-              width: 24,
-              height: 24,
-              fit: BoxFit.contain,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: SizedBox(
+              width: 32,
+              height: 20,
+              child: Transform.rotate(
+                angle: 1.57,
+                child: Image.asset(
+                  'assets/images/real_peacock_feather.png',
+                  fit: BoxFit.cover,
+                ),
+              ),
             ),
           ),
         ],
@@ -728,13 +756,9 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     );
   }
 
-  // --- 6. ROYAL ORNATE CANDIDATE PROFILE CARD (EXACT AS SCREENSHOT) ---
+  // --- 6. ROYAL ORNATE CANDIDATE PROFILE CARD (EXACT AS TARGET SCREENSHOT) ---
   Widget _buildProfileCard(BuildContext context, ProfileModel profile, int index) {
     final isGirl = profile.isFemale;
-
-    // Harmonious jewel button gradients matching Image 2:
-    // Card 1 & 3: Glossy Emerald/Teal gradient
-    // Card 2: Glossy Royal Purple gradient
     final isAlternatePurple = index % 2 == 1;
     final buttonGradient = (isGirl || isAlternatePurple)
         ? const LinearGradient(
@@ -748,7 +772,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             end: Alignment.bottomCenter,
           );
 
-    final avatarCircleBg = isAlternatePurple ? const Color(0xFFF3E5F5) : const Color(0xFFE0F2F1);
+    final hasPhoto = profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -785,213 +809,183 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
         borderRadius: BorderRadius.circular(18),
         child: Stack(
           children: [
-            // Left decorative peacock wing with golden border
-            Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: PeacockCardWingPainter(isPurple: isAlternatePurple),
-                ),
-              ),
-            ),
-
-            // Authentic Baroque Golden Filigree & Iridescent Peacock Feather
+            // 1. Full-Height Seamless Royal Baroque Peacock Wing Asset (width 82)
             Positioned(
               left: 0,
+              top: 0,
               bottom: 0,
-              width: 104,
-              height: 104,
+              width: 82,
               child: IgnorePointer(
                 child: Image.asset(
                   isAlternatePurple
-                      ? 'assets/images/royal_peacock_corner_purple.png'
-                      : 'assets/images/royal_peacock_corner_teal.png',
-                  fit: BoxFit.cover,
+                      ? 'assets/images/royal_card_wing_purple_full.png'
+                      : 'assets/images/royal_card_wing_teal_full.png',
+                  fit: BoxFit.fill,
                 ),
               ),
             ),
 
-            // Main Card Content
+            // 2. Avatar Tap Target & Photo Overlay (inside the golden medallion)
+            Positioned(
+              left: 0,
+              top: 0,
+              width: 82,
+              height: 82,
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () => context.push('/candidate-profile-details', extra: profile),
+                  customBorder: const CircleBorder(),
+                  child: hasPhoto
+                      ? Center(
+                          child: Container(
+                            margin: const EdgeInsets.only(left: 3, top: 2),
+                            width: 44,
+                            height: 44,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            child: ClipOval(
+                              child: Image.network(
+                                profile.fullPhotoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                              ),
+                            ),
+                          ),
+                        )
+                      : const SizedBox.expand(),
+                ),
+              ),
+            ),
+
+            // 3. Main Candidate Details (Padded cleanly to the right of the ornate wing)
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 12, 10),
+              padding: const EdgeInsets.fromLTRB(86, 10, 10, 10),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Row 1: Name and Gender Pill Badge
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar with Double Concentric Embossed Gold Ring Medallion
-                      InkWell(
-                        onTap: () => context.push('/candidate-profile-details', extra: profile),
-                        child: Container(
-                          width: 74,
-                          height: 74,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFEA88), Color(0xFFD4AF37), Color(0xFF8B5A10)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.25),
-                                blurRadius: 5,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                      Expanded(
+                        child: Text(
+                          profile.fullName.isNotEmpty ? profile.fullName : 'User Member',
+                          style: const TextStyle(
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0F2D37),
+                            height: 1.15,
                           ),
-                          padding: const EdgeInsets.all(2.5),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: avatarCircleBg,
-                              border: Border.all(color: const Color(0xFFFFDF73), width: 1.0),
-                            ),
-                            child: ClipOval(
-                              child: (profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty)
-                                  ? Image.network(
-                                      profile.fullPhotoUrl!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) => StylizedAvatarFace(isFemale: isGirl, isPurple: isAlternatePurple),
-                                    )
-                                  : StylizedAvatarFace(isFemale: isGirl, isPurple: isAlternatePurple),
-                            ),
-                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      const SizedBox(width: 14),
-
-                      // Candidate Details
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Name & Gender Pill Badge
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    profile.fullName.isNotEmpty ? profile.fullName : 'User Member',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w800,
-                                      color: Color(0xFF0F2D37),
-                                      height: 1.15,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFE0F7F0),
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: const Color(0xFF80CBC4), width: 1.0),
-                                  ),
-                                  child: Text(
-                                    isGirl ? '👧 કન્યા (Bride)' : '👦 વર (Groom)',
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF00695C),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 5),
-
-                            // Sky Blue ID Capsule with Copy Action
-                            InkWell(
-                              onTap: () {
-                                final idToCopy = profile.id.isNotEmpty ? profile.id : profile.displayId;
-                                if (idToCopy.isNotEmpty) {
-                                  Clipboard.setData(ClipboardData(text: idToCopy));
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('ID કોપી થયો: $idToCopy'),
-                                      backgroundColor: const Color(0xFF006D77),
-                                      duration: const Duration(seconds: 2),
-                                      behavior: SnackBarBehavior.floating,
-                                    ),
-                                  );
-                                }
-                              },
-                              borderRadius: BorderRadius.circular(6),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE1F0FF),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(color: const Color(0xFF90CAF9), width: 1.0),
-                                ),
-                                child: Text(
-                                  'ID: ${profile.id.isNotEmpty ? profile.id : (profile.displayId.isNotEmpty ? profile.displayId : "d651408e-a133-4989-ae72-3a5efdaba695")}',
-                                  style: const TextStyle(
-                                    fontSize: 10.2,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1976D2),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 5),
-
-                            // Profession Row
-                            Row(
-                              children: [
-                                const Icon(Icons.work_rounded, size: 14, color: Color(0xFF475569)),
-                                const SizedBox(width: 5),
-                                Expanded(
-                                  child: Text(
-                                    profile.displayProfession.isNotEmpty ? profile.displayProfession : 'Not specified',
-                                    style: const TextStyle(
-                                      color: Color(0xFF475569),
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 3),
-
-                            // Location Row
-                            Row(
-                              children: [
-                                const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF475569)),
-                                const SizedBox(width: 5),
-                                Expanded(
-                                  child: Text(
-                                    profile.displayLocation.isNotEmpty ? profile.displayLocation : 'Not specified',
-                                    style: const TextStyle(
-                                      color: Color(0xFF475569),
-                                      fontSize: 11.5,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE0F7F0),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: const Color(0xFF80CBC4), width: 1.0),
+                        ),
+                        child: Text(
+                          isGirl ? '👧 કન્યા (Bride)' : '👦 વર (Groom)',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF00695C),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 5),
 
-                  // Bottom Action Buttons: Metallic View Profile + Golden Heart
+                  // Row 2: Sky Blue ID Capsule with Copy Action
+                  InkWell(
+                    onTap: () {
+                      final idToCopy = profile.id.isNotEmpty ? profile.id : profile.displayId;
+                      if (idToCopy.isNotEmpty) {
+                        Clipboard.setData(ClipboardData(text: idToCopy));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('ID કોપી થયો: $idToCopy'),
+                            backgroundColor: const Color(0xFF006D77),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(6),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE1F0FF),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF90CAF9), width: 1.0),
+                      ),
+                      child: Text(
+                        'ID: ${profile.id.isNotEmpty ? profile.id : (profile.displayId.isNotEmpty ? profile.displayId : "d651408e-a133-4989-ae72-3a5efdaba695")}',
+                        style: const TextStyle(
+                          fontSize: 10.2,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1976D2),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+
+                  // Row 3: Profession Row
                   Row(
                     children: [
-                      const SizedBox(width: 82), // Indent past the left peacock arc
+                      const Icon(Icons.work_rounded, size: 14, color: Color(0xFF475569)),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          profile.displayProfession.isNotEmpty ? profile.displayProfession : 'Not specified',
+                          style: const TextStyle(
+                            color: Color(0xFF475569),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 3),
+
+                  // Row 4: Location Row
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF475569)),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          profile.displayLocation.isNotEmpty ? profile.displayLocation : 'Not specified',
+                          style: const TextStyle(
+                            color: Color(0xFF475569),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Row 5: Action buttons (View Profile + Heart)
+                  Row(
+                    children: [
                       Expanded(
                         child: Material(
                           color: Colors.transparent,
@@ -1001,7 +995,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             },
                             borderRadius: BorderRadius.circular(24),
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 8.5, horizontal: 12),
+                              padding: const EdgeInsets.symmetric(vertical: 7.5, horizontal: 10),
                               decoration: BoxDecoration(
                                 gradient: buttonGradient,
                                 borderRadius: BorderRadius.circular(24),
@@ -1021,20 +1015,20 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                     'View Profile (વિગતવાર જુઓ)',
                                     style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 12,
+                                      fontSize: 11.5,
                                       fontWeight: FontWeight.bold,
                                       letterSpacing: 0.2,
                                     ),
                                   ),
-                                  SizedBox(width: 5),
-                                  Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 12),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 11),
                                 ],
                               ),
                             ),
                           ),
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       _FavoriteIconButton(profile: profile),
                     ],
                   ),
