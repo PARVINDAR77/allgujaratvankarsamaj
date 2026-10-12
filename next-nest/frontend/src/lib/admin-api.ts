@@ -184,6 +184,51 @@ export interface SamajServicePersonItem {
   };
 }
 
+export interface MatchCandidate {
+  id: string;
+  name: string;
+  pargana: string;
+  district: string;
+  city?: string;
+  age?: number;
+  gender?: string;
+  photoUrl?: string | null;
+  isVerified?: boolean;
+  education?: string;
+  occupation?: string;
+  phone?: string;
+  email?: string;
+}
+
+export interface AdminMatchItem {
+  id: string;
+  senderProfileId: string;
+  receiverProfileId: string;
+  candidateA: MatchCandidate;
+  candidateB: MatchCandidate;
+  compatibility: string;
+  matchScore?: string;
+  status: "PENDING" | "ACCEPTED" | "DECLINED" | string;
+  createdAt: string;
+  matchDate: string;
+  date?: string;
+  userA?: any;
+  userB?: any;
+}
+
+export interface AdminMatchStats {
+  totalMatches: number;
+  mutualInterests: number;
+  acceptedProposals: number;
+  pendingReview: number;
+  rejectedPass: number;
+}
+
+export interface AdminMatchResponse {
+  stats: AdminMatchStats;
+  items: AdminMatchItem[];
+}
+
 export const adminApi = {
   async login(email: string, password: string): Promise<{ message: string; user: any; accessToken?: string }> {
     const res = await adminFetch(`${API_BASE_URL}/auth/login`, {
@@ -454,9 +499,25 @@ export const adminApi = {
     } catch (error) { throw error; }
   },
 
-  async getMatches() {
+  async getMatches(params?: { status?: string; search?: string }): Promise<AdminMatchResponse> {
     try {
-      const res = await adminFetch(`${API_BASE_URL}/admin/matches`, { headers: getAuthHeaders() });
+      const query = new URLSearchParams();
+      if (params?.status && params.status !== "ALL") query.append("status", params.status);
+      if (params?.search) query.append("search", params.search);
+      const queryString = query.toString();
+      const url = `${API_BASE_URL}/admin/matches${queryString ? `?${queryString}` : ""}`;
+      const res = await adminFetch(url, { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      return await res.json();
+    } catch (error) { throw error; }
+  },
+
+  async deleteMatch(id: string): Promise<any> {
+    try {
+      const res = await adminFetch(`${API_BASE_URL}/admin/matches/${id}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(),
+      });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return await res.json();
     } catch (error) { throw error; }
