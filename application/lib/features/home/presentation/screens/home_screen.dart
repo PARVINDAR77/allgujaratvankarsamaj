@@ -474,7 +474,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 2, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315), 'HOME_UNITY', '/advertisement'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 2, 'Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315), 'HOME_UNITY', '/advertisement?section=HOME_UNITY'),
                     ),
                   ),
                 ),
@@ -513,7 +513,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
-                      onTap: () => _handleBottomButtonTap(context, ref, 5, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0), 'HOME_STRONG_ROOTS', '/advertisement'),
+                      onTap: () => _handleBottomButtonTap(context, ref, 5, 'Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0), 'HOME_STRONG_ROOTS', '/advertisement?section=HOME_STRONG_ROOTS'),
                     ),
                   ),
                 ),

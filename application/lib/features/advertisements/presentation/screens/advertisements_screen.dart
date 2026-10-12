@@ -3,11 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/advertisement_model.dart';
+import '../../../home/presentation/providers/view_badge.dart';
+import '../../../home/presentation/providers/views_provider.dart';
 import '../../providers/advertisements_provider.dart';
 
 class AdvertisementsScreen extends ConsumerStatefulWidget {
   final String? placement;
-  const AdvertisementsScreen({super.key, this.placement});
+  final String? section;
+  const AdvertisementsScreen({super.key, this.placement, this.section});
 
   @override
   ConsumerState<AdvertisementsScreen> createState() => _AdvertisementsScreenState();
@@ -16,6 +19,16 @@ class AdvertisementsScreen extends ConsumerStatefulWidget {
 class _AdvertisementsScreenState extends ConsumerState<AdvertisementsScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.section != null && widget.section!.isNotEmpty) {
+        ref.read(incrementViewProvider)(widget.section!);
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -202,14 +215,23 @@ class _AdvertisementsScreenState extends ConsumerState<AdvertisementsScreen> {
                     },
                   ),
                 ),
-                Material(
-                  color: Colors.black54,
-                  shape: const CircleBorder(),
-                  child: IconButton(
-                    icon: const Icon(Icons.refresh, color: Color(0xFFD4AF37), size: 28),
-                    tooltip: 'Refresh Advertisements',
-                    onPressed: () => ref.refresh(advertisementsProvider),
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (widget.section != null && widget.section!.isNotEmpty) ...[
+                      ViewBadge(sectionName: widget.section!, isLight: false),
+                      const SizedBox(width: 8),
+                    ],
+                    Material(
+                      color: Colors.black54,
+                      shape: const CircleBorder(),
+                      child: IconButton(
+                        icon: const Icon(Icons.refresh, color: Color(0xFFD4AF37), size: 28),
+                        tooltip: 'Refresh Advertisements',
+                        onPressed: () => ref.refresh(advertisementsProvider),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

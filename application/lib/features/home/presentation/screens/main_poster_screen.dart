@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../features/advertisements/providers/advertisements_provider.dart';
 import '../providers/notifications_provider.dart';
+import '../providers/view_badge.dart';
+import '../providers/views_provider.dart';
 import '../widgets/notifications_dialog.dart';
 import '../widgets/community_navigation_menu.dart';
 class MainPosterScreen extends ConsumerStatefulWidget {
@@ -31,6 +33,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
     if (state == AppLifecycleState.resumed) {
       // Invalidate the provider on resume so it fetches fresh data
       ref.invalidate(advertisementsProvider);
+      ref.invalidate(viewsProvider);
     }
   }
 
@@ -281,76 +284,141 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
 
                           // 12. Bottom Icon 1: Education for Better Tomorrow
                           Positioned(
-                            left: w * 0.04,
+                            left: w * 0.00,
                             top: h * 0.86,
-                            width: w * 0.14,
-                            height: h * 0.10,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/education'),
-                              ),
+                            width: w * 0.20,
+                            height: h * 0.12,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(50),
+                                      onTap: () {
+                                        ref.read(incrementViewProvider)('HOME_EDUCATION');
+                                        context.push('/education');
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_EDUCATION')),
+                                ),
+                              ],
                             ),
                           ),
 
                           // 13. Bottom Icon 2: Unity in Diversity (Advertisement Space 1)
                           Positioned(
-                            left: w * 0.23,
+                            left: w * 0.20,
                             top: h * 0.86,
-                            width: w * 0.14,
-                            height: h * 0.10,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/advertisement'),
-                              ),
+                            width: w * 0.20,
+                            height: h * 0.12,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(50),
+                                      onTap: () {
+                                        ref.read(incrementViewProvider)('HOME_UNITY');
+                                        context.push('/advertisement?section=HOME_UNITY');
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_UNITY')),
+                                ),
+                              ],
                             ),
                           ),
 
                           // 14. Bottom Icon 3: Progress Through Support (Live Statistics)
                           Positioned(
-                            left: w * 0.43,
+                            left: w * 0.40,
                             top: h * 0.86,
-                            width: w * 0.14,
-                            height: h * 0.10,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/statistics'),
-                              ),
+                            width: w * 0.20,
+                            height: h * 0.12,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(50),
+                                      onTap: () {
+                                        ref.read(incrementViewProvider)('HOME_PROGRESS');
+                                        context.push('/statistics');
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_PROGRESS')),
+                                ),
+                              ],
                             ),
                           ),
 
                           // 15. Bottom Icon 4: Service to Society (Today's Birthdays)
                           Positioned(
-                            left: w * 0.63,
+                            left: w * 0.60,
                             top: h * 0.86,
-                            width: w * 0.14,
-                            height: h * 0.10,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/birthdays'),
-                              ),
+                            width: w * 0.20,
+                            height: h * 0.12,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(50),
+                                      onTap: () {
+                                        ref.read(incrementViewProvider)('HOME_SERVICE');
+                                        context.push('/birthdays');
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_SERVICE')),
+                                ),
+                              ],
                             ),
                           ),
 
                           // 16. Bottom Icon 5: Strong Roots Bright Future (Advertisement Space 2)
                           Positioned(
-                            left: w * 0.82,
+                            left: w * 0.80,
                             top: h * 0.86,
-                            width: w * 0.14,
-                            height: h * 0.10,
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(50),
-                                onTap: () => context.push('/advertisement'),
-                              ),
+                            width: w * 0.20,
+                            height: h * 0.12,
+                            child: Stack(
+                              children: [
+                                Positioned.fill(
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      borderRadius: BorderRadius.circular(50),
+                                      onTap: () {
+                                        ref.read(incrementViewProvider)('HOME_STRONG_ROOTS');
+                                        context.push('/advertisement?section=HOME_STRONG_ROOTS');
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                const Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_STRONG_ROOTS')),
+                                ),
+                              ],
                             ),
                           ),
                         ],

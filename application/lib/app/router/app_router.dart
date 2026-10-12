@@ -241,7 +241,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: 'advertisement',
         builder: (context, state) {
           final placement = state.uri.queryParameters['placement'];
-          return AdvertisementsScreen(placement: placement);
+          final section = state.uri.queryParameters['section'];
+          return AdvertisementsScreen(placement: placement, section: section);
         },
       ),
       GoRoute(

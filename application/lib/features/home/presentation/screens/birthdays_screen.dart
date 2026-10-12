@@ -4,11 +4,27 @@ import '../../data/statistics_api.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 
-class BirthdaysScreen extends ConsumerWidget {
+import '../providers/view_badge.dart';
+import '../providers/views_provider.dart';
+
+class BirthdaysScreen extends ConsumerStatefulWidget {
   const BirthdaysScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BirthdaysScreen> createState() => _BirthdaysScreenState();
+}
+
+class _BirthdaysScreenState extends ConsumerState<BirthdaysScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(incrementViewProvider)('HOME_SERVICE');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final birthdaysAsync = ref.watch(todaysBirthdaysProvider);
 
     return Scaffold(
@@ -22,6 +38,15 @@ class BirthdaysScreen extends ConsumerWidget {
         ),
         iconTheme: const IconThemeData(color: Color(0xFF041126)),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Color(0xFF041126)),
+            tooltip: 'Refresh',
+            onPressed: () => ref.refresh(todaysBirthdaysProvider),
+          ),
+          const Center(child: ViewBadge(sectionName: 'HOME_SERVICE', isLight: true)),
+          const SizedBox(width: 14),
+        ],
       ),
       body: birthdaysAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
