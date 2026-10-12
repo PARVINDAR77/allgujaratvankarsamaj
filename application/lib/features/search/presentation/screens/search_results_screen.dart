@@ -260,7 +260,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                 // Title with Rich Gold Glow
                 Expanded(
                   child: Text(
-                    'Search Profiles (ઉમેદવાર શોધ)',
+                    'Search Profiles (ઉમેદવાર શોધો)',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Color(0xFFFFDF00),
@@ -1650,15 +1650,15 @@ class PeacockHeaderOrnamentPainter extends CustomPainter {
     final goldFill = Paint()..color = const Color(0xFFFFD700)..style = PaintingStyle.fill;
     final darkEye = Paint()..color = const Color(0xFF051026)..style = PaintingStyle.fill;
 
-    // Top-left peacock feather eye
-    canvas.drawOval(Rect.fromCenter(center: const Offset(54, 12), width: 18, height: 12), cyanPaint);
-    canvas.drawOval(Rect.fromCenter(center: const Offset(54, 12), width: 12, height: 8), goldFill);
-    canvas.drawCircle(const Offset(54, 12), 3, darkEye);
+    // Top-left peacock feather eye (crowning the back button)
+    canvas.drawOval(Rect.fromCenter(center: const Offset(36, 10), width: 18, height: 12), cyanPaint);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(36, 10), width: 12, height: 8), goldFill);
+    canvas.drawCircle(const Offset(36, 10), 3, darkEye);
 
-    // Top-right peacock feather eye
-    canvas.drawOval(Rect.fromCenter(center: Offset(size.width - 54, 12), width: 18, height: 12), cyanPaint);
-    canvas.drawOval(Rect.fromCenter(center: Offset(size.width - 54, 12), width: 12, height: 8), goldFill);
-    canvas.drawCircle(Offset(size.width - 54, 12), 3, darkEye);
+    // Top-right peacock feather eye (crowning the filter button)
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width - 36, 10), width: 18, height: 12), cyanPaint);
+    canvas.drawOval(Rect.fromCenter(center: Offset(size.width - 36, 10), width: 12, height: 8), goldFill);
+    canvas.drawCircle(Offset(size.width - 36, 10), 3, darkEye);
 
     // Decorative golden scroll curves under title
     final scrollPath = Path();
