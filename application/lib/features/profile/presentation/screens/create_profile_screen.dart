@@ -286,17 +286,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       return;
     }
 
-    // 2. Email validation
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('કૃપા કરીને ઈમેઈલ સરનામું દાખલ કરો (Please enter email address)'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-    if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
+    // 2. Email validation (Optional)
+    if (email.isNotEmpty && !RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$').hasMatch(email)) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter a valid email address)'),
@@ -816,7 +807,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 onChanged: (v) => setState(() => _mobileNumber = v),
               ),
               _buildTextField(
-                'Email Address (ઈમેઈલ સરનામું) *',
+                'Email Address (ઈમેઈલ સરનામું)',
                 'Enter Email Address (ઈમેઈલ સરનામું)',
                 Icons.email_outlined,
                 keyboardType: TextInputType.emailAddress,

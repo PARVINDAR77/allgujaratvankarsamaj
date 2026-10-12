@@ -487,7 +487,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 onChanged: (v) => _mobileNumber = v,
               ),
               _buildTextField(
-                'Email Address (ઈમેઈલ સરનામું) *',
+                'Email Address (ઈમેઈલ સરનામું)',
                 'Enter Email Address (ઈમેઈલ સરનામું)',
                 Icons.email_outlined,
                 initialValue: _emailAddress ?? profile.contactEmail,
