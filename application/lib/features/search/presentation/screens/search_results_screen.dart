@@ -116,6 +116,22 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(profileNotifierProvider, (previous, next) {
+      if (widget.initialGender == null) {
+        final currentGenderInProvider = ref.read(profileNotifierProvider.notifier).currentGender;
+        if (currentGenderInProvider == null || currentGenderInProvider.isEmpty) {
+          if (_selectedGender != 'ALL' || _selectedMaritalStatus != 'ALL' || _searchController.text.isNotEmpty) {
+            setState(() {
+              _selectedGender = 'ALL';
+              _selectedMaritalStatus = 'ALL';
+              _ageRange = const RangeValues(18, 55);
+              _searchController.clear();
+            });
+          }
+        }
+      }
+    });
+
     final profileState = ref.watch(profileNotifierProvider);
     final rawProfiles = profileState.profiles;
 
