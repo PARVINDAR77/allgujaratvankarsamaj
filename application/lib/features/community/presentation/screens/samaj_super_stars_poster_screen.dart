@@ -12,6 +12,8 @@ class SamajSuperStarsPosterScreen extends ConsumerStatefulWidget {
 }
 
 class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPosterScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -21,175 +23,225 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
   }
 
   @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: const Color(0xFF030A14),
       body: Stack(
         children: [
-          // Full-screen responsive image
+          // 1. Smooth Full-Width Scrollable & Zoomable Poster
           Positioned.fill(
-            child: Image.asset(
-              'assets/images/samaj_super_stars_poster.jpeg',
-              fit: BoxFit.contain,
-              alignment: Alignment.center,
+            child: InteractiveViewer(
+              minScale: 1.0,
+              maxScale: 3.5,
+              panEnabled: true,
+              scaleEnabled: true,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.only(
+                  top: topPadding + 62,
+                  bottom: bottomPadding + 95,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Image.asset(
+                      'assets/images/samaj_super_stars_poster.jpeg',
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
 
-          // Gradient overlay at top for back button visibility
+          // 2. Gradient overlay at top for navigation clarity
           Positioned(
             top: 0,
             left: 0,
             right: 0,
-            height: 100,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black87, Colors.transparent],
-                ),
-              ),
-            ),
-          ),
-
-          // Back button
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 10,
-            left: 12,
-            child: GestureDetector(
-              onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),
+            height: topPadding + 68,
+            child: IgnorePointer(
               child: Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
-                ),
-                child: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
-              ),
-            ),
-          ),
-
-          // Title banner at top center
-          Positioned(
-            top: MediaQuery.of(context).padding.top + 8,
-            left: 60,
-            right: 60,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.55),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.6), width: 1),
-                ),
-                child: const Text(
-                  '⭐ Samaj Super Stars',
-                  style: TextStyle(
-                    color: Color(0xFFD4AF37),
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Color(0xEE030A14),
+                      Color(0x99030A14),
+                      Colors.transparent,
+                    ],
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
             ),
           ),
 
-          // Bottom gradient overlay
+          // 3. Top Navigation Bar: Back button & Title banner
+          Positioned(
+            top: topPadding + 10,
+            left: 14,
+            right: 14,
+            child: Row(
+              children: [
+                // Back Button
+                GestureDetector(
+                  onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFFD700), width: 1.6),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black54,
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(Icons.arrow_back, color: Colors.white, size: 21),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // Center Title Banner
+                Expanded(
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0F172A), Color(0xFF061224)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.8), width: 1.2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black54,
+                            blurRadius: 8,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.stars, color: Color(0xFFFFD700), size: 16),
+                          SizedBox(width: 6),
+                          Text(
+                            'Samaj Super Stars',
+                            style: TextStyle(
+                              color: Color(0xFFFFDF73),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Balancing spacer for symmetry
+                const SizedBox(width: 42),
+              ],
+            ),
+          ),
+
+          // 4. Bottom gradient overlay
           Positioned(
             bottom: 0,
             left: 0,
             right: 0,
-            height: 120,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black87, Colors.transparent],
+            height: bottomPadding + 110,
+            child: IgnorePointer(
+              child: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [
+                      Color(0xF0030A14),
+                      Color(0x99030A14),
+                      Colors.transparent,
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
 
-          // Bottom close button and View Badge
+          // 5. Bottom floating controls (View Badge + Centered Close Button, View List Removed)
           Positioned(
-            bottom: MediaQuery.of(context).padding.bottom + 16,
+            bottom: bottomPadding + 14,
             left: 0,
             right: 0,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Live View Count Badge
                 const ViewBadge(sectionName: 'SAMAJ_SUPER_STARS'),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: () => context.push('/samaj-super-stars'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFD4AF37),
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
-                              blurRadius: 12,
-                              spreadRadius: 2,
-                            ),
-                          ],
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.workspace_premium, color: Colors.black, size: 18),
-                            SizedBox(width: 6),
-                            Text(
-                              'લાઇવ સૂચિ જુઓ (View List)',
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
-                        ),
+                const SizedBox(height: 10),
+
+                // Centered Close Button
+                GestureDetector(
+                  onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    GestureDetector(
-                      onTap: () => context.canPop() ? context.pop() : context.go('/main-poster'),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade900,
-                          borderRadius: BorderRadius.circular(30),
-                          border: Border.all(color: Colors.white24),
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.close, color: Colors.white, size: 18),
-                            SizedBox(width: 6),
-                            Text(
-                              'બંધ કરો (Close)',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13,
-                              ),
-                            ),
-                          ],
+                        const BoxShadow(
+                          color: Colors.black87,
+                          blurRadius: 8,
+                          offset: Offset(0, 3),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.close, color: Color(0xFFFFD700), size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          'બંધ કરો (Close)',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13.5,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
