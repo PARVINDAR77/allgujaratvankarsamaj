@@ -1170,7 +1170,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                         left: 0,
                         top: 0,
                         bottom: 0,
-                        width: 110,
+                        width: 115,
                         child: ClipRRect(
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(15.6),
@@ -1186,28 +1186,19 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                       // 2. Medallion Avatar Centered in the Golden Aperture (Photo only)
                       if (hasPhoto)
                         Positioned(
-                          left: 29.5,
-                          top: 28.5,
-                          width: 61,
-                          height: 61,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFFD4AF37),
-                                width: 1.8,
-                              ),
-                            ),
-                            child: ClipOval(
-                              child: Image.network(
-                                f.photoUrl!,
+                          left: 33.8,
+                          top: 22.9,
+                          width: 58,
+                          height: 58,
+                          child: ClipOval(
+                            child: Image.network(
+                              f.photoUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (ctx, err, st) => Image.asset(
+                                isPurple
+                                    ? 'assets/images/wing_card_purple_building.png'
+                                    : 'assets/images/wing_card_teal_perfect.png',
                                 fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, st) => Image.asset(
-                                  isPurple
-                                      ? 'assets/images/wing_card_purple_building.png'
-                                      : 'assets/images/wing_card_teal_perfect.png',
-                                  fit: BoxFit.cover,
-                                ),
                               ),
                             ),
                           ),
@@ -1215,7 +1206,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
 
                       // 3. Family Content Column
                       Positioned(
-                        left: 114,
+                        left: 116,
                         top: 8,
                         right: 48,
                         bottom: 8,
