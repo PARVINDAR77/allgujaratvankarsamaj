@@ -85,6 +85,18 @@ let InterestsService = class InterestsService {
         if (senderProfileId === dto.targetProfileId) {
             throw new common_1.BadRequestException("You cannot send a connection request to yourself");
         }
+        if (senderProfile.maritalStatus === "MARRIED") {
+            throw new common_1.BadRequestException("પરિણીત સભ્યો મેટ્રિમોની સંબંધ પ્રસ્તાવ મોકલી શકતા નથી (Married members cannot send matrimonial proposals)");
+        }
+        const targetProfile = await this.prisma.matrimonialProfile.findUnique({
+            where: { id: dto.targetProfileId },
+        });
+        if (!targetProfile) {
+            throw new common_1.BadRequestException("Target candidate profile not found");
+        }
+        if (targetProfile.maritalStatus === "MARRIED") {
+            throw new common_1.BadRequestException("પસંદ કરેલ સભ્ય પરિણીત હોવાથી મેટ્રિમોની પ્રસ્તાવ મોકલી શકાતો નથી (Cannot send matrimonial interest to a married member)");
+        }
         const existingInterest = await this.prisma.matchInterest.findFirst({
             where: {
                 OR: [

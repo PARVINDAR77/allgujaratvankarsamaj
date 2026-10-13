@@ -464,6 +464,7 @@ export declare class ProfilesController {
         candidateAge: number;
         candidateEducation: string;
         candidateOccupation: string;
+        maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
         photoUrl: string;
         isVerified: boolean;
     }[]>;

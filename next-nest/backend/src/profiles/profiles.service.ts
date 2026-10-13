@@ -1130,6 +1130,16 @@ export class ProfilesService implements OnModuleInit {
 
     if (query.maritalStatus) {
       where.maritalStatus = query.maritalStatus;
+    } else if (!(query as any).includeMarried) {
+      // By default in matrimonial candidate listings, only show eligible matrimonial candidates
+      where.maritalStatus = {
+        in: [
+          MaritalStatus.NEVER_MARRIED,
+          MaritalStatus.DIVORCED,
+          MaritalStatus.WIDOWED,
+          MaritalStatus.SEPARATED,
+        ],
+      };
     }
 
     // Age filtering based on date of birth
@@ -1632,7 +1642,9 @@ export class ProfilesService implements OnModuleInit {
 
   async getFamilyDirectory(search?: string) {
     const where: Prisma.MatrimonialProfileWhereInput = {
-      status: "APPROVED",
+      status: {
+        in: [ProfileStatus.APPROVED, ProfileStatus.PENDING],
+      },
     };
 
     if (search && search.trim() !== "") {
@@ -1733,6 +1745,7 @@ export class ProfilesService implements OnModuleInit {
             : 25,
           candidateEducation: p.education || "",
           candidateOccupation: p.occupation || p.designation || "",
+          maritalStatus: p.maritalStatus || "MARRIED",
           photoUrl: p.photoUrl || "",
           isVerified: p.isVerified || false,
         };

@@ -139,9 +139,12 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     final profiles = rawProfiles.where((p) {
       if (_selectedGender == 'MALE' && !p.isMale) return false;
       if (_selectedGender == 'FEMALE' && !p.isFemale) return false;
+      final norm = ProfileModel.normalizeMaritalStatusToApi(p.maritalStatus);
       if (_selectedMaritalStatus != 'ALL') {
-        final norm = ProfileModel.normalizeMaritalStatusToApi(p.maritalStatus);
         if (norm != _selectedMaritalStatus) return false;
+      } else {
+        // Matrimonial candidate listings should only show eligible candidates (not MARRIED)
+        if (norm == 'MARRIED') return false;
       }
       return true;
     }).toList();

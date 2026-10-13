@@ -1003,6 +1003,16 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
         if (query.maritalStatus) {
             where.maritalStatus = query.maritalStatus;
         }
+        else if (!query.includeMarried) {
+            where.maritalStatus = {
+                in: [
+                    client_1.MaritalStatus.NEVER_MARRIED,
+                    client_1.MaritalStatus.DIVORCED,
+                    client_1.MaritalStatus.WIDOWED,
+                    client_1.MaritalStatus.SEPARATED,
+                ],
+            };
+        }
         const minAge = query.ageMin ?? query.ageFrom;
         const maxAge = query.ageMax ?? query.ageTo;
         if (minAge || maxAge) {
@@ -1434,7 +1444,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
     }
     async getFamilyDirectory(search) {
         const where = {
-            status: "APPROVED",
+            status: {
+                in: [client_1.ProfileStatus.APPROVED, client_1.ProfileStatus.PENDING],
+            },
         };
         if (search && search.trim() !== "") {
             const term = search.trim();
@@ -1520,6 +1532,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         : 25,
                     candidateEducation: p.education || "",
                     candidateOccupation: p.occupation || p.designation || "",
+                    maritalStatus: p.maritalStatus || "MARRIED",
                     photoUrl: p.photoUrl || "",
                     isVerified: p.isVerified || false,
                 };
