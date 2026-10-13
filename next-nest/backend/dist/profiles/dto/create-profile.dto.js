@@ -9,12 +9,22 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.CreateProfileDto = void 0;
+exports.CreateProfileDto = exports.emptyToUndefined = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const profile_enums_1 = require("../../common/enums/profile.enums");
 const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 const normalize_profile_helper_1 = require("./normalize-profile.helper");
+const emptyToUndefined = ({ value }) => {
+    if (value === null || value === undefined)
+        return undefined;
+    if (typeof value === "string") {
+        const trimmed = value.trim();
+        return trimmed === "" ? undefined : trimmed;
+    }
+    return value;
+};
+exports.emptyToUndefined = emptyToUndefined;
 class CreateProfileDto {
 }
 exports.CreateProfileDto = CreateProfileDto;
@@ -54,6 +64,7 @@ __decorate([
         example: "1995-08-15",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "dateOfBirth", void 0);
@@ -64,7 +75,12 @@ __decorate([
         example: profile_enums_1.Gender.MALE,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (0, normalize_profile_helper_1.normalizeGender)(value) || value),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (value === null || value === undefined)
+            return undefined;
+        const norm = (0, normalize_profile_helper_1.normalizeGender)(value);
+        return norm !== undefined ? norm : (typeof value === "string" && value.trim() ? value : undefined);
+    }),
     (0, class_validator_1.IsEnum)(profile_enums_1.Gender),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "gender", void 0);
@@ -75,7 +91,12 @@ __decorate([
         example: profile_enums_1.MaritalStatus.NEVER_MARRIED,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (0, normalize_profile_helper_1.normalizeMaritalStatus)(value) || value),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (value === null || value === undefined)
+            return undefined;
+        const norm = (0, normalize_profile_helper_1.normalizeMaritalStatus)(value);
+        return norm !== undefined ? norm : (typeof value === "string" && value.trim() ? value : undefined);
+    }),
     (0, class_validator_1.IsEnum)(profile_enums_1.MaritalStatus),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "maritalStatus", void 0);
@@ -86,7 +107,7 @@ __decorate([
         maxLength: 100,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "Religion must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(100, { message: "Religion cannot exceed 100 characters" }),
@@ -99,7 +120,7 @@ __decorate([
         maxLength: 100,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "Caste must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(100, { message: "Caste cannot exceed 100 characters" }),
@@ -107,12 +128,24 @@ __decorate([
 ], CreateProfileDto.prototype, "caste", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
+        description: "Sub-caste",
+        example: "Vankar",
+        maxLength: 100,
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MaxLength)(100, { message: "Subcaste cannot exceed 100 characters" }),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "subcaste", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
         description: "City of residence",
         example: "Ahmedabad",
         maxLength: 100,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "City must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(100, { message: "City cannot exceed 100 characters" }),
@@ -125,7 +158,7 @@ __decorate([
         maxLength: 100,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "State must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(100, { message: "State cannot exceed 100 characters" }),
@@ -138,7 +171,7 @@ __decorate([
         maxLength: 100,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "Country must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(100, { message: "Country cannot exceed 100 characters" }),
@@ -151,7 +184,7 @@ __decorate([
         maxLength: 200,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "Education must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(200, { message: "Education cannot exceed 200 characters" }),
@@ -164,7 +197,7 @@ __decorate([
         maxLength: 200,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "Occupation must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(200, { message: "Occupation cannot exceed 200 characters" }),
@@ -177,7 +210,7 @@ __decorate([
         maxLength: 2000,
     }),
     (0, class_validator_1.IsOptional)(),
-    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^(?!\s*$).+/, { message: "About must not be whitespace-only" }),
     (0, class_validator_1.MaxLength)(2000, { message: "About cannot exceed 2000 characters" }),
@@ -368,6 +401,7 @@ __decorate([
         example: "9876543210",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "Father contact must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
@@ -378,6 +412,7 @@ __decorate([
         example: "Shilpaben Parmar",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "motherName", void 0);
@@ -387,6 +422,7 @@ __decorate([
         example: "Homemaker",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "motherOccupation", void 0);
@@ -396,6 +432,7 @@ __decorate([
         example: "9876543210",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "Guardian contact must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
@@ -406,6 +443,7 @@ __decorate([
         example: "1 Brother (Married), 1 Sister",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "siblings", void 0);
@@ -415,6 +453,7 @@ __decorate([
         example: "Mehsana",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "mamasVillage", void 0);
@@ -424,6 +463,7 @@ __decorate([
         example: "B-204, Shivalik Residency, Chandkheda",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateProfileDto.prototype, "addressLine", void 0);
@@ -433,6 +473,7 @@ __decorate([
         example: "382424",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^\d{6}$/, { message: "Pincode must be exactly 6 digits" }),
     __metadata("design:type", String)
@@ -443,6 +484,7 @@ __decorate([
         example: "9876543210",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "Contact phone must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
@@ -453,6 +495,7 @@ __decorate([
         example: "9876543210",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.Matches)(/^[6-9]\d{9}$/, { message: "WhatsApp / Alt phone must be a valid 10-digit mobile number starting with 6-9" }),
     __metadata("design:type", String)
@@ -463,6 +506,7 @@ __decorate([
         example: "candidate@gmail.com",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(exports.emptyToUndefined),
     (0, class_validator_1.IsString)(),
     (0, class_validator_1.IsEmail)({}, { message: "Invalid email address format" }),
     __metadata("design:type", String)

@@ -46,7 +46,9 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? errorString.toUpperCase().replace(/\s+/g, "_")
         : "INTERNAL_ERROR";
 
-    const responseMessage = isValidationError ? "Invalid request" : message;
+    const responseMessage = isValidationError
+      ? ((errorResponse as any).message?.join(", ") || "Validation failed")
+      : message;
     const errorsArray = isValidationError ? (errorResponse as any).message : [];
 
     // Log the exception

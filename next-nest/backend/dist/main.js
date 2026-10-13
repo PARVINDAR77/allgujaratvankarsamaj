@@ -32,7 +32,7 @@ async function bootstrap() {
     app.useGlobalPipes(new common_1.ValidationPipe({
         whitelist: true,
         transform: true,
-        forbidNonWhitelisted: true,
+        forbidNonWhitelisted: false,
     }));
     const nodeEnv = configService.get("NODE_ENV", "development");
     const allowedOriginsStr = configService.get("ALLOWED_ORIGINS", "");

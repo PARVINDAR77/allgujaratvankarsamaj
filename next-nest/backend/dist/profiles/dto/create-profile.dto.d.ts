@@ -1,4 +1,7 @@
 import { Gender, MaritalStatus } from "../../common/enums/profile.enums";
+export declare const emptyToUndefined: ({ value }: {
+    value: any;
+}) => any;
 export declare class CreateProfileDto {
     firstName: string;
     lastName: string;
@@ -7,6 +10,7 @@ export declare class CreateProfileDto {
     maritalStatus?: MaritalStatus;
     religion?: string;
     caste?: string;
+    subcaste?: string;
     city?: string;
     state?: string;
     country?: string;

@@ -107,8 +107,16 @@ class ProfileRemoteDataSource {
     final statusCode = e.response?.statusCode;
     if (statusCode != null) {
       final data = e.response?.data;
-      final serverMessage = (data is Map<String, dynamic>) ? data['message'] : null;
-      final messageString = serverMessage is List ? serverMessage.first : serverMessage?.toString();
+      String? messageString;
+      if (data is Map<String, dynamic>) {
+        if (data['errors'] is List && (data['errors'] as List).isNotEmpty) {
+          messageString = (data['errors'] as List).join('\n');
+        } else if (data['message'] != null) {
+          messageString = data['message'] is List
+              ? (data['message'] as List).join('\n')
+              : data['message'].toString();
+        }
+      }
       return ApiFailure.fromStatusCode(statusCode, messageString);
     }
     return ApiFailure(type: ApiFailureType.unknown, message: e.message ?? 'An unexpected error occurred.');

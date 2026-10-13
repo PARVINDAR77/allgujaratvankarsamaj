@@ -13,6 +13,15 @@ import {
 import { IsMinAge } from "../../common/validators/is-min-age.validator";
 import { normalizeGender, normalizeMaritalStatus } from "./normalize-profile.helper";
 
+export const emptyToUndefined = ({ value }: { value: any }) => {
+  if (value === null || value === undefined) return undefined;
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed === "" ? undefined : trimmed;
+  }
+  return value;
+};
+
 export class CreateProfileDto {
   @ApiProperty({
     description: "First name of the profile owner",
@@ -47,6 +56,7 @@ export class CreateProfileDto {
     example: "1995-08-15",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   dateOfBirth?: string;
 
@@ -56,7 +66,11 @@ export class CreateProfileDto {
     example: Gender.MALE,
   })
   @IsOptional()
-  @Transform(({ value }) => normalizeGender(value) || value)
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const norm = normalizeGender(value);
+    return norm !== undefined ? norm : (typeof value === "string" && value.trim() ? value : undefined);
+  })
   @IsEnum(Gender)
   gender?: Gender;
 
@@ -66,7 +80,11 @@ export class CreateProfileDto {
     example: MaritalStatus.NEVER_MARRIED,
   })
   @IsOptional()
-  @Transform(({ value }) => normalizeMaritalStatus(value) || value)
+  @Transform(({ value }) => {
+    if (value === null || value === undefined) return undefined;
+    const norm = normalizeMaritalStatus(value);
+    return norm !== undefined ? norm : (typeof value === "string" && value.trim() ? value : undefined);
+  })
   @IsEnum(MaritalStatus)
   maritalStatus?: MaritalStatus;
 
@@ -76,7 +94,7 @@ export class CreateProfileDto {
     maxLength: 100,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "Religion must not be whitespace-only" })
   @MaxLength(100, { message: "Religion cannot exceed 100 characters" })
@@ -88,11 +106,22 @@ export class CreateProfileDto {
     maxLength: 100,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "Caste must not be whitespace-only" })
   @MaxLength(100, { message: "Caste cannot exceed 100 characters" })
   caste?: string;
+
+  @ApiPropertyOptional({
+    description: "Sub-caste",
+    example: "Vankar",
+    maxLength: 100,
+  })
+  @IsOptional()
+  @Transform(emptyToUndefined)
+  @IsString()
+  @MaxLength(100, { message: "Subcaste cannot exceed 100 characters" })
+  subcaste?: string;
 
   @ApiPropertyOptional({
     description: "City of residence",
@@ -100,7 +129,7 @@ export class CreateProfileDto {
     maxLength: 100,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "City must not be whitespace-only" })
   @MaxLength(100, { message: "City cannot exceed 100 characters" })
@@ -112,7 +141,7 @@ export class CreateProfileDto {
     maxLength: 100,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "State must not be whitespace-only" })
   @MaxLength(100, { message: "State cannot exceed 100 characters" })
@@ -124,7 +153,7 @@ export class CreateProfileDto {
     maxLength: 100,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "Country must not be whitespace-only" })
   @MaxLength(100, { message: "Country cannot exceed 100 characters" })
@@ -136,7 +165,7 @@ export class CreateProfileDto {
     maxLength: 200,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "Education must not be whitespace-only" })
   @MaxLength(200, { message: "Education cannot exceed 200 characters" })
@@ -148,7 +177,7 @@ export class CreateProfileDto {
     maxLength: 200,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "Occupation must not be whitespace-only" })
   @MaxLength(200, { message: "Occupation cannot exceed 200 characters" })
@@ -160,7 +189,7 @@ export class CreateProfileDto {
     maxLength: 2000,
   })
   @IsOptional()
-  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^(?!\s*$).+/, { message: "About must not be whitespace-only" })
   @MaxLength(2000, { message: "About cannot exceed 2000 characters" })
@@ -330,6 +359,7 @@ export class CreateProfileDto {
     example: "9876543210",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^[6-9]\d{9}$/, { message: "Father contact must be a valid 10-digit mobile number starting with 6-9" })
   fatherContact?: string;
@@ -339,6 +369,7 @@ export class CreateProfileDto {
     example: "Shilpaben Parmar",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   motherName?: string;
 
@@ -347,6 +378,7 @@ export class CreateProfileDto {
     example: "Homemaker",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   motherOccupation?: string;
 
@@ -355,6 +387,7 @@ export class CreateProfileDto {
     example: "9876543210",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^[6-9]\d{9}$/, { message: "Guardian contact must be a valid 10-digit mobile number starting with 6-9" })
   guardianContact?: string;
@@ -364,6 +397,7 @@ export class CreateProfileDto {
     example: "1 Brother (Married), 1 Sister",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   siblings?: string;
 
@@ -372,6 +406,7 @@ export class CreateProfileDto {
     example: "Mehsana",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   mamasVillage?: string;
 
@@ -380,6 +415,7 @@ export class CreateProfileDto {
     example: "B-204, Shivalik Residency, Chandkheda",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   addressLine?: string;
 
@@ -388,6 +424,7 @@ export class CreateProfileDto {
     example: "382424",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^\d{6}$/, { message: "Pincode must be exactly 6 digits" })
   pincode?: string;
@@ -397,6 +434,7 @@ export class CreateProfileDto {
     example: "9876543210",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^[6-9]\d{9}$/, { message: "Contact phone must be a valid 10-digit mobile number starting with 6-9" })
   contactPhone?: string;
@@ -406,6 +444,7 @@ export class CreateProfileDto {
     example: "9876543210",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @Matches(/^[6-9]\d{9}$/, { message: "WhatsApp / Alt phone must be a valid 10-digit mobile number starting with 6-9" })
   altPhone?: string;
@@ -415,6 +454,7 @@ export class CreateProfileDto {
     example: "candidate@gmail.com",
   })
   @IsOptional()
+  @Transform(emptyToUndefined)
   @IsString()
   @IsEmail({}, { message: "Invalid email address format" })
   contactEmail?: string;

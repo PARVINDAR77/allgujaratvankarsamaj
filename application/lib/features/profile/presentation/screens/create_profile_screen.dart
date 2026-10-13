@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_failure.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
@@ -552,12 +553,18 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       if (mounted) {
         setState(() => _isSubmitting = false);
         String msg = e.toString();
-        if (e is DioException && e.response?.data != null) {
+        if (e is ApiFailure) {
+          msg = e.message;
+        } else if (e is DioException && e.response?.data != null) {
           final data = e.response!.data;
-          if (data is Map && data['message'] != null) {
-            msg = data['message'] is List
-                ? (data['message'] as List).join('\n')
-                : data['message'].toString();
+          if (data is Map) {
+            if (data['errors'] is List && (data['errors'] as List).isNotEmpty) {
+              msg = (data['errors'] as List).join('\n');
+            } else if (data['message'] != null) {
+              msg = data['message'] is List
+                  ? (data['message'] as List).join('\n')
+                  : data['message'].toString();
+            }
           }
         }
         ScaffoldMessenger.of(context).showSnackBar(
