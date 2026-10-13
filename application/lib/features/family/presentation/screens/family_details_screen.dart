@@ -737,11 +737,15 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                             return Column(
                               children: [
                                 ...filtered.asMap().entries.map((entry) => _buildFamilyCard(entry.value, entry.key)),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 14),
                                 // E. Royal Bottom Lotus & Peacock Plume Trim
-                                CustomPaint(
-                                  size: Size(MediaQuery.of(context).size.width - 28, 56),
-                                  painter: const RoyalBottomPeacockLotusPainter(),
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: Image.asset(
+                                    'assets/images/royal_bottom_lotus_exact.png',
+                                    width: double.infinity,
+                                    fit: BoxFit.fitWidth,
+                                  ),
                                 ),
                               ],
                             );
@@ -941,29 +945,10 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Stack(
-          clipBehavior: Clip.none,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Right-side subtle peacock plume accent
-            Positioned(
-              right: -10,
-              top: -16,
-              width: 70,
-              height: 75,
-              child: IgnorePointer(
-                child: Opacity(
-                  opacity: 0.9,
-                  child: Image.asset(
-                    'assets/images/summary_peacock_feather.png',
-                    fit: BoxFit.contain,
-                  ),
-                ),
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1032,8 +1017,6 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                 ),
               ],
             ),
-          ],
-        ),
       ),
     );
   }
@@ -1157,13 +1140,28 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
   // --- 5. ROYAL PEACOCK FAMILY CARD (MATCHING TARGET IMAGE EXACTLY) ---
   Widget _buildFamilyCard(FamilyModel f, int index) {
     final isPurple = index.isOdd;
-    final wingAsset = isPurple
-        ? 'assets/images/royal_card_wing_purple_full.png'
-        : 'assets/images/royal_card_wing_teal_full.png';
+    final hasPhoto = f.photoUrl != null && f.photoUrl!.trim().isNotEmpty;
 
-    IconData displayIcon = f.icon;
-    if (displayIcon == Icons.holiday_village || displayIcon == Icons.villa || displayIcon == Icons.family_restroom) {
-      displayIcon = isPurple ? Icons.home : Icons.apartment;
+    // Select authentic wing asset from target design
+    final String wingAsset;
+    if (hasPhoto) {
+      wingAsset = isPurple
+          ? 'assets/images/wing_purple_aperture.png'
+          : 'assets/images/wing_teal_aperture.png';
+    } else {
+      final isBuilding = (index == 0) ||
+          f.icon == Icons.location_city ||
+          f.icon == Icons.apartment ||
+          f.icon == Icons.account_balance;
+      if (isPurple) {
+        wingAsset = isBuilding
+            ? 'assets/images/wing_card_purple_building.png'
+            : 'assets/images/wing_card_purple_house.png';
+      } else {
+        wingAsset = isBuilding
+            ? 'assets/images/wing_card_teal_perfect.png'
+            : 'assets/images/wing_card_teal_house.png';
+      }
     }
 
     return Container(
@@ -1218,7 +1216,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                         left: 0,
                         top: 0,
                         bottom: 0,
-                        width: 92,
+                        width: 110,
                         child: ClipRRect(
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(15.6),
@@ -1231,63 +1229,39 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                         ),
                       ),
 
-                      // 2. Medallion Avatar Centered in the Golden Aperture
-                      Positioned(
-                        left: 20,
-                        top: 18,
-                        width: 60,
-                        height: 60,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFFFFEA88),
-                                Color(0xFFD4AF37),
-                                Color(0xFF8B5A10),
-                                Color(0xFFFFD700),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black45,
-                                blurRadius: 6,
-                                offset: Offset(0, 2),
-                              ),
-                            ],
-                          ),
-                          padding: const EdgeInsets.all(2.4),
+                      // 2. Medallion Avatar Centered in the Golden Aperture (Photo only)
+                      if (hasPhoto)
+                        Positioned(
+                          left: 30.5,
+                          top: 32.5,
+                          width: 59,
+                          height: 59,
                           child: Container(
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Color(0xFFFFFDF8),
+                              border: Border.all(
+                                color: const Color(0xFFD4AF37),
+                                width: 1.5,
+                              ),
                             ),
                             child: ClipOval(
-                              child: (f.photoUrl != null && f.photoUrl!.isNotEmpty)
-                                  ? Image.network(
-                                      f.photoUrl!,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (ctx, err, st) => Icon(
-                                        displayIcon,
-                                        color: const Color(0xFF8B5A10),
-                                        size: 28,
-                                      ),
-                                    )
-                                  : Icon(
-                                      displayIcon,
-                                      color: const Color(0xFF8B5A10),
-                                      size: 28,
-                                    ),
+                              child: Image.network(
+                                f.photoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, err, st) => Image.asset(
+                                  isPurple
+                                      ? 'assets/images/wing_card_purple_building.png'
+                                      : 'assets/images/wing_card_teal_perfect.png',
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
 
                       // 3. Family Content Column
                       Positioned(
-                        left: 96,
+                        left: 114,
                         top: 8,
                         right: 48,
                         bottom: 8,
