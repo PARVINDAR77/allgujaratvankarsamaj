@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { UpdateEducationDto } from "./dto/update-education.dto";
 
@@ -39,10 +39,34 @@ const DEFAULT_EDUCATION_DATA = {
 };
 
 @Injectable()
-export class EducationService {
+export class EducationService implements OnModuleInit {
   private readonly logger = new Logger(EducationService.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
+  async onModuleInit() {
+    await this.ensureColumnsExist();
+  }
+
+  async ensureColumnsExist() {
+    const columns = [
+      { name: "box5_title", def: "varchar(191) DEFAULT 'શૈક્ષણિક પોસ્ટર અને માહિતી'" },
+      { name: "box5_subtitle", def: "varchar(191) DEFAULT 'Educational Poster & Circular Image'" },
+      { name: "box5_image_url", def: "text DEFAULT NULL" },
+      { name: "box5_description", def: "text DEFAULT NULL" },
+    ];
+
+    for (const col of columns) {
+      try {
+        await this.prisma.$executeRawUnsafe(
+          `ALTER TABLE \`education_content\` ADD COLUMN \`${col.name}\` ${col.def}`
+        );
+        this.logger.log(`Added column ${col.name} to education_content table`);
+      } catch (e: any) {
+        // Ignored if column already exists (duplicate column name)
+      }
+    }
+  }
 
   async getEducationContent() {
     try {
@@ -115,6 +139,8 @@ export class EducationService {
   }
 
   async updateEducationContent(dto: UpdateEducationDto) {
+    await this.ensureColumnsExist();
+
     const { id, createdAt, updatedAt, ...cleanData } = dto as any;
 
     // Normalize empty strings to null or string
@@ -151,6 +177,8 @@ export class EducationService {
 
     // Raw SQL fallback for safe updates
     try {
+      await this.ensureColumnsExist();
+
       const existing: any[] = await this.prisma.$queryRawUnsafe(
         "SELECT id FROM `education_content` WHERE id = 'default' LIMIT 1",
       );
@@ -257,8 +285,55 @@ export class EducationService {
         data: normalized,
       };
     } catch (sqlErr: any) {
-      this.logger.error(`Raw SQL update failed: ${sqlErr.message}`);
-      throw sqlErr;
+      this.logger.error(`Raw SQL update with 5 boxes failed: ${sqlErr.message}, attempting column repair & fallback...`);
+      try {
+        await this.ensureColumnsExist();
+        await this.prisma.$executeRawUnsafe(
+          `UPDATE \`education_content\` SET 
+            header_title = ?,
+            header_subtitle = ?,
+            box1_title = ?,
+            box1_subtitle = ?,
+            box1_pdf_url = ?,
+            box1_file_name = ?,
+            box2_title = ?,
+            box2_content = ?,
+            box2_author = ?,
+            box3_title = ?,
+            box3_youtube_url = ?,
+            box3_description = ?,
+            box4_title = ?,
+            box4_youtube_url = ?,
+            box4_description = ?,
+            is_active = ?,
+            updated_at = NOW()
+          WHERE id = 'default'`,
+          normalized.headerTitle ?? DEFAULT_EDUCATION_DATA.headerTitle,
+          normalized.headerSubtitle ?? DEFAULT_EDUCATION_DATA.headerSubtitle,
+          normalized.box1Title ?? DEFAULT_EDUCATION_DATA.box1Title,
+          normalized.box1Subtitle ?? DEFAULT_EDUCATION_DATA.box1Subtitle,
+          normalized.box1PdfUrl || null,
+          normalized.box1FileName || null,
+          normalized.box2Title ?? DEFAULT_EDUCATION_DATA.box2Title,
+          normalized.box2Content || null,
+          normalized.box2Author || null,
+          normalized.box3Title ?? DEFAULT_EDUCATION_DATA.box3Title,
+          normalized.box3YoutubeUrl || null,
+          normalized.box3Description || null,
+          normalized.box4Title ?? DEFAULT_EDUCATION_DATA.box4Title,
+          normalized.box4YoutubeUrl || null,
+          normalized.box4Description || null,
+          normalized.isActive !== undefined ? (normalized.isActive ? 1 : 0) : 1,
+        );
+        return {
+          statusCode: 200,
+          message: "Education content updated successfully (safe fallback)",
+          data: normalized,
+        };
+      } catch (innerErr: any) {
+        this.logger.error(`Failed complete SQL fallback: ${innerErr.message}`);
+        throw innerErr;
+      }
     }
   }
 }

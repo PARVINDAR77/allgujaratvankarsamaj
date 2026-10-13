@@ -259,6 +259,10 @@ export default function EducationAdminPage() {
         box4Title: formData.box4Title,
         box4YoutubeUrl: formData.box4YoutubeUrl.trim(),
         box4Description: formData.box4Description,
+        box5Title: formData.box5Title,
+        box5Subtitle: formData.box5Subtitle,
+        box5ImageUrl: formData.box5ImageUrl.trim(),
+        box5Description: formData.box5Description,
         isActive: formData.isActive,
       };
 
@@ -274,7 +278,7 @@ export default function EducationAdminPage() {
       if (res.ok) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 5000);
-        alert("✅ Education 4-box content successfully saved and published!");
+        alert("✅ Education content successfully saved and published!");
       } else {
         const err = await res.text();
         setSaveError(`Failed to save (HTTP ${res.status}): ${err}`);
