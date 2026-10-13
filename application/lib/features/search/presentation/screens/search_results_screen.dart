@@ -168,19 +168,31 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               // 1. Royal Peacock App Bar with Ornate Gold Buttons & Filigree
               _buildRoyalHeader(context),
 
-              // 2. Pill Search Input with Golden Border
-              _buildSearchBar(),
+              // Centered Search Controls for Web and Mobile
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1080),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 2. Pill Search Input with Golden Border
+                      _buildSearchBar(),
 
-              // 3. Jewel-Toned "Search by Filter" Interactive Banner
-              _buildSearchByFilterBanner(),
+                      // 3. Jewel-Toned "Search by Filter" Interactive Banner
+                      _buildSearchByFilterBanner(),
 
-              // 4. Segmented Tab Selector for Boys / Girls / All
-              _buildGenderSegmentedTabs(),
+                      // 4. Segmented Tab Selector for Boys / Girls / All
+                      _buildGenderSegmentedTabs(),
 
-              // 5. Dynamic Summary Counter Strip with Peacock Feather Accent
-              _buildSummaryBadge(profiles.length, profileState.isLoading),
+                      // 5. Dynamic Summary Counter Strip with Peacock Feather Accent
+                      _buildSummaryBadge(profiles.length, profileState.isLoading),
+                    ],
+                  ),
+                ),
+              ),
 
-              // 6. Content List or Empty State
+              // 6. Content List or Empty State (Responsive Single-Column on Mobile, 2-Column on Tablet/Desktop)
               Expanded(
                 child: profileState.isLoading && profiles.isEmpty
                     ? const Center(
@@ -198,22 +210,78 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       )
                     : profiles.isEmpty
                         ? _buildEmptyState(context)
-                        : ListView.builder(
-                            controller: _scrollController,
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                            itemCount: profiles.length + (profileState.isLoadingNextPage ? 1 : 0),
-                            itemBuilder: (context, index) {
-                              if (index == profiles.length) {
-                                return const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(16.0),
-                                    child: CircularProgressIndicator(color: Color(0xFFFFD700)),
-                                  ),
+                        : LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isWide = constraints.maxWidth >= 720;
+
+                              if (!isWide) {
+                                // Mobile view (< 720px): exact single-column list
+                                return ListView.builder(
+                                  controller: _scrollController,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                  itemCount: profiles.length + (profileState.isLoadingNextPage ? 1 : 0),
+                                  itemBuilder: (context, index) {
+                                    if (index == profiles.length) {
+                                      return const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(16.0),
+                                          child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                                        ),
+                                      );
+                                    }
+
+                                    final profile = profiles[index];
+                                    return _buildProfileCard(context, profile, index);
+                                  },
                                 );
                               }
 
-                              final profile = profiles[index];
-                              return _buildProfileCard(context, profile, index);
+                              // Tablet / Desktop view (>= 720px): centered 2-column layout with natural card heights
+                              final rowCount = (profiles.length + 1) ~/ 2;
+                              final totalRows = rowCount + (profileState.isLoadingNextPage ? 1 : 0);
+
+                              return Align(
+                                alignment: Alignment.topCenter,
+                                child: ConstrainedBox(
+                                  constraints: const BoxConstraints(maxWidth: 1080),
+                                  child: ListView.builder(
+                                    controller: _scrollController,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    itemCount: totalRows,
+                                    itemBuilder: (context, rowIndex) {
+                                      if (rowIndex == rowCount) {
+                                        return const Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.all(16.0),
+                                            child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                                          ),
+                                        );
+                                      }
+
+                                      final leftIndex = rowIndex * 2;
+                                      final rightIndex = leftIndex + 1;
+
+                                      final leftProfile = profiles[leftIndex];
+                                      final rightProfile = rightIndex < profiles.length ? profiles[rightIndex] : null;
+
+                                      return Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Expanded(
+                                            child: _buildProfileCard(context, leftProfile, leftIndex),
+                                          ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: rightProfile != null
+                                                ? _buildProfileCard(context, rightProfile, rightIndex)
+                                                : const SizedBox.shrink(),
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
                             },
                           ),
               ),

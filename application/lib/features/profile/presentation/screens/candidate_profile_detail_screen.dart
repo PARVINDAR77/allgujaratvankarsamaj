@@ -162,9 +162,13 @@ class _CandidateProfileDetailScreenState
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.only(bottom: 100),
-        child: Column(
-          children: [
-            // Top Hero Header
+        child: Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 820),
+            child: Column(
+              children: [
+                // Top Hero Header
             _buildHeroHeader(profile, themePrimary, themeLight, themeText),
 
             const SizedBox(height: 12),
@@ -410,7 +414,9 @@ class _CandidateProfileDetailScreenState
           ],
         ),
       ),
-      bottomSheet: _buildBottomActionBar(context, profile),
+    ),
+  ),
+  bottomSheet: _buildBottomActionBar(context, profile),
     );
   }
 
@@ -862,74 +868,83 @@ class _CandidateProfileDetailScreenState
     final connStatusAsync = ref.watch(connectionStatusProvider(profile.id));
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Colors.grey.shade200)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, -3),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            // Shortlist / Like Icon Button
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isLiked ? Colors.redAccent : Colors.grey.shade300,
+      color: Colors.white,
+      child: Center(
+        heightFactor: 1.0,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 820),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Colors.grey.shade200)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, -3),
                 ),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                onPressed: () => ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context),
-                icon: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
-                  child: Icon(
-                    isLiked ? Icons.favorite : Icons.favorite_border,
-                    key: ValueKey<bool>(isLiked),
-                    color: isLiked ? Colors.redAccent : Colors.grey.shade700,
-                  ),
-                ),
-                tooltip: isLiked ? 'પસંદ કરેલ લિસ્ટમાંથી દૂર કરો' : 'Shortlist (પસંદ કરો)',
-              ),
+              ],
             ),
-            const SizedBox(width: 12),
-
-            // Dynamic Action Button based on connection status
-            Expanded(
-              child: isOwner
-                  ? Container(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
+            child: SafeArea(
+              top: false,
+              child: Row(
+                children: [
+                  // Shortlist / Like Icon Button
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: isLiked ? Colors.redAccent : Colors.grey.shade300,
                       ),
-                      child: const Text(
-                        'આ તમારી પોતાની પ્રોફાઇલ છે (Your Own Profile)',
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey),
-                      ),
-                    )
-                  : connStatusAsync.when(
-                      loading: () => const Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: () => ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context),
+                      icon: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                        child: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          key: ValueKey<bool>(isLiked),
+                          color: isLiked ? Colors.redAccent : Colors.grey.shade700,
                         ),
                       ),
-                      error: (e, s) => _buildConnectButton(context, profile),
-                      data: (status) => _buildConnectionButton(context, profile, status),
+                      tooltip: isLiked ? 'પસંદ કરેલ લિસ્ટમાંથી દૂર કરો' : 'Shortlist (પસંદ કરો)',
                     ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Dynamic Action Button based on connection status
+                  Expanded(
+                    child: isOwner
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Text(
+                              'આ તમારી પોતાની પ્રોફાઇલ છે (Your Own Profile)',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey),
+                            ),
+                          )
+                        : connStatusAsync.when(
+                            loading: () => const Center(
+                              child: SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                            error: (e, s) => _buildConnectButton(context, profile),
+                            data: (status) => _buildConnectionButton(context, profile, status),
+                          ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );

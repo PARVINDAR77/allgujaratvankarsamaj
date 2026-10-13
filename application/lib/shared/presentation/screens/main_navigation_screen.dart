@@ -18,11 +18,19 @@ class MainNavigationScreen extends ConsumerWidget {
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.background,
-          border: Border(top: BorderSide(color: AppColors.secondary, width: 1)),
-        ),
-        child: BottomNavigationBar(
+        color: AppColors.background,
+        child: SafeArea(
+          top: false,
+          child: Center(
+            heightFactor: 1.0,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 680),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.background,
+                  border: Border(top: BorderSide(color: AppColors.secondary, width: 1)),
+                ),
+                child: BottomNavigationBar(
           currentIndex: navigationShell.currentIndex,
           onTap: (index) {
             if (index == 1) {
@@ -82,6 +90,10 @@ class MainNavigationScreen extends ConsumerWidget {
             const BottomNavigationBarItem(icon: Icon(Icons.message), label: 'મેસેજ'),
             const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'પ્રોફાઈલ'),
           ],
+        ),
+      ),
+            ),
+          ),
         ),
       ),
     );

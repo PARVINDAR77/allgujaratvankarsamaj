@@ -367,7 +367,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              child: Column(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 780),
+                  child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Main Profile Photo Card (Top)
@@ -1190,7 +1194,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 40),
             ],
           ),
-        );
+        ),
+      ),
+    );
       },
     ),
   ),
