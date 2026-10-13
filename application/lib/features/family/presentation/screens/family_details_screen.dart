@@ -1186,16 +1186,16 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                       // 2. Medallion Avatar Centered in the Golden Aperture (Photo only)
                       if (hasPhoto)
                         Positioned(
-                          left: 30.5,
-                          top: 32.5,
-                          width: 59,
-                          height: 59,
+                          left: 29.5,
+                          top: 28.5,
+                          width: 61,
+                          height: 61,
                           child: Container(
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: const Color(0xFFD4AF37),
-                                width: 1.5,
+                                width: 1.8,
                               ),
                             ),
                             child: ClipOval(
