@@ -41,8 +41,17 @@ export class AdminController {
 
   @Get("matches")
   @ApiOperation({ summary: "Get match interaction list" })
-  async getMatches() {
-    return this.adminService.getMatches();
+  async getMatches(
+    @Query("status") status?: string,
+    @Query("search") search?: string,
+  ) {
+    return this.adminService.getMatches(status, search);
+  }
+
+  @Delete("matches/:id")
+  @ApiOperation({ summary: "Delete or unlink a match interest" })
+  async deleteMatch(@Param("id") id: string) {
+    return this.adminService.deleteMatch(id);
   }
 
   @Get("health")

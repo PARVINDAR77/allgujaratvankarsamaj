@@ -29,8 +29,11 @@ let AdminController = class AdminController {
     async updateReportStatus(id, status) {
         return this.adminService.updateReportStatus(id, status);
     }
-    async getMatches() {
-        return this.adminService.getMatches();
+    async getMatches(status, search) {
+        return this.adminService.getMatches(status, search);
+    }
+    async deleteMatch(id) {
+        return this.adminService.deleteMatch(id);
     }
     async getHealth() {
         return this.adminService.getHealthStatus();
@@ -69,10 +72,20 @@ __decorate([
 __decorate([
     (0, common_1.Get)("matches"),
     (0, swagger_1.ApiOperation)({ summary: "Get match interaction list" }),
+    __param(0, (0, common_1.Query)("status")),
+    __param(1, (0, common_1.Query)("search")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getMatches", null);
+__decorate([
+    (0, common_1.Delete)("matches/:id"),
+    (0, swagger_1.ApiOperation)({ summary: "Delete or unlink a match interest" }),
+    __param(0, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "deleteMatch", null);
 __decorate([
     (0, common_1.Get)("health"),
     (0, swagger_1.ApiOperation)({ summary: "Get system health status" }),

@@ -73,13 +73,212 @@ export declare class AdminController {
         id: string;
         status: any;
     }>;
-    getMatches(): Promise<{
+    getMatches(status?: string, search?: string): Promise<{
+        stats: {
+            totalMatches: number;
+            mutualInterests: number;
+            acceptedProposals: number;
+            rejectedPass: number;
+            pendingReview: number;
+        };
+        items: {
+            id: string;
+            senderProfileId: string;
+            receiverProfileId: string;
+            candidateA: {
+                id: string;
+                name: string;
+                pargana: string;
+                district: string;
+                city: string;
+                age: number;
+                gender: import(".prisma/client").$Enums.Gender;
+                photoUrl: string;
+                isVerified: boolean;
+                education: string;
+                occupation: string;
+                phone: string;
+                email: string;
+            };
+            candidateB: {
+                id: string;
+                name: string;
+                pargana: string;
+                district: string;
+                city: string;
+                age: number;
+                gender: import(".prisma/client").$Enums.Gender;
+                photoUrl: string;
+                isVerified: boolean;
+                education: string;
+                occupation: string;
+                phone: string;
+                email: string;
+            };
+            userA: {
+                profile: {
+                    user: {
+                        id: string;
+                        email: string;
+                        phone: string;
+                    };
+                    district: {
+                        name: string;
+                        id: string;
+                    };
+                    pargana: {
+                        name: string;
+                        id: string;
+                        gujaratiName: string;
+                    };
+                } & {
+                    state: string | null;
+                    status: import(".prisma/client").$Enums.ProfileStatus;
+                    id: string;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    userId: string;
+                    firstName: string;
+                    lastName: string;
+                    dateOfBirth: Date;
+                    maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
+                    religion: string | null;
+                    caste: string | null;
+                    subcaste: string | null;
+                    nativePlace: string | null;
+                    city: string | null;
+                    country: string | null;
+                    education: string | null;
+                    occupation: string | null;
+                    organizationName: string | null;
+                    designation: string | null;
+                    about: string | null;
+                    photoUrl: string | null;
+                    photos: string | null;
+                    isPhysicallyDisabled: boolean;
+                    pwbdCategory: string | null;
+                    isAbroad: boolean;
+                    abroadCountry: string | null;
+                    businessIndustry: string | null;
+                    businessService: string | null;
+                    bloodGroup: string | null;
+                    isVankar: boolean;
+                    annualIncome: string | null;
+                    fatherName: string | null;
+                    fatherOccupation: string | null;
+                    fatherContact: string | null;
+                    motherName: string | null;
+                    motherOccupation: string | null;
+                    guardianContact: string | null;
+                    siblings: string | null;
+                    mamasVillage: string | null;
+                    addressLine: string | null;
+                    pincode: string | null;
+                    altPhone: string | null;
+                    contactEmail: string | null;
+                    motherTongue: string | null;
+                    privacySettings: string | null;
+                    stateId: string | null;
+                    districtId: string | null;
+                    talukaId: string | null;
+                    parganaId: string | null;
+                    villageId: string | null;
+                    isVerified: boolean;
+                    isFeatured: boolean;
+                };
+            };
+            userB: {
+                profile: {
+                    user: {
+                        id: string;
+                        email: string;
+                        phone: string;
+                    };
+                    district: {
+                        name: string;
+                        id: string;
+                    };
+                    pargana: {
+                        name: string;
+                        id: string;
+                        gujaratiName: string;
+                    };
+                } & {
+                    state: string | null;
+                    status: import(".prisma/client").$Enums.ProfileStatus;
+                    id: string;
+                    gender: import(".prisma/client").$Enums.Gender;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    userId: string;
+                    firstName: string;
+                    lastName: string;
+                    dateOfBirth: Date;
+                    maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
+                    religion: string | null;
+                    caste: string | null;
+                    subcaste: string | null;
+                    nativePlace: string | null;
+                    city: string | null;
+                    country: string | null;
+                    education: string | null;
+                    occupation: string | null;
+                    organizationName: string | null;
+                    designation: string | null;
+                    about: string | null;
+                    photoUrl: string | null;
+                    photos: string | null;
+                    isPhysicallyDisabled: boolean;
+                    pwbdCategory: string | null;
+                    isAbroad: boolean;
+                    abroadCountry: string | null;
+                    businessIndustry: string | null;
+                    businessService: string | null;
+                    bloodGroup: string | null;
+                    isVankar: boolean;
+                    annualIncome: string | null;
+                    fatherName: string | null;
+                    fatherOccupation: string | null;
+                    fatherContact: string | null;
+                    motherName: string | null;
+                    motherOccupation: string | null;
+                    guardianContact: string | null;
+                    siblings: string | null;
+                    mamasVillage: string | null;
+                    addressLine: string | null;
+                    pincode: string | null;
+                    altPhone: string | null;
+                    contactEmail: string | null;
+                    motherTongue: string | null;
+                    privacySettings: string | null;
+                    stateId: string | null;
+                    districtId: string | null;
+                    talukaId: string | null;
+                    parganaId: string | null;
+                    villageId: string | null;
+                    isVerified: boolean;
+                    isFeatured: boolean;
+                };
+            };
+            compatibility: string;
+            matchScore: string;
+            status: import(".prisma/client").$Enums.InterestStatus;
+            createdAt: Date;
+            matchDate: string;
+            date: string;
+        }[];
+    }>;
+    deleteMatch(id: string): Promise<{
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
         senderProfileId: string;
         receiverProfileId: string;
-    }[]>;
+    } | {
+        success: boolean;
+        message: string;
+    }>;
     getHealth(): Promise<{
         status: string;
         timestamp: string;

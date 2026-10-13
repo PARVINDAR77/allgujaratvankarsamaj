@@ -568,311 +568,466 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
     final familiesAsync = ref.watch(familyDirectoryProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF8FAFC),
-                border: Border(bottom: BorderSide(color: Color(0xFFD4AF37), width: 1.5)),
-              ),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () => context.canPop() ? context.pop() : context.go('/home'),
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
-                        color: Colors.white,
-                      ),
-                      child: const Icon(Icons.arrow_back, color: Color(0xFFD4AF37), size: 18),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'VANKAR SAMAJ',
-                        style: TextStyle(color: Color(0xFFD4AF37), fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1),
-                      ),
-                      Text(
-                        'Family Details (પરિવાર વિગત)',
-                        style: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.refresh, color: Color(0xFFD4AF37), size: 22),
-                    tooltip: 'Refresh live data',
-                    onPressed: () => ref.refresh(familyDirectoryProvider),
-                  ),
-                  const Icon(Icons.family_restroom, color: Color(0xFFD4AF37), size: 26),
-                ],
-              ),
-            ),
+      backgroundColor: const Color(0xFF001F18),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF001F18), // Deep emerald
+              Color(0xFF013B2E), // Rich peacock green
+              Color(0xFF001812), // Midnight green
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Column(
+            children: [
+              // 1. Royal Peacock Header
+              _buildRoyalHeader(context),
 
-            // Content
-            Expanded(
-              child: RefreshIndicator(
-                color: const Color(0xFFD4AF37),
-                onRefresh: () async {
-                  ref.invalidate(familyDirectoryProvider);
-                },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                  padding: const EdgeInsets.all(14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'સમાજનાં પરિવારોની માહિતી',
-                                style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'Live Family Database | Vankar Samaj Gujarat',
-                                style: TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.bold),
-                              ),
-                            ],
-                          ),
-                          familiesAsync.when(
-                            data: (list) => Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.12),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0xFF10B981), width: 1),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+              // 2. Scrollable Body Content
+              Expanded(
+                child: RefreshIndicator(
+                  color: const Color(0xFFFFD700),
+                  backgroundColor: const Color(0xFF002E26),
+                  onRefresh: () async {
+                    ref.invalidate(familyDirectoryProvider);
+                  },
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // A. Baroque Framed Plaque Banner
+                        familiesAsync.when(
+                          data: (list) => _buildBaroqueBanner(list.length),
+                          loading: () => _buildBaroqueBanner(0),
+                          error: (e, st) => _buildBaroqueBanner(0),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // B. Gold-Rimmed Search Bar
+                        _buildGoldSearchBar(),
+                        const SizedBox(height: 12),
+
+                        // C. Horizontal City Filter Chips
+                        _buildCityChips(),
+                        const SizedBox(height: 14),
+
+                        // D. Live Family Cards List
+                        familiesAsync.when(
+                          loading: () => const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 50.0),
+                            child: Center(
+                              child: Column(
                                 children: [
-                                  Container(
-                                    width: 8,
-                                    height: 8,
-                                    decoration: const BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Color(0xFF10B981),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 5),
+                                  CircularProgressIndicator(color: Color(0xFFFFD700)),
+                                  SizedBox(height: 14),
                                   Text(
-                                    '${list.length} પરિવારો',
-                                    style: const TextStyle(color: Color(0xFF047857), fontWeight: FontWeight.bold, fontSize: 11.5),
+                                    'પરિવાર માહિતી લોડ થઈ રહી છે...\nLoading live family database...',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Color(0xFFFFDF73),
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                            loading: () => const SizedBox.shrink(),
-                            error: (error, stackTrace) => const SizedBox.shrink(),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-
-                      // Search Bar
-                      Container(
-                        height: 48,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF8FAFC),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: const Color(0xFFD4AF37)),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.search, color: Color(0xFFD4AF37), size: 20),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: TextField(
-                                controller: _searchController,
-                                style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
-                                decoration: const InputDecoration(
-                                  hintText: 'પરિવાર, શહેર કે મોસાળ શોધો... (Search)',
-                                  hintStyle: TextStyle(color: Colors.black38, fontSize: 13, fontWeight: FontWeight.normal),
-                                  border: InputBorder.none,
-                                  isDense: true,
-                                ),
-                                onChanged: (v) => setState(() => _searchQuery = v),
+                          error: (err, _) => Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                children: [
+                                  const Icon(Icons.error_outline, color: Color(0xFFFF6B6B), size: 40),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    'માહિતી લોડ કરવામાં સમસ્યા આવી.\nError: $err',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  ElevatedButton.icon(
+                                    onPressed: () => ref.refresh(familyDirectoryProvider),
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('ફરી પ્રયાસ કરો (Retry)'),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFFFD700),
+                                      foregroundColor: const Color(0xFF002E26),
+                                      textStyle: const TextStyle(fontWeight: FontWeight.w800),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            if (_searchQuery.isNotEmpty)
-                              IconButton(
-                                icon: const Icon(Icons.clear, size: 18, color: Colors.grey),
-                                onPressed: () {
-                                  _searchController.clear();
-                                  setState(() => _searchQuery = '');
-                                },
-                              ),
+                          ),
+                          data: (families) {
+                            final filtered = families.where((f) {
+                              // City filter
+                              if (_selectedCity != 'All') {
+                                final cEng = f.cityEng.toLowerCase();
+                                final dEng = (f.district ?? '').toLowerCase();
+                                final target = _selectedCity.toLowerCase();
+                                if (!cEng.contains(target) && !dEng.contains(target)) {
+                                  return false;
+                                }
+                              }
+
+                              // Query search
+                              if (_searchQuery.trim().isEmpty) return true;
+                              final q = _searchQuery.toLowerCase().trim();
+                              return f.nameGuj.toLowerCase().contains(q) ||
+                                  f.nameEng.toLowerCase().contains(q) ||
+                                  f.surname.toLowerCase().contains(q) ||
+                                  (f.headName != null && f.headName!.toLowerCase().contains(q)) ||
+                                  (f.headNameGuj != null && f.headNameGuj!.toLowerCase().contains(q)) ||
+                                  f.cityGuj.toLowerCase().contains(q) ||
+                                  f.cityEng.toLowerCase().contains(q) ||
+                                  (f.mosal != null && f.mosal!.toLowerCase().contains(q)) ||
+                                  (f.nativePlace != null && f.nativePlace!.toLowerCase().contains(q)) ||
+                                  (f.fatherName != null && f.fatherName!.toLowerCase().contains(q)) ||
+                                  (f.district != null && f.district!.toLowerCase().contains(q));
+                            }).toList();
+
+                            if (filtered.isEmpty) {
+                              return Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(vertical: 40.0),
+                                  child: Column(
+                                    children: [
+                                      const Icon(Icons.search_off, size: 50, color: Color(0xFFFFDF73)),
+                                      const SizedBox(height: 14),
+                                      const Text(
+                                        'કોઈ પરિવાર મળ્યો નથી\n(No family found matching your search)',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: Color(0xFFF1F8E9),
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 14),
+                                      OutlinedButton(
+                                        onPressed: () {
+                                          _searchController.clear();
+                                          setState(() {
+                                            _searchQuery = '';
+                                            _selectedCity = 'All';
+                                          });
+                                        },
+                                        style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+                                          foregroundColor: const Color(0xFFFFDF73),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        ),
+                                        child: const Text('બધા પરિવારો જુઓ (Reset Filters)', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return Column(
+                              children: [
+                                ...filtered.map((f) => _buildFamilyCard(f)),
+                                const SizedBox(height: 10),
+                                // E. Royal Bottom Lotus & Peacock Plume Trim
+                                CustomPaint(
+                                  size: Size(MediaQuery.of(context).size.width - 28, 56),
+                                  painter: const RoyalBottomPeacockLotusPainter(),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- 1. ROYAL HEADER WITH ORNATE GOLD BUTTONS & PEACOCK BANNER ---
+  Widget _buildRoyalHeader(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF001F18),
+            Color(0xFF013B2E),
+            Color(0xFF00221A),
+          ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black54,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Peacock Feather motif behind title & right side
+          Positioned(
+            right: 70,
+            top: -6,
+            bottom: -6,
+            width: 75,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.9,
+                child: Image.asset(
+                  'assets/images/real_peacock_feather.png',
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                // Ornate Golden Back Button
+                GestureDetector(
+                  onTap: () => context.canPop() ? context.pop() : context.go('/home'),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [Color(0xFF00382E), Color(0xFF001A14)],
+                      ),
+                      border: Border.all(color: const Color(0xFFFFDF73), width: 2.2),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 2)),
+                        BoxShadow(color: Color(0x66FFD700), blurRadius: 8),
+                      ],
+                    ),
+                    child: const Icon(Icons.arrow_back, color: Color(0xFFFFD700), size: 22),
+                  ),
+                ),
+                const SizedBox(width: 12),
+
+                // Title with Rich 3D Gold Typography
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'VANKAR SAMAJ',
+                        style: TextStyle(
+                          color: Color(0xFFFFDF73),
+                          fontSize: 17.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          shadows: [
+                            Shadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 2)),
+                            Shadow(color: Color(0x99FFD700), blurRadius: 8),
                           ],
                         ),
                       ),
-
-                      const SizedBox(height: 10),
-
-                      // City Filter Chips
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: _quickCities.map((city) {
-                            final isSelected = _selectedCity == city;
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 6.0),
-                              child: ChoiceChip(
-                                label: Text(
-                                  city == 'All' ? 'All (તમામ)' : city,
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                    color: isSelected ? Colors.white : const Color(0xFF041126),
-                                  ),
-                                ),
-                                selected: isSelected,
-                                selectedColor: const Color(0xFF0056D2),
-                                backgroundColor: const Color(0xFFF1F5F9),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                  side: BorderSide(
-                                    color: isSelected ? const Color(0xFF0056D2) : const Color(0xFFCBD5E1),
-                                    width: 1,
-                                  ),
-                                ),
-                                onSelected: (val) {
-                                  if (val) {
-                                    setState(() => _selectedCity = city);
-                                  }
-                                },
-                              ),
-                            );
-                          }).toList(),
+                      SizedBox(height: 2),
+                      Text(
+                        'Family Details (પરિવાર વિગત)',
+                        style: TextStyle(
+                          color: Color(0xFFE8F5E9),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          shadows: [
+                            Shadow(color: Colors.black87, blurRadius: 4, offset: Offset(0, 1)),
+                          ],
                         ),
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Data Display
-                      familiesAsync.when(
-                        loading: () => const Padding(
-                          padding: EdgeInsets.all(40.0),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                CircularProgressIndicator(color: Color(0xFFD4AF37)),
-                                SizedBox(height: 12),
-                                Text(
-                                  'પરિવાર માહિતી લોડ થઈ રહી છે...\nLoading live family database...',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(color: Colors.black54, fontSize: 13),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        error: (err, _) => Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(24.0),
-                            child: Column(
-                              children: [
-                                const Icon(Icons.error_outline, color: Colors.red, size: 40),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'માહિતી લોડ કરવામાં સમસ્યા આવી.\nError: $err',
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(color: Colors.black87, fontSize: 13),
-                                ),
-                                const SizedBox(height: 14),
-                                ElevatedButton.icon(
-                                  onPressed: () => ref.refresh(familyDirectoryProvider),
-                                  icon: const Icon(Icons.refresh),
-                                  label: const Text('ફરી પ્રયાસ કરો (Retry)'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFD4AF37),
-                                    foregroundColor: Colors.black,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        data: (families) {
-                          final filtered = families.where((f) {
-                            // City filter
-                            if (_selectedCity != 'All') {
-                              final cEng = f.cityEng.toLowerCase();
-                              final dEng = (f.district ?? '').toLowerCase();
-                              final target = _selectedCity.toLowerCase();
-                              if (!cEng.contains(target) && !dEng.contains(target)) {
-                                return false;
-                              }
-                            }
-
-                            // Query search
-                            if (_searchQuery.trim().isEmpty) return true;
-                            final q = _searchQuery.toLowerCase().trim();
-                            return f.nameGuj.toLowerCase().contains(q) ||
-                                f.nameEng.toLowerCase().contains(q) ||
-                                f.surname.toLowerCase().contains(q) ||
-                                (f.headName != null && f.headName!.toLowerCase().contains(q)) ||
-                                (f.headNameGuj != null && f.headNameGuj!.toLowerCase().contains(q)) ||
-                                f.cityGuj.toLowerCase().contains(q) ||
-                                f.cityEng.toLowerCase().contains(q) ||
-                                (f.mosal != null && f.mosal!.toLowerCase().contains(q)) ||
-                                (f.nativePlace != null && f.nativePlace!.toLowerCase().contains(q)) ||
-                                (f.fatherName != null && f.fatherName!.toLowerCase().contains(q)) ||
-                                (f.district != null && f.district!.toLowerCase().contains(q));
-                          }).toList();
-
-                          if (filtered.isEmpty) {
-                            return Center(
-                              child: Padding(
-                                padding: const EdgeInsets.all(32.0),
-                                child: Column(
-                                  children: [
-                                    const Icon(Icons.search_off, size: 48, color: Colors.black26),
-                                    const SizedBox(height: 12),
-                                    const Text(
-                                      'કોઈ પરિવાર મળ્યો નથી\n(No family found matching your search)',
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(color: Colors.black54, fontWeight: FontWeight.bold, fontSize: 13),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    TextButton(
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        setState(() {
-                                          _searchQuery = '';
-                                          _selectedCity = 'All';
-                                        });
-                                      },
-                                      child: const Text('બધા પરિવારો જુઓ (Reset Filters)'),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }
-
-                          return Column(
-                            children: filtered.map((f) => _buildFamilyCard(f)).toList(),
-                          );
-                        },
                       ),
                     ],
                   ),
                 ),
+
+                // Refresh Button (Ornate Gold Circle)
+                GestureDetector(
+                  onTap: () => ref.refresh(familyDirectoryProvider),
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [Color(0xFF00382E), Color(0xFF001A14)],
+                      ),
+                      border: Border.all(color: const Color(0xFFFFDF73), width: 1.8),
+                      boxShadow: const [
+                        BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
+                      ],
+                    ),
+                    child: const Icon(Icons.refresh, color: Color(0xFFFFD700), size: 21),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Family Directory Icon (Ornate Gold Circle)
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: const RadialGradient(
+                      colors: [Color(0xFF00382E), Color(0xFF001A14)],
+                    ),
+                    border: Border.all(color: const Color(0xFFFFDF73), width: 1.8),
+                    boxShadow: const [
+                      BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
+                    ],
+                  ),
+                  child: const Icon(Icons.groups_rounded, color: Color(0xFFFFD700), size: 23),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 2. BAROQUE GOLD FRAMED BANNER WITH LIVE BADGE ---
+  Widget _buildBaroqueBanner(int count) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFEA88),
+            Color(0xFFD4AF37),
+            Color(0xFF8B5A10),
+            Color(0xFFFFD700),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black45,
+            blurRadius: 10,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(2.5),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(13.5),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFFDF9), Color(0xFFFAF5E8)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Right-side subtle peacock plume accent
+            Positioned(
+              right: -10,
+              top: -12,
+              width: 55,
+              height: 60,
+              child: IgnorePointer(
+                child: Opacity(
+                  opacity: 0.85,
+                  child: Image.asset(
+                    'assets/images/summary_peacock_feather.png',
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'સમાજનાં પરિવારેની માહિતી',
+                        style: TextStyle(
+                          color: Color(0xFF0F172A),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Live Family Database | Vankar Samaj Gujarat',
+                        style: TextStyle(
+                          color: Color(0xFF334155),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Live Emerald Pill Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF004D40), Color(0xFF002F28)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFDF73), width: 1.5),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x44FFD700),
+                        blurRadius: 6,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.groups_rounded, color: Color(0xFFFFD700), size: 17),
+                      const SizedBox(width: 6),
+                      Text(
+                        '$count પરિવારો',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -880,156 +1035,362 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
     );
   }
 
-  Widget _buildFamilyCard(FamilyModel f) {
+  // --- 3. GOLD-RIMMED SEARCH BAR WITH FILTER SLIDERS ---
+  Widget _buildGoldSearchBar() {
     return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: f.isLiveMember
-              ? const Color(0xFFD4AF37)
-              : const Color(0xFFD4AF37).withValues(alpha: 0.5),
-          width: f.isLiveMember ? 1.5 : 1,
-        ),
-        boxShadow: [
+        color: const Color(0xFFFFFDF8),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 1.6),
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
+            color: Colors.black26,
+            blurRadius: 6,
+            offset: Offset(0, 2),
           ),
         ],
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => _showFamilyDetailsModal(f),
-          child: Padding(
-            padding: const EdgeInsets.all(14),
-            child: Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.6)),
-                    boxShadow: const [
-                      BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 1)),
-                    ],
+      child: Row(
+        children: [
+          const Icon(Icons.search, color: Color(0xFF2C2416), size: 22),
+          const SizedBox(width: 10),
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600),
+              decoration: const InputDecoration(
+                hintText: 'પરિવાર, શહેર કે મોસાળ શોધો... (Search)',
+                hintStyle: TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.normal),
+                border: InputBorder.none,
+                isDense: true,
+              ),
+              onChanged: (v) => setState(() => _searchQuery = v),
+            ),
+          ),
+          if (_searchQuery.isNotEmpty)
+            GestureDetector(
+              onTap: () {
+                _searchController.clear();
+                setState(() => _searchQuery = '');
+              },
+              child: const Padding(
+                padding: EdgeInsets.only(right: 6),
+                child: Icon(Icons.clear, size: 18, color: Colors.grey),
+              ),
+            ),
+          const Icon(Icons.tune_rounded, color: Color(0xFFC59B27), size: 21),
+        ],
+      ),
+    );
+  }
+
+  // --- 4. HORIZONTAL CITY FILTER CHIPS ---
+  Widget _buildCityChips() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        children: _quickCities.map((city) {
+          final isSelected = _selectedCity == city;
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedCity = city),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? const LinearGradient(
+                          colors: [Color(0xFF004D40), Color(0xFF002E26)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        )
+                      : null,
+                  color: isSelected ? null : const Color(0xFFFFFDF8),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFFFFD700) : const Color(0xFFD4AF37),
+                    width: isSelected ? 1.8 : 1.2,
                   ),
-                  child: ClipOval(
-                    child: (f.photoUrl != null && f.photoUrl!.isNotEmpty)
-                        ? Image.network(
-                            f.photoUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(f.icon, color: const Color(0xFFD4AF37), size: 24),
-                          )
-                        : Icon(f.icon, color: const Color(0xFFD4AF37), size: 24),
-                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isSelected ? const Color(0x66FFD700) : Colors.black12,
+                      blurRadius: isSelected ? 6 : 3,
+                      offset: const Offset(0, 1.5),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              f.nameGuj.isNotEmpty ? f.nameGuj : 'વણકર પરિવાર',
-                              style: const TextStyle(
-                                color: Color(0xFFD4AF37),
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (f.isVerified) ...[
-                            const SizedBox(width: 4),
-                            const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 16),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isSelected) ...[
+                      const Icon(Icons.check, color: Color(0xFFFFD700), size: 15),
+                      const SizedBox(width: 5),
+                    ] else ...[
+                      const Icon(Icons.apartment_rounded, color: Color(0xFFC59B27), size: 15),
+                      const SizedBox(width: 5),
+                    ],
+                    Text(
+                      city == 'All' ? 'All (તમામ)' : city,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        color: isSelected ? const Color(0xFFFFDF73) : const Color(0xFF0B2545),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  // --- 5. ROYAL PEACOCK FAMILY CARD (MATCHING FIRST IMAGE EXACTLY) ---
+  Widget _buildFamilyCard(FamilyModel f) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFEA88),
+            Color(0xFFD4AF37),
+            Color(0xFF8B5A10),
+            Color(0xFFFFD700),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black45,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(2.2),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(13.8),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFFDF9), Color(0xFFFAF5E8)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(13.8),
+            onTap: () => _showFamilyDetailsModal(f),
+            child: SizedBox(
+              height: 116,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // 1. Left Peacock Wing
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: 105,
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(13.8),
+                        bottomLeft: Radius.circular(13.8),
+                      ),
+                      child: const CustomPaint(
+                        painter: PeacockFamilyCardWingPainter(),
+                      ),
+                    ),
+                  ),
+
+                  // 2. Medallion Avatar with Dual Golden Rim
+                  Positioned(
+                    left: 14,
+                    top: 24,
+                    width: 66,
+                    height: 66,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFFFEA88),
+                            Color(0xFFD4AF37),
+                            Color(0xFF8B5A10),
+                            Color(0xFFFFD700),
                           ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 2)),
                         ],
                       ),
-                      if ((f.headName != null && f.headName!.isNotEmpty) ||
-                          (f.candidateName != null && f.candidateName!.isNotEmpty && f.candidateName != f.surname)) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          (f.headNameGuj != null && f.headNameGuj!.isNotEmpty && f.headName != null && f.headName!.isNotEmpty)
-                              ? '${f.headNameGuj} (${f.headName})'
-                              : (f.candidateName ?? f.nameEng),
-                          style: const TextStyle(
-                            color: Color(0xFF1E293B),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+                      padding: const EdgeInsets.all(2.4),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFFFFFDF8),
                         ),
-                      ],
-                      const SizedBox(height: 3),
-                      Row(
-                        children: [
-                          Text(
-                            '${f.cityGuj} (${f.cityEng})',
-                            style: const TextStyle(color: Colors.black87, fontSize: 13.5, fontWeight: FontWeight.w600),
-                          ),
-                          if (f.nativePlace != null && f.nativePlace!.isNotEmpty && f.nativePlace != f.cityEng) ...[
-                            const Text(' • ', style: TextStyle(color: Colors.black38)),
-                            Flexible(
+                        child: ClipOval(
+                          child: (f.photoUrl != null && f.photoUrl!.isNotEmpty)
+                              ? Image.network(
+                                  f.photoUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (ctx, err, st) => Icon(
+                                    f.icon,
+                                    color: const Color(0xFFB8860B),
+                                    size: 30,
+                                  ),
+                                )
+                              : Icon(
+                                  f.icon,
+                                  color: const Color(0xFFB8860B),
+                                  size: 30,
+                                ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // 3. Family Content Column
+                  Positioned(
+                    left: 98,
+                    top: 10,
+                    right: 48,
+                    bottom: 10,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Line 1: Title + Verified Badge
+                        Row(
+                          children: [
+                            Expanded(
                               child: Text(
-                                f.nativePlace!,
-                                style: const TextStyle(color: Colors.black54, fontSize: 12),
+                                (f.nameGuj.isNotEmpty ? f.nameGuj : 'વણકર પરિવાર') +
+                                    ((f.headName != null && f.headName!.isNotEmpty)
+                                        ? ' (${f.headName})'
+                                        : (f.candidateName != null && f.candidateName!.isNotEmpty)
+                                            ? ' (${f.candidateName})'
+                                            : ''),
+                                style: const TextStyle(
+                                  color: Color(0xFF00382E),
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.1,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (f.isVerified) ...[
+                              const SizedBox(width: 4),
+                              const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 17),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+
+                        // Line 2: Location
+                        Row(
+                          children: [
+                            const Icon(Icons.location_on, color: Color(0xFF0D3B66), size: 15),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                '${f.cityGuj} (${f.cityEng}) • ${f.nativePlace ?? f.pargana ?? "Other (અન્ય)"}',
+                                style: const TextStyle(
+                                  color: Color(0xFF1E293B),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                                maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        f.details,
-                        style: const TextStyle(color: Colors.black54, fontSize: 12, fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (f.isLiveMember) ...[
-                        const SizedBox(height: 4),
+                        ),
+                        const SizedBox(height: 3),
+
+                        // Line 3: Mosal / Masal
                         Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(color: const Color(0xFF10B981), width: 0.6),
-                              ),
-                              child: const Text(
-                                '● REGISTERED LIVE',
-                                style: TextStyle(color: Color(0xFF047857), fontSize: 9.5, fontWeight: FontWeight.bold),
+                            const Icon(Icons.home_rounded, color: Color(0xFF0D3B66), size: 15),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                'મોસાળ: ${f.mosal ?? "Other (અન્ય)"} | Masal: ${f.mosal ?? "Other (અન્ય)"}',
+                                style: const TextStyle(
+                                  color: Color(0xFF475569),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            if (f.fatherName != null && f.fatherName!.isNotEmpty) ...[
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  'વડીલ: ${f.fatherName}',
-                                  style: const TextStyle(color: Color(0xFF0056D2), fontSize: 11, fontWeight: FontWeight.w500),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
                           ],
                         ),
+                        const SizedBox(height: 4),
+
+                        // Line 4: Live Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE8F5E9),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFF2E7D32), width: 0.8),
+                          ),
+                          child: const Text(
+                            '● REGISTERED LIVE',
+                            style: TextStyle(
+                              color: Color(0xFF1B5E20),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-                const Icon(Icons.chevron_right, color: Color(0xFFD4AF37)),
-              ],
+
+                  // 4. Right Chevron Button
+                  Positioned(
+                    right: 12,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Container(
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: const RadialGradient(
+                            colors: [Color(0xFFFFF9E6), Color(0xFFF3E2B3)],
+                          ),
+                          border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
+                          ],
+                        ),
+                        child: const Icon(Icons.chevron_right_rounded, color: Color(0xFF8B5A10), size: 22),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -1037,3 +1398,221 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
     );
   }
 }
+
+// --- PEACOCK FAMILY CARD WING PAINTER ---
+class PeacockFamilyCardWingPainter extends CustomPainter {
+  const PeacockFamilyCardWingPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Curved Wing Boundary Path
+    final wingPath = Path();
+    wingPath.moveTo(0, 0);
+    wingPath.lineTo(60, 0);
+    wingPath.cubicTo(88, 0, 102, 38, 92, 72);
+    wingPath.cubicTo(82, 98, 94, size.height - 20, 68, size.height);
+    wingPath.lineTo(0, size.height);
+    wingPath.close();
+
+    // Fill wing with rich peacock gradient (teal & emerald)
+    final fillPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [
+          Color(0xFF00897B),
+          Color(0xFF00695C),
+          Color(0xFF00382E),
+          Color(0xFF001E18),
+        ],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(Rect.fromLTWH(0, 0, 105, size.height));
+    canvas.drawPath(wingPath, fillPaint);
+
+    // 2. Layered peacock feather plume eye at lower-left
+    final eyeCenter = Offset(24, size.height - 26);
+    // Outer emerald aura
+    final outerAura = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFF00BFA5).withValues(alpha: 0.6),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: eyeCenter, radius: 24));
+    canvas.drawCircle(eyeCenter, 24, outerAura);
+
+    // Peacock outer blue ellipse
+    final outerEyePaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF0D47A1), Color(0xFF1976D2)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(eyeCenter.dx - 14, eyeCenter.dy - 17, 28, 34));
+    canvas.drawOval(
+      Rect.fromCenter(center: eyeCenter, width: 22, height: 28),
+      outerEyePaint,
+    );
+
+    // Inner bright turquoise ring
+    final turquoisePaint = Paint()..color = const Color(0xFF00E5FF);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(eyeCenter.dx, eyeCenter.dy + 1), width: 14, height: 18),
+      turquoisePaint,
+    );
+
+    // Deep midnight pupil
+    final pupilPaint = Paint()..color = const Color(0xFF001026);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(eyeCenter.dx, eyeCenter.dy + 2), width: 9, height: 12),
+      pupilPaint,
+    );
+
+    // Top peacock plume eye (smaller accent)
+    final topEyeCenter = const Offset(16, 22);
+    final topEyePaint = Paint()
+      ..color = const Color(0xFF00897B).withValues(alpha: 0.45);
+    canvas.drawCircle(topEyeCenter, 12, topEyePaint);
+
+    // 3. Gleaming golden ribbon along the curved boundary
+    final goldBorderPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [
+          Color(0xFFFFEA88),
+          Color(0xFFD4AF37),
+          Color(0xFF8B5A10),
+          Color(0xFFFFD700),
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, 105, size.height))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..strokeCap = StrokeCap.round;
+
+    final ribbonPath = Path();
+    ribbonPath.moveTo(60, 0);
+    ribbonPath.cubicTo(88, 0, 102, 38, 92, 72);
+    ribbonPath.cubicTo(82, 98, 94, size.height - 20, 68, size.height);
+    canvas.drawPath(ribbonPath, goldBorderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// --- ROYAL BOTTOM PEACOCK LOTUS FOOTER PAINTER ---
+class RoyalBottomPeacockLotusPainter extends CustomPainter {
+  const RoyalBottomPeacockLotusPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cx = size.width / 2;
+    final cy = size.height - 22;
+
+    // 1. Sweeping left & right royal wings (purple and teal gradients)
+    // Left Wing Plume
+    final leftWing = Path();
+    leftWing.moveTo(cx, cy);
+    leftWing.cubicTo(cx - 50, cy + 18, cx - 110, cy - 10, cx - 160, cy + 6);
+    leftWing.cubicTo(cx - 130, cy + 28, cx - 70, cy + 30, cx, cy + 14);
+    leftWing.close();
+
+    final leftWingPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF6A1B9A), Color(0xFF00695C), Color(0xFF00382E)],
+      ).createShader(Rect.fromLTWH(cx - 160, cy - 10, 160, 45));
+    canvas.drawPath(leftWing, leftWingPaint);
+
+    // Right Wing Plume
+    final rightWing = Path();
+    rightWing.moveTo(cx, cy);
+    rightWing.cubicTo(cx + 50, cy + 18, cx + 110, cy - 10, cx + 160, cy + 6);
+    rightWing.cubicTo(cx + 130, cy + 28, cx + 70, cy + 30, cx, cy + 14);
+    rightWing.close();
+
+    final rightWingPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF6A1B9A), Color(0xFF00695C), Color(0xFF00382E)],
+      ).createShader(Rect.fromLTWH(cx, cy - 10, 160, 45));
+    canvas.drawPath(rightWing, rightWingPaint);
+
+    // Golden boundary ribbons for wings
+    final goldRibbonPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFEA88), Color(0xFFD4AF37), Color(0xFF8B5A10)],
+      ).createShader(Rect.fromLTWH(cx - 160, cy - 10, 320, 45))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.4;
+
+    final leftRibbon = Path();
+    leftRibbon.moveTo(cx, cy);
+    leftRibbon.cubicTo(cx - 50, cy + 18, cx - 110, cy - 10, cx - 160, cy + 6);
+    canvas.drawPath(leftRibbon, goldRibbonPaint);
+
+    final rightRibbon = Path();
+    rightRibbon.moveTo(cx, cy);
+    rightRibbon.cubicTo(cx + 50, cy + 18, cx + 110, cy - 10, cx + 160, cy + 6);
+    canvas.drawPath(rightRibbon, goldRibbonPaint);
+
+    // Corner peacock feather eyes
+    _drawPeacockEye(canvas, Offset(cx - 142, cy + 8));
+    _drawPeacockEye(canvas, Offset(cx + 142, cy + 8));
+
+    // 2. Central Golden Lotus
+    final goldFill = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFEA88), Color(0xFFD4AF37), Color(0xFF8B5A10)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromCenter(center: Offset(cx, cy), width: 60, height: 40))
+      ..style = PaintingStyle.fill;
+
+    // Center tall petal
+    final centerPetal = Path();
+    centerPetal.moveTo(cx, cy - 18);
+    centerPetal.cubicTo(cx + 8, cy - 10, cx + 6, cy + 6, cx, cy + 10);
+    centerPetal.cubicTo(cx - 6, cy + 6, cx - 8, cy - 10, cx, cy - 18);
+    canvas.drawPath(centerPetal, goldFill);
+
+    // Left inner petal
+    final leftInner = Path();
+    leftInner.moveTo(cx - 3, cy + 4);
+    leftInner.cubicTo(cx - 12, cy - 4, cx - 18, cy - 12, cx - 18, cy - 6);
+    leftInner.cubicTo(cx - 16, cy + 2, cx - 10, cy + 8, cx - 3, cy + 8);
+    canvas.drawPath(leftInner, goldFill);
+
+    // Right inner petal
+    final rightInner = Path();
+    rightInner.moveTo(cx + 3, cy + 4);
+    rightInner.cubicTo(cx + 12, cy - 4, cx + 18, cy - 12, cx + 18, cy - 6);
+    rightInner.cubicTo(cx + 16, cy + 2, cx + 10, cy + 8, cx + 3, cy + 8);
+    canvas.drawPath(rightInner, goldFill);
+
+    // Outermost petals
+    final leftOuter = Path();
+    leftOuter.moveTo(cx - 5, cy + 6);
+    leftOuter.cubicTo(cx - 18, cy + 2, cx - 28, cy - 4, cx - 26, cy + 4);
+    leftOuter.cubicTo(cx - 22, cy + 10, cx - 12, cy + 12, cx - 5, cy + 10);
+    canvas.drawPath(leftOuter, goldFill);
+
+    final rightOuter = Path();
+    rightOuter.moveTo(cx + 5, cy + 6);
+    rightOuter.cubicTo(cx + 18, cy + 2, cx + 28, cy - 4, cx + 26, cy + 4);
+    rightOuter.cubicTo(cx + 22, cy + 10, cx + 12, cy + 12, cx + 5, cy + 10);
+    canvas.drawPath(rightOuter, goldFill);
+  }
+
+  void _drawPeacockEye(Canvas canvas, Offset center) {
+    final bluePaint = Paint()..color = const Color(0xFF0D47A1);
+    canvas.drawOval(Rect.fromCenter(center: center, width: 18, height: 22), bluePaint);
+
+    final cyanPaint = Paint()..color = const Color(0xFF00E5FF);
+    canvas.drawOval(Rect.fromCenter(center: Offset(center.dx, center.dy + 1), width: 11, height: 14), cyanPaint);
+
+    final pupilPaint = Paint()..color = const Color(0xFF001026);
+    canvas.drawOval(Rect.fromCenter(center: Offset(center.dx, center.dy + 2), width: 7, height: 9), pupilPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
