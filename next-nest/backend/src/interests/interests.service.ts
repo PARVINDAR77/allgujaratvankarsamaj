@@ -22,6 +22,25 @@ export class InterestsService {
     return profile.id;
   }
 
+  private get profileInclude() {
+    return {
+      district: true,
+      taluka: true,
+      pargana: true,
+      village: true,
+      stateRef: true,
+      user: {
+        select: { phone: true, email: true },
+      },
+      governmentEmployment: {
+        include: {
+          department: true,
+          designation: true,
+        },
+      },
+    };
+  }
+
   async getInterestStatus(userId: string, targetProfileId: string) {
     const myProfile = await this.prisma.matrimonialProfile.findUnique({
       where: { userId },
@@ -30,7 +49,19 @@ export class InterestsService {
       return { status: "NONE" };
     }
     const myProfileId = myProfile.id;
-    if (myProfileId === targetProfileId) {
+
+    // Resolve target profile by id or userId
+    const targetProfile = await this.prisma.matrimonialProfile.findFirst({
+      where: {
+        OR: [{ id: targetProfileId }, { userId: targetProfileId }],
+      },
+    });
+    if (!targetProfile) {
+      return { status: "NONE" };
+    }
+    const resolvedTargetId = targetProfile.id;
+
+    if (myProfileId === resolvedTargetId) {
       return { status: "SELF" };
     }
 
@@ -38,21 +69,21 @@ export class InterestsService {
     const sent = await this.prisma.matchInterest.findFirst({
       where: {
         senderProfileId: myProfileId,
-        receiverProfileId: targetProfileId,
+        receiverProfileId: resolvedTargetId,
       },
     });
 
     // Check if target sent to me
     const received = await this.prisma.matchInterest.findFirst({
       where: {
-        senderProfileId: targetProfileId,
+        senderProfileId: resolvedTargetId,
         receiverProfileId: myProfileId,
       },
     });
 
     if (sent?.status === "ACCEPTED" || received?.status === "ACCEPTED") {
-      const p1 = myProfileId < targetProfileId ? myProfileId : targetProfileId;
-      const p2 = myProfileId < targetProfileId ? targetProfileId : myProfileId;
+      const p1 = myProfileId < resolvedTargetId ? myProfileId : resolvedTargetId;
+      const p2 = myProfileId < resolvedTargetId ? resolvedTargetId : myProfileId;
       const conversation = await this.prisma.chatConversation.findUnique({
         where: { participant1Id_participant2Id: { participant1Id: p1, participant2Id: p2 } },
       });
@@ -91,7 +122,18 @@ export class InterestsService {
     }
     const senderProfileId = senderProfile.id;
 
-    if (senderProfileId === dto.targetProfileId) {
+    // Resolve target profile by id or userId
+    const targetProfile = await this.prisma.matrimonialProfile.findFirst({
+      where: {
+        OR: [{ id: dto.targetProfileId }, { userId: dto.targetProfileId }],
+      },
+    });
+    if (!targetProfile) {
+      throw new BadRequestException("Target candidate profile not found");
+    }
+    const resolvedTargetId = targetProfile.id;
+
+    if (senderProfileId === resolvedTargetId) {
       throw new BadRequestException("You cannot send a connection request to yourself");
     }
 
@@ -99,12 +141,6 @@ export class InterestsService {
       throw new BadRequestException("પરિણીત સભ્યો મેટ્રિમોની સંબંધ પ્રસ્તાવ મોકલી શકતા નથી (Married members cannot send matrimonial proposals)");
     }
 
-    const targetProfile = await this.prisma.matrimonialProfile.findUnique({
-      where: { id: dto.targetProfileId },
-    });
-    if (!targetProfile) {
-      throw new BadRequestException("Target candidate profile not found");
-    }
     if (targetProfile.maritalStatus === "MARRIED") {
       throw new BadRequestException("પસંદ કરેલ સભ્ય પરિણીત હોવાથી મેટ્રિમોની પ્રસ્તાવ મોકલી શકાતો નથી (Cannot send matrimonial interest to a married member)");
     }
@@ -113,8 +149,8 @@ export class InterestsService {
     const existingInterest = await this.prisma.matchInterest.findFirst({
       where: {
         OR: [
-          { senderProfileId, receiverProfileId: dto.targetProfileId },
-          { senderProfileId: dto.targetProfileId, receiverProfileId: senderProfileId },
+          { senderProfileId, receiverProfileId: resolvedTargetId },
+          { senderProfileId: resolvedTargetId, receiverProfileId: senderProfileId },
         ],
       },
     });
@@ -134,23 +170,20 @@ export class InterestsService {
     const created = await this.prisma.matchInterest.create({
       data: {
         senderProfileId,
-        receiverProfileId: dto.targetProfileId,
+        receiverProfileId: resolvedTargetId,
         status: "PENDING",
       },
     });
 
     // Notify Receiver
     try {
-      const receiverProfile = await this.prisma.matrimonialProfile.findUnique({
-        where: { id: dto.targetProfileId },
-      });
-      if (receiverProfile?.userId) {
+      if (targetProfile.userId) {
         const senderName = `${senderProfile.firstName} ${senderProfile.lastName}`.trim();
         await this.prisma.userNotification.create({
           data: {
-            userId: receiverProfile.userId,
-            title: "નવી કનેક્શન વિનંતી (New Connection Request)",
-            message: `${senderName} એ તમને કનેક્શન વિનંતી મોકલી છે. પ્રોફાઇલ જુઓ અને સ્વીકારો.`,
+            userId: targetProfile.userId,
+            title: "નવી સંબંધ વિનંતી (New Connection Request)",
+            message: `${senderName} તરફથી તમને નવી સંબંધ વિનંતી મળી છે. વિનંતી જુઓ અને સ્વીકારો.`,
             type: "CONNECTION_REQUEST",
             metadata: JSON.stringify({
               senderProfileId,
@@ -234,7 +267,7 @@ export class InterestsService {
           data: {
             userId: otherProfile.userId,
             title: "વિનંતી સ્વીકારાઈ! (Connection Accepted)",
-            message: `${myName} એ તમારી કનેક્શન વિનંતી સ્વીકારી લીધી છે! હવે તમે એકબીજા સાથે ચેટ કરી શકો છો.`,
+            message: `${myName} એ તમારી સંબંધ વિનંતી સ્વીકારી લીધી છે! હવે તમે એકબીજા સાથે ચેટ કરી શકો છો.`,
             type: "REQUEST_ACCEPTED",
             metadata: JSON.stringify({
               partnerProfileId: receiverProfileId,
@@ -289,6 +322,7 @@ export class InterestsService {
     const receiverIds = interests.map((i) => i.receiverProfileId);
     const profiles = await this.prisma.matrimonialProfile.findMany({
       where: { id: { in: receiverIds } },
+      include: this.profileInclude,
     });
     const profileMap = new Map(profiles.map((p) => [p.id, p]));
 
@@ -310,6 +344,7 @@ export class InterestsService {
     const senderIds = interests.map((i) => i.senderProfileId);
     const profiles = await this.prisma.matrimonialProfile.findMany({
       where: { id: { in: senderIds } },
+      include: this.profileInclude,
     });
     const profileMap = new Map(profiles.map((p) => [p.id, p]));
 
@@ -340,14 +375,15 @@ export class InterestsService {
 
     const profiles = await this.prisma.matrimonialProfile.findMany({
       where: { id: { in: otherProfileIds } },
+      include: this.profileInclude,
     });
     const profileMap = new Map(profiles.map((p) => [p.id, p]));
 
     const conversations = await this.prisma.chatConversation.findMany({
       where: {
         OR: [
-          { participant1Id: userId },
-          { participant2Id: userId },
+          { participant1Id: myProfile.id },
+          { participant2Id: myProfile.id },
         ],
       },
     });
@@ -358,7 +394,7 @@ export class InterestsService {
       const matchedConv = conversations.find(
         (c) =>
           otherProfile &&
-          (c.participant1Id === otherProfile.userId || c.participant2Id === otherProfile.userId),
+          (c.participant1Id === otherProfile.id || c.participant2Id === otherProfile.id),
       );
 
       return {

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../features/match/providers/match_provider.dart';
 import '../../../features/profile/providers/profile_provider.dart';
 
 class MainNavigationScreen extends ConsumerWidget {
@@ -11,6 +12,9 @@ class MainNavigationScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final matchState = ref.watch(matchProvider);
+    final receivedRequestsCount = matchState.receivedInterests.length;
+
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(
@@ -41,6 +45,11 @@ class MainNavigationScreen extends ConsumerWidget {
               return;
             }
 
+            if (index == 2) {
+              // Refresh match requests when opening મેળ tab
+              ref.read(matchProvider.notifier).loadAll(silent: true);
+            }
+
             navigationShell.goBranch(
               index,
               initialLocation: index == navigationShell.currentIndex,
@@ -50,12 +59,28 @@ class MainNavigationScreen extends ConsumerWidget {
           selectedItemColor: AppColors.secondary,
           unselectedItemColor: Colors.white60,
           type: BottomNavigationBarType.fixed,
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'હોમ'),
-            BottomNavigationBarItem(icon: Icon(Icons.search), label: 'શોધો'),
-            BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'મેળ'),
-            BottomNavigationBarItem(icon: Icon(Icons.message), label: 'મેસેજ'),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'પ્રોફાઈલ'),
+          items: [
+            const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'હોમ'),
+            const BottomNavigationBarItem(icon: Icon(Icons.search), label: 'શોધો'),
+            BottomNavigationBarItem(
+              icon: Badge.count(
+                count: receivedRequestsCount,
+                isLabelVisible: receivedRequestsCount > 0,
+                backgroundColor: const Color(0xFFEF4444),
+                textColor: Colors.white,
+                child: const Icon(Icons.favorite),
+              ),
+              activeIcon: Badge.count(
+                count: receivedRequestsCount,
+                isLabelVisible: receivedRequestsCount > 0,
+                backgroundColor: const Color(0xFFEF4444),
+                textColor: Colors.white,
+                child: const Icon(Icons.favorite),
+              ),
+              label: 'મેળ',
+            ),
+            const BottomNavigationBarItem(icon: Icon(Icons.message), label: 'મેસેજ'),
+            const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'પ્રોફાઈલ'),
           ],
         ),
       ),

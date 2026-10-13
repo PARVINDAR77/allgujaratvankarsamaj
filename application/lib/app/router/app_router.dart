@@ -395,7 +395,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/match',
                 name: 'match',
-                builder: (context, state) => const MutualInterestScreen(),
+                builder: (context, state) {
+                  final tabParam = state.uri.queryParameters['tab'];
+                  int? tabIndex = tabParam != null ? int.tryParse(tabParam) : null;
+                  if (tabIndex == null && state.extra is Map) {
+                    final extra = state.extra as Map;
+                    tabIndex = extra['initialTabIndex'] as int? ?? extra['tab'] as int?;
+                  }
+                  return MutualInterestScreen(initialTabIndex: tabIndex);
+                },
               ),
             ],
           ),

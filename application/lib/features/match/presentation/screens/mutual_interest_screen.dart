@@ -6,7 +6,9 @@ import '../../../chat/providers/chat_provider.dart';
 import '../../providers/match_provider.dart';
 
 class MutualInterestScreen extends ConsumerStatefulWidget {
-  const MutualInterestScreen({super.key});
+  final int? initialTabIndex;
+
+  const MutualInterestScreen({super.key, this.initialTabIndex});
 
   @override
   ConsumerState<MutualInterestScreen> createState() => _MutualInterestScreenState();
@@ -18,9 +20,24 @@ class _MutualInterestScreenState extends ConsumerState<MutualInterestScreen> wit
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    final startIdx = (widget.initialTabIndex != null && widget.initialTabIndex! >= 0 && widget.initialTabIndex! < 4)
+        ? widget.initialTabIndex!
+        : 0;
+    _tabController = TabController(length: 4, vsync: this, initialIndex: startIdx);
     _tabController.addListener(() {
       if (mounted) setState(() {});
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(matchProvider.notifier).loadAll(silent: true).then((_) {
+        if (!mounted) return;
+        final state = ref.read(matchProvider);
+        if (widget.initialTabIndex == null && _tabController.index == 0) {
+          if (state.receivedInterests.isNotEmpty && state.mutualInterests.isEmpty) {
+            _tabController.animateTo(1);
+          }
+        }
+      });
     });
   }
 

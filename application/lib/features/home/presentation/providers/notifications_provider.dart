@@ -158,9 +158,8 @@ class NotificationsNotifier extends StateNotifier<List<AppNotification>> {
                 try {
                   final meta = jsonDecode(map['metadata'].toString()) as Map<String, dynamic>?;
                   if (type == 'CONNECTION_REQUEST') {
-                    final senderId = meta?['senderProfileId']?.toString();
-                    if (senderId != null) route = '/candidate-profile-details?id=$senderId';
-                    icon = Icons.person_add_rounded;
+                    route = '/match?tab=1';
+                    icon = Icons.mark_email_read_rounded;
                   } else if (type == 'REQUEST_ACCEPTED' || type == 'NEW_MESSAGE') {
                     final convId = meta?['conversationId']?.toString();
                     if (convId != null) {

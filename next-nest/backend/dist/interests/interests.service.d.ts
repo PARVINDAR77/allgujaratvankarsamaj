@@ -4,6 +4,7 @@ export declare class InterestsService {
     private readonly prisma;
     constructor(prisma: PrismaService);
     private getProfileIdForUser;
+    private get profileInclude();
     getInterestStatus(userId: string, targetProfileId: string): Promise<{
         status: string;
         interestId?: undefined;
@@ -60,6 +61,106 @@ export declare class InterestsService {
     }>;
     getSentInterests(userId: string): Promise<{
         receiverProfile: {
+            user: {
+                email: string;
+                phone: string;
+            };
+            district: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                stateId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            taluka: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                districtId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            pargana: {
+                description: string | null;
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                contactPhone: string | null;
+                gujaratiName: string | null;
+                code: string | null;
+                villageCount: string | null;
+                districtRegion: string | null;
+                leaderName: string | null;
+                manualCount: number | null;
+                totalCount: number;
+            };
+            village: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                pincode: string | null;
+                talukaId: string | null;
+                parganaId: string | null;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            governmentEmployment: {
+                designation: {
+                    name: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    departmentId: string;
+                    gujaratiName: string | null;
+                    code: string | null;
+                };
+                department: {
+                    name: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    gujaratiName: string | null;
+                    code: string | null;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isFeatured: boolean;
+                profileId: string;
+                rejectionReason: string | null;
+                employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+                officeLocation: string | null;
+                joiningYear: number | null;
+                verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
+                verificationSubmittedAt: Date | null;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                isActive: boolean;
+                departmentId: string | null;
+                designationId: string | null;
+            };
+            stateRef: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string;
+            };
+        } & {
             state: string | null;
             status: import(".prisma/client").$Enums.ProfileStatus;
             id: string;
@@ -123,6 +224,106 @@ export declare class InterestsService {
     }[]>;
     getReceivedInterests(userId: string): Promise<{
         senderProfile: {
+            user: {
+                email: string;
+                phone: string;
+            };
+            district: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                stateId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            taluka: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                districtId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            pargana: {
+                description: string | null;
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                contactPhone: string | null;
+                gujaratiName: string | null;
+                code: string | null;
+                villageCount: string | null;
+                districtRegion: string | null;
+                leaderName: string | null;
+                manualCount: number | null;
+                totalCount: number;
+            };
+            village: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                pincode: string | null;
+                talukaId: string | null;
+                parganaId: string | null;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            governmentEmployment: {
+                designation: {
+                    name: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    departmentId: string;
+                    gujaratiName: string | null;
+                    code: string | null;
+                };
+                department: {
+                    name: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    gujaratiName: string | null;
+                    code: string | null;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isFeatured: boolean;
+                profileId: string;
+                rejectionReason: string | null;
+                employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+                officeLocation: string | null;
+                joiningYear: number | null;
+                verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
+                verificationSubmittedAt: Date | null;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                isActive: boolean;
+                departmentId: string | null;
+                designationId: string | null;
+            };
+            stateRef: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string;
+            };
+        } & {
             state: string | null;
             status: import(".prisma/client").$Enums.ProfileStatus;
             id: string;
@@ -186,6 +387,106 @@ export declare class InterestsService {
     }[]>;
     getMutualInterests(userId: string): Promise<{
         otherProfile: {
+            user: {
+                email: string;
+                phone: string;
+            };
+            district: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                stateId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            taluka: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                districtId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            pargana: {
+                description: string | null;
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                contactPhone: string | null;
+                gujaratiName: string | null;
+                code: string | null;
+                villageCount: string | null;
+                districtRegion: string | null;
+                leaderName: string | null;
+                manualCount: number | null;
+                totalCount: number;
+            };
+            village: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                pincode: string | null;
+                talukaId: string | null;
+                parganaId: string | null;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
+            governmentEmployment: {
+                designation: {
+                    name: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    departmentId: string;
+                    gujaratiName: string | null;
+                    code: string | null;
+                };
+                department: {
+                    name: string;
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    isActive: boolean;
+                    gujaratiName: string | null;
+                    code: string | null;
+                };
+            } & {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isFeatured: boolean;
+                profileId: string;
+                rejectionReason: string | null;
+                employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+                officeLocation: string | null;
+                joiningYear: number | null;
+                verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
+                verificationSubmittedAt: Date | null;
+                verifiedAt: Date | null;
+                verifiedBy: string | null;
+                isActive: boolean;
+                departmentId: string | null;
+                designationId: string | null;
+            };
+            stateRef: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string;
+            };
+        } & {
             state: string | null;
             status: import(".prisma/client").$Enums.ProfileStatus;
             id: string;
