@@ -737,12 +737,12 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                             return Column(
                               children: [
                                 ...filtered.asMap().entries.map((entry) => _buildFamilyCard(entry.value, entry.key)),
-                                const SizedBox(height: 14),
+                                const SizedBox(height: 10),
                                 // E. Royal Bottom Lotus & Peacock Plume Trim
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 24),
                                   child: Image.asset(
-                                    'assets/images/royal_bottom_lotus_exact.png',
+                                    'assets/images/royal_bottom_lotus_feathered.png',
                                     width: double.infinity,
                                     fit: BoxFit.fitWidth,
                                   ),
@@ -909,90 +909,42 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
     );
   }
 
-  // --- 2. BAROQUE GOLD FRAMED BANNER WITH LIVE BADGE ---
+  // --- 2. BAROQUE GOLD FRAMED BANNER WITH LIVE BADGE & PEACOCK FLOURISH ---
   Widget _buildBaroqueBanner(int count) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 8, bottom: 12),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFFFEA88),
-            Color(0xFFD4AF37),
-            Color(0xFF8B5A10),
-            Color(0xFFFFD700),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black54,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(2.5),
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(16, 18, 14, 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15.5),
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFFDF8), Color(0xFFFAF4E4)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
+      child: AspectRatio(
+        aspectRatio: 460 / 100,
+        child: Stack(
           children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: const [
-                      Text(
-                        'સમાજનાં પરિવારેની માહિતી',
-                        style: TextStyle(
-                          color: Color(0xFF0F172A),
-                          fontSize: 17,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.2,
-                          height: 1.35,
-                        ),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'Live Family Database | Vankar Samaj Gujarat',
-                        style: TextStyle(
-                          color: Color(0xFF334155),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                          height: 1.25,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
+            // Authentic Baroque Banner with Ornate Golden Filigree Frame & Sprouting Peacock Plumes
+            Positioned.fill(
+              child: Image.asset(
+                'assets/images/royal_banner_exact.png',
+                fit: BoxFit.fill,
+              ),
+            ),
 
-                // Live Emerald Pill Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            // Live Pill Badge with dynamic count, perfectly overlaid
+            Positioned(
+              right: 12,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.5),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF004D40), Color(0xFF002F28)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      colors: [Color(0xFF005A43), Color(0xFF00382B)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFFFDF73), width: 1.5),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
                     boxShadow: const [
                       BoxShadow(
-                        color: Color(0x44FFD700),
+                        color: Color(0x66FFD700),
                         blurRadius: 6,
                         offset: Offset(0, 1),
                       ),
@@ -1001,8 +953,8 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.people, color: Color(0xFFFFD700), size: 17),
-                      const SizedBox(width: 6),
+                      const Icon(Icons.people, color: Color(0xFFFFD700), size: 16),
+                      const SizedBox(width: 5),
                       Text(
                         '$count પરિવારો',
                         style: const TextStyle(
@@ -1015,8 +967,10 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
+          ],
+        ),
       ),
     );
   }
