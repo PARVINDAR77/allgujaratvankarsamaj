@@ -362,11 +362,13 @@ ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`contact_email\` 
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mother_tongue\` varchar(191) DEFAULT 'Gujarati (ગુજરાતી)';
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`photos\` TEXT DEFAULT NULL;
 ALTER TABLE \`verification_requests\` ADD COLUMN IF NOT EXISTS \`document_back_url\` varchar(191) DEFAULT NULL;
-ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_title\` varchar(191) DEFAULT 'શૈક્ષણિક પોસ્ટર અને માહિતી';
-ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_subtitle\` varchar(191) DEFAULT 'Educational Poster & Circular Image';
-ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_image_url\` text DEFAULT NULL;
-ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_description\` text DEFAULT NULL;
 " || true
+
+# Safe column addition for education_content (MySQL syntax compatible)
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "ALTER TABLE \`education_content\` ADD COLUMN \`box5_title\` varchar(191) DEFAULT 'શૈક્ષણિક પોસ્ટર અને માહિતી';" 2>/dev/null || true
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "ALTER TABLE \`education_content\` ADD COLUMN \`box5_subtitle\` varchar(191) DEFAULT 'Educational Poster & Circular Image';" 2>/dev/null || true
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "ALTER TABLE \`education_content\` ADD COLUMN \`box5_image_url\` text DEFAULT NULL;" 2>/dev/null || true
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "ALTER TABLE \`education_content\` ADD COLUMN \`box5_description\` text DEFAULT NULL;" 2>/dev/null || true
 
 echo "Skipping Database Migrations (Hostinger RAM limits)..."
 # npx prisma migrate deploy
