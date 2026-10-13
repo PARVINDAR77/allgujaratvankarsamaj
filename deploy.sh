@@ -149,6 +149,7 @@ UPDATE users
 SET gender = 'FEMALE' 
 WHERE id IN (SELECT user_id FROM matrimonial_profiles WHERE gender = 'FEMALE');
 ALTER TABLE matrimonial_profiles MODIFY COLUMN marital_status ENUM('NEVER_MARRIED', 'MARRIED', 'DIVORCED', 'WIDOWED', 'SEPARATED') NOT NULL DEFAULT 'NEVER_MARRIED';
+UPDATE \`pavan_prernadata\` SET \`name\` = 'Pavan Prernadata', \`gujarati_name\` = 'પાવન પ્રેરણાદાતા' WHERE LOWER(\`name\`) LIKE '%prendata%' OR LOWER(\`name\`) LIKE '%prandata%';
 " || true
 
 echo "Applying required schema tables and columns via MySQL CLI..."
