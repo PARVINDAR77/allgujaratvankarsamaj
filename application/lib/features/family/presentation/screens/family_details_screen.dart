@@ -909,64 +909,110 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
     );
   }
 
-  // --- 2. BAROQUE GOLD FRAMED BANNER WITH LIVE BADGE & PEACOCK FLOURISH ---
+  // --- 2. REGAL GOLD FRAMED BANNER WITH LIVE BADGE (CLEAN, NO LEAF) ---
   Widget _buildBaroqueBanner(int count) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(top: 8, bottom: 12),
-      child: AspectRatio(
-        aspectRatio: 460 / 100,
-        child: Stack(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFFFFEA88),
+            Color(0xFFD4AF37),
+            Color(0xFF8B5A10),
+            Color(0xFFFFD700),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black45,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(2.2),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(13.8),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFFDF8), Color(0xFFFAF4E4)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Authentic Baroque Banner with Ornate Golden Filigree Frame & Sprouting Peacock Plumes
-            Positioned.fill(
-              child: Image.asset(
-                'assets/images/royal_banner_exact.png',
-                fit: BoxFit.fill,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  Text(
+                    'સમાજનાં પરિવારેની માહિતી',
+                    style: TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.1,
+                      height: 1.3,
+                    ),
+                  ),
+                  SizedBox(height: 3),
+                  Text(
+                    'Live Family Database | Vankar Samaj Gujarat',
+                    style: TextStyle(
+                      color: Color(0xFF334155),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                    ),
+                  ),
+                ],
               ),
             ),
+            const SizedBox(width: 10),
 
-            // Live Pill Badge with dynamic count, perfectly overlaid
-            Positioned(
-              right: 12,
-              top: 0,
-              bottom: 0,
-              child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5.5),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF005A43), Color(0xFF00382B)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
-                    boxShadow: const [
-                      BoxShadow(
-                        color: Color(0x66FFD700),
-                        blurRadius: 6,
-                        offset: Offset(0, 1),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.people, color: Color(0xFFFFD700), size: 16),
-                      const SizedBox(width: 5),
-                      Text(
-                        '$count પરિવારો',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 12.5,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                    ],
-                  ),
+            // Live Pill Badge with dynamic count
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF005A43), Color(0xFF00382B)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x66FFD700),
+                    blurRadius: 6,
+                    offset: Offset(0, 1),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.people, color: Color(0xFFFFD700), size: 16),
+                  const SizedBox(width: 5),
+                  Text(
+                    '$count પરિવારો',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12.5,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
