@@ -207,7 +207,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/samaj-super-stars',
         name: 'samaj-super-stars',
-        builder: (context, state) => const SamajSuperStarsScreen(),
+        builder: (context, state) => const SamajSuperStarsPosterScreen(),
       ),
       GoRoute(
         path: '/pavan-prernadata',
