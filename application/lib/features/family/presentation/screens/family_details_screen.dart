@@ -736,7 +736,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
 
                             return Column(
                               children: [
-                                ...filtered.map((f) => _buildFamilyCard(f)),
+                                ...filtered.asMap().entries.map((entry) => _buildFamilyCard(entry.value, entry.key)),
                                 const SizedBox(height: 10),
                                 // E. Royal Bottom Lotus & Peacock Plume Trim
                                 CustomPaint(
@@ -895,7 +895,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                       BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
                     ],
                   ),
-                  child: const Icon(Icons.groups_rounded, color: Color(0xFFFFD700), size: 23),
+                  child: const Icon(Icons.people, color: Color(0xFFFFD700), size: 22),
                 ),
               ],
             ),
@@ -909,8 +909,9 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
   Widget _buildBaroqueBanner(int count) {
     return Container(
       width: double.infinity,
+      margin: const EdgeInsets.only(top: 8, bottom: 12),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
           colors: [
             Color(0xFFFFEA88),
@@ -923,7 +924,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
         ),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black45,
+            color: Colors.black54,
             blurRadius: 10,
             offset: Offset(0, 4),
           ),
@@ -931,11 +932,11 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
       ),
       padding: const EdgeInsets.all(2.5),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        padding: const EdgeInsets.fromLTRB(16, 18, 14, 16),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13.5),
+          borderRadius: BorderRadius.circular(15.5),
           gradient: const LinearGradient(
-            colors: [Color(0xFFFFFDF9), Color(0xFFFAF5E8)],
+            colors: [Color(0xFFFFFDF8), Color(0xFFFAF4E4)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -946,12 +947,12 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
             // Right-side subtle peacock plume accent
             Positioned(
               right: -10,
-              top: -12,
-              width: 55,
-              height: 60,
+              top: -16,
+              width: 70,
+              height: 75,
               child: IgnorePointer(
                 child: Opacity(
-                  opacity: 0.85,
+                  opacity: 0.9,
                   child: Image.asset(
                     'assets/images/summary_peacock_feather.png',
                     fit: BoxFit.contain,
@@ -975,6 +976,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                           fontSize: 17,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.2,
+                          height: 1.35,
                         ),
                       ),
                       SizedBox(height: 3),
@@ -984,6 +986,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                           color: Color(0xFF334155),
                           fontSize: 11.5,
                           fontWeight: FontWeight.bold,
+                          height: 1.25,
                         ),
                       ),
                     ],
@@ -993,7 +996,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
 
                 // Live Emerald Pill Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFF004D40), Color(0xFF002F28)],
@@ -1013,7 +1016,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.groups_rounded, color: Color(0xFFFFD700), size: 17),
+                      const Icon(Icons.people, color: Color(0xFFFFD700), size: 17),
                       const SizedBox(width: 6),
                       Text(
                         '$count પરિવારો',
@@ -1080,7 +1083,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                 child: Icon(Icons.clear, size: 18, color: Colors.grey),
               ),
             ),
-          const Icon(Icons.tune_rounded, color: Color(0xFFC59B27), size: 21),
+          const Icon(Icons.tune, color: Color(0xFFC59B27), size: 21),
         ],
       ),
     );
@@ -1130,7 +1133,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                       const Icon(Icons.check, color: Color(0xFFFFD700), size: 15),
                       const SizedBox(width: 5),
                     ] else ...[
-                      const Icon(Icons.apartment_rounded, color: Color(0xFFC59B27), size: 15),
+                      const Icon(Icons.location_city, color: Color(0xFFC59B27), size: 16),
                       const SizedBox(width: 5),
                     ],
                     Text(
@@ -1151,13 +1154,23 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
     );
   }
 
-  // --- 5. ROYAL PEACOCK FAMILY CARD (MATCHING FIRST IMAGE EXACTLY) ---
-  Widget _buildFamilyCard(FamilyModel f) {
+  // --- 5. ROYAL PEACOCK FAMILY CARD (MATCHING TARGET IMAGE EXACTLY) ---
+  Widget _buildFamilyCard(FamilyModel f, int index) {
+    final isPurple = index.isOdd;
+    final wingAsset = isPurple
+        ? 'assets/images/royal_card_wing_purple_full.png'
+        : 'assets/images/royal_card_wing_teal_full.png';
+
+    IconData displayIcon = f.icon;
+    if (displayIcon == Icons.holiday_village || displayIcon == Icons.villa || displayIcon == Icons.family_restroom) {
+      displayIcon = isPurple ? Icons.home : Icons.apartment;
+    }
+
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         gradient: const LinearGradient(
           colors: [
             Color(0xFFFFEA88),
@@ -1176,220 +1189,233 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
           ),
         ],
       ),
-      padding: const EdgeInsets.all(2.2),
+      padding: const EdgeInsets.all(2.4),
       child: Container(
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(13.8),
+          borderRadius: BorderRadius.circular(15.6),
           gradient: const LinearGradient(
             colors: [Color(0xFFFFFDF9), Color(0xFFFAF5E8)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(13.8),
-            onTap: () => _showFamilyDetailsModal(f),
-            child: SizedBox(
-              height: 116,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  // 1. Left Peacock Wing
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: 105,
-                    child: ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(13.8),
-                        bottomLeft: Radius.circular(13.8),
-                      ),
-                      child: const CustomPaint(
-                        painter: PeacockFamilyCardWingPainter(),
-                      ),
-                    ),
-                  ),
-
-                  // 2. Medallion Avatar with Dual Golden Rim
-                  Positioned(
-                    left: 14,
-                    top: 24,
-                    width: 66,
-                    height: 66,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: const LinearGradient(
-                          colors: [
-                            Color(0xFFFFEA88),
-                            Color(0xFFD4AF37),
-                            Color(0xFF8B5A10),
-                            Color(0xFFFFD700),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: const [
-                          BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 2)),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(2.4),
-                      child: Container(
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Color(0xFFFFFDF8),
-                        ),
-                        child: ClipOval(
-                          child: (f.photoUrl != null && f.photoUrl!.isNotEmpty)
-                              ? Image.network(
-                                  f.photoUrl!,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (ctx, err, st) => Icon(
-                                    f.icon,
-                                    color: const Color(0xFFB8860B),
-                                    size: 30,
-                                  ),
-                                )
-                              : Icon(
-                                  f.icon,
-                                  color: const Color(0xFFB8860B),
-                                  size: 30,
-                                ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15.6),
+          child: CustomPaint(
+            painter: RoyalCardWholeBoxPainter(isPurple: isPurple),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(15.6),
+                onTap: () => _showFamilyDetailsModal(f),
+                child: SizedBox(
+                  height: 122,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // 1. Full-Height Authentic Royal Baroque Peacock Wing Image
+                      Positioned(
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 92,
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(15.6),
+                            bottomLeft: Radius.circular(15.6),
+                          ),
+                          child: Image.asset(
+                            wingAsset,
+                            fit: BoxFit.fill,
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  // 3. Family Content Column
-                  Positioned(
-                    left: 98,
-                    top: 10,
-                    right: 48,
-                    bottom: 10,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // Line 1: Title + Verified Badge
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                (f.nameGuj.isNotEmpty ? f.nameGuj : 'વણકર પરિવાર') +
-                                    ((f.headName != null && f.headName!.isNotEmpty)
-                                        ? ' (${f.headName})'
-                                        : (f.candidateName != null && f.candidateName!.isNotEmpty)
-                                            ? ' (${f.candidateName})'
-                                            : ''),
-                                style: const TextStyle(
-                                  color: Color(0xFF00382E),
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.1,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (f.isVerified) ...[
-                              const SizedBox(width: 4),
-                              const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 17),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-
-                        // Line 2: Location
-                        Row(
-                          children: [
-                            const Icon(Icons.location_on, color: Color(0xFF0D3B66), size: 15),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                '${f.cityGuj} (${f.cityEng}) • ${f.nativePlace ?? f.pargana ?? "Other (અન્ય)"}',
-                                style: const TextStyle(
-                                  color: Color(0xFF1E293B),
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-
-                        // Line 3: Mosal / Masal
-                        Row(
-                          children: [
-                            const Icon(Icons.home_rounded, color: Color(0xFF0D3B66), size: 15),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                'મોસાળ: ${f.mosal ?? "Other (અન્ય)"} | Masal: ${f.mosal ?? "Other (અન્ય)"}',
-                                style: const TextStyle(
-                                  color: Color(0xFF475569),
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-
-                        // Line 4: Live Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      // 2. Medallion Avatar Centered in the Golden Aperture
+                      Positioned(
+                        left: 20,
+                        top: 18,
+                        width: 60,
+                        height: 60,
+                        child: Container(
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE8F5E9),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFF2E7D32), width: 0.8),
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFFEA88),
+                                Color(0xFFD4AF37),
+                                Color(0xFF8B5A10),
+                                Color(0xFFFFD700),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black45,
+                                blurRadius: 6,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
                           ),
-                          child: const Text(
-                            '● REGISTERED LIVE',
-                            style: TextStyle(
-                              color: Color(0xFF1B5E20),
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.3,
+                          padding: const EdgeInsets.all(2.4),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFFFFFDF8),
+                            ),
+                            child: ClipOval(
+                              child: (f.photoUrl != null && f.photoUrl!.isNotEmpty)
+                                  ? Image.network(
+                                      f.photoUrl!,
+                                      fit: BoxFit.cover,
+                                      errorBuilder: (ctx, err, st) => Icon(
+                                        displayIcon,
+                                        color: const Color(0xFF8B5A10),
+                                        size: 28,
+                                      ),
+                                    )
+                                  : Icon(
+                                      displayIcon,
+                                      color: const Color(0xFF8B5A10),
+                                      size: 28,
+                                    ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
 
-                  // 4. Right Chevron Button
-                  Positioned(
-                    right: 12,
-                    top: 0,
-                    bottom: 0,
-                    child: Center(
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: const RadialGradient(
-                            colors: [Color(0xFFFFF9E6), Color(0xFFF3E2B3)],
-                          ),
-                          border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
+                      // 3. Family Content Column
+                      Positioned(
+                        left: 96,
+                        top: 8,
+                        right: 48,
+                        bottom: 8,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Line 1: Title + Verified Badge
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    (f.nameGuj.isNotEmpty ? f.nameGuj : 'વણકર પરિવાર') +
+                                        ((f.headName != null && f.headName!.isNotEmpty)
+                                            ? ' (${f.headName})'
+                                            : (f.candidateName != null && f.candidateName!.isNotEmpty)
+                                                ? ' (${f.candidateName})'
+                                                : ''),
+                                    style: const TextStyle(
+                                      color: Color(0xFF00382E),
+                                      fontSize: 14.5,
+                                      fontWeight: FontWeight.w900,
+                                      height: 1.25,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (f.isVerified) ...[
+                                  const SizedBox(width: 4),
+                                  const Icon(Icons.verified, color: Color(0xFFD4AF37), size: 17),
+                                ],
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+
+                            // Line 2: Location
+                            Row(
+                              children: [
+                                const Icon(Icons.location_on, color: Color(0xFF0D3B66), size: 15),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    '${f.cityGuj} (${f.cityEng}) • ${f.nativePlace ?? f.pargana ?? "Other (અન્ય)"}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF1E293B),
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.w700,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+
+                            // Line 3: Mosal / Masal
+                            Row(
+                              children: [
+                                const Icon(Icons.home, color: Color(0xFF0D3B66), size: 15),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    'મોસાળ: ${f.mosal ?? "Other (અન્ય)"} | Masal: ${f.mosal ?? "Other (અન્ય)"}',
+                                    style: const TextStyle(
+                                      color: Color(0xFF475569),
+                                      fontSize: 11.0,
+                                      fontWeight: FontWeight.w600,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+
+                            // Line 4: Live Badge
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFE8F5E9),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFF2E7D32), width: 0.8),
+                              ),
+                              child: const Text(
+                                '● REGISTERED LIVE',
+                                style: TextStyle(
+                                  color: Color(0xFF1B5E20),
+                                  fontSize: 9.0,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
-                        child: const Icon(Icons.chevron_right_rounded, color: Color(0xFF8B5A10), size: 22),
                       ),
-                    ),
+
+                      // 4. Right Chevron Button
+                      Positioned(
+                        right: 12,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: Container(
+                            width: 34,
+                            height: 34,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const RadialGradient(
+                                colors: [Color(0xFFFFF9E6), Color(0xFFF3E2B3)],
+                              ),
+                              border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                              boxShadow: const [
+                                BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 1)),
+                              ],
+                            ),
+                            child: const Icon(Icons.chevron_right, color: Color(0xFF2C2416), size: 24),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -1397,6 +1423,97 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
       ),
     );
   }
+}
+
+// --- ROYAL WHOLE BOX PAINTER (DELICATE GOLD FILIGREE & INNER HAIRLINE) ---
+class RoyalCardWholeBoxPainter extends CustomPainter {
+  final bool isPurple;
+  const RoyalCardWholeBoxPainter({this.isPurple = false});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Subtle inner hairline border inset by 3.5px
+    final innerHairline = Paint()
+      ..color = const Color(0xFFD4AF37).withValues(alpha: 0.40)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.9;
+
+    final rrect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(3.5, 3.5, size.width - 7, size.height - 7),
+      const Radius.circular(14),
+    );
+    canvas.drawRRect(rrect, innerHairline);
+
+    // 2. Top-Right Corner Baroque Gold Filigree Flourish
+    _drawTopRightFiligree(canvas, size.width, 0);
+
+    // 3. Bottom-Right Corner Soft Gold Filigree Accent
+    _drawBottomRightFiligree(canvas, size.width, size.height);
+
+    // 4. Soft satin ambient light arc across middle
+    final glowPaint = Paint()
+      ..shader = RadialGradient(
+        center: const Alignment(0.4, -0.6),
+        radius: 1.2,
+        colors: [
+          (isPurple ? const Color(0xFFE1BEE7) : const Color(0xFFFFF9C4)).withValues(alpha: 0.12),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
+    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), glowPaint);
+  }
+
+  void _drawTopRightFiligree(Canvas canvas, double w, double y) {
+    final goldPen = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFFFDF73), Color(0xFFD4AF37), Color(0xFF996515)],
+        begin: Alignment.topRight,
+        end: Alignment.bottomLeft,
+      ).createShader(Rect.fromLTWH(w - 70, y, 70, 50))
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.3
+      ..strokeCap = StrokeCap.round;
+
+    final p1 = Path();
+    p1.moveTo(w - 60, y + 5);
+    p1.cubicTo(w - 30, y + 6, w - 8, y + 16, w - 6, y + 42);
+    canvas.drawPath(p1, goldPen);
+
+    final p2 = Path();
+    p2.moveTo(w - 42, y + 8);
+    p2.cubicTo(w - 24, y + 10, w - 12, y + 22, w - 10, y + 34);
+    canvas.drawPath(p2, goldPen..strokeWidth = 1.0);
+
+    final dotPaint = Paint()
+      ..color = const Color(0xFFD4AF37).withValues(alpha: 0.75)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(w - 48, y + 7), 1.5, dotPaint);
+    canvas.drawCircle(Offset(w - 28, y + 12), 1.6, dotPaint);
+    canvas.drawCircle(Offset(w - 12, y + 26), 1.6, dotPaint);
+    canvas.drawCircle(Offset(w - 8, y + 46), 1.4, dotPaint);
+  }
+
+  void _drawBottomRightFiligree(Canvas canvas, double w, double h) {
+    final goldPen = Paint()
+      ..color = const Color(0xFFD4AF37).withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1
+      ..strokeCap = StrokeCap.round;
+
+    final p = Path();
+    p.moveTo(w - 45, h - 5);
+    p.cubicTo(w - 25, h - 6, w - 6, h - 14, w - 5, h - 30);
+    canvas.drawPath(p, goldPen);
+
+    final dotPaint = Paint()
+      ..color = const Color(0xFFD4AF37).withValues(alpha: 0.55)
+      ..style = PaintingStyle.fill;
+    canvas.drawCircle(Offset(w - 32, h - 7), 1.3, dotPaint);
+    canvas.drawCircle(Offset(w - 14, h - 16), 1.3, dotPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 // --- PEACOCK FAMILY CARD WING PAINTER ---
