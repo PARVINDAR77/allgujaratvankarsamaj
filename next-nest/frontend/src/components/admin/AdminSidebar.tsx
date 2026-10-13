@@ -151,7 +151,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           top: 0,
           bottom: 0,
           left: 0,
-          width: "18rem", // 288px (w-72)
+          width: "270px",
           height: "100vh",
           background: "linear-gradient(180deg, #071224 0%, #040915 100%)",
           borderRight: "1px solid rgba(212, 175, 55, 0.22)",
@@ -160,7 +160,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           fontFamily: "'Inter', system-ui, sans-serif",
           overflow: "hidden",
         }}
-        className={`flex flex-col transition-transform duration-300 ease-in-out ${
+        className={`admin-sidebar-desktop flex flex-col transition-transform duration-300 ease-in-out ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >

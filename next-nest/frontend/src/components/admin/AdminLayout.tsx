@@ -42,8 +42,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content Area - Left padded to align seamlessly next to fixed sidebar */}
-      <div className="flex-1 flex flex-col min-w-0 md:pl-72 bg-[#070F1E] min-h-screen transition-all">
+      {/* Main Content Area - Guaranteed to never be overlapped by fixed sidebar */}
+      <div className="admin-main-desktop flex-1 flex flex-col min-w-0 bg-[#070F1E] min-h-screen">
         {/* Sticky Top Header */}
         <AdminHeader
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
