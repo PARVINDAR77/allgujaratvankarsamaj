@@ -28,15 +28,21 @@ export default function EducationAdminPage() {
     box4Title: "યુવા પ્રેરણા સંવાદ & સફળતાની વાર્તાઓ",
     box4YoutubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     box4Description: "સમાજના તેજસ્વી તારલાઓ અને અધિકારીઓના પ્રેરણાદાયી અનુભવો.",
+    box5Title: "શૈક્ષણિક પોસ્ટર અને માહિતી",
+    box5Subtitle: "Educational Poster & Circular Image",
+    box5ImageUrl: "",
+    box5Description: "",
     isActive: true,
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingPdf, setIsUploadingPdf] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchEducationData();
@@ -66,6 +72,10 @@ export default function EducationAdminPage() {
           box4Title: d.box4Title ?? prev.box4Title,
           box4YoutubeUrl: d.box4YoutubeUrl ?? "",
           box4Description: d.box4Description ?? "",
+          box5Title: d.box5Title ?? prev.box5Title,
+          box5Subtitle: d.box5Subtitle ?? prev.box5Subtitle,
+          box5ImageUrl: d.box5ImageUrl ?? "",
+          box5Description: d.box5Description ?? "",
           isActive: d.isActive !== undefined ? d.isActive : true,
         }));
       }
@@ -163,6 +173,65 @@ export default function EducationAdminPage() {
     }
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file (JPG, PNG, WEBP, etc.)");
+      return;
+    }
+
+    setIsUploadingImage(true);
+    try {
+      const uploadData = new FormData();
+      uploadData.append("file", file);
+
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+      const token = localStorage.getItem("adminToken") || localStorage.getItem("token") || "";
+
+      const res = await fetch(`${apiUrl}/storage/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: uploadData,
+      });
+
+      if (res.ok) {
+        const json = await res.json();
+        const uploadedUrl = json.url || json.data?.url || "";
+        if (uploadedUrl) {
+          setFormData((prev) => ({
+            ...prev,
+            box5ImageUrl: getImageUrl(uploadedUrl),
+          }));
+          alert(`✅ Image uploaded successfully: ${file.name}\nRemember to click 'Save & Publish All Changes' to make it live!`);
+        } else {
+          alert("Image uploaded, but URL was not returned.");
+        }
+      } else {
+        const errText = await res.text();
+        alert(`Image upload failed (HTTP ${res.status}): ${errText}`);
+      }
+    } catch (err: any) {
+      alert(`Error uploading image: ${err.message}`);
+    }
+    setIsUploadingImage(false);
+    if (imageInputRef.current) {
+      imageInputRef.current.value = "";
+    }
+  };
+
+  const handleRemoveImage = () => {
+    if (window.confirm("Are you sure you want to remove the current image from Box 5?")) {
+      setFormData((prev) => ({
+        ...prev,
+        box5ImageUrl: "",
+      }));
+    }
+  };
+
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setIsSaving(true);
@@ -235,7 +304,7 @@ export default function EducationAdminPage() {
   }
 
   return (
-    <AdminLayout title="Education Management" subtitle="Manage the 4 dynamic boxes for 'Education for Better Tomorrow'">
+    <AdminLayout title="Education Management" subtitle="Manage the 5 dynamic boxes for 'Education for Better Tomorrow'">
       <div style={{ display: "flex", flexDirection: "column", gap: "28px", paddingBottom: "48px" }}>
         {/* Top Header & Save Button */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px" }}>
@@ -784,6 +853,167 @@ export default function EducationAdminPage() {
             ) : (
               <div style={{ padding: "20px", textAlign: "center", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "8px", color: "#64748B", fontSize: "12px" }}>
                 No YouTube URL set for Box 4. (Add link above to preview)
+              </div>
+            )}
+          </div>
+
+          {/* BOX 5: Educational Poster / Image / Circular */}
+          <div
+            style={{
+              background: "linear-gradient(145deg, rgba(13, 27, 50, 0.9) 0%, rgba(4, 12, 26, 0.95) 100%)",
+              borderRadius: "16px",
+              border: "1.5px solid rgba(20, 184, 166, 0.5)",
+              padding: "24px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "14px",
+              boxShadow: "0 8px 24px rgba(20, 184, 166, 0.15)",
+              gridColumn: "1 / -1",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "24px" }}>🖼️</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#2DD4BF" }}>BOX 5: Educational Poster / Image / Circular</h3>
+                  <span style={{ fontSize: "12px", color: "#8E9BAE" }}>શૈક્ષણિક પોસ્ટર, પરિપત્ર અથવા ઇન્ફોગ્રાફિક ઇમેજ</span>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                {formData.box5ImageUrl && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    style={{
+                      backgroundColor: "rgba(239,68,68,0.15)",
+                      color: "#F87171",
+                      border: "1px solid rgba(239,68,68,0.4)",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    🗑️ Remove Image
+                  </button>
+                )}
+                <span style={{ padding: "4px 10px", borderRadius: "20px", backgroundColor: "rgba(20,184,166,0.2)", color: "#2DD4BF", fontSize: "11px", fontWeight: 800 }}>
+                  IMAGE POSTER
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label style={{ display: "block", color: "#2DD4BF", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
+                Box 5 Title (મથાળું)
+              </label>
+              <input
+                type="text"
+                value={formData.box5Title}
+                onChange={(e) => setFormData({ ...formData, box5Title: e.target.value })}
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#061329", border: "1px solid rgba(20,184,166,0.3)", color: "#FFFFFF" }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", color: "#2DD4BF", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
+                Subtitle / Category (પેટા મથાળું)
+              </label>
+              <input
+                type="text"
+                value={formData.box5Subtitle}
+                onChange={(e) => setFormData({ ...formData, box5Subtitle: e.target.value })}
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#061329", border: "1px solid rgba(20,184,166,0.3)", color: "#FFFFFF" }}
+              />
+            </div>
+
+            {/* Image Upload Action */}
+            <div style={{ padding: "16px", borderRadius: "10px", backgroundColor: "rgba(20,184,166,0.08)", border: "1px dashed rgba(20,184,166,0.4)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px", flexWrap: "wrap", gap: "8px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "#FFFFFF" }}>Upload / Replace Image:</span>
+                <input
+                  ref={imageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: "none" }}
+                />
+                <button
+                  type="button"
+                  onClick={() => imageInputRef.current?.click()}
+                  disabled={isUploadingImage}
+                  style={{
+                    backgroundColor: "#0D9488",
+                    color: "#FFFFFF",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    padding: "6px 14px",
+                    borderRadius: "6px",
+                    border: "none",
+                    cursor: isUploadingImage ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {isUploadingImage ? "Uploading..." : "📷 Choose Image File"}
+                </button>
+              </div>
+
+              {formData.box5ImageUrl ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "6px", backgroundColor: "#061329", border: "1px solid rgba(20,184,166,0.3)" }}>
+                  <span style={{ fontSize: "16px" }}>🖼️</span>
+                  <span style={{ fontSize: "12px", color: "#2DD4BF", wordBreak: "break-all", flex: 1 }}>
+                    {formData.box5ImageUrl}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ fontSize: "11px", color: "#8E9BAE", fontStyle: "italic" }}>
+                  ℹ️ No image currently attached. (Click &quot;Choose Image File&quot; to upload)
+                </span>
+              )}
+            </div>
+
+            <div>
+              <label style={{ display: "block", color: "#2DD4BF", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
+                Direct Image URL or File Path
+              </label>
+              <input
+                type="text"
+                value={formData.box5ImageUrl}
+                onChange={(e) => setFormData({ ...formData, box5ImageUrl: e.target.value })}
+                placeholder="/uploads/sample.jpg or https://..."
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#061329", border: "1px solid rgba(20,184,166,0.3)", color: "#FFFFFF", fontSize: "12px" }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", color: "#2DD4BF", fontSize: "12px", fontWeight: 700, marginBottom: "4px" }}>
+                Short Description / Caption / Guidelines (વર્ણન)
+              </label>
+              <textarea
+                rows={3}
+                value={formData.box5Description}
+                onChange={(e) => setFormData({ ...formData, box5Description: e.target.value })}
+                placeholder="આ પોસ્ટર કે પરિપત્ર અંગેની વધારાની વિગતો અથવા માર્ગદર્શન..."
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", backgroundColor: "#061329", border: "1px solid rgba(20,184,166,0.3)", color: "#FFFFFF", fontSize: "13px" }}
+              />
+            </div>
+
+            {/* Live Image Preview */}
+            {formData.box5ImageUrl ? (
+              <div style={{ position: "relative", borderRadius: "10px", overflow: "hidden", backgroundColor: "#030A14", border: "1px solid rgba(20,184,166,0.4)", display: "flex", justifyContent: "center", alignItems: "center", maxHeight: "360px", padding: "8px" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={formData.box5ImageUrl}
+                  alt="Box 5 Preview"
+                  style={{ maxWidth: "100%", maxHeight: "340px", objectFit: "contain", borderRadius: "6px" }}
+                  onError={(e) => {
+                    (e.target as any).style.display = "none";
+                  }}
+                />
+              </div>
+            ) : (
+              <div style={{ padding: "20px", textAlign: "center", backgroundColor: "rgba(0,0,0,0.2)", borderRadius: "8px", color: "#64748B", fontSize: "12px" }}>
+                No image set for Box 5. (Upload an image above to see preview)
               </div>
             )}
           </div>

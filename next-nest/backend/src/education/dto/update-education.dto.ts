@@ -78,6 +78,23 @@ export class UpdateEducationDto {
   @IsOptional()
   box4Description?: string;
 
+  // Box 5: Educational Poster / Image
+  @ApiPropertyOptional()
+  @IsOptional()
+  box5Title?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  box5Subtitle?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  box5ImageUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  box5Description?: string;
+
   @ApiPropertyOptional()
   @IsOptional()
   isActive?: boolean;

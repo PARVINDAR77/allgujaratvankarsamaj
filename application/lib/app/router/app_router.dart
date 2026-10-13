@@ -67,6 +67,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           location.startsWith('/family-details') ||
           location.startsWith('/samaj-services') ||
           location.startsWith('/samaj-super-stars') ||
+          location.startsWith('/education') ||
           location.startsWith('/government-employees') ||
           location.startsWith('/private-employees') ||
           location.startsWith('/statistics');

@@ -108,6 +108,26 @@ __decorate([
 __decorate([
     (0, swagger_1.ApiPropertyOptional)(),
     (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateEducationDto.prototype, "box5Title", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateEducationDto.prototype, "box5Subtitle", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateEducationDto.prototype, "box5ImageUrl", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", String)
+], UpdateEducationDto.prototype, "box5Description", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)(),
+    (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], UpdateEducationDto.prototype, "isActive", void 0);
 //# sourceMappingURL=update-education.dto.js.map

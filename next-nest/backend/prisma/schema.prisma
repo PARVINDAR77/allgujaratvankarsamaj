@@ -619,6 +619,12 @@ model EducationContent {
   box4YoutubeUrl  String?  @db.Text @map("box4_youtube_url")
   box4Description String?  @map("box4_description")
 
+  // Box 5: Educational Poster / Circular Image
+  box5Title       String?  @default("શૈક્ષણિક પોસ્ટર અને માહિતી") @map("box5_title")
+  box5Subtitle    String?  @default("Educational Poster & Circular Image") @map("box5_subtitle")
+  box5ImageUrl    String?  @db.Text @map("box5_image_url")
+  box5Description String?  @db.Text @map("box5_description")
+
   isActive        Boolean  @default(true) @map("is_active")
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")

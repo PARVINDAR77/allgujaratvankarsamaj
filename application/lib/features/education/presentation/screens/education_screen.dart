@@ -224,9 +224,20 @@ class _EducationScreenState extends ConsumerState<EducationScreen> {
                   videoIndex: 2,
                 ),
               ),
+              const SizedBox(height: 20),
+
+              // 6. BOX 5: Educational Poster / Image / Circular
+              _buildBoxCard(
+                boxNumber: 5,
+                badgeLabel: 'BOX 5 • શૈક્ષણિક પોસ્ટર / પરિપત્ર (POSTER & CIRCULAR)',
+                badgeColor: const Color(0xFF0D9488),
+                badgeBg: const Color(0xFFCCFBF1),
+                badgeBorder: const Color(0xFF99F6E4),
+                child: _buildImageBox(context, data),
+              ),
               const SizedBox(height: 28),
 
-              // 6. Community Footer
+              // 7. Community Footer
               _buildFooter(),
               const SizedBox(height: 24),
             ],
@@ -835,6 +846,217 @@ class _EducationScreenState extends ConsumerState<EducationScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showFullscreenImage(BuildContext context, String imageUrl, String title) {
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(12),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            InteractiveViewer(
+              minScale: 0.8,
+              maxScale: 4.5,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Container(
+                    padding: const EdgeInsets.all(32),
+                    color: const Color(0xFF0F172A),
+                    child: const Icon(Icons.broken_image, color: Colors.white54, size: 64),
+                  ),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: () => Navigator.pop(ctx),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Colors.black87,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- BOX 5: Educational Poster / Circular Image ---
+  Widget _buildImageBox(BuildContext context, EducationModel data) {
+    final hasImage = data.box5ImageUrl.trim().isNotEmpty;
+    final resolvedUrl = hasImage ? AppConfig.resolveMediaUrl(data.box5ImageUrl) : '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFCCFBF1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF99F6E4)),
+              ),
+              child: const Icon(Icons.image_rounded, color: Color(0xFF0D9488), size: 28),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data.box5Title,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    data.box5Subtitle,
+                    style: const TextStyle(
+                      color: Color(0xFF0D9488),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        if (hasImage) ...[
+          GestureDetector(
+            onTap: () => _showFullscreenImage(context, resolvedUrl, data.box5Title),
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF99F6E4), width: 1.2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0D9488).withValues(alpha: 0.1),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(11),
+                child: Stack(
+                  alignment: Alignment.bottomRight,
+                  children: [
+                    Image.network(
+                      resolvedUrl,
+                      width: double.infinity,
+                      fit: BoxFit.fitWidth,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return Container(
+                          height: 220,
+                          color: const Color(0xFFF1F5F9),
+                          child: const Center(
+                            child: CircularProgressIndicator(color: Color(0xFF0D9488)),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 200,
+                        color: const Color(0xFFF1F5F9),
+                        child: const Center(
+                          child: Icon(Icons.broken_image_rounded, color: Colors.grey, size: 48),
+                        ),
+                      ),
+                    ),
+                    // Zoom hint badge
+                    Container(
+                      margin: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.75),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.zoom_in_rounded, color: Colors.white, size: 15),
+                          SizedBox(width: 4),
+                          Text(
+                            'સંપૂર્ણ કદમાં જુઓ',
+                            style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ] else ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDFA),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFCCFBF1), width: 1.2),
+            ),
+            child: Column(
+              children: const [
+                Icon(Icons.add_photo_alternate_outlined, color: Color(0xFF0D9488), size: 40),
+                SizedBox(height: 10),
+                Text(
+                  'એડમિન દ્વારા ટૂંક સમયમાં શૈક્ષણિક પોસ્ટર અપલોડ કરવામાં આવશે.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Color(0xFF0F766E), fontSize: 12.5, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        if (data.box5Description.trim().isNotEmpty) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Text(
+              data.box5Description,
+              style: const TextStyle(
+                color: Color(0xFF334155),
+                fontSize: 13,
+                height: 1.45,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 

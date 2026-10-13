@@ -29,6 +29,12 @@ class EducationModel {
   final String box4YoutubeUrl;
   final String box4ThumbnailUrl;
 
+  // Box 5: Educational Poster / Image / Circular
+  final String box5Title;
+  final String box5Subtitle;
+  final String box5ImageUrl;
+  final String box5Description;
+
   final DateTime? updatedAt;
 
   EducationModel({
@@ -53,6 +59,10 @@ class EducationModel {
     required this.box4Subtitle,
     required this.box4YoutubeUrl,
     required this.box4ThumbnailUrl,
+    required this.box5Title,
+    required this.box5Subtitle,
+    required this.box5ImageUrl,
+    required this.box5Description,
     this.updatedAt,
   });
 
@@ -103,6 +113,12 @@ class EducationModel {
       box4YoutubeUrl: getStr(['box4YoutubeUrl', 'box4_youtube_url'], 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'),
       box4ThumbnailUrl: getStr(['box4ThumbnailUrl', 'box4_thumbnail_url'], ''),
 
+      // Box 5: Educational Poster / Image
+      box5Title: getStr(['box5Title', 'box5_title'], 'શૈક્ષણિક પોસ્ટર અને માહિતી'),
+      box5Subtitle: getStr(['box5Subtitle', 'box5_subtitle'], 'Educational Poster & Circular Image'),
+      box5ImageUrl: getStr(['box5ImageUrl', 'box5_image_url'], ''),
+      box5Description: getStr(['box5Description', 'box5_description'], ''),
+
       updatedAt: json['updatedAt'] != null
           ? DateTime.tryParse(json['updatedAt'].toString())
           : (json['updated_at'] != null ? DateTime.tryParse(json['updated_at'].toString()) : null),
@@ -132,6 +148,10 @@ class EducationModel {
       'box4Subtitle': box4Subtitle,
       'box4YoutubeUrl': box4YoutubeUrl,
       'box4ThumbnailUrl': box4ThumbnailUrl,
+      'box5Title': box5Title,
+      'box5Subtitle': box5Subtitle,
+      'box5ImageUrl': box5ImageUrl,
+      'box5Description': box5Description,
       'updatedAt': updatedAt?.toIso8601String(),
     };
   }

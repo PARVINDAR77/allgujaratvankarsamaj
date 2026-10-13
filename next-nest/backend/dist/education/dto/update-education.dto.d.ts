@@ -17,5 +17,9 @@ export declare class UpdateEducationDto {
     box4Title?: string;
     box4YoutubeUrl?: string;
     box4Description?: string;
+    box5Title?: string;
+    box5Subtitle?: string;
+    box5ImageUrl?: string;
+    box5Description?: string;
     isActive?: boolean;
 }

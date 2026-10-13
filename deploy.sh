@@ -312,6 +312,10 @@ CREATE TABLE IF NOT EXISTS \`education_content\` (
   \`box4_title\` varchar(191) DEFAULT 'યુવા પ્રેરણા સંવાદ & સફળતાની વાર્તાઓ',
   \`box4_youtube_url\` text DEFAULT NULL,
   \`box4_description\` varchar(191) DEFAULT NULL,
+  \`box5_title\` varchar(191) DEFAULT 'શૈક્ષણિક પોસ્ટર અને માહિતી',
+  \`box5_subtitle\` varchar(191) DEFAULT 'Educational Poster & Circular Image',
+  \`box5_image_url\` text DEFAULT NULL,
+  \`box5_description\` text DEFAULT NULL,
   \`is_active\` tinyint(1) NOT NULL DEFAULT 1,
   \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
   \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
@@ -358,6 +362,10 @@ ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`contact_email\` 
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`mother_tongue\` varchar(191) DEFAULT 'Gujarati (ગુજરાતી)';
 ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`photos\` TEXT DEFAULT NULL;
 ALTER TABLE \`verification_requests\` ADD COLUMN IF NOT EXISTS \`document_back_url\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_title\` varchar(191) DEFAULT 'શૈક્ષણિક પોસ્ટર અને માહિતી';
+ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_subtitle\` varchar(191) DEFAULT 'Educational Poster & Circular Image';
+ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_image_url\` text DEFAULT NULL;
+ALTER TABLE \`education_content\` ADD COLUMN IF NOT EXISTS \`box5_description\` text DEFAULT NULL;
 " || true
 
 echo "Skipping Database Migrations (Hostinger RAM limits)..."

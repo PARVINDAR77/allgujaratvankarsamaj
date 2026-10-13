@@ -34,7 +34,7 @@ const menuSections = [
   {
     title: "COMMUNITY",
     items: [
-      { name: "Education (4 Boxes)", href: "/admin/education", icon: "🎓" },
+      { name: "Education (5 Boxes)", href: "/admin/education", icon: "🎓" },
       { name: "Locations", href: "/admin/locations", icon: "📍" },
       { name: "Parganas", href: "/admin/parganas", icon: "🏛️" },
       { name: "Samaj Services", href: "/admin/services", icon: "🤝" },

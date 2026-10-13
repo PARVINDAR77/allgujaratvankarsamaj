@@ -7,6 +7,29 @@ export declare class EducationService {
     getEducationContent(): Promise<{
         statusCode: number;
         data: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            isActive: boolean;
+            headerTitle: string | null;
+            headerSubtitle: string | null;
+            box1Title: string | null;
+            box1Subtitle: string | null;
+            box1PdfUrl: string | null;
+            box1FileName: string | null;
+            box2Title: string | null;
+            box2Content: string | null;
+            box2Author: string | null;
+            box3Title: string | null;
+            box3YoutubeUrl: string | null;
+            box3Description: string | null;
+            box4Title: string | null;
+            box4YoutubeUrl: string | null;
+            box4Description: string | null;
+        };
+    } | {
+        statusCode: number;
+        data: {
             id: any;
             headerTitle: any;
             headerSubtitle: any;
@@ -23,6 +46,10 @@ export declare class EducationService {
             box4Title: any;
             box4YoutubeUrl: any;
             box4Description: any;
+            box5Title: any;
+            box5Subtitle: any;
+            box5ImageUrl: any;
+            box5Description: any;
             isActive: boolean;
             createdAt: any;
             updatedAt: any;
@@ -46,6 +73,10 @@ export declare class EducationService {
             box4Title: string;
             box4YoutubeUrl: string;
             box4Description: string;
+            box5Title: string;
+            box5Subtitle: string;
+            box5ImageUrl: string;
+            box5Description: string;
             isActive: boolean;
         };
     }>;

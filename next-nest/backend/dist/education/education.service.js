@@ -30,6 +30,10 @@ const DEFAULT_EDUCATION_DATA = {
     box4Title: "યુવા પ્રેરણા સંવાદ & સફળતાની વાર્તાઓ",
     box4YoutubeUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
     box4Description: "સમાજના તેજસ્વી તારલાઓ અને અધિકારીઓના પ્રેરણાદાયી અનુભવો.",
+    box5Title: "શૈક્ષણિક પોસ્ટર અને માહિતી",
+    box5Subtitle: "Educational Poster & Circular Image",
+    box5ImageUrl: "",
+    box5Description: "",
     isActive: true,
 };
 let EducationService = EducationService_1 = class EducationService {
@@ -79,6 +83,10 @@ let EducationService = EducationService_1 = class EducationService {
                             box4Title: r.box4_title,
                             box4YoutubeUrl: r.box4_youtube_url || "",
                             box4Description: r.box4_description || "",
+                            box5Title: r.box5_title || DEFAULT_EDUCATION_DATA.box5Title,
+                            box5Subtitle: r.box5_subtitle || DEFAULT_EDUCATION_DATA.box5Subtitle,
+                            box5ImageUrl: r.box5_image_url || "",
+                            box5Description: r.box5_description || "",
                             isActive: r.is_active === 1 || r.is_active === true,
                             createdAt: r.created_at,
                             updatedAt: r.updated_at,
@@ -142,6 +150,10 @@ let EducationService = EducationService_1 = class EducationService {
             const box4Title = normalized.box4Title !== undefined ? normalized.box4Title : DEFAULT_EDUCATION_DATA.box4Title;
             const box4YoutubeUrl = normalized.box4YoutubeUrl !== undefined ? (normalized.box4YoutubeUrl || null) : null;
             const box4Description = normalized.box4Description !== undefined ? (normalized.box4Description || null) : null;
+            const box5Title = normalized.box5Title !== undefined ? normalized.box5Title : DEFAULT_EDUCATION_DATA.box5Title;
+            const box5Subtitle = normalized.box5Subtitle !== undefined ? normalized.box5Subtitle : DEFAULT_EDUCATION_DATA.box5Subtitle;
+            const box5ImageUrl = normalized.box5ImageUrl !== undefined ? (normalized.box5ImageUrl || null) : null;
+            const box5Description = normalized.box5Description !== undefined ? (normalized.box5Description || null) : null;
             const isActive = normalized.isActive !== undefined ? (normalized.isActive ? 1 : 0) : 1;
             if (existing && existing.length > 0) {
                 await this.prisma.$executeRawUnsafe(`UPDATE \`education_content\` SET 
@@ -160,15 +172,19 @@ let EducationService = EducationService_1 = class EducationService {
             box4_title = ?,
             box4_youtube_url = ?,
             box4_description = ?,
+            box5_title = ?,
+            box5_subtitle = ?,
+            box5_image_url = ?,
+            box5_description = ?,
             is_active = ?,
             updated_at = NOW()
-          WHERE id = 'default'`, headerTitle, headerSubtitle, box1Title, box1Subtitle, box1PdfUrl, box1FileName, box2Title, box2Content, box2Author, box3Title, box3YoutubeUrl, box3Description, box4Title, box4YoutubeUrl, box4Description, isActive);
+          WHERE id = 'default'`, headerTitle, headerSubtitle, box1Title, box1Subtitle, box1PdfUrl, box1FileName, box2Title, box2Content, box2Author, box3Title, box3YoutubeUrl, box3Description, box4Title, box4YoutubeUrl, box4Description, box5Title, box5Subtitle, box5ImageUrl, box5Description, isActive);
             }
             else {
                 await this.prisma.$executeRawUnsafe(`INSERT INTO \`education_content\` 
-            (id, header_title, header_subtitle, box1_title, box1_subtitle, box1_pdf_url, box1_file_name, box2_title, box2_content, box2_author, box3_title, box3_youtube_url, box3_description, box4_title, box4_youtube_url, box4_description, is_active)
+            (id, header_title, header_subtitle, box1_title, box1_subtitle, box1_pdf_url, box1_file_name, box2_title, box2_content, box2_author, box3_title, box3_youtube_url, box3_description, box4_title, box4_youtube_url, box4_description, box5_title, box5_subtitle, box5_image_url, box5_description, is_active)
           VALUES 
-            ('default', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, headerTitle, headerSubtitle, box1Title, box1Subtitle, box1PdfUrl, box1FileName, box2Title, box2Content, box2Author, box3Title, box3YoutubeUrl, box3Description, box4Title, box4YoutubeUrl, box4Description, isActive);
+            ('default', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, headerTitle, headerSubtitle, box1Title, box1Subtitle, box1PdfUrl, box1FileName, box2Title, box2Content, box2Author, box3Title, box3YoutubeUrl, box3Description, box4Title, box4YoutubeUrl, box4Description, box5Title, box5Subtitle, box5ImageUrl, box5Description, isActive);
             }
             return {
                 statusCode: 200,
