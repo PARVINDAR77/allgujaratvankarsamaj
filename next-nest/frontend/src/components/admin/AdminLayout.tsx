@@ -21,12 +21,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const router = useRouter();
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('adminTheme');
-    if (savedTheme === 'light') {
-      document.documentElement.classList.add('light-mode');
+    const savedTheme = localStorage.getItem("adminTheme");
+    if (savedTheme === "light") {
+      document.documentElement.classList.add("light-mode");
     }
 
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
+    const token = localStorage.getItem("adminToken") || localStorage.getItem("token");
     if (!token) {
       setIsAuthorized(false);
     } else {
@@ -35,33 +35,35 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   }, []);
 
   return (
-    <div className="min-h-screen bg-admin-bg text-white flex flex-col md:flex-row overflow-x-hidden">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-[#070F1E] text-white flex flex-col">
+      {/* Permanently Fixed Left Sidebar */}
       <AdminSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 bg-admin-bg">
+      {/* Main Content Area - Left padded to align seamlessly next to fixed sidebar */}
+      <div className="flex-1 flex flex-col min-w-0 md:pl-72 bg-[#070F1E] min-h-screen transition-all">
+        {/* Sticky Top Header */}
         <AdminHeader
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
           title={title}
           subtitle={subtitle}
         />
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8 space-y-6">
+        {/* Page Content Container */}
+        <main className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 w-full max-w-7xl mx-auto">
           {isAuthorized === false ? (
             <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "450px" }}>
               <div style={{
-                backgroundColor: "rgba(13, 27, 50, 0.9)",
+                backgroundColor: "rgba(13, 27, 50, 0.95)",
                 backdropFilter: "blur(20px)",
                 border: "1px solid rgba(212, 175, 55, 0.4)",
                 borderRadius: "24px",
                 padding: "48px 40px",
                 maxWidth: "500px",
                 textAlign: "center",
-                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.6)",
+                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.7)",
               }}>
                 <div style={{ fontSize: "56px", marginBottom: "16px" }}>🔐</div>
                 <h2 style={{ fontSize: "22px", fontWeight: 800, color: "#D4AF37", marginBottom: "12px" }}>
@@ -83,7 +85,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     cursor: "pointer",
                     boxShadow: "0 4px 14px rgba(212, 175, 55, 0.4)",
                   }}
-                  className="hover:brightness-110 transition-all"
+                  className="hover:brightness-110 transition-all hover:scale-105"
                 >
                   Sign In to Admin Portal →
                 </button>
@@ -97,4 +99,3 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     </div>
   );
 };
-

@@ -17,31 +17,49 @@ export const QuickActionCard: React.FC<QuickActionCardProps> = ({
   return (
     <Link
       href={href}
-        style={{ border: "1px solid rgba(212, 175, 55, 0.22)", borderRadius: "14px", transition: "all 0.25s ease", textDecoration: "none", boxShadow: "0 6px 20px rgba(0, 0, 0, 0.3)" }} className="group hover:bg-admin-card hover:border-admin-gold hover:shadow-[0_8px_25px_rgba(212,175,55,0.2)] hover:-translate-y-0.5 flex items-center py-[14px] px-[18px] gap-[14px] backdrop-blur-md bg-admin-bg-glass"
-      
+      style={{
+        border: "1px solid rgba(212, 175, 55, 0.22)",
+        borderRadius: "16px",
+        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        textDecoration: "none",
+        boxShadow: "0 6px 20px rgba(0, 0, 0, 0.35)",
+        backgroundColor: "rgba(11, 25, 48, 0.75)",
+        backdropFilter: "blur(16px)",
+      }}
+      className="group hover:bg-[#0E2242] hover:border-[#D4AF37] hover:shadow-[0_10px_25px_rgba(212,175,55,0.2)] hover:-translate-y-1 flex items-center py-4 px-4.5 gap-3.5"
     >
       <div
-          style={{ width: "40px", height: "40px", color: "#041026", fontSize: "18px", boxShadow: "0 4px 12px rgba(212, 175, 55, 0.3)" }} className="group-hover:scale-105 transition-transform flex justify-center items-center font-extrabold shrink-0 rounded-xl bg-gradient-to-br from-admin-gold via-admin-gold-light to-admin-gold-border"
-        
+        style={{
+          width: "44px",
+          height: "44px",
+          color: "#041026",
+          fontSize: "20px",
+          boxShadow: "0 4px 14px rgba(212, 175, 55, 0.35)",
+          background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
+        }}
+        className="group-hover:scale-105 transition-transform flex justify-center items-center font-black shrink-0 rounded-xl"
       >
         {icon}
       </div>
-      <div  style={{ minWidth: 0 }} className="flex-1">
+
+      <div style={{ minWidth: 0 }} className="flex-1">
         <h4
-           style={{ lineHeight: 1.2 }}
-          className="group-hover:text-admin-gold-light transition-colors truncate font-bold text-white text-[13px]"
+          style={{ lineHeight: 1.25, color: "#FFFFFF" }}
+          className="group-hover:text-[#F3E5AB] transition-colors truncate font-bold text-sm"
         >
           {title}
         </h4>
         <p
-           style={{ marginTop: "3px", lineHeight: 1.3 }}
-          className="truncate font-medium text-admin-muted text-[11px]"
+          style={{ marginTop: "3px", lineHeight: 1.3, color: "#94A3B8" }}
+          className="truncate font-medium text-xs"
         >
           {description}
         </p>
       </div>
+
+      <div className="text-[#D4AF37] opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-sm font-black shrink-0">
+        →
+      </div>
     </Link>
   );
 };
-
-

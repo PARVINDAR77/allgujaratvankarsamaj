@@ -32,7 +32,7 @@ const menuSections = [
     ],
   },
   {
-    title: "COMMUNITY",
+    title: "COMMUNITY & SERVICES",
     items: [
       { name: "Education (5 Boxes)", href: "/admin/education", icon: "🎓" },
       { name: "Locations", href: "/admin/locations", icon: "📍" },
@@ -44,7 +44,7 @@ const menuSections = [
     ],
   },
   {
-    title: "CONTENT & SETTINGS",
+    title: "CONTENT & SYSTEM",
     items: [
       { name: "Home Screen", href: "/admin/home-screen", icon: "📱" },
       { name: "Advertisements", href: "/admin/advertisements", icon: "📢" },
@@ -94,7 +94,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
       }
     };
 
-    // Run immediately and after paint to guarantee accurate scroll placement
     restoreScrollPosition();
     const frameId = requestAnimationFrame(restoreScrollPosition);
     const timer = setTimeout(restoreScrollPosition, 60);
@@ -124,6 +123,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("admin_sidebar_scroll_top");
       localStorage.removeItem("adminUser");
+      localStorage.removeItem("adminToken");
       const { adminApi } = await import("../../lib/admin-api");
       try {
         await adminApi.logout();
@@ -136,81 +136,104 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile Backdrop Overlay */}
       {isOpen && (
         <div
           onClick={onClose}
-          style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.75)", zIndex: 40 }}
-          className="fixed md:hidden"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40 md:hidden transition-opacity"
         />
       )}
 
-      {/* Sidebar Navigation Drawer */}
+      {/* Permanently Fixed Sidebar Drawer */}
       <aside
         style={{
-          position: "sticky",
+          position: "fixed",
           top: 0,
-          height: "100dvh",
-          maxHeight: "100vh",
-          width: "270px",
-          minWidth: "270px",
-          backgroundColor: "#061224",
-          borderRight: "1.5px solid rgba(153, 125, 32, 0.4)",
-          zIndex: 50,
-          boxSizing: "border-box",
-          boxShadow: "5px 0 25px rgba(0, 0, 0, 0.5)",
+          bottom: 0,
+          left: 0,
+          width: "18rem", // 288px (w-72)
+          height: "100vh",
+          background: "linear-gradient(180deg, #071224 0%, #040915 100%)",
+          borderRight: "1px solid rgba(212, 175, 55, 0.22)",
+          zIndex: 45,
+          boxShadow: "4px 0 30px rgba(0, 0, 0, 0.6)",
           fontFamily: "'Inter', system-ui, sans-serif",
           overflow: "hidden",
         }}
-        className={`flex flex-col left-0 transition-transform duration-200 md:translate-x-0 ${
-          isOpen ? "translate-x-0 fixed inset-y-0" : "-translate-x-full md:translate-x-0 fixed md:sticky"
+        className={`flex flex-col transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         {/* Brand Header */}
         <div
           style={{
-            padding: "20px 18px",
-            borderBottom: "1.5px solid rgba(153, 125, 32, 0.3)",
+            padding: "20px 20px 18px 20px",
+            borderBottom: "1px solid rgba(212, 175, 55, 0.2)",
+            background: "linear-gradient(180deg, rgba(212, 175, 55, 0.08) 0%, transparent 100%)",
           }}
-          className="flex items-center shrink-0 gap-[14px]"
+          className="flex items-center justify-between shrink-0"
         >
-          {/* Logo Image */}
-          <div
-            style={{
-              width: "46px",
-              height: "46px",
-              border: "2px solid #D4AF37",
-              boxShadow: "0 0 15px rgba(212, 175, 55, 0.4)",
-            }}
-            className="flex justify-center items-center overflow-hidden shrink-0 rounded-full bg-admin-card"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
-              alt="Vankar Samaj Logo"
-              style={{ objectFit: "cover" }}
-              className="w-full h-full"
-            />
-          </div>
-          <div>
-            <h1
+          <div className="flex items-center gap-3.5">
+            {/* Logo Medallion */}
+            <div
               style={{
-                fontSize: "15px",
-                fontWeight: 900,
-                letterSpacing: "1.2px",
-                margin: 0,
-                lineHeight: "1.2",
+                width: "44px",
+                height: "44px",
+                border: "2px solid #D4AF37",
+                boxShadow: "0 0 16px rgba(212, 175, 55, 0.45)",
               }}
-              className="text-admin-gold"
+              className="flex justify-center items-center overflow-hidden shrink-0 rounded-full bg-[#041026]"
             >
-              ALL GUJARAT
-            </h1>
-            <p
-              style={{ color: "rgba(243, 229, 171, 0.9)", margin: 0 }}
-              className="font-bold uppercase text-[11px] tracking-[1px]"
-            >
-              Vankar Samaj Admin
-            </p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.png"
+                alt="All Gujarat Vankar Samaj Logo"
+                style={{ objectFit: "cover" }}
+                className="w-full h-full"
+              />
+            </div>
+            <div>
+              <h1
+                style={{
+                  fontSize: "14px",
+                  fontWeight: 900,
+                  letterSpacing: "1.2px",
+                  margin: 0,
+                  lineHeight: "1.2",
+                  color: "#D4AF37",
+                }}
+              >
+                ALL GUJARAT
+              </h1>
+              <p
+                style={{ color: "#F3E5AB", margin: "2px 0 0 0" }}
+                className="font-bold uppercase text-[10.5px] tracking-wider"
+              >
+                Vankar Samaj Admin
+              </p>
+            </div>
+          </div>
+
+          {/* Close button for mobile */}
+          <button
+            onClick={onClose}
+            className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10"
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Status Pill */}
+        <div className="px-5 pt-3.5 pb-1">
+          <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/25">
+            <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              PORTAL LIVE
+            </span>
+            <span className="text-[10px] font-semibold text-slate-400">
+              Gujarat Central
+            </span>
           </div>
         </div>
 
@@ -220,26 +243,26 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           onScroll={handleNavScroll}
           style={{
             overflowY: "auto",
-            padding: "20px 14px 40px 14px",
-            gap: "22px",
+            padding: "16px 14px 40px 14px",
+            gap: "20px",
             minHeight: 0,
           }}
-          className="flex flex-col flex-1"
+          className="flex flex-col flex-1 custom-scrollbar"
         >
           {menuSections.map((section, idx) => (
-            <div key={idx} style={{ gap: "6px" }} className="flex flex-col">
+            <div key={idx} style={{ gap: "5px" }} className="flex flex-col">
               <h2
                 style={{
                   color: "rgba(212, 175, 55, 0.75)",
-                  letterSpacing: "1.5px",
+                  letterSpacing: "1.4px",
                   padding: "0 10px",
-                  margin: "0 0 4px 0",
+                  margin: "0 0 3px 0",
                 }}
-                className="font-extrabold uppercase text-[11px]"
+                className="font-extrabold uppercase text-[10.5px]"
               >
                 {section.title}
               </h2>
-              <div style={{ gap: "4px" }} className="flex flex-col">
+              <div style={{ gap: "3px" }} className="flex flex-col">
                 {section.items.map((item) => {
                   const isActive = pathname === item.href;
                   return (
@@ -253,27 +276,29 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
                         display: "flex",
                         alignItems: "center",
                         gap: "12px",
-                        padding: "11px 14px",
-                        borderRadius: "14px",
+                        padding: "10px 14px",
+                        borderRadius: "12px",
                         fontSize: "13px",
                         fontWeight: isActive ? 800 : 600,
                         textDecoration: "none",
-                        transition: "all 0.2s ease-in-out",
+                        transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                         ...(isActive
                           ? {
                               background:
                                 "linear-gradient(90deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
-                              color: "#000000",
-                              boxShadow: "0 0 15px rgba(212, 175, 55, 0.35)",
+                              color: "#041026",
+                              boxShadow: "0 3px 15px rgba(212, 175, 55, 0.35)",
+                              transform: "translateX(2px)",
                             }
                           : {
-                              color: "#AAB7C8",
+                              color: "#94A3B8",
                               backgroundColor: "transparent",
                             }),
                       }}
+                      className={isActive ? "" : "hover:bg-white/5 hover:text-[#F3E5AB] hover:translate-x-1"}
                     >
                       <span className="shrink-0 text-base">{item.icon}</span>
-                      <span>{item.name}</span>
+                      <span className="truncate">{item.name}</span>
                     </Link>
                   );
                 })}
@@ -282,26 +307,32 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           ))}
         </div>
 
-        {/* Footer Logout Section */}
+        {/* Footer Logout & User Status */}
         <div
           style={{
-            borderTop: "1.5px solid rgba(153, 125, 32, 0.3)",
-            backgroundColor: "#061224",
-            padding: "12px 14px",
+            borderTop: "1px solid rgba(212, 175, 55, 0.2)",
+            background: "linear-gradient(180deg, transparent 0%, rgba(4, 9, 21, 0.95) 100%)",
+            padding: "14px 16px",
           }}
-          className="shrink-0"
+          className="shrink-0 flex flex-col gap-2.5"
         >
+          <div className="flex items-center justify-between text-xs px-1 text-slate-400">
+            <span className="truncate">Administrator Session</span>
+            <span className="text-[10px] font-extrabold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/30">
+              SECURE
+            </span>
+          </div>
           <button
             onClick={handleLogout}
             style={{
-              padding: "11px 16px",
-              borderRadius: "14px",
-              backgroundColor: "rgba(136, 19, 55, 0.3)",
-              border: "1.5px solid rgba(244, 63, 94, 0.4)",
+              padding: "10px 16px",
+              borderRadius: "12px",
+              backgroundColor: "rgba(225, 29, 72, 0.12)",
+              border: "1px solid rgba(244, 63, 94, 0.35)",
               color: "#fecdd3",
               transition: "all 0.2s ease-in-out",
             }}
-            className="flex justify-center items-center w-full font-extrabold cursor-pointer text-[13px] gap-2 hover:bg-rose-900/50"
+            className="flex justify-center items-center w-full font-bold cursor-pointer text-xs gap-2 hover:bg-rose-950/60 hover:text-white hover:border-rose-500"
           >
             <span>🚪</span>
             <span>Logout Session</span>
