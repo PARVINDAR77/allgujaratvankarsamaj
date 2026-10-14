@@ -609,42 +609,69 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ),
               child: Row(
                 children: [
-                  IconButton(
-                    tooltip: 'ફાઈલ મોકલો (Attach photo, video or PDF)',
-                    icon: Icon(Icons.attach_file_rounded, color: _isUploading ? Colors.grey : primaryColor),
-                    onPressed: _isUploading ? null : () => _showAttachmentSheet(primaryColor),
-                  ),
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      padding: const EdgeInsets.only(left: 14, right: 4),
                       decoration: BoxDecoration(
                         color: const Color(0xFFF0F2F5),
                         borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                        border: Border.all(color: const Color(0xFFCBD5E1)),
                       ),
-                      child: TextField(
-                        controller: _textController,
-                        textCapitalization: TextCapitalization.sentences,
-                        minLines: 1,
-                        maxLines: 4,
-                        style: const TextStyle(
-                          color: Colors.black,
-                          fontSize: 15.0,
-                          fontWeight: FontWeight.w500,
-                          height: 1.3,
-                        ),
-                        cursorColor: primaryColor,
-                        decoration: const InputDecoration(
-                          hintText: 'સંદેશો લખો... (Type a message)',
-                          hintStyle: TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          filled: false,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 10),
-                        ),
-                        onSubmitted: (_) => _handleSend(),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _textController,
+                              textCapitalization: TextCapitalization.sentences,
+                              minLines: 1,
+                              maxLines: 4,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 15.0,
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
+                              ),
+                              cursorColor: primaryColor,
+                              decoration: const InputDecoration(
+                                hintText: 'સંદેશો લખો... (Type a message)',
+                                hintStyle: TextStyle(fontSize: 13.5, color: Color(0xFF64748B)),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                filled: false,
+                                isDense: true,
+                                contentPadding: EdgeInsets.symmetric(vertical: 10),
+                              ),
+                              onSubmitted: (_) => _handleSend(),
+                            ),
+                          ),
+                          // Attachment Icon: Paperclip for PDF, Photo, Video
+                          IconButton(
+                            tooltip: 'ફાઈલ અથવા PDF જોડો (Attach PDF or File)',
+                            icon: Icon(
+                              Icons.attach_file_rounded,
+                              color: _isUploading ? Colors.grey : const Color(0xFF475569),
+                              size: 22,
+                            ),
+                            onPressed: _isUploading ? null : () => _showAttachmentSheet(primaryColor),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                          ),
+                          // Quick Camera/Photo Icon
+                          IconButton(
+                            tooltip: 'ફોટો મોકલો (Send Photo)',
+                            icon: Icon(
+                              Icons.camera_alt_rounded,
+                              color: _isUploading ? Colors.grey : const Color(0xFF475569),
+                              size: 22,
+                            ),
+                            onPressed: _isUploading ? null : () => _pickImage(ImageSource.gallery),
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                          ),
+                        ],
                       ),
                     ),
                   ),

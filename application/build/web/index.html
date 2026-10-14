@@ -14,7 +14,7 @@
     This is a placeholder for base href that will be replaced by the value of
     the `--base-href` argument provided to `flutter build`.
   -->
-  <base href="/">
+  <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
@@ -36,6 +36,35 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+
+  <script>
+    (function() {
+      var BUILD_KEY = 'agvs_web_build';
+      var CURRENT_BUILD = '20261014_chatv4';
+      var last = localStorage.getItem(BUILD_KEY);
+      if (last !== CURRENT_BUILD) {
+        localStorage.setItem(BUILD_KEY, CURRENT_BUILD);
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (var i = 0; i < regs.length; i++) {
+              regs[i].unregister();
+            }
+          });
+        }
+        if ('caches' in window) {
+          caches.keys().then(function(keys) {
+            for (var i = 0; i < keys.length; i++) {
+              caches.delete(keys[i]);
+            }
+          });
+        }
+        if (last && !sessionStorage.getItem('build_auto_reloaded')) {
+          sessionStorage.setItem('build_auto_reloaded', '1');
+          window.location.reload(true);
+        }
+      }
+    })();
+  </script>
 
   <style>
     * {
@@ -165,6 +194,6 @@
     });
     splashObserver.observe(document.body, { childList: true, subtree: true });
   </script>
-  <script src="flutter_bootstrap.js?v=20261014_chatv2" async></script>
+  <script src="flutter_bootstrap.js?v=20261014_chatv4" async></script>
 </body>
 </html>
