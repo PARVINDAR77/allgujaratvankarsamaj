@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import '../../../shared/models/chat_models.dart';
 
@@ -88,6 +89,40 @@ class ChatRepository {
     try {
       await _dio.patch('/chat/conversations/$conversationId/read');
     } catch (_) {}
+  }
+
+  /// Uploads a chat attachment (image, video or PDF) and returns its public URL.
+  /// Throws an [Exception] with a user-friendly message on failure.
+  Future<String> uploadChatMedia({
+    required Uint8List bytes,
+    required String fileName,
+    required String mimeType,
+  }) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(
+          bytes,
+          filename: fileName,
+          contentType: DioMediaType.parse(mimeType),
+        ),
+      });
+      final res = await _dio.post(
+        '/storage/upload',
+        data: formData,
+        options: Options(
+          sendTimeout: const Duration(minutes: 3),
+          receiveTimeout: const Duration(minutes: 1),
+        ),
+      );
+      final url = res.data is Map ? res.data['url']?.toString() : null;
+      if (url == null || url.isEmpty) {
+        throw Exception('Upload failed. Please try again.');
+      }
+      return url.startsWith('http') ? url : 'https://allgujaratvankarsamaj.com$url';
+    } on DioException catch (e) {
+      final msg = e.response?.data is Map ? e.response?.data['message']?.toString() : null;
+      throw Exception(msg ?? 'Upload failed. Please check your internet connection.');
+    }
   }
 
   Future<ConnectionStatusResponse> getConnectionStatus(String targetProfileId) async {

@@ -32,6 +32,73 @@ class ChatMessageModel {
   }
 
   bool isMe(String myProfileId) => senderId == myProfileId;
+
+  /// Parsed media attachment (null for plain text messages).
+  ChatMedia? get media => ChatMedia.tryParse(content);
+}
+
+enum ChatMediaType { image, video, pdf }
+
+/// Media attachments are stored inside the existing TEXT `content` column
+/// using the format: `[IMAGE]url|filename`, `[VIDEO]url|filename`, `[PDF]url|filename`.
+/// This keeps the database schema and API contract unchanged.
+class ChatMedia {
+  final ChatMediaType type;
+  final String url;
+  final String fileName;
+
+  const ChatMedia({required this.type, required this.url, required this.fileName});
+
+  static const Map<ChatMediaType, String> _tags = {
+    ChatMediaType.image: '[IMAGE]',
+    ChatMediaType.video: '[VIDEO]',
+    ChatMediaType.pdf: '[PDF]',
+  };
+
+  /// Encodes a media attachment into a message content string.
+  static String encode(ChatMediaType type, String url, String fileName) {
+    final safeName = fileName.replaceAll('|', '_').replaceAll('\n', ' ');
+    return '${_tags[type]}$url|$safeName';
+  }
+
+  static ChatMedia? tryParse(String? content) {
+    if (content == null) return null;
+    final text = content.trim();
+    for (final entry in _tags.entries) {
+      if (text.startsWith(entry.value)) {
+        final body = text.substring(entry.value.length);
+        final sep = body.indexOf('|');
+        final url = (sep >= 0 ? body.substring(0, sep) : body).trim();
+        final name = sep >= 0 ? body.substring(sep + 1).trim() : '';
+        if (url.isEmpty) return null;
+        final lower = url.toLowerCase();
+        // Only allow http(s) or relative upload paths to be rendered.
+        if (!(lower.startsWith('https://') || lower.startsWith('http://') || lower.startsWith('/uploads/'))) {
+          return null;
+        }
+        return ChatMedia(
+          type: entry.key,
+          url: url,
+          fileName: name.isNotEmpty ? name : url.split('/').last,
+        );
+      }
+    }
+    return null;
+  }
+
+  /// Short human readable preview for conversation lists and notifications.
+  static String previewText(String? content) {
+    final media = tryParse(content);
+    if (media == null) return content ?? '';
+    switch (media.type) {
+      case ChatMediaType.image:
+        return '📷 ફોટો (Photo)';
+      case ChatMediaType.video:
+        return '🎥 વિડિયો (Video)';
+      case ChatMediaType.pdf:
+        return '📄 ${media.fileName}';
+    }
+  }
 }
 
 class ChatConversationModel {

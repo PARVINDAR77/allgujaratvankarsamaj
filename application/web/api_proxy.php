@@ -46,6 +46,13 @@ if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upl
         $origName = basename($file['name']);
         $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION) ?: 'jpg');
         $allowedExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf'];
+        // Chat video attachments: only for authenticated (Bearer token) requests, max 25 MB
+        $videoExts = ['mp4', 'm4v', 'mov', 'webm'];
+        $reqHeadersAll = function_exists('getallheaders') ? array_change_key_case(getallheaders(), CASE_LOWER) : [];
+        $authHeader = $reqHeadersAll['authorization'] ?? ($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+        if (in_array($ext, $videoExts) && stripos($authHeader, 'Bearer ') === 0 && $file['size'] <= 25 * 1024 * 1024) {
+            $allowedExts = array_merge($allowedExts, $videoExts);
+        }
         if (in_array($ext, $allowedExts)) {
             $uniqueFilename = bin2hex(random_bytes(16)) . '.' . $ext;
             $destPath = $uploadDir . '/' . $uniqueFilename;

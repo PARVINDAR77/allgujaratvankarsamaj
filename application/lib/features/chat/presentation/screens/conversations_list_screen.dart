@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../providers/chat_provider.dart';
+import '../../../../shared/models/chat_models.dart';
 
 class ConversationsListScreen extends ConsumerWidget {
   const ConversationsListScreen({super.key});
@@ -192,7 +193,9 @@ class ConversationsListScreen extends ConsumerWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            conv.lastMessage ?? 'નવો કનેક્શન સ્વીકારાયો! વાતચીત શરૂ કરો.',
+                            conv.lastMessage != null
+                                ? ChatMedia.previewText(conv.lastMessage)
+                                : 'નવો કનેક્શન સ્વીકારાયો! વાતચીત શરૂ કરો.',
                             style: TextStyle(
                               fontSize: 13,
                               color: conv.unreadCount > 0 ? Colors.black87 : Colors.grey.shade600,
