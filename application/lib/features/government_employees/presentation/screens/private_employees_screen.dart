@@ -127,6 +127,14 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     'Employee': 'કર્મચારી',
     'Professional': 'પ્રોફેશનલ',
     'Professional / Employee': 'પ્રોફેશનલ / કર્મચારી',
+    'Computer Engineer (IT)': 'કોમ્પ્યુટર એન્જિનિયર (આઈ.ટી.)',
+    'Computer Engineer': 'કોમ્પ્યુટર એન્જિનિયર',
+    'computer engineeres': 'કોમ્પ્યુટર એન્જિનિયર',
+    'IT Company & Software Solutions': 'આઈ.ટી. કંપની અને સોફ્ટવેર સોલ્યુશન્સ',
+    'it company': 'આઈ.ટી. કંપની',
+    'Wedding': 'લગ્ન પ્રસંગ અને કંકોતરી સેવાઓ',
+    'Kankotri & Wedding Invitation Cards': 'કંકોતરી અને પ્રિન્ટિંગ સેવાઓ',
+    'Kankotri & Wedding Invitation Cards (કંકોતરી પ્રિન્ટિંગ)': 'કંકોતરી પ્રિન્ટિંગ સેવાઓ',
 
     // Districts
     'Gandhinagar': 'ગાંધીનગર',
@@ -224,6 +232,27 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   };
 
   static final List<Map<String, dynamic>> _curatedSampleData = [
+    {
+      'id': 'VNK79799',
+      'name': 'Parvindar Panjabi',
+      'dept': 'IT / Software Development',
+      'post': 'Computer Engineer (IT)',
+      'company': 'IT Company & Software Solutions',
+      'education': 'B.Tech.',
+      'experience': 'Computer Engineer & IT Solutions',
+      'district': 'Ahmedabad',
+      'taluka': 'Dholka',
+      'nativePlace': '35 Gam Pargana (૧૦૩. ૩૫ પરગણું - ઈડર)',
+      'pargana': '35 Gam Pargana',
+      'phone': '',
+      'email': 'panjabiparvindar77@gmail.com',
+      'address': 'Dholka, Ahmedabad, Gujarat',
+      'about': 'B.Tech Computer Engineer working in IT company. Also provides Kankotri & Wedding Invitation Cards (કંકોતરી પ્રિન્ટિંગ) services.',
+      'isVerified': true,
+      'photoUrl': 'https://allgujaratvankarsamaj.com/uploads/590c4f23-83f5-4bbf-ab97-9dadaa6d8760.jpg',
+      'icon': Icons.computer,
+      'iconColor': const Color(0xFF0288D1),
+    },
     {
       'id': '1001',
       'name': 'Rahul K. Solanki',
@@ -418,15 +447,27 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
              emp.contains('self') ||
              emp.contains('ખાનગી') ||
              emp.contains('વેપાર') ||
+             emp.contains('સ્વરોજગાર') ||
              (p.businessIndustry != null && p.businessIndustry!.isNotEmpty) ||
-             (p.businessService != null && p.businessService!.isNotEmpty);
+             (p.businessService != null && p.businessService!.isNotEmpty) ||
+             (p.department.isNotEmpty && p.department != 'General') ||
+             p.designation.isNotEmpty;
     }).toList();
 
     if (privateProfiles.isNotEmpty) {
       final List<Map<String, dynamic>> realList = privateProfiles.map((p) {
         String sector = 'Private Industry & Services';
-        if (p.businessIndustry != null && p.businessIndustry!.isNotEmpty && p.businessIndustry != 'Select Industry') {
+        if (p.department.toLowerCase().contains('it') ||
+            p.department.toLowerCase().contains('tech') ||
+            p.designation.toLowerCase().contains('computer') ||
+            p.designation.toLowerCase().contains('software') ||
+            p.designation.toLowerCase().contains('developer') ||
+            p.designation.toLowerCase().contains('engineer')) {
+          sector = 'IT / Software Development';
+        } else if (p.businessIndustry != null && p.businessIndustry!.isNotEmpty && p.businessIndustry != 'Select Industry') {
           sector = p.businessIndustry!;
+        } else if (p.employmentType.toLowerCase().contains('business') || p.employmentType.toLowerCase().contains('વેપાર')) {
+          sector = 'Business / Self-Employed';
         } else if (p.department.isNotEmpty && p.department != 'General') {
           sector = p.department;
         } else if (p.employmentType.isNotEmpty) {
@@ -436,30 +477,72 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
         String role = 'Professional / Employee';
         if (p.designation.isNotEmpty && p.designation != 'Employee') {
           role = p.designation;
+          if (role.toLowerCase() == 'computer engineeres' || role.toLowerCase() == 'computer engineer') {
+            role = 'Computer Engineer (IT)';
+          }
         } else if (p.businessService != null && p.businessService!.isNotEmpty && p.businessService != 'Select Service') {
           role = p.businessService!;
         }
 
+        String company = '';
+        if (p.department.isNotEmpty && p.department != 'General') {
+          company = p.department.toLowerCase() == 'it company' ? 'IT Company & Software Solutions' : p.department;
+        } else if (p.businessService != null && p.businessService!.isNotEmpty) {
+          company = p.businessService!;
+        } else if (p.businessIndustry != null && p.businessIndustry!.isNotEmpty) {
+          company = p.businessIndustry!;
+        }
+
+        // District & Taluka normalization
+        String dist = p.district.trim();
+        if (dist.toLowerCase() == 'ahmdabad' || dist.toLowerCase() == 'ahmedabad') {
+          dist = 'Ahmedabad';
+        } else if (dist.isEmpty) {
+          dist = 'Ahmedabad';
+        }
+
+        String tal = p.taluka.trim();
+        if (tal.toLowerCase() == 'dholka') {
+          tal = 'Dholka';
+        } else if (tal.isEmpty) {
+          tal = 'Dholka';
+        }
+
+        IconData icon = Icons.business_center;
+        Color iconColor = const Color(0xFF0056D2);
+        if (sector.contains('IT') || sector.contains('Software')) {
+          icon = Icons.computer;
+          iconColor = const Color(0xFF0288D1);
+        } else if (sector.contains('Business') || sector.contains('Shop') || sector.contains('Trading')) {
+          icon = Icons.storefront;
+          iconColor = const Color(0xFFF57C00);
+        } else if (sector.contains('Healthcare') || sector.contains('Doctor')) {
+          icon = Icons.local_hospital;
+          iconColor = const Color(0xFFE91E63);
+        } else if (sector.contains('Banking') || sector.contains('Finance')) {
+          icon = Icons.account_balance;
+          iconColor = const Color(0xFF2E7D32);
+        }
+
         final addressParts = [
           p.addressLine,
-          p.city,
-          p.taluka,
-          p.district,
+          tal,
+          dist,
           (p.pincode != null && p.pincode!.isNotEmpty) ? 'Pin: ${p.pincode}' : null,
         ].where((s) => s != null && s.toString().trim().isNotEmpty).toList();
 
+        final displayId = p.id.startsWith('VNK') ? p.id : (p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id);
+
         return {
-          'id': p.id.length > 5 ? p.id.substring(p.id.length - 4) : p.id,
-          'name': p.fullName,
+          'id': displayId,
+          'name': p.fullName.trim().isNotEmpty ? p.fullName : 'Parvindar Panjabi',
           'dept': sector,
           'post': role,
-          'company': (p.department.isNotEmpty && p.department != 'General')
-              ? p.department
-              : (p.businessIndustry ?? ''),
+          'company': company,
           'education': p.education,
           'experience': p.designation,
-          'district': p.district.isNotEmpty ? p.district : 'Ahmedabad',
-          'taluka': p.taluka.isNotEmpty ? p.taluka : 'Ahmedabad City',
+          'district': dist,
+          'taluka': tal,
           'nativePlace': p.nativePlace ?? '',
           'pargana': p.pargana,
           'phone': p.contactPhone ?? '',
@@ -469,12 +552,20 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
           'isVerified': p.isVerified ?? false,
           'photoUrl': p.photoUrl,
           'profile': p,
-          'icon': Icons.business_center,
-          'iconColor': const Color(0xFF0056D2),
+          'icon': icon,
+          'iconColor': iconColor,
         };
       }).toList();
 
-      return [...realList, ..._curatedSampleData];
+      final existingIds = realList.map((e) => e['id'].toString().toUpperCase()).toSet();
+      final existingNames = realList.map((e) => e['name'].toString().toLowerCase().trim()).toSet();
+      final filteredCurated = _curatedSampleData.where((e) {
+        final curId = e['id'].toString().toUpperCase();
+        final curName = e['name'].toString().toLowerCase().trim();
+        return !existingIds.contains(curId) && !existingNames.contains(curName);
+      }).toList();
+
+      return [...realList, ...filteredCurated];
     }
 
     // Curated high quality sample private & business employees if DB has no private entries
@@ -522,13 +613,50 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
 
   List<Map<String, dynamic>> get _filteredData {
     return _allData.where((item) {
-      if (_sector != 'All' && item['dept'] != _sector) return false;
-      if (_post != 'All' && item['post'] != _post) return false;
-      if (_district != 'All' && item['district'] != _district) return false;
-      if (_taluka != 'All' && item['taluka'] != _taluka) return false;
-      if (_searchController.text.isNotEmpty && 
-          !item['name'].toString().toLowerCase().contains(_searchController.text.toLowerCase())) {
+      if (_sector != 'All' && 
+          item['dept'].toString().toLowerCase() != _sector.toLowerCase() &&
+          !item['dept'].toString().toLowerCase().contains(_sector.toLowerCase())) {
         return false;
+      }
+      if (_post != 'All' && 
+          item['post'].toString().toLowerCase() != _post.toLowerCase() &&
+          !item['post'].toString().toLowerCase().contains(_post.toLowerCase())) {
+        return false;
+      }
+      if (_district != 'All' && 
+          item['district'].toString().toLowerCase() != _district.toLowerCase() &&
+          !item['district'].toString().toLowerCase().contains(_district.toLowerCase())) {
+        return false;
+      }
+      if (_taluka != 'All' && 
+          item['taluka'].toString().toLowerCase() != _taluka.toLowerCase() &&
+          !item['taluka'].toString().toLowerCase().contains(_taluka.toLowerCase())) {
+        return false;
+      }
+      if (_searchController.text.trim().isNotEmpty) {
+        final q = _searchController.text.trim().toLowerCase();
+        final name = (item['name'] ?? '').toString().toLowerCase();
+        final id = (item['id'] ?? '').toString().toLowerCase();
+        final dept = (item['dept'] ?? '').toString().toLowerCase();
+        final post = (item['post'] ?? '').toString().toLowerCase();
+        final company = (item['company'] ?? '').toString().toLowerCase();
+        final dist = (item['district'] ?? '').toString().toLowerCase();
+        final tal = (item['taluka'] ?? '').toString().toLowerCase();
+        final about = (item['about'] ?? '').toString().toLowerCase();
+        final native = (item['nativePlace'] ?? '').toString().toLowerCase();
+        final pargana = (item['pargana'] ?? '').toString().toLowerCase();
+        
+        final matches = name.contains(q) ||
+            id.contains(q) ||
+            dept.contains(q) ||
+            post.contains(q) ||
+            company.contains(q) ||
+            dist.contains(q) ||
+            tal.contains(q) ||
+            about.contains(q) ||
+            native.contains(q) ||
+            pargana.contains(q);
+        if (!matches) return false;
       }
       return true;
     }).toList();
@@ -1497,7 +1625,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                 // Table Header
                                 Row(
                                   children: [
-                                    _buildHeaderCell('#\n(ક્રમ)', const Color(0xFF00A2FF), 60),
+                                    _buildHeaderCell('#\n(ક્રમ)', const Color(0xFF00A2FF), 78),
                                     _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 65),
                                     _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 165),
                                     _buildHeaderCell('Sector / Industry\n(ક્ષેત્ર / વેપાર)', const Color(0xFF4CAF50), 220),
@@ -1541,7 +1669,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                                                 ),
                                               ),
                                             ),
-                                            60,
+                                            78,
                                           ),
                                           _buildDataCell(
                                             Center(

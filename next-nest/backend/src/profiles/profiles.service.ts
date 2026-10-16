@@ -1259,8 +1259,8 @@ export class ProfilesService {
     const andConditions: Prisma.MatrimonialProfileWhereInput[] = [];
 
     if (query.occupationCategory) {
-      // Handle occupation categories
-      if (query.occupationCategory.toUpperCase() === "GOVERNMENT") {
+      const cat = query.occupationCategory.trim().toUpperCase();
+      if (cat === "GOVERNMENT") {
         andConditions.push({
           OR: [
             { governmentEmployment: { isNot: null } },
@@ -1268,6 +1268,54 @@ export class ProfilesService {
             { occupation: { contains: "સરકારી" } },
             { organizationName: { contains: "Gov" } },
             { organizationName: { contains: "સરકારી" } },
+          ],
+        });
+      } else if (
+        cat === "PRIVATE" ||
+        cat === "BUSINESS" ||
+        cat === "PRIVATE_BUSINESS" ||
+        cat === "PRIVATE / BUSINESS" ||
+        cat === "PRIVATE & BUSINESS" ||
+        cat.includes("PRIVATE") ||
+        cat.includes("BUSINESS") ||
+        cat.includes("SELF")
+      ) {
+        andConditions.push({
+          AND: [
+            // Strictly exclude Government employees
+            { governmentEmployment: { is: null } },
+            {
+              NOT: [
+                { occupation: { contains: "Government" } },
+                { occupation: { contains: "સરકારી" } },
+                { organizationName: { contains: "Government" } },
+                { organizationName: { contains: "સરકારી" } },
+              ],
+            },
+            // Must match private or business occupation / employment / organization / service
+            {
+              OR: [
+                { occupation: { contains: "Private" } },
+                { occupation: { contains: "Business" } },
+                { occupation: { contains: "Self" } },
+                { occupation: { contains: "ખાનગી" } },
+                { occupation: { contains: "વેપાર" } },
+                { occupation: { contains: "સ્વરોજગાર" } },
+                { occupation: { contains: "IT" } },
+                { occupation: { contains: "Software" } },
+                { occupation: { contains: "Company" } },
+                { occupation: { contains: "Service" } },
+                { occupation: { contains: "Job" } },
+                { occupation: { contains: "Employee" } },
+                { occupation: { contains: "Engineer" } },
+                { occupation: { contains: "Doctor" } },
+                { occupation: { contains: "Worker" } },
+                { organizationName: { not: null } },
+                { designation: { not: null } },
+                { businessIndustry: { not: null } },
+                { businessService: { not: null } },
+              ],
+            },
           ],
         });
       } else {
