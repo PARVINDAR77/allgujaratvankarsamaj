@@ -83,6 +83,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     final desig = emp.designationName.toLowerCase();
     final desigGu = emp.designationGujaratiName.toLowerCase();
     final loc = (emp.officeLocation ?? '').toLowerCase();
+    final name = emp.fullName.toLowerCase();
 
     const forbidden = [
       'it company',
@@ -97,6 +98,8 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       'self',
       'not working',
       'કોઈ નોકરી નથી',
+      'parvindar',
+      'takhatsing',
     ];
 
     for (final term in forbidden) {
@@ -104,7 +107,8 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
           deptGu.contains(term) ||
           desig.contains(term) ||
           desigGu.contains(term) ||
-          loc.contains(term)) {
+          loc.contains(term) ||
+          name.contains(term)) {
         return true;
       }
     }

@@ -698,5 +698,6 @@ export declare class GovernmentEmployeesService {
         designationId: string | null;
     }>;
     private logAdminAudit;
+    isNonGovtProfile(item: any): boolean;
     private transformToPublicDto;
 }

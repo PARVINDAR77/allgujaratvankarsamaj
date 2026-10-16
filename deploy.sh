@@ -152,6 +152,25 @@ ALTER TABLE matrimonial_profiles MODIFY COLUMN marital_status ENUM('NEVER_MARRIE
 UPDATE \`pavan_prernadata\` SET \`name\` = 'Pavan Prernadata', \`gujarati_name\` = 'પાવન પ્રેરણાદાતા' WHERE LOWER(\`name\`) LIKE '%prendata%' OR LOWER(\`name\`) LIKE '%prandata%';
 " || true
 
+echo "Purging private, business, and non-government profiles from government_employments in Database..."
+mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "
+DELETE ge FROM government_employments ge
+INNER JOIN matrimonial_profiles p ON ge.profile_id = p.id
+WHERE LOWER(COALESCE(p.occupation, '')) LIKE '%private%'
+   OR LOWER(COALESCE(p.occupation, '')) LIKE '%business%'
+   OR LOWER(COALESCE(p.occupation, '')) LIKE '%વેપાર%'
+   OR LOWER(COALESCE(p.occupation, '')) LIKE '%સ્વરોજગાર%'
+   OR LOWER(COALESCE(p.occupation, '')) LIKE '%not working%'
+   OR LOWER(COALESCE(p.organization_name, '')) LIKE '%it company%'
+   OR LOWER(COALESCE(p.organization_name, '')) LIKE '%pvt%'
+   OR LOWER(COALESCE(p.organization_name, '')) LIKE '%private%'
+   OR LOWER(COALESCE(p.organization_name, '')) LIKE '%ltd%'
+   OR LOWER(COALESCE(p.organization_name, '')) LIKE '%llp%'
+   OR LOWER(COALESCE(p.designation, '')) LIKE '%it company%'
+   OR LOWER(COALESCE(p.first_name, '')) LIKE '%parvindar%'
+   OR LOWER(COALESCE(ge.office_location, '')) LIKE '%it company%';
+" || true
+
 echo "Applying required schema tables and columns via MySQL CLI..."
 mysql -h "$DB_HOST" -u "$DB_USER" -p"$DB_PASSWORD" "$DB_NAME" -e "
 CREATE TABLE IF NOT EXISTS \`samaj_super_stars\` (

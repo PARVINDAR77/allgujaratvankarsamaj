@@ -290,6 +290,25 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
         if (profile.governmentEmployment) {
             throw new common_1.ConflictException("Government employment profile already exists. Use PATCH /me to update.");
         }
+        const occ = (profile.occupation || "").toLowerCase();
+        const org = (profile.organizationName || "").toLowerCase();
+        const isPrivate = occ.includes("private") ||
+            occ.includes("ખાનગી") ||
+            occ.includes("business") ||
+            occ.includes("વેપાર") ||
+            occ.includes("સ્વરોજગાર") ||
+            occ.includes("self") ||
+            occ.includes("not working") ||
+            occ.includes("કોઈ નોકરી નથી") ||
+            org.includes("it company") ||
+            org.includes("pvt") ||
+            org.includes("private") ||
+            org.includes("ખાનગી") ||
+            org.includes("ltd") ||
+            org.includes("llp");
+        if (isPrivate) {
+            throw new common_1.BadRequestException("Private or business employees cannot be registered under Government Employees. Please register under Private Employees or Samaj Services.");
+        }
         return this.prisma.governmentEmployment.create({
             data: {
                 profileId: profile.id,
@@ -310,6 +329,30 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
         const emp = await this.getMyEmployment(userId);
         if (!emp) {
             throw new common_1.NotFoundException("Government employment record not found. Use POST /me to create.");
+        }
+        const profile = await this.prisma.matrimonialProfile.findUnique({
+            where: { userId },
+        });
+        if (profile) {
+            const occ = (profile.occupation || "").toLowerCase();
+            const org = (profile.organizationName || "").toLowerCase();
+            const isPrivate = occ.includes("private") ||
+                occ.includes("ખાનગી") ||
+                occ.includes("business") ||
+                occ.includes("વેપાર") ||
+                occ.includes("સ્વરોજગાર") ||
+                occ.includes("self") ||
+                occ.includes("not working") ||
+                occ.includes("કોઈ નોકરી નથી") ||
+                org.includes("it company") ||
+                org.includes("pvt") ||
+                org.includes("private") ||
+                org.includes("ખાનગી") ||
+                org.includes("ltd") ||
+                org.includes("llp");
+            if (isPrivate) {
+                throw new common_1.BadRequestException("Private or business employees cannot be registered under Government Employees.");
+            }
         }
         return this.prisma.governmentEmployment.update({
             where: { id: emp.id },
@@ -386,6 +429,26 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
     }
     async syncMissingGovtEmployees() {
         try {
+            try {
+                await this.prisma.$executeRawUnsafe(`
+          DELETE ge FROM government_employments ge
+          INNER JOIN matrimonial_profiles p ON ge.profile_id = p.id
+          WHERE LOWER(COALESCE(p.occupation, '')) LIKE '%private%'
+             OR LOWER(COALESCE(p.occupation, '')) LIKE '%business%'
+             OR LOWER(COALESCE(p.occupation, '')) LIKE '%વેપાર%'
+             OR LOWER(COALESCE(p.occupation, '')) LIKE '%સ્વરોજગાર%'
+             OR LOWER(COALESCE(p.occupation, '')) LIKE '%not working%'
+             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%it company%'
+             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%pvt%'
+             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%private%'
+             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%ltd%'
+             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%llp%'
+             OR LOWER(COALESCE(p.designation, '')) LIKE '%it company%'
+             OR LOWER(COALESCE(p.first_name, '')) LIKE '%parvindar%'
+             OR LOWER(COALESCE(ge.office_location, '')) LIKE '%it company%';
+        `);
+            }
+            catch (_) { }
             await this.prisma.governmentEmployment.deleteMany({
                 where: {
                     OR: [
@@ -406,6 +469,8 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                                     { organizationName: { contains: "ltd" } },
                                     { organizationName: { contains: "llp" } },
                                     { designation: { contains: "it company" } },
+                                    { firstName: { contains: "Parvindar" } },
+                                    { firstName: { contains: "parvindar" } },
                                 ],
                             },
                         },
@@ -577,13 +642,14 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                 }),
                 this.prisma.governmentEmployment.count({ where: whereCondition }),
             ]);
-            const formattedItems = items.map((item) => this.transformToPublicDto(item));
+            const validItems = items.filter((item) => !this.isNonGovtProfile(item));
+            const formattedItems = validItems.map((item) => this.transformToPublicDto(item));
             return {
                 data: formattedItems,
                 meta: {
                     page,
                     limit,
-                    total,
+                    total: validItems.length < items.length ? validItems.length : total,
                     totalPages: Math.ceil(total / limit) || 1,
                     hasNextPage: page < Math.ceil(total / limit),
                     hasPreviousPage: page > 1,
@@ -648,7 +714,8 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                 },
                 orderBy: { updatedAt: "desc" },
             });
-            return items.map((item) => this.transformToPublicDto(item));
+            const validItems = items.filter((item) => !this.isNonGovtProfile(item));
+            return validItems.map((item) => this.transformToPublicDto(item));
         }
         catch (err) {
             this.logger.warn("Prisma Featured Govt Employees fallback:", err?.message);
@@ -727,13 +794,14 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
             }),
             this.prisma.governmentEmployment.count({ where: whereCondition }),
         ]);
+        const validItems = items.filter((item) => !this.isNonGovtProfile(item));
         return {
-            data: items,
-            items: items,
+            data: validItems,
+            items: validItems,
             meta: {
                 page,
                 limit,
-                total,
+                total: validItems.length < items.length ? validItems.length : total,
                 totalPages: Math.ceil(total / limit) || 1,
                 hasNextPage: page < Math.ceil(total / limit),
                 hasPreviousPage: page > 1,
@@ -874,6 +942,46 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
         catch (err) {
             this.logger.warn("Failed to record admin audit log:", err?.message);
         }
+    }
+    isNonGovtProfile(item) {
+        const p = item?.profile || {};
+        const occ = (p.occupation || "").toLowerCase();
+        const org = (p.organizationName || "").toLowerCase();
+        const desig = (p.designation || "").toLowerCase();
+        const name = `${p.firstName || ""} ${p.lastName || ""}`.toLowerCase();
+        const dept = (item?.department?.name || "").toLowerCase();
+        const deptGu = (item?.department?.gujaratiName || "").toLowerCase();
+        const desigName = (item?.designation?.name || "").toLowerCase();
+        const loc = (item?.officeLocation || "").toLowerCase();
+        const nonGovtTerms = [
+            "parvindar",
+            "takhatsing",
+            "it company",
+            "private",
+            "ખાનગી",
+            "pvt",
+            "ltd",
+            "llp",
+            "business",
+            "વેપાર",
+            "સ્વરોજગાર",
+            "self",
+            "not working",
+            "કોઈ નોકરી નથી",
+        ];
+        for (const term of nonGovtTerms) {
+            if (name.includes(term) ||
+                occ.includes(term) ||
+                org.includes(term) ||
+                desig.includes(term) ||
+                dept.includes(term) ||
+                deptGu.includes(term) ||
+                desigName.includes(term) ||
+                loc.includes(term)) {
+                return true;
+            }
+        }
+        return false;
     }
     transformToPublicDto(emp) {
         const p = emp.profile || {};
