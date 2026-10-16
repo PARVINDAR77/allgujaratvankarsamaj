@@ -247,9 +247,16 @@ let ChatService = ChatService_1 = class ChatService {
                     data: {
                         userId: receiverProfile.userId,
                         title: `💬 નવો સંદેશો: ${senderName}`,
-                        message: dto.content.length > 50
-                            ? `${dto.content.substring(0, 47)}...`
-                            : dto.content,
+                        message: (() => {
+                            const c = dto.content.trim();
+                            if (c.startsWith("[IMAGE]"))
+                                return "📷 ફોટો મોકલ્યો (Sent a photo)";
+                            if (c.startsWith("[VIDEO]"))
+                                return "🎥 વિડિયો મોકલ્યો (Sent a video)";
+                            if (c.startsWith("[PDF]"))
+                                return "📄 PDF દસ્તાવેજ મોકલ્યો (Sent a document)";
+                            return c.length > 50 ? `${c.substring(0, 47)}...` : c;
+                        })(),
                         type: "NEW_MESSAGE",
                         metadata: JSON.stringify({
                             conversationId,

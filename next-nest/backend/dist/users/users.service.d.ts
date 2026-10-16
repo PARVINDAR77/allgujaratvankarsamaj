@@ -1,5 +1,10 @@
 import { PrismaService } from "../prisma/prisma.service";
 import { User, Role, Status } from "@prisma/client";
+export declare function normalizePhoneNumber(phone?: string | null): {
+    isValid: boolean;
+    canonical10?: string;
+    variants: string[];
+};
 export declare class UsersService {
     private readonly prisma;
     private readonly logger;

@@ -73,6 +73,12 @@ export interface AdminProfileItem {
     status: string;
     createdAt: string;
   };
+  organizationName?: string;
+  designation?: string;
+  businessIndustry?: string;
+  businessService?: string;
+  addressLine?: string;
+  about?: string;
   user?: {
     email?: string;
     phone?: string;

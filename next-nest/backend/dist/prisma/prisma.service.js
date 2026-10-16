@@ -19,7 +19,9 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
         try {
             await this.$connect();
             this.logger.log("Successfully connected to MySQL database via Prisma");
-            await this.syncSchema();
+            if (process.env.ENABLE_RUNTIME_SCHEMA_SYNC === "true") {
+                await this.syncSchema();
+            }
         }
         catch (error) {
             this.logger.warn(`MySQL database not yet reachable at DATABASE_URL (${error.message || error}). Backend will retry on demand.`);
@@ -89,10 +91,6 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
       `);
             await this.$executeRawUnsafe(`
         ALTER TABLE \`advertisements\` MODIFY COLUMN \`placement\` ENUM('HOME_BANNER', 'DIRECTORY_BANNER', 'POPUP', 'BUTTON_1', 'BUTTON_2', 'BUTTON_3', 'BUTTON_4', 'BUTTON_5', 'PAVAN_PRERNADATA', 'SAMAJ_SUPER_STARS', 'SAMAJ_RATNA') NOT NULL DEFAULT 'HOME_BANNER';
-      `);
-            await this.$executeRawUnsafe(`
-        UPDATE \`users\` SET \`role\` = 'SUPER_ADMIN', \`status\` = 'ACTIVE' 
-        WHERE \`email\` IN ('admin@vankarsamaj.org', 'admin@vankarsamaj.com', 'panjabiparvindar77@gmail.com');
       `);
             await this.syncGovernmentEmployeesFromProfiles();
             this.logger.log("Schema auto-migration check completed successfully");

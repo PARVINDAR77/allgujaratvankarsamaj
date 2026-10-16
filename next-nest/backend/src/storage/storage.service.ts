@@ -1,4 +1,4 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, BadRequestException } from "@nestjs/common";
 import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs/promises";
 import * as path from "path";
@@ -7,32 +7,96 @@ import * as path from "path";
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
   private readonly uploadDir = path.join(process.cwd(), "uploads");
+  private readonly privateUploadDir = path.join(process.cwd(), "private_uploads");
 
-  async uploadFile(
+  /**
+   * Upload Public Media (Profile photos, avatars, banner graphics)
+   * Stored in the public static directory (/uploads).
+   * Strictly enforces public image extensions and mimetypes.
+   */
+  async uploadPublicMedia(
     fileBuffer: Buffer,
     mimetype: string,
     originalName: string,
   ): Promise<string> {
-    this.logger.log(`Uploading file ${originalName} of type ${mimetype}`);
+    const allowedPublicTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
 
-    // Ensure the uploads directory exists
+    if (!allowedPublicTypes.includes(mimetype.toLowerCase())) {
+      throw new BadRequestException(
+        "Invalid public media type. Only public images (.jpg, .png, .webp, .gif) are allowed in public storage.",
+      );
+    }
+
     await fs.mkdir(this.uploadDir, { recursive: true });
 
-    // Generate a unique filename and return a local URL
-    const ext = originalName.split(".").pop() || "";
+    const rawExt = (originalName.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const ext = ["jpg", "jpeg", "png", "webp", "gif"].includes(rawExt) ? rawExt : "jpg";
     const uniqueFilename = `${uuidv4()}.${ext}`;
     const filePath = path.join(this.uploadDir, uniqueFilename);
 
-    // Write file to disk
     await fs.writeFile(filePath, fileBuffer);
-
-    // Return the relative URL
+    this.logger.log(`Uploaded public media: ${uniqueFilename}`);
     return `/uploads/${uniqueFilename}`;
+  }
+
+  /**
+   * Upload Private Verification Document (Aadhaar cards, Govt IDs, credentials)
+   * Stored in the private directory (/private_uploads) OUTSIDE public static access.
+   * Accessible only via authenticated RBAC endpoints.
+   */
+  async uploadVerificationDocument(
+    fileBuffer: Buffer,
+    mimetype: string,
+    originalName: string,
+  ): Promise<string> {
+    const allowedDocTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "application/pdf",
+    ];
+
+    if (!allowedDocTypes.includes(mimetype.toLowerCase())) {
+      throw new BadRequestException(
+        "Invalid document type. Only images (.jpg, .png, .webp) and PDF documents are allowed for verification.",
+      );
+    }
+
+    await fs.mkdir(this.privateUploadDir, { recursive: true, mode: 0o700 });
+
+    const rawExt = (originalName.split(".").pop() || "pdf").toLowerCase().replace(/[^a-z0-9]/g, "");
+    const ext = ["jpg", "jpeg", "png", "webp", "pdf"].includes(rawExt) ? rawExt : "pdf";
+    const uniqueFilename = `doc_${uuidv4()}.${ext}`;
+    const filePath = path.join(this.privateUploadDir, uniqueFilename);
+
+    await fs.writeFile(filePath, fileBuffer, { mode: 0o600 });
+    this.logger.log(`Uploaded private verification document: ${uniqueFilename}`);
+    return `/api/v1/admin/verifications/documents/${uniqueFilename}`;
+  }
+
+  /**
+   * General upload handler routing based on privacy classification
+   */
+  async uploadFile(
+    fileBuffer: Buffer,
+    mimetype: string,
+    originalName: string,
+    isPrivate = false,
+  ): Promise<string> {
+    if (isPrivate) {
+      return this.uploadVerificationDocument(fileBuffer, mimetype, originalName);
+    }
+    return this.uploadPublicMedia(fileBuffer, mimetype, originalName);
   }
 
   async deleteFile(fileUrl: string): Promise<void> {
     this.logger.log(`Deleting file at ${fileUrl}`);
-    // Simulate delete delay
     await new Promise((resolve) => setTimeout(resolve, 300));
   }
 }
+

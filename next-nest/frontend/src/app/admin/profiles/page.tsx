@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { adminApi, AdminProfileItem } from "@/lib/admin-api";
@@ -32,6 +33,16 @@ export default function AdminProfilesPage() {
   useEffect(() => {
     loadProfiles();
   }, [selectedCategory]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSearch = urlParams.get("search");
+      if (urlSearch) {
+        setSearch(urlSearch);
+      }
+    }
+  }, []);
 
   const handleStatusChange = async (profileId: string, currentStatus: string) => {
     const newStatus = currentStatus === "APPROVED" ? "REJECTED" : "APPROVED";
@@ -71,16 +82,22 @@ export default function AdminProfilesPage() {
   };
 
   const safeProfiles = Array.isArray(profiles) ? profiles : [];
-  const filtered = safeProfiles.filter(
-    (p) =>
-      p &&
-      (
-        (p.name && p.name.toLowerCase().includes(search.toLowerCase())) ||
-        (p.city && p.city.toLowerCase().includes(search.toLowerCase())) ||
-        (p.pargana && p.pargana.toLowerCase().includes(search.toLowerCase())) ||
-        (p.user?.phone && p.user.phone.includes(search))
-      )
-  );
+  const s = search.trim().toLowerCase();
+  const filtered = safeProfiles.filter((p) => {
+    if (!p) return false;
+    if (!s) return true;
+    return (
+      (p.name && p.name.toLowerCase().includes(s)) ||
+      (p.id && p.id.toLowerCase().includes(s)) ||
+      (p.city && p.city.toLowerCase().includes(s)) ||
+      (p.pargana && p.pargana.toLowerCase().includes(s)) ||
+      (p.education && p.education.toLowerCase().includes(s)) ||
+      (p.occupation && p.occupation.toLowerCase().includes(s)) ||
+      (p.gender && p.gender.toLowerCase().includes(s)) ||
+      (p.user?.phone && p.user.phone.includes(search.trim())) ||
+      (p.user?.email && p.user.email.toLowerCase().includes(s))
+    );
+  });
 
   return (
     <AdminLayout title="Profiles Management" subtitle="Review, approve & feature matrimonial candidate profiles">
@@ -107,7 +124,7 @@ export default function AdminProfilesPage() {
               <span style={{ position: "absolute", left: "16px", top: "50%", transform: "translateY(-50%)", fontSize: "16px", opacity: 0.7 }}>🔍</span>
               <input
                 type="text"
-                placeholder="Search profiles by name, city, phone, pargana..."
+                placeholder="Search profiles by name, phone, pargana, city, ID..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
@@ -115,7 +132,7 @@ export default function AdminProfilesPage() {
                   backgroundColor: "rgba(4, 16, 38, 0.6)",
                   border: "1px solid rgba(212, 175, 55, 0.3)",
                   borderRadius: "12px",
-                  padding: "14px 16px 14px 48px",
+                  padding: "14px 44px 14px 48px",
                   fontSize: "14px",
                   color: "#FFFFFF",
                   fontWeight: 600,
@@ -125,6 +142,40 @@ export default function AdminProfilesPage() {
                 }}
                 className="focus:border-[#D4AF37] focus:shadow-[0_0_15px_rgba(212,175,55,0.2)]"
               />
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    if (typeof window !== "undefined" && window.history.replaceState) {
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete("search");
+                      window.history.replaceState({}, "", url.toString());
+                    }
+                  }}
+                  style={{
+                    position: "absolute",
+                    right: "14px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    backgroundColor: "rgba(212, 175, 55, 0.2)",
+                    border: "1px solid rgba(212, 175, 55, 0.4)",
+                    borderRadius: "50%",
+                    width: "22px",
+                    height: "22px",
+                    color: "#D4AF37",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: "bold",
+                  }}
+                  title="Clear Search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
             
             <div style={{ position: "relative", minWidth: "220px" }}>
@@ -178,6 +229,57 @@ export default function AdminProfilesPage() {
             <span style={{ fontSize: "18px" }}>{profiles.length}</span>
           </div>
         </div>
+
+        {search.trim() && (
+          <div
+            style={{
+              backgroundColor: "rgba(212, 175, 55, 0.12)",
+              border: "1px solid rgba(212, 175, 55, 0.4)",
+              borderRadius: "14px",
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "10px",
+              color: "#F3E5AB",
+              fontSize: "13.5px",
+              fontWeight: 600,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>🔍</span>
+              <span>
+                Search filter active: &ldquo;<strong>{search}</strong>&rdquo; &mdash; showing <strong>{filtered.length}</strong> of {profiles.length} candidate profiles
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                if (typeof window !== "undefined" && window.history.replaceState) {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete("search");
+                  window.history.replaceState({}, "", url.toString());
+                }
+              }}
+              style={{
+                backgroundColor: "rgba(212, 175, 55, 0.2)",
+                border: "1px solid rgba(212, 175, 55, 0.5)",
+                color: "#FFFFFF",
+                borderRadius: "8px",
+                padding: "6px 14px",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              className="hover:bg-[#D4AF37] hover:text-[#041026]"
+            >
+              Clear Search Filter ✕
+            </button>
+          </div>
+        )}
 
         {error && (
           <div style={{
@@ -673,6 +775,81 @@ export default function AdminProfilesPage() {
                   </div>
                 )}
               </div>
+
+              {/* BOX 3: Samaj Business & Trade Profile (If Business Person) */}
+              {(selectedProfile.occupation?.toLowerCase().includes("business") ||
+                selectedProfile.occupation?.toLowerCase().includes("વેપાર") ||
+                selectedProfile.occupation?.toLowerCase().includes("દુકાન") ||
+                selectedProfile.occupation?.toLowerCase().includes("self") ||
+                selectedProfile.organizationName ||
+                selectedProfile.businessIndustry ||
+                selectedProfile.businessService) && (
+                <div
+                  style={{
+                    background: "linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(4, 16, 38, 0.8) 100%)",
+                    border: "1px solid rgba(212, 175, 55, 0.4)",
+                    borderRadius: "16px",
+                    padding: "16px",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "12px",
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">💼</span>
+                      <div>
+                        <div className="font-extrabold text-white text-xs uppercase tracking-wider">
+                          સમાજ વ્યવસાય વિગત (Samaj Business Profile)
+                        </div>
+                        <div className="text-[11px] text-amber-200">
+                          Auto-linked to Samaj Services Directory
+                        </div>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/admin/services?search=${encodeURIComponent(selectedProfile.organizationName || selectedProfile.name)}`}
+                      className="text-[11px] font-bold text-[#D4AF37] hover:underline flex items-center gap-1 bg-[#D4AF37]/15 px-2.5 py-1 rounded-lg border border-[#D4AF37]/30"
+                    >
+                      <span>View in Services</span>
+                      <span>➔</span>
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {selectedProfile.organizationName && (
+                      <div className="p-2.5 rounded-lg bg-black/30 border border-white/5">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Business / Shop Name:</span>
+                        <span className="font-extrabold text-amber-300 text-sm">{selectedProfile.organizationName}</span>
+                      </div>
+                    )}
+                    {selectedProfile.designation && (
+                      <div className="p-2.5 rounded-lg bg-black/30 border border-white/5">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Role / Designation:</span>
+                        <span className="font-bold text-white">{selectedProfile.designation}</span>
+                      </div>
+                    )}
+                    {selectedProfile.businessIndustry && (
+                      <div className="p-2.5 rounded-lg bg-black/30 border border-white/5">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Industry / Category:</span>
+                        <span className="font-semibold text-white">{selectedProfile.businessIndustry}</span>
+                      </div>
+                    )}
+                    {selectedProfile.businessService && (
+                      <div className="p-2.5 rounded-lg bg-black/30 border border-white/5">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Services Offered:</span>
+                        <span className="font-semibold text-white">{selectedProfile.businessService}</span>
+                      </div>
+                    )}
+                    {selectedProfile.addressLine && (
+                      <div className="p-2.5 rounded-lg bg-black/30 border border-white/5 sm:col-span-2">
+                        <span className="text-slate-400 block text-[10px] uppercase font-bold">Business Address:</span>
+                        <span className="font-medium text-slate-200">{selectedProfile.addressLine}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Profile Details List */}
               <div

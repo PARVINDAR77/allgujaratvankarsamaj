@@ -39,6 +39,16 @@ export default function AdminUsersPage() {
     fetchUsers();
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSearch = urlParams.get("search");
+      if (urlSearch) {
+        setSearch(urlSearch);
+      }
+    }
+  }, []);
+
   const formatName = (n: string, e?: string) => {
     if (!n || (n.includes("-") && n.length > 20)) {
       if (e && e.includes("@")) {
@@ -49,11 +59,17 @@ export default function AdminUsersPage() {
     return n;
   };
 
+  const s = search.trim().toLowerCase();
   const filteredUsers = users.filter((u) => {
+    if (!u) return false;
     const matchesSearch =
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()) ||
-      u.pargana.toLowerCase().includes(search.toLowerCase());
+      !s ||
+      (u.name && u.name.toLowerCase().includes(s)) ||
+      (u.email && u.email.toLowerCase().includes(s)) ||
+      (u.phone && u.phone.includes(search.trim())) ||
+      (u.id && u.id.toLowerCase().includes(s)) ||
+      (u.pargana && u.pargana.toLowerCase().includes(s)) ||
+      (u.role && u.role.toLowerCase().includes(s));
     const matchesStatus = statusFilter === "ALL" || u.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -124,10 +140,10 @@ export default function AdminUsersPage() {
             className="flex justify-between items-center flex-wrap border border-admin-gold/25 gap-4 rounded-2xl shadow-[0_10px_30px_rgba(0,0,0,0.4)] backdrop-blur-md bg-admin-bg-glass py-[18px] px-6" 
         >
           <div  className="flex items-center flex-wrap gap-[14px]">
-            <div   className="relative min-w-[260px]" >
+            <div className="relative min-w-[280px]">
               <input
                 type="text"
-                placeholder="Search candidate name, email, pargana..."
+                placeholder="Search candidate name, email, phone, ID, pargana..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 style={{
@@ -135,15 +151,49 @@ export default function AdminUsersPage() {
                   backgroundColor: "#041026",
                   border: "1px solid rgba(212, 175, 55, 0.35)",
                   borderRadius: "12px",
-                  padding: "10px 14px 10px 38px",
+                  padding: "10px 36px 10px 38px",
                   fontSize: "12px",
                   color: "#FFFFFF",
                   outline: "none",
                 }}
               />
-              <span   className="absolute text-admin-muted text-[13px] left-3 top-[11px]" >
+              <span className="absolute text-admin-muted text-[13px] left-3 top-[11px]">
                 🔍
               </span>
+              {search && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearch("");
+                    if (typeof window !== "undefined" && window.history.replaceState) {
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete("search");
+                      window.history.replaceState({}, "", url.toString());
+                    }
+                  }}
+                  style={{
+                    position: "absolute",
+                    right: "10px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    backgroundColor: "rgba(212, 175, 55, 0.2)",
+                    border: "1px solid rgba(212, 175, 55, 0.4)",
+                    borderRadius: "50%",
+                    width: "20px",
+                    height: "20px",
+                    color: "#D4AF37",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "10px",
+                    fontWeight: "bold",
+                  }}
+                  title="Clear Search"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             <select
@@ -189,6 +239,57 @@ export default function AdminUsersPage() {
             <span>Add Candidate</span>
           </button>
         </div>
+
+        {search.trim() && (
+          <div
+            style={{
+              backgroundColor: "rgba(212, 175, 55, 0.12)",
+              border: "1px solid rgba(212, 175, 55, 0.4)",
+              borderRadius: "14px",
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "10px",
+              color: "#F3E5AB",
+              fontSize: "13.5px",
+              fontWeight: 600,
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span>🔍</span>
+              <span>
+                Search filter active: &ldquo;<strong>{search}</strong>&rdquo; &mdash; showing <strong>{filteredUsers.length}</strong> of {users.length} registered members
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSearch("");
+                if (typeof window !== "undefined" && window.history.replaceState) {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete("search");
+                  window.history.replaceState({}, "", url.toString());
+                }
+              }}
+              style={{
+                backgroundColor: "rgba(212, 175, 55, 0.2)",
+                border: "1px solid rgba(212, 175, 55, 0.5)",
+                color: "#FFFFFF",
+                borderRadius: "8px",
+                padding: "6px 14px",
+                fontSize: "12px",
+                fontWeight: 700,
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              className="hover:bg-[#D4AF37] hover:text-[#041026]"
+            >
+              Clear Search Filter ✕
+            </button>
+          </div>
+        )}
 
         {error && (
           <div style={{

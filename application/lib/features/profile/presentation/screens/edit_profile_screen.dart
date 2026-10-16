@@ -69,8 +69,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   String _education = 'Select Degree';
   String _customEducation = '';
-  String _employmentType = 'Government Sector (સરકારી નોકરી / સેકટર)';
-  String _department = 'State Government (રાજ્ય સરકાર)';
+  String _employmentType = 'Private Sector (ખાનગી નોકરી / સેકટર)';
+  String _department = '';
   String _govCategory = 'Select Category';
   String _customGovCategory = '';
   String _businessIndustry = 'Select Industry';
@@ -335,7 +335,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _pargana = profile.pargana.isNotEmpty ? profile.pargana : 'Select Pargana';
               _nativePlace = profile.nativePlace;
               _education = profile.education.isNotEmpty ? profile.education : 'Select Degree';
-              _employmentType = profile.employmentType.isNotEmpty ? profile.employmentType : 'Government Sector (સરકારી નોકરી / સેકટર)';
+              _employmentType = profile.employmentType.isNotEmpty ? profile.employmentType : 'Private Sector (ખાનગી નોકરી / સેકટર)';
               _department = profile.department;
               _companyName = profile.department;
               _businessIndustry = (profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty) ? profile.businessIndustry! : 'Select Industry';
@@ -580,7 +580,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ),
               _buildDropdownField(
                 'Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 
-                'Government Sector (સરકારી નોકરી / સેકટર)', 
+                'Select Employment Type (નોકરી / વ્યવસાય પ્રકાર પસંદ કરો)', 
                 Icons.work_outline, 
                 ['Government Sector (સરકારી નોકરી / સેકટર)', 'Private Sector (ખાનગી નોકરી / સેકટર)', 'Business / Self-Employed (વ્યવસાય / સ્વરોજગાર)', 'Not Working (કોઈ નોકરી નથી)'],
                 value: _employmentType,

@@ -72,8 +72,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String _lastName = '';
   String _education = 'Select Degree';
   String _customEducation = '';
-  String _employmentType = 'Government Sector (સરકારી નોકરી / સેકટર)';
-  String _department = 'State Government (રાજ્ય સરકાર)';
+  String _employmentType = 'Private Sector (ખાનગી નોકરી / સેકટર)';
+  String _department = '';
   String _govCategory = 'Select Category';
   String _customGovCategory = '';
   String _businessIndustry = 'Select Industry';
@@ -899,7 +899,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 ),
               _buildDropdownField(
                 'Employment Type / Work Sector (નોકરી / વ્યવસાય...)', 
-                'Government Sector (સરકારી નોકરી / સેકટર)', 
+                'Select Employment Type (નોકરી / વ્યવસાય પ્રકાર પસંદ કરો)', 
                 Icons.work_outline, 
                 ['Government Sector (સરકારી નોકરી / સેકટર)', 'Private Sector (ખાનગી નોકરી / સેકટર)', 'Business / Self-Employed (વ્યવસાય / સ્વરોજગાર)', 'Not Working (કોઈ નોકરી નથી)'],
                 value: _employmentType,

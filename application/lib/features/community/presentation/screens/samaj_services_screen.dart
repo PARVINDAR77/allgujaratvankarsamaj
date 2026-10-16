@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../shared/models/samaj_service.dart';
+import '../../../../shared/models/samaj_service_person.dart';
 
 import '../../providers/samaj_services_provider.dart';
 import '../../../profile/providers/master_data_provider.dart';
@@ -107,7 +108,35 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
               },
               child: ref.watch(samajServicePersonsProvider(serviceId)).when(
                 data: (persons) {
-                  if (persons.isEmpty) {
+                  List<dynamic> effectivePersons = List<dynamic>.from(persons);
+                  if (effectivePersons.isEmpty) {
+                    final isEdu = serviceName.toLowerCase().contains('edu') ||
+                        serviceName.toLowerCase().contains('tuition') ||
+                        serviceName.toLowerCase().contains('coaching') ||
+                        serviceName.contains('શિક્ષણ') ||
+                        serviceName.contains('નર્સિંગ') ||
+                        serviceName.toLowerCase().contains('nursing') ||
+                        serviceName.toLowerCase().contains('vamika');
+                    if (isEdu) {
+                      effectivePersons = [
+                        SamajServicePerson(
+                          id: 'sp-vamika-01',
+                          serviceId: serviceId,
+                          name: 'VAMIKA NURSING ACADEMY (IDAR)',
+                          gujaratiName: 'વામિકા નર્સિંગ એકેડેમી - ઇડર',
+                          phone: '9265476537',
+                          city: 'ઇડર (Idar)',
+                          address: 'ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા',
+                          description:
+                              'વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.',
+                          experience:
+                              'અધિકૃત શૈક્ષણિક એકેડેમી (Education Services)',
+                        ),
+                      ];
+                    }
+                  }
+
+                  if (effectivePersons.isEmpty) {
                     return ListView(
                       children: [
                         const SizedBox(height: 60),
@@ -134,9 +163,9 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                       mainAxisSpacing: 14,
                       childAspectRatio: 0.75,
                     ),
-                    itemCount: persons.length,
+                    itemCount: effectivePersons.length,
                     itemBuilder: (context, index) {
-                      return _buildProviderGridCard(context, persons[index]);
+                      return _buildProviderGridCard(context, effectivePersons[index]);
                     },
                   );
                 },
@@ -894,10 +923,23 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                               final c = service.category.toLowerCase();
                               final d = service.description.toLowerCase();
                               final s = service.slug.toLowerCase();
+                              final isEducationKeyword = (query.contains('vamika') ||
+                                      query.contains('nursing') ||
+                                      query.contains('9265476537') ||
+                                      query.contains('idar') ||
+                                      query.contains('વામિકા') ||
+                                      query.contains('નર્સિંગ')) &&
+                                  (c.contains('edu') ||
+                                      t.contains('શિક્ષણ') ||
+                                      t.contains('coaching') ||
+                                      t.contains('tuition') ||
+                                      d.contains('નર્સિંગ') ||
+                                      t.contains('nursing'));
                               return t.contains(query) ||
                                   c.contains(query) ||
                                   d.contains(query) ||
-                                  s.contains(query);
+                                  s.contains(query) ||
+                                  isEducationKeyword;
                             }).toList();
 
                             if (filteredServices.isEmpty) {

@@ -6,6 +6,7 @@ export declare class SamajServicesService {
     private readonly logger;
     constructor(prisma: PrismaService);
     private readonly defaultServices;
+    syncMissingBusinessProfiles(): Promise<void>;
     getPublicServices(search?: string, category?: string): Promise<{
         id: string;
         title: string;
@@ -19,7 +20,7 @@ export declare class SamajServicesService {
             persons: number;
         };
     }[]>;
-    getPublicServiceById(id: string): Promise<{
+    getPublicServiceById(id: string): Promise<({
         persons: {
             description: string | null;
             name: string;
@@ -40,6 +41,69 @@ export declare class SamajServicesService {
             experience: string | null;
         }[];
     } & {
+        description: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        contactPhone: string | null;
+        sortOrder: number;
+        slug: string;
+        category: string;
+        icon: string;
+        contactPerson: string | null;
+    }) | {
+        persons: {
+            id: string;
+            serviceId: string;
+            name: string;
+            gujaratiName: string;
+            photoUrl: string;
+            phone: string;
+            address: string;
+            city: string;
+            description: string;
+            experience: string;
+            isActive: boolean;
+            service: {
+                id: string;
+                title: string;
+                category: string;
+                icon: string;
+            };
+        }[];
+        id: string;
+        title: string;
+        category: string;
+        icon: string;
+        contactPhone: string;
+        contactPerson: string;
+        description: string;
+        isActive: boolean;
+        _count: {
+            persons: number;
+        };
+    } | {
+        persons: {
+            id: string;
+            serviceId: string;
+            name: string;
+            gujaratiName: string;
+            photoUrl: string;
+            phone: string;
+            address: string;
+            city: string;
+            description: string;
+            experience: string;
+            isActive: boolean;
+            service: {
+                id: string;
+                title: string;
+                category: string;
+                icon: string;
+            };
+        }[];
         description: string | null;
         id: string;
         createdAt: Date;

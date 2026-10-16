@@ -31,6 +31,16 @@ export default function AdminVerificationsPage() {
     fetchVerifications();
   }, []);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlSearch = urlParams.get("search");
+      if (urlSearch) {
+        setSearch(urlSearch);
+      }
+    }
+  }, []);
+
   const updateStatus = async (id: string, action: string) => {
     let reason;
     if (action === "REJECTED") {
@@ -90,13 +100,47 @@ export default function AdminVerificationsPage() {
                 backgroundColor: "#041026",
                 border: "1px solid rgba(212, 175, 55, 0.35)",
                 borderRadius: "12px",
-                padding: "10px 14px 10px 38px",
+                padding: "10px 36px 10px 38px",
                 fontSize: "12px",
                 color: "#FFFFFF",
                 outline: "none",
               }}
             />
             <span className="absolute text-admin-muted text-[13px] left-3 top-[11px]">🔍</span>
+            {search && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearch("");
+                  if (typeof window !== "undefined" && window.history.replaceState) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete("search");
+                    window.history.replaceState({}, "", url.toString());
+                  }
+                }}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  backgroundColor: "rgba(212, 175, 55, 0.2)",
+                  border: "1px solid rgba(212, 175, 55, 0.4)",
+                  borderRadius: "50%",
+                  width: "20px",
+                  height: "20px",
+                  color: "#D4AF37",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "10px",
+                  fontWeight: "bold",
+                }}
+                title="Clear Search"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
           <div className="flex gap-2">

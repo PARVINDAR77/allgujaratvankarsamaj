@@ -8,6 +8,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthController = void 0;
 const common_1 = require("@nestjs/common");
@@ -20,8 +23,23 @@ let HealthController = class HealthController {
     async getHealth() {
         return this.healthService.checkHealth();
     }
-    async syncSchema() {
-        return this.healthService.syncDatabaseSchema();
+    async cookieTest(res) {
+        if (process.env.NODE_ENV !== "staging" || process.env.ENABLE_STAGING_TEST_ROUTES !== "true") {
+            throw new common_1.NotFoundException("Endpoint available only in staging environment with explicit test flag");
+        }
+        res.cookie("stg_test_a", "val_alpha", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            path: "/",
+        });
+        res.cookie("stg_test_b", "val_beta", {
+            httpOnly: true,
+            secure: true,
+            sameSite: "lax",
+            path: "/",
+        });
+        return { status: "ok", cookieTest: true };
     }
 };
 exports.HealthController = HealthController;
@@ -45,12 +63,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], HealthController.prototype, "getHealth", null);
 __decorate([
-    (0, common_1.Get)("sync-schema"),
-    (0, swagger_1.ApiOperation)({ summary: "Synchronize missing tables and enum columns in database" }),
+    (0, common_1.Get)("cookie-test"),
+    (0, swagger_1.ApiOperation)({ summary: "Staging-only multi-cookie verification endpoint" }),
+    __param(0, (0, common_1.Res)({ passthrough: true })),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], HealthController.prototype, "syncSchema", null);
+], HealthController.prototype, "cookieTest", null);
 exports.HealthController = HealthController = __decorate([
     (0, swagger_1.ApiTags)("Health"),
     (0, common_1.Controller)("health"),

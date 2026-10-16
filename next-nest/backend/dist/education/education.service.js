@@ -45,6 +45,9 @@ let EducationService = EducationService_1 = class EducationService {
         await this.ensureColumnsExist();
     }
     async ensureColumnsExist() {
+        if (process.env.ENABLE_RUNTIME_SCHEMA_SYNC !== "true") {
+            return;
+        }
         const columns = [
             { name: "box5_title", def: "varchar(191) DEFAULT 'શૈક્ષણિક પોસ્ટર અને માહિતી'" },
             { name: "box5_subtitle", def: "varchar(191) DEFAULT 'Educational Poster & Circular Image'" },

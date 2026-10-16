@@ -215,12 +215,15 @@ export class InterestsService {
       throw new NotFoundException("Interest not found");
     }
 
-    if (
-      interest.receiverProfileId !== receiverProfileId &&
-      interest.senderProfileId !== receiverProfileId
-    ) {
+    if (interest.receiverProfileId !== receiverProfileId) {
       throw new BadRequestException(
-        "You can only accept connection requests involving your profile",
+        "તમને મળેલી સંબંધ વિનંતીઓ જ તમે સ્વીકારી શકો છો (You can only accept connection requests sent directly to you)",
+      );
+    }
+
+    if (interest.status !== "PENDING") {
+      throw new BadRequestException(
+        `Cannot accept interest with status "${interest.status}"`,
       );
     }
 
@@ -304,6 +307,12 @@ export class InterestsService {
       );
     }
 
+    if (interest.status !== "PENDING") {
+      throw new BadRequestException(
+        `Cannot decline interest with status "${interest.status}"`,
+      );
+    }
+
     return this.prisma.matchInterest.update({
       where: { id: interestId },
       data: { status: "DECLINED" },
@@ -326,10 +335,27 @@ export class InterestsService {
     });
     const profileMap = new Map(profiles.map((p) => [p.id, p]));
 
-    return interests.map((i) => ({
-      ...i,
-      receiverProfile: profileMap.get(i.receiverProfileId) || null,
-    }));
+    return interests.map((i) => {
+      const p = profileMap.get(i.receiverProfileId);
+      if (!p) return { ...i, receiverProfile: null };
+      if (i.status === "ACCEPTED") {
+        return { ...i, receiverProfile: p };
+      }
+      const { user: _, ...rest } = p as any;
+      return {
+        ...i,
+        receiverProfile: {
+          ...rest,
+          contactPhone: null,
+          contactEmail: null,
+          altPhone: null,
+          fatherContact: null,
+          guardianContact: null,
+          addressLine: null,
+          pincode: null,
+        },
+      };
+    });
   }
 
   async getReceivedInterests(userId: string) {
@@ -348,10 +374,27 @@ export class InterestsService {
     });
     const profileMap = new Map(profiles.map((p) => [p.id, p]));
 
-    return interests.map((i) => ({
-      ...i,
-      senderProfile: profileMap.get(i.senderProfileId) || null,
-    }));
+    return interests.map((i) => {
+      const p = profileMap.get(i.senderProfileId);
+      if (!p) return { ...i, senderProfile: null };
+      if (i.status === "ACCEPTED") {
+        return { ...i, senderProfile: p };
+      }
+      const { user: _, ...rest } = p as any;
+      return {
+        ...i,
+        senderProfile: {
+          ...rest,
+          contactPhone: null,
+          contactEmail: null,
+          altPhone: null,
+          fatherContact: null,
+          guardianContact: null,
+          addressLine: null,
+          pincode: null,
+        },
+      };
+    });
   }
 
   async getMutualInterests(userId: string) {

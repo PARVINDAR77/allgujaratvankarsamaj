@@ -77,6 +77,44 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     ref.read(govtEmployeesProvider.notifier).applyFilter(query);
   }
 
+  bool _isNonGovtEmployee(GovtEmployeeModel emp) {
+    final dept = emp.departmentName.toLowerCase();
+    final deptGu = emp.departmentGujaratiName.toLowerCase();
+    final desig = emp.designationName.toLowerCase();
+    final desigGu = emp.designationGujaratiName.toLowerCase();
+    final loc = (emp.officeLocation ?? '').toLowerCase();
+
+    const forbidden = [
+      'it company',
+      'private',
+      'ખાનગી',
+      'pvt',
+      'ltd',
+      'llp',
+      'business',
+      'વેપાર',
+      'સ્વરોજગાર',
+      'self',
+      'not working',
+      'કોઈ નોકરી નથી',
+    ];
+
+    for (final term in forbidden) {
+      if (dept.contains(term) ||
+          deptGu.contains(term) ||
+          desig.contains(term) ||
+          desigGu.contains(term) ||
+          loc.contains(term)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  List<GovtEmployeeModel> _filterGovtOnly(List<GovtEmployeeModel> items) {
+    return items.where((emp) => !_isNonGovtEmployee(emp)).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     final empState = ref.watch(govtEmployeesProvider);
@@ -627,21 +665,32 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
           ),
           // Pagination info
           if (empState.status == GovtEmployeesStatus.success ||
-              empState.status == GovtEmployeesStatus.loadingMore)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'Showing ${empState.items.length} of ${empState.meta.total} employees',
-                style:
-                    TextStyle(fontSize: 11, color: Colors.grey.shade600),
-              ),
+              empState.status == GovtEmployeesStatus.loadingMore) ...[
+            Builder(
+              builder: (context) {
+                final validItems = _filterGovtOnly(empState.items);
+                final total = validItems.length < empState.items.length
+                    ? validItems.length
+                    : empState.meta.total;
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    'Showing ${validItems.length} of $total employees',
+                    style:
+                        TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                  ),
+                );
+              },
             ),
+          ],
         ],
       ),
     );
   }
 
   Widget _buildBody(GovtEmployeesState empState, bool isDesktop) {
+    final validItems = _filterGovtOnly(empState.items);
+
     switch (empState.status) {
       case GovtEmployeesStatus.initial:
       case GovtEmployeesStatus.loading:
@@ -658,32 +707,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
         );
 
       case GovtEmployeesStatus.empty:
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
-              const SizedBox(height: 16),
-              const Text(
-                'No government employees found.',
-                style: TextStyle(fontSize: 16, color: Colors.black54),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Try adjusting your search or filters.',
-                style: TextStyle(fontSize: 13, color: Colors.black38),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _resetFiltersAndReload,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Reset Filters'),
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0056D2)),
-              ),
-            ],
-          ),
-        );
+        return _buildEmptyState();
 
       case GovtEmployeesStatus.error:
         return Center(
@@ -717,11 +741,43 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       case GovtEmployeesStatus.success:
       case GovtEmployeesStatus.loadingMore:
       case GovtEmployeesStatus.paginationError:
-        return _buildTable(empState, isDesktop);
+        if (validItems.isEmpty && empState.status == GovtEmployeesStatus.success) {
+          return _buildEmptyState();
+        }
+        return _buildTable(empState, validItems, isDesktop);
     }
   }
 
-  Widget _buildTable(GovtEmployeesState empState, bool isDesktop) {
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
+          const SizedBox(height: 16),
+          const Text(
+            'No government employees found.',
+            style: TextStyle(fontSize: 16, color: Colors.black54),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Try adjusting your search or filters.',
+            style: TextStyle(fontSize: 13, color: Colors.black38),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: _resetFiltersAndReload,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Reset Filters'),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0056D2)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTable(GovtEmployeesState empState, List<GovtEmployeeModel> items, bool isDesktop) {
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {
         if (notification is ScrollEndNotification &&
@@ -759,7 +815,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                     _buildHeaderCell('Action\n(વિગત)', const Color(0xFF0056D2), 85),
                   ],
                 ),
-                ...empState.items.asMap().entries.map((entry) {
+                ...items.asMap().entries.map((entry) {
                   final idx = entry.key;
                   final emp = entry.value;
                   final isEven = idx % 2 == 0;
@@ -787,7 +843,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                       ],
                     ),
                   ),
-                if (!empState.meta.hasNextPage && empState.items.isNotEmpty)
+                if (!empState.meta.hasNextPage && items.isNotEmpty)
                   const Padding(
                     padding: EdgeInsets.all(16.0),
                     child: Center(

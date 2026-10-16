@@ -386,18 +386,64 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
     }
     async syncMissingGovtEmployees() {
         try {
+            await this.prisma.governmentEmployment.deleteMany({
+                where: {
+                    OR: [
+                        {
+                            profile: {
+                                OR: [
+                                    { occupation: { contains: "Private" } },
+                                    { occupation: { contains: "ખાનગી" } },
+                                    { occupation: { contains: "Business" } },
+                                    { occupation: { contains: "વેપાર" } },
+                                    { occupation: { contains: "સ્વરોજગાર" } },
+                                    { occupation: { contains: "Not Working" } },
+                                    { occupation: { contains: "કોઈ નોકરી નથી" } },
+                                    { organizationName: { contains: "it company" } },
+                                    { organizationName: { contains: "pvt" } },
+                                    { organizationName: { contains: "private" } },
+                                    { organizationName: { contains: "ખાનગી" } },
+                                    { organizationName: { contains: "ltd" } },
+                                    { organizationName: { contains: "llp" } },
+                                    { designation: { contains: "it company" } },
+                                ],
+                            },
+                        },
+                        { officeLocation: { contains: "it company" } },
+                        { officeLocation: { contains: "pvt" } },
+                        { officeLocation: { contains: "private" } },
+                    ],
+                },
+            });
             const govtProfiles = await this.prisma.matrimonialProfile.findMany({
                 where: {
                     governmentEmployment: null,
+                    status: { not: client_1.ProfileStatus.REJECTED },
+                    NOT: [
+                        { occupation: { contains: "Private" } },
+                        { occupation: { contains: "ખાનગી" } },
+                        { occupation: { contains: "Business" } },
+                        { occupation: { contains: "વેપાર" } },
+                        { occupation: { contains: "સ્વરોજગાર" } },
+                        { occupation: { contains: "Not Working" } },
+                        { occupation: { contains: "કોઈ નોકરી નથી" } },
+                        { organizationName: { contains: "it company" } },
+                        { organizationName: { contains: "pvt" } },
+                        { organizationName: { contains: "private" } },
+                        { organizationName: { contains: "ખાનગી" } },
+                        { organizationName: { contains: "ltd" } },
+                        { organizationName: { contains: "llp" } },
+                        { designation: { contains: "it company" } },
+                    ],
                     OR: [
                         { occupation: { contains: "Gov" } },
                         { occupation: { contains: "સરકારી" } },
                         { organizationName: { contains: "Gov" } },
                         { organizationName: { contains: "સરકારી" } },
-                        { occupation: { contains: "State" } },
-                        { occupation: { contains: "Central" } },
-                        { organizationName: { contains: "State" } },
-                        { organizationName: { contains: "Central" } },
+                        { occupation: { contains: "State Govt" } },
+                        { occupation: { contains: "Central Govt" } },
+                        { organizationName: { contains: "State Govt" } },
+                        { organizationName: { contains: "Central Govt" } },
                     ],
                 },
             });
@@ -450,6 +496,22 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                     status: {
                         not: client_1.ProfileStatus.REJECTED,
                     },
+                    NOT: [
+                        { occupation: { contains: "Private" } },
+                        { occupation: { contains: "ખાનગી" } },
+                        { occupation: { contains: "Business" } },
+                        { occupation: { contains: "વેપાર" } },
+                        { occupation: { contains: "સ્વરોજગાર" } },
+                        { occupation: { contains: "Not Working" } },
+                        { occupation: { contains: "કોઈ નોકરી નથી" } },
+                        { organizationName: { contains: "it company" } },
+                        { organizationName: { contains: "pvt" } },
+                        { organizationName: { contains: "private" } },
+                        { organizationName: { contains: "ખાનગી" } },
+                        { organizationName: { contains: "ltd" } },
+                        { organizationName: { contains: "llp" } },
+                        { designation: { contains: "it company" } },
+                    ],
                 },
             };
             if (query.employmentType && query.employmentType !== "ALL") {
@@ -553,7 +615,25 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                     verificationStatus: {
                         in: [client_1.GovtVerificationStatus.VERIFIED, client_1.GovtVerificationStatus.PENDING],
                     },
-                    profile: { status: { not: client_1.ProfileStatus.REJECTED } },
+                    profile: {
+                        status: { not: client_1.ProfileStatus.REJECTED },
+                        NOT: [
+                            { occupation: { contains: "Private" } },
+                            { occupation: { contains: "ખાનગી" } },
+                            { occupation: { contains: "Business" } },
+                            { occupation: { contains: "વેપાર" } },
+                            { occupation: { contains: "સ્વરોજગાર" } },
+                            { occupation: { contains: "Not Working" } },
+                            { occupation: { contains: "કોઈ નોકરી નથી" } },
+                            { organizationName: { contains: "it company" } },
+                            { organizationName: { contains: "pvt" } },
+                            { organizationName: { contains: "private" } },
+                            { organizationName: { contains: "ખાનગી" } },
+                            { organizationName: { contains: "ltd" } },
+                            { organizationName: { contains: "llp" } },
+                            { designation: { contains: "it company" } },
+                        ],
+                    },
                 },
                 take: 10,
                 include: {
@@ -602,11 +682,30 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
     }
     async getAdminGovtEmployees(page = 1, limit = 20, status) {
         await this.syncMissingGovtEmployees();
-        const skip = (page - 1) * limit;
-        const whereCondition = {};
+        const whereCondition = {
+            profile: {
+                NOT: [
+                    { occupation: { contains: "Private" } },
+                    { occupation: { contains: "ખાનગી" } },
+                    { occupation: { contains: "Business" } },
+                    { occupation: { contains: "વેપાર" } },
+                    { occupation: { contains: "સ્વરોજગાર" } },
+                    { occupation: { contains: "Not Working" } },
+                    { occupation: { contains: "કોઈ નોકરી નથી" } },
+                    { organizationName: { contains: "it company" } },
+                    { organizationName: { contains: "pvt" } },
+                    { organizationName: { contains: "private" } },
+                    { organizationName: { contains: "ખાનગી" } },
+                    { organizationName: { contains: "ltd" } },
+                    { organizationName: { contains: "llp" } },
+                    { designation: { contains: "it company" } },
+                ],
+            },
+        };
         if (status && status !== "ALL") {
             whereCondition.verificationStatus = status;
         }
+        const skip = (page - 1) * limit;
         const [items, total] = await Promise.all([
             this.prisma.governmentEmployment.findMany({
                 where: whereCondition,
@@ -783,13 +882,18 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
             : null;
         const currentYear = new Date().getFullYear();
         const calculatedAge = birthYear ? currentYear - birthYear : null;
+        const rawOrg = p.organizationName || "";
+        const isPrivateOrg = rawOrg.toLowerCase().includes("it company") ||
+            rawOrg.toLowerCase().includes("private") ||
+            rawOrg.toLowerCase().includes("pvt") ||
+            rawOrg.toLowerCase().includes("ખાનગી");
         const deptName = emp.department?.name ||
-            p.organizationName ||
+            (!isPrivateOrg && rawOrg ? rawOrg : null) ||
             (emp.employmentType === "CENTRAL_GOVT"
                 ? "Central Government"
                 : "State Government");
         const deptGujarati = emp.department?.gujaratiName ||
-            p.organizationName ||
+            (!isPrivateOrg && rawOrg ? rawOrg : null) ||
             (emp.employmentType === "CENTRAL_GOVT"
                 ? "કેન્દ્ર સરકાર"
                 : "રાજ્ય સરકાર");

@@ -1,3 +1,4 @@
+import { Response } from "express";
 import { VerificationsService } from "./verifications.service";
 import { UpdateVerificationStatusDto } from "./dto/update-verification.dto";
 export declare class VerificationsController {
@@ -30,6 +31,7 @@ export declare class VerificationsController {
             createdAt: Date;
         };
     }>;
+    getMyVerificationDocument(req: any, filename: string, res: Response): Promise<void>;
 }
 export declare class AdminVerificationsController {
     private readonly verificationsService;
@@ -48,6 +50,7 @@ export declare class AdminVerificationsController {
             pargana: any;
         };
     }[]>;
+    getVerificationDocumentAdmin(filename: string, res: Response): Promise<void>;
     updateStatusAdmin(req: any, id: string, dto: UpdateVerificationStatusDto): Promise<{
         status: import(".prisma/client").$Enums.VerificationStatus;
         id: string;

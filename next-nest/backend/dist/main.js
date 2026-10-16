@@ -6,10 +6,10 @@ const core_1 = require("@nestjs/core");
 const swagger_1 = require("@nestjs/swagger");
 const app_module_1 = require("./app.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
+const cors_validator_1 = require("./common/validators/cors.validator");
+const static_media_middleware_1 = require("./common/middleware/static-media.middleware");
 const helmet_1 = require("helmet");
 const morgan = require("morgan");
-const express = require("express");
-const path_1 = require("path");
 const cookieParser = require("cookie-parser");
 async function bootstrap() {
     const logger = new common_1.Logger("Bootstrap");
@@ -37,22 +37,23 @@ async function bootstrap() {
     const nodeEnv = configService.get("NODE_ENV", "development");
     const allowedOriginsStr = configService.get("ALLOWED_ORIGINS", "");
     let corsOrigin = true;
-    if (nodeEnv === "production" && allowedOriginsStr) {
-        corsOrigin = allowedOriginsStr.split(",").map((o) => o.trim());
+    if (nodeEnv === "production" || nodeEnv === "staging") {
+        try {
+            const validatedOrigins = (0, cors_validator_1.validateAndNormalizeAllowedOrigins)(allowedOriginsStr, nodeEnv);
+            corsOrigin = validatedOrigins;
+            logger.log(`CORS origin allowlist strictly enforced for ${nodeEnv} (${validatedOrigins.length} origins): ${validatedOrigins.join(", ")}`);
+        }
+        catch (err) {
+            logger.error(`FATAL: CORS origin configuration error in ${nodeEnv}: ${err.message}. Halting bootstrap.`);
+            process.exit(1);
+        }
     }
     app.enableCors({
         origin: corsOrigin,
         credentials: true,
     });
-    const uploadStaticMiddleware = express.static((0, path_1.join)(process.cwd(), "uploads"), {
-        setHeaders: (res) => {
-            res.set("Access-Control-Allow-Origin", "*");
-            res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-            res.set("Cross-Origin-Resource-Policy", "cross-origin");
-        },
-    });
-    app.use("/uploads", uploadStaticMiddleware);
-    app.use("/api/v1/uploads", uploadStaticMiddleware);
+    app.use("/uploads", static_media_middleware_1.servePublicStaticMedia);
+    app.use("/api/v1/uploads", static_media_middleware_1.servePublicStaticMedia);
     app.setGlobalPrefix("api/v1");
     const config = new swagger_1.DocumentBuilder()
         .setTitle("All Gujarat Vankar Samaj Matrimony API")

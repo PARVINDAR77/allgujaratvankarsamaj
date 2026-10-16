@@ -13,6 +13,9 @@ exports.VerificationsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const fs = require("fs");
+const fsPromises = require("fs/promises");
+const path = require("path");
 let VerificationsService = class VerificationsService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -227,6 +230,122 @@ let VerificationsService = class VerificationsService {
                 }
                 : null,
         };
+    }
+    async servePrivateDocument(filename, res) {
+        if (!filename ||
+            !/^[a-zA-Z0-9_\-.]+\.(jpg|jpeg|png|webp|pdf)$/i.test(filename) ||
+            filename.includes("..")) {
+            throw new common_1.BadRequestException("Invalid document filename format");
+        }
+        const privateDir = path.resolve(process.cwd(), "private_uploads");
+        const targetFile = path.resolve(privateDir, filename);
+        if (!targetFile.startsWith(privateDir + path.sep)) {
+            throw new common_1.ForbiddenException("Access outside private document storage is forbidden");
+        }
+        let fileHandle = null;
+        try {
+            const privateDirLstat = await fsPromises.lstat(privateDir);
+            if (privateDirLstat.isSymbolicLink() || !privateDirLstat.isDirectory()) {
+                throw new common_1.ForbiddenException("Private document storage directory is invalid or a symlink");
+            }
+            const canonicalPrivateDir = await fsPromises.realpath(privateDir);
+            const targetLstat = await fsPromises.lstat(targetFile);
+            if (targetLstat.isSymbolicLink() || !targetLstat.isFile()) {
+                throw new common_1.ForbiddenException("Target document is a symlink or non-regular file");
+            }
+            if (process.platform !== "win32") {
+                if (typeof fs.constants.O_NOFOLLOW !== "number" || fs.constants.O_NOFOLLOW === 0) {
+                    throw new Error("Security invariant violated: O_NOFOLLOW is required on POSIX platform");
+                }
+            }
+            const openFlags = fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0);
+            fileHandle = await fsPromises.open(targetFile, openFlags);
+            const handleStat = await fileHandle.stat();
+            if (!handleStat.isFile()) {
+                await fileHandle.close();
+                throw new common_1.ForbiddenException("Invalid file type or non-regular file detected");
+            }
+            const canonicalTarget = await fsPromises.realpath(targetFile);
+            if (!canonicalTarget.startsWith(canonicalPrivateDir + path.sep)) {
+                await fileHandle.close();
+                throw new common_1.ForbiddenException("Canonical file path escapes private storage");
+            }
+            const canonicalStat = await fsPromises.stat(canonicalTarget);
+            if (handleStat.dev !== canonicalStat.dev || handleStat.ino !== canonicalStat.ino) {
+                await fileHandle.close();
+                throw new common_1.ForbiddenException("File descriptor device/inode does not match canonical document");
+            }
+            const ext = path.extname(filename).toLowerCase();
+            const mimeTypes = {
+                ".pdf": "application/pdf",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".png": "image/png",
+                ".webp": "image/webp",
+            };
+            const contentType = mimeTypes[ext] || "application/octet-stream";
+            res.set({
+                "Content-Type": contentType,
+                "Content-Length": handleStat.size.toString(),
+                "Content-Disposition": `inline; filename="${filename}"`,
+                "Cache-Control": "private, no-cache, no-store, must-revalidate",
+                "X-Content-Type-Options": "nosniff",
+            });
+            let isCleanedUp = false;
+            const cleanupHandle = async () => {
+                if (!isCleanedUp && fileHandle) {
+                    isCleanedUp = true;
+                    await fileHandle.close().catch(() => { });
+                }
+            };
+            const fileStream = fileHandle.createReadStream();
+            res.on("close", () => {
+                if (!fileStream.destroyed) {
+                    fileStream.destroy();
+                }
+                cleanupHandle();
+            });
+            fileStream.on("error", () => {
+                cleanupHandle();
+                if (!res.headersSent) {
+                    res.status(500).json({ statusCode: 500, error: "Internal Server Error", message: "Failed to stream document safely." });
+                }
+            });
+            fileStream.on("end", () => {
+                cleanupHandle();
+            });
+            fileStream.pipe(res);
+        }
+        catch (err) {
+            if (fileHandle) {
+                await fileHandle.close().catch(() => { });
+            }
+            if (err.code === "ENOENT") {
+                throw new common_1.NotFoundException("Verification document not found");
+            }
+            if (err.code === "ELOOP" || err.code === "EACCES" || err.code === "EPERM") {
+                throw new common_1.ForbiddenException("Symbolic links and unauthorized access are forbidden");
+            }
+            throw err;
+        }
+    }
+    async serveCandidatePrivateDocument(userId, filename, res) {
+        const profile = await this.prisma.matrimonialProfile.findUnique({
+            where: { userId },
+        });
+        if (!profile) {
+            throw new common_1.NotFoundException("Profile not found");
+        }
+        const verification = await this.prisma.verificationRequest.findFirst({
+            where: {
+                profileId: profile.id,
+                documentUrl: { contains: filename },
+            },
+        });
+        if (!verification) {
+            throw new common_1.ForbiddenException("You are not authorized to view this document");
+        }
+        return this.servePrivateDocument(filename, res);
     }
 };
 exports.VerificationsService = VerificationsService;

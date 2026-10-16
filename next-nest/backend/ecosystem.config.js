@@ -15,10 +15,12 @@ module.exports = {
       env: {
         NODE_ENV: "production",
         SOCKET_PATH: "/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock",
+        ALLOWED_ORIGINS: "https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com",
       },
       env_production: {
         NODE_ENV: "production",
         SOCKET_PATH: "/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock",
+        ALLOWED_ORIGINS: "https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com",
       },
       log_date_format: "YYYY-MM-DD HH:mm:ss Z",
       error_file: "./logs/pm2-error.log",

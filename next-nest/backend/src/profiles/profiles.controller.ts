@@ -35,30 +35,30 @@ export class ProfilesController {
   @Public()
   @Get()
   @ApiOperation({ summary: "List and search matrimonial candidate profiles" })
-  async getProfiles(@Query() query: BaseProfileQueryDto) {
-    return this.profilesService.getProfiles(query);
+  async getProfiles(@Query() query: BaseProfileQueryDto, @Request() req: any) {
+    return this.profilesService.getProfiles(query, req?.user);
   }
 
   @Public()
   @Post("search-query")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Search candidate profiles with detailed query (POST)" })
-  async searchQueryPost(@Body() query: SearchQueryDto) {
-    return this.profilesService.searchProfiles(query);
+  async searchQueryPost(@Body() query: SearchQueryDto, @Request() req: any) {
+    return this.profilesService.searchProfiles(query, req?.user);
   }
 
   @Public()
   @Get("search-query")
   @ApiOperation({ summary: "Search candidate profiles with detailed query (GET)" })
-  async searchQueryGet(@Query() query: SearchQueryDto) {
-    return this.profilesService.searchProfiles(query);
+  async searchQueryGet(@Query() query: SearchQueryDto, @Request() req: any) {
+    return this.profilesService.searchProfiles(query, req?.user);
   }
 
   @Public()
   @Get("family-directory")
   @ApiOperation({ summary: "Get live family directory aggregated from profiles" })
-  async getFamilyDirectory(@Query("search") search?: string) {
-    return this.profilesService.getFamilyDirectory(search);
+  async getFamilyDirectory(@Query("search") search: string | undefined, @Request() req: any) {
+    return this.profilesService.getFamilyDirectory(search, req?.user);
   }
 
   @Get("reference-data")
@@ -165,6 +165,6 @@ export class ProfilesController {
   })
   @ApiResponse({ status: 404, description: "Profile not found" })
   async getProfileById(@Request() req: any) {
-    return this.profilesService.getProfileById(req.params.id);
+    return this.profilesService.getProfileById(req.params.id, req.user);
   }
 }

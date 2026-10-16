@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common";
@@ -12,6 +13,10 @@ import {
   MaritalStatus,
   ProfileStatus,
 } from "@prisma/client";
+import * as fs from "fs";
+import * as fsPromises from "fs/promises";
+import * as path from "path";
+
 
 @Injectable()
 export class VerificationsService {
@@ -279,4 +284,159 @@ export class VerificationsService {
         : null,
     };
   }
+
+  /**
+   * Serve Private Verification Document
+   * Restricts access to authorized callers.
+   * Checks file existence, symlink absence, and canonical realpath containment.
+   */
+  async servePrivateDocument(filename: string, res: any) {
+    if (
+      !filename ||
+      !/^[a-zA-Z0-9_\-.]+\.(jpg|jpeg|png|webp|pdf)$/i.test(filename) ||
+      filename.includes("..")
+    ) {
+      throw new BadRequestException("Invalid document filename format");
+    }
+
+    const privateDir = path.resolve(process.cwd(), "private_uploads");
+    const targetFile = path.resolve(privateDir, filename);
+
+    if (!targetFile.startsWith(privateDir + path.sep)) {
+      throw new ForbiddenException("Access outside private document storage is forbidden");
+    }
+
+    let fileHandle: fsPromises.FileHandle | null = null;
+    try {
+      // 1. Verify private directory is a genuine directory and not a symlink
+      const privateDirLstat = await fsPromises.lstat(privateDir);
+      if (privateDirLstat.isSymbolicLink() || !privateDirLstat.isDirectory()) {
+        throw new ForbiddenException("Private document storage directory is invalid or a symlink");
+      }
+      const canonicalPrivateDir = await fsPromises.realpath(privateDir);
+
+      // 2. Verify target file is a regular file and not a symlink before opening
+      const targetLstat = await fsPromises.lstat(targetFile);
+      if (targetLstat.isSymbolicLink() || !targetLstat.isFile()) {
+        throw new ForbiddenException("Target document is a symlink or non-regular file");
+      }
+
+      // 3. Fail closed on POSIX if O_NOFOLLOW is unsupported
+      if (process.platform !== "win32") {
+        if (typeof fs.constants.O_NOFOLLOW !== "number" || fs.constants.O_NOFOLLOW === 0) {
+          throw new Error("Security invariant violated: O_NOFOLLOW is required on POSIX platform");
+        }
+      }
+
+      const openFlags = fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0);
+      fileHandle = await fsPromises.open(targetFile, openFlags);
+      const handleStat = await fileHandle.stat();
+
+      if (!handleStat.isFile()) {
+        await fileHandle.close();
+        throw new ForbiddenException("Invalid file type or non-regular file detected");
+      }
+
+      // 4. Verify canonical realpath containment inside private_uploads
+      const canonicalTarget = await fsPromises.realpath(targetFile);
+      if (!canonicalTarget.startsWith(canonicalPrivateDir + path.sep)) {
+        await fileHandle.close();
+        throw new ForbiddenException("Canonical file path escapes private storage");
+      }
+
+      // 5. Inode & Device Consistency Check (Defeats TOCTOU races)
+      const canonicalStat = await fsPromises.stat(canonicalTarget);
+      if (handleStat.dev !== canonicalStat.dev || handleStat.ino !== canonicalStat.ino) {
+        await fileHandle.close();
+        throw new ForbiddenException("File descriptor device/inode does not match canonical document");
+      }
+
+      const ext = path.extname(filename).toLowerCase();
+      const mimeTypes: Record<string, string> = {
+        ".pdf": "application/pdf",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".png": "image/png",
+        ".webp": "image/webp",
+      };
+      const contentType = mimeTypes[ext] || "application/octet-stream";
+
+      res.set({
+        "Content-Type": contentType,
+        "Content-Length": handleStat.size.toString(),
+        "Content-Disposition": `inline; filename="${filename}"`,
+        "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        "X-Content-Type-Options": "nosniff",
+      });
+
+      // 6. Streaming Lifecycle & Safe File Handle Cleanup
+      let isCleanedUp = false;
+      const cleanupHandle = async () => {
+        if (!isCleanedUp && fileHandle) {
+          isCleanedUp = true;
+          await fileHandle.close().catch(() => {});
+        }
+      };
+
+      const fileStream = fileHandle.createReadStream();
+
+      res.on("close", () => {
+        if (!fileStream.destroyed) {
+          fileStream.destroy();
+        }
+        cleanupHandle();
+      });
+
+      fileStream.on("error", () => {
+        cleanupHandle();
+        if (!res.headersSent) {
+          res.status(500).json({ statusCode: 500, error: "Internal Server Error", message: "Failed to stream document safely." });
+        }
+      });
+
+      fileStream.on("end", () => {
+        cleanupHandle();
+      });
+
+      fileStream.pipe(res);
+    } catch (err: any) {
+      if (fileHandle) {
+        await fileHandle.close().catch(() => {});
+      }
+      if (err.code === "ENOENT") {
+        throw new NotFoundException("Verification document not found");
+      }
+      if (err.code === "ELOOP" || err.code === "EACCES" || err.code === "EPERM") {
+        throw new ForbiddenException("Symbolic links and unauthorized access are forbidden");
+      }
+      throw err;
+    }
+  }
+
+  /**
+   * Serve Candidate's Own Private Document
+   * Verifies that the authenticated candidate owns the requested verification record.
+   */
+  async serveCandidatePrivateDocument(userId: string, filename: string, res: any) {
+    const profile = await this.prisma.matrimonialProfile.findUnique({
+      where: { userId },
+    });
+    if (!profile) {
+      throw new NotFoundException("Profile not found");
+    }
+
+    const verification = await this.prisma.verificationRequest.findFirst({
+      where: {
+        profileId: profile.id,
+        documentUrl: { contains: filename },
+      },
+    });
+
+    if (!verification) {
+      throw new ForbiddenException("You are not authorized to view this document");
+    }
+
+    return this.servePrivateDocument(filename, res);
+  }
 }
+

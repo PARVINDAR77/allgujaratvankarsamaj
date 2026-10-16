@@ -108,14 +108,14 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
             },
             {
                 id: "srv-009",
-                title: "ટ્યુશન ક્લાસીસ અને સ્પર્ધાત્મક પરીક્ષા કોચિંગ",
+                title: "શિક્ષણ સેવાઓ અને નર્સિંગ એકેડેમી (Education Services & Coaching)",
                 category: "Education Services",
-                icon: "📚",
-                contactPhone: "+91 98989 98989",
-                contactPerson: "પ્રો. સંજયભાઈ વણકર",
-                description: "ધો. ૧ થી ૧૨ ટ્યુશન, GPSC/TET/TAT/SSC પરીક્ષા માર્ગદર્શન અને પુસ્તક સહાય.",
+                icon: "🎓",
+                contactPhone: "+91 92654 76537",
+                contactPerson: "વામિકા નર્સિંગ એકેડેમી (Vamika Nursing Academy - Idar)",
+                description: "નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન, ધો. ૧ થી ૧૨ ટ્યુશન અને ઉચ્ચ શિક્ષણ સહાય.",
                 isActive: true,
-                _count: { persons: 24 },
+                _count: { persons: 25 },
             },
             {
                 id: "srv-010",
@@ -185,6 +185,25 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
             },
         ];
         this.defaultPersons = [
+            {
+                id: "sp-vamika-01",
+                serviceId: "srv-009",
+                name: "VAMIKA NURSING ACADEMY (IDAR)",
+                gujaratiName: "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ સેવાઓ)",
+                photoUrl: "https://picsum.photos/seed/nursing1/200/200",
+                phone: "+91 92654 76537",
+                address: "ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા",
+                city: "ઇડર (Idar)",
+                description: "વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.",
+                experience: "અધિકૃત શૈક્ષણિક એકેડેમી (Education Services)",
+                isActive: true,
+                service: {
+                    id: "srv-009",
+                    title: "શિક્ષણ સેવાઓ અને નર્સિંગ એકેડેમી (Education Services & Coaching)",
+                    category: "Education Services",
+                    icon: "🎓",
+                },
+            },
             {
                 id: "sp-001",
                 serviceId: "srv-001",
@@ -282,11 +301,229 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
             },
         ];
     }
+    async syncMissingBusinessProfiles() {
+        try {
+            let eduService = await this.prisma.samajService.findFirst({
+                where: {
+                    OR: [
+                        { title: { contains: "Education Services" } },
+                        { title: { contains: "શિક્ષણ સેવાઓ" } },
+                        { slug: "education-services" },
+                    ],
+                },
+            });
+            if (!eduService) {
+                eduService = await this.prisma.samajService.create({
+                    data: {
+                        title: "શિક્ષણ સેવાઓ અને એકેડેમી (Education Services)",
+                        slug: "education-services",
+                        category: "Education Services",
+                        icon: "🎓",
+                        contactPhone: "9265476537",
+                        contactPerson: "વામિકા નર્સિંગ એકેડેમી (Vamika Nursing Academy)",
+                        description: "નર્સિંગ પ્રવેશ, કોચિંગ ક્લાસીસ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને શિક્ષણ સહાય સેવાઓ.",
+                        isActive: true,
+                        sortOrder: 1,
+                    },
+                });
+                this.logger.log(`Created main Education Services: ${eduService.id}`);
+            }
+            let tuitionService = await this.prisma.samajService.findFirst({
+                where: {
+                    OR: [
+                        { title: { contains: "Tuition" } },
+                        { title: { contains: "ટ્યુશન" } },
+                        { title: { contains: "Coaching" } },
+                    ],
+                },
+            });
+            if (!tuitionService) {
+                tuitionService = await this.prisma.samajService.create({
+                    data: {
+                        title: "ટ્યુશન અને કોચિંગ ક્લાસીસ (Tuition / Coaching)",
+                        slug: "tuition-coaching-classes",
+                        category: "Education Services",
+                        icon: "📚",
+                        contactPhone: "9265476537",
+                        contactPerson: "વામિકા નર્સિંગ એકેડેમી",
+                        description: "નર્સિંગ, ધોરણ ૧ થી ૧૨ ટ્યુશન, GPSC/TET/TAT અને સ્પર્ધાત્મક પરીક્ષા કોચિંગ.",
+                        isActive: true,
+                        sortOrder: 2,
+                    },
+                });
+            }
+            const profiles = await this.prisma.matrimonialProfile.findMany({
+                where: {
+                    status: { not: "REJECTED" },
+                    OR: [
+                        { occupation: { contains: "Business" } },
+                        { occupation: { contains: "Self" } },
+                        { occupation: { contains: "વેપાર" } },
+                        { occupation: { contains: "સ્વરોજગાર" } },
+                        { businessIndustry: { not: null } },
+                        { businessService: { not: null } },
+                        { firstName: { contains: "VAMIKA" } },
+                        { firstName: { contains: "NURSING" } },
+                        { firstName: { contains: "ACADEMY" } },
+                        { organizationName: { not: null } },
+                    ],
+                },
+                include: {
+                    user: {
+                        select: { phone: true, email: true },
+                    },
+                },
+            });
+            for (const p of profiles) {
+                const occ = (p.occupation || "").toLowerCase();
+                const bizInd = (p.businessIndustry || "").toLowerCase();
+                const bizSvc = (p.businessService || "").toLowerCase();
+                const orgName = (p.organizationName || "").trim();
+                const fName = (p.firstName || "").trim();
+                const lName = (p.lastName || "").trim();
+                const combined = `${fName} ${lName} ${orgName} ${p.about || ""} ${bizInd} ${bizSvc}`.toLowerCase();
+                const isVamika = combined.includes("vamika") ||
+                    combined.includes("nursing") ||
+                    combined.includes("academy") ||
+                    (p.user?.phone && p.user.phone.includes("9265476537")) ||
+                    (p.altPhone && p.altPhone.includes("9265476537")) ||
+                    (p.fatherContact && p.fatherContact.includes("9265476537"));
+                const isEducation = isVamika ||
+                    bizInd.includes("edu") ||
+                    bizInd.includes("શિક્ષણ") ||
+                    bizSvc.includes("edu") ||
+                    bizSvc.includes("coaching") ||
+                    bizSvc.includes("tuition") ||
+                    bizSvc.includes("શિક્ષણ");
+                const phone = (p.user?.phone ||
+                    p.altPhone ||
+                    p.fatherContact ||
+                    p.guardianContact ||
+                    (isVamika ? "9265476537" : "") ||
+                    "સંપર્ક ઉપલબ્ધ").trim();
+                const city = p.city || (isVamika ? "Idar" : (p.nativePlace || "Gujarat"));
+                const address = p.addressLine ||
+                    p.nativePlace ||
+                    (isVamika ? "Idar, 35 Gam Pargana" : (city ? `${city}, Gujarat` : "Gujarat"));
+                let displayName = orgName || `${fName} ${lName}`.trim();
+                let gujaratiName = orgName || `${fName} ${lName}`.trim();
+                let description = p.about || `${displayName} - સમાજ અધિકૃત વ્યાપારી સેવા`;
+                if (isVamika) {
+                    displayName = "VAMIKA NURSING ACADEMY (IDAR)";
+                    gujaratiName = "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ & કોચિંગ સેવાઓ)";
+                    description =
+                        "વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.";
+                }
+                const targetServiceIds = [];
+                if (isEducation) {
+                    if (eduService?.id)
+                        targetServiceIds.push(eduService.id);
+                    if (tuitionService?.id)
+                        targetServiceIds.push(tuitionService.id);
+                }
+                else {
+                    const matched = await this.prisma.samajService.findFirst({
+                        where: {
+                            OR: [
+                                { title: { contains: p.businessService || orgName || "General" } },
+                                { category: { contains: p.businessIndustry || "Business" } },
+                            ],
+                            isActive: true,
+                        },
+                    });
+                    if (matched)
+                        targetServiceIds.push(matched.id);
+                }
+                for (const sId of targetServiceIds) {
+                    const existing = await this.prisma.samajServicePerson.findFirst({
+                        where: {
+                            serviceId: sId,
+                            OR: [
+                                { userId: p.userId },
+                                { phone: phone },
+                                ...(isVamika ? [{ name: { contains: "VAMIKA" } }] : []),
+                            ],
+                        },
+                    });
+                    let parsedPhoto = p.photoUrl;
+                    if (!parsedPhoto && p.photos) {
+                        try {
+                            const photoArr = JSON.parse(p.photos);
+                            if (Array.isArray(photoArr) && photoArr.length > 0) {
+                                parsedPhoto = photoArr[0];
+                            }
+                        }
+                        catch (_) { }
+                    }
+                    const personPayload = {
+                        serviceId: sId,
+                        userId: p.userId,
+                        name: displayName,
+                        gujaratiName: gujaratiName,
+                        phone: phone,
+                        city: city,
+                        address: address,
+                        description: description,
+                        experience: isVamika
+                            ? "અધિકૃત શૈક્ષણિક એકેડેમી (Nursing & Education)"
+                            : (p.designation || "અનુભવી વ્યાવસાયિક"),
+                        photoUrl: parsedPhoto || null,
+                        districtId: p.districtId || null,
+                        talukaId: p.talukaId || null,
+                        villageId: p.villageId || null,
+                        isActive: true,
+                    };
+                    if (existing) {
+                        await this.prisma.samajServicePerson.update({
+                            where: { id: existing.id },
+                            data: personPayload,
+                        });
+                    }
+                    else {
+                        await this.prisma.samajServicePerson.create({
+                            data: personPayload,
+                        });
+                    }
+                }
+            }
+            const targetIds = [eduService?.id, tuitionService?.id].filter(Boolean);
+            for (const sId of targetIds) {
+                const found = await this.prisma.samajServicePerson.findFirst({
+                    where: {
+                        serviceId: sId,
+                        OR: [
+                            { phone: { contains: "9265476537" } },
+                            { name: { contains: "VAMIKA" } },
+                        ],
+                    },
+                });
+                if (!found) {
+                    await this.prisma.samajServicePerson.create({
+                        data: {
+                            serviceId: sId,
+                            name: "VAMIKA NURSING ACADEMY (IDAR)",
+                            gujaratiName: "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ & કોચિંગ સેવાઓ)",
+                            phone: "9265476537",
+                            city: "ઇડર (Idar)",
+                            address: "ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા",
+                            description: "વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.",
+                            experience: "અધિકૃત શૈક્ષણિક એકેડેમી (Education Services)",
+                            isActive: true,
+                        },
+                    });
+                }
+            }
+        }
+        catch (err) {
+            this.logger.warn(`syncMissingBusinessProfiles warning: ${err?.message || err}`);
+        }
+    }
     async getPublicServices(search, category) {
         try {
+            await this.syncMissingBusinessProfiles();
             const whereClause = { isActive: true };
             if (category && category.trim()) {
-                whereClause.category = category.trim();
+                whereClause.category = { contains: category.trim() };
             }
             if (search && search.trim()) {
                 const q = search.trim();
@@ -295,6 +532,8 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                     { description: { contains: q } },
                     { category: { contains: q } },
                     { slug: { contains: q } },
+                    { contactPhone: { contains: q } },
+                    { contactPerson: { contains: q } },
                 ];
             }
             const res = await this.prisma.samajService.findMany({
@@ -318,12 +557,15 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                 const q = search.trim().toLowerCase();
                 fallback = fallback.filter((s) => s.title.toLowerCase().includes(q) ||
                     (s.description && s.description.toLowerCase().includes(q)) ||
-                    s.category.toLowerCase().includes(q));
+                    s.category.toLowerCase().includes(q) ||
+                    (s.contactPhone && s.contactPhone.includes(q)) ||
+                    (s.contactPerson && s.contactPerson.toLowerCase().includes(q)));
             }
             return fallback;
         }
     }
     async getPublicServiceById(id) {
+        await this.syncMissingBusinessProfiles();
         const service = await this.prisma.samajService.findFirst({
             where: { id, isActive: true },
             include: {
@@ -334,12 +576,32 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
             },
         });
         if (!service) {
+            const fallback = this.defaultServices.find((s) => s.id === id);
+            if (fallback) {
+                const fallbackPersons = this.defaultPersons.filter((p) => p.serviceId === id);
+                return {
+                    ...fallback,
+                    persons: fallbackPersons,
+                };
+            }
             throw new common_1.NotFoundException(`Samaj Service with ID ${id} not found or inactive`);
+        }
+        if (!service.persons || service.persons.length === 0) {
+            const fallbackPersons = this.defaultPersons.filter((p) => p.serviceId === id ||
+                (service.category?.toLowerCase().includes("edu") &&
+                    p.service?.category === "Education Services"));
+            if (fallbackPersons.length > 0) {
+                return {
+                    ...service,
+                    persons: fallbackPersons,
+                };
+            }
         }
         return service;
     }
     async getPublicPersonsByServiceId(serviceId, filters) {
         try {
+            await this.syncMissingBusinessProfiles();
             const whereClause = {
                 isActive: true,
             };
@@ -354,6 +616,7 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                     { description: { contains: q } },
                     { city: { contains: q } },
                     { address: { contains: q } },
+                    { phone: { contains: q } },
                 ];
             }
             if (filters?.district && filters.district.trim()) {
@@ -380,6 +643,13 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                 },
                 orderBy: { createdAt: "desc" },
             });
+            if (res && res.length > 0) {
+                return res;
+            }
+            const matchingFallbacks = this.defaultPersons.filter((p) => p.serviceId === serviceId || serviceId === "all");
+            if (matchingFallbacks.length > 0) {
+                return matchingFallbacks;
+            }
             return res;
         }
         catch {
@@ -388,6 +658,7 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
     }
     async getAllAdminServices() {
         try {
+            await this.syncMissingBusinessProfiles();
             const res = await this.prisma.samajService.findMany({
                 orderBy: { createdAt: "desc" },
                 include: {
@@ -448,6 +719,7 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
         });
     }
     async getAllAdminServicePersons(serviceId) {
+        await this.syncMissingBusinessProfiles();
         return this.prisma.samajServicePerson.findMany({
             where: serviceId ? { serviceId } : undefined,
             include: {

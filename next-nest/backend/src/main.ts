@@ -4,12 +4,20 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
+import { validateAndNormalizeAllowedOrigins } from "./common/validators/cors.validator";
+import { isAllowedStaticMediaPath } from "./common/validators/static-media.validator";
+import { servePublicStaticMedia } from "./common/middleware/static-media.middleware";
 import helmet from "helmet";
 import * as morgan from "morgan";
 
 import * as express from "express";
+import * as path from "path";
+import * as fs from "fs";
+import * as fsPromises from "fs/promises";
 import { join } from "path";
 import * as cookieParser from "cookie-parser";
+
+
 
 async function bootstrap() {
   const logger = new Logger("Bootstrap");
@@ -56,13 +64,27 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS for mobile and web clients
+  // Enable CORS with strict origin validation for production and staging
   const nodeEnv = configService.get<string>("NODE_ENV", "development");
   const allowedOriginsStr = configService.get<string>("ALLOWED_ORIGINS", "");
 
   let corsOrigin: any = true;
-  if (nodeEnv === "production" && allowedOriginsStr) {
-    corsOrigin = allowedOriginsStr.split(",").map((o) => o.trim());
+  if (nodeEnv === "production" || nodeEnv === "staging") {
+    try {
+      const validatedOrigins = validateAndNormalizeAllowedOrigins(
+        allowedOriginsStr,
+        nodeEnv,
+      );
+      corsOrigin = validatedOrigins;
+      logger.log(
+        `CORS origin allowlist strictly enforced for ${nodeEnv} (${validatedOrigins.length} origins): ${validatedOrigins.join(", ")}`,
+      );
+    } catch (err: any) {
+      logger.error(
+        `FATAL: CORS origin configuration error in ${nodeEnv}: ${err.message}. Halting bootstrap.`,
+      );
+      process.exit(1);
+    }
   }
 
   app.enableCors({
@@ -70,16 +92,10 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Serve static files from the 'uploads' directory with robust CORS and security headers
-  const uploadStaticMiddleware = express.static(join(process.cwd(), "uploads"), {
-    setHeaders: (res) => {
-      res.set("Access-Control-Allow-Origin", "*");
-      res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
-      res.set("Cross-Origin-Resource-Policy", "cross-origin");
-    },
-  });
-  app.use("/uploads", uploadStaticMiddleware);
-  app.use("/api/v1/uploads", uploadStaticMiddleware);
+  // Public static media middleware: serves public profile photos and media safely
+  app.use("/uploads", servePublicStaticMedia);
+  app.use("/api/v1/uploads", servePublicStaticMedia);
+
 
   // Global API Prefix /api/v1
   app.setGlobalPrefix("api/v1");

@@ -16,15 +16,51 @@ let StorageService = StorageService_1 = class StorageService {
     constructor() {
         this.logger = new common_1.Logger(StorageService_1.name);
         this.uploadDir = path.join(process.cwd(), "uploads");
+        this.privateUploadDir = path.join(process.cwd(), "private_uploads");
     }
-    async uploadFile(fileBuffer, mimetype, originalName) {
-        this.logger.log(`Uploading file ${originalName} of type ${mimetype}`);
+    async uploadPublicMedia(fileBuffer, mimetype, originalName) {
+        const allowedPublicTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "image/gif",
+        ];
+        if (!allowedPublicTypes.includes(mimetype.toLowerCase())) {
+            throw new common_1.BadRequestException("Invalid public media type. Only public images (.jpg, .png, .webp, .gif) are allowed in public storage.");
+        }
         await fs.mkdir(this.uploadDir, { recursive: true });
-        const ext = originalName.split(".").pop() || "";
+        const rawExt = (originalName.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const ext = ["jpg", "jpeg", "png", "webp", "gif"].includes(rawExt) ? rawExt : "jpg";
         const uniqueFilename = `${(0, uuid_1.v4)()}.${ext}`;
         const filePath = path.join(this.uploadDir, uniqueFilename);
         await fs.writeFile(filePath, fileBuffer);
+        this.logger.log(`Uploaded public media: ${uniqueFilename}`);
         return `/uploads/${uniqueFilename}`;
+    }
+    async uploadVerificationDocument(fileBuffer, mimetype, originalName) {
+        const allowedDocTypes = [
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+            "application/pdf",
+        ];
+        if (!allowedDocTypes.includes(mimetype.toLowerCase())) {
+            throw new common_1.BadRequestException("Invalid document type. Only images (.jpg, .png, .webp) and PDF documents are allowed for verification.");
+        }
+        await fs.mkdir(this.privateUploadDir, { recursive: true, mode: 0o700 });
+        const rawExt = (originalName.split(".").pop() || "pdf").toLowerCase().replace(/[^a-z0-9]/g, "");
+        const ext = ["jpg", "jpeg", "png", "webp", "pdf"].includes(rawExt) ? rawExt : "pdf";
+        const uniqueFilename = `doc_${(0, uuid_1.v4)()}.${ext}`;
+        const filePath = path.join(this.privateUploadDir, uniqueFilename);
+        await fs.writeFile(filePath, fileBuffer, { mode: 0o600 });
+        this.logger.log(`Uploaded private verification document: ${uniqueFilename}`);
+        return `/api/v1/admin/verifications/documents/${uniqueFilename}`;
+    }
+    async uploadFile(fileBuffer, mimetype, originalName, isPrivate = false) {
+        if (isPrivate) {
+            return this.uploadVerificationDocument(fileBuffer, mimetype, originalName);
+        }
+        return this.uploadPublicMedia(fileBuffer, mimetype, originalName);
     }
     async deleteFile(fileUrl) {
         this.logger.log(`Deleting file at ${fileUrl}`);

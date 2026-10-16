@@ -26,17 +26,17 @@ let ProfilesController = class ProfilesController {
     constructor(profilesService) {
         this.profilesService = profilesService;
     }
-    async getProfiles(query) {
-        return this.profilesService.getProfiles(query);
+    async getProfiles(query, req) {
+        return this.profilesService.getProfiles(query, req?.user);
     }
-    async searchQueryPost(query) {
-        return this.profilesService.searchProfiles(query);
+    async searchQueryPost(query, req) {
+        return this.profilesService.searchProfiles(query, req?.user);
     }
-    async searchQueryGet(query) {
-        return this.profilesService.searchProfiles(query);
+    async searchQueryGet(query, req) {
+        return this.profilesService.searchProfiles(query, req?.user);
     }
-    async getFamilyDirectory(search) {
-        return this.profilesService.getFamilyDirectory(search);
+    async getFamilyDirectory(search, req) {
+        return this.profilesService.getFamilyDirectory(search, req?.user);
     }
     getReferenceData() {
         return this.profilesService.getReferenceData();
@@ -57,7 +57,7 @@ let ProfilesController = class ProfilesController {
         return this.profilesService.deleteProfileByUserId(req.user.id);
     }
     async getProfileById(req) {
-        return this.profilesService.getProfileById(req.params.id);
+        return this.profilesService.getProfileById(req.params.id, req.user);
     }
 };
 exports.ProfilesController = ProfilesController;
@@ -66,8 +66,9 @@ __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: "List and search matrimonial candidate profiles" }),
     __param(0, (0, common_1.Query)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [profile_query_dto_1.BaseProfileQueryDto]),
+    __metadata("design:paramtypes", [profile_query_dto_1.BaseProfileQueryDto, Object]),
     __metadata("design:returntype", Promise)
 ], ProfilesController.prototype, "getProfiles", null);
 __decorate([
@@ -76,8 +77,9 @@ __decorate([
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Search candidate profiles with detailed query (POST)" }),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [search_query_dto_1.SearchQueryDto]),
+    __metadata("design:paramtypes", [search_query_dto_1.SearchQueryDto, Object]),
     __metadata("design:returntype", Promise)
 ], ProfilesController.prototype, "searchQueryPost", null);
 __decorate([
@@ -85,8 +87,9 @@ __decorate([
     (0, common_1.Get)("search-query"),
     (0, swagger_1.ApiOperation)({ summary: "Search candidate profiles with detailed query (GET)" }),
     __param(0, (0, common_1.Query)()),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [search_query_dto_1.SearchQueryDto]),
+    __metadata("design:paramtypes", [search_query_dto_1.SearchQueryDto, Object]),
     __metadata("design:returntype", Promise)
 ], ProfilesController.prototype, "searchQueryGet", null);
 __decorate([
@@ -94,8 +97,9 @@ __decorate([
     (0, common_1.Get)("family-directory"),
     (0, swagger_1.ApiOperation)({ summary: "Get live family directory aggregated from profiles" }),
     __param(0, (0, common_1.Query)("search")),
+    __param(1, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], ProfilesController.prototype, "getFamilyDirectory", null);
 __decorate([

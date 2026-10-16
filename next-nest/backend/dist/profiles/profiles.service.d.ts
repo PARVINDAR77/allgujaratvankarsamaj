@@ -1,4 +1,3 @@
-import { OnModuleInit } from "@nestjs/common";
 import { MatrimonialProfile } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateProfileDto } from "./dto/create-profile.dto";
@@ -11,11 +10,10 @@ export interface CompletenessResult {
     percentage: number;
     isComplete: boolean;
 }
-export declare class ProfilesService implements OnModuleInit {
+export declare class ProfilesService {
     private readonly prisma;
     private readonly logger;
     private readonly memoryProfiles;
-    onModuleInit(): Promise<void>;
     constructor(prisma: PrismaService);
     getReferenceData(): {
         gender: ("MALE" | "FEMALE" | "OTHER")[];
@@ -135,62 +133,9 @@ export declare class ProfilesService implements OnModuleInit {
         isVerified: boolean;
         isFeatured: boolean;
     }>;
-    getProfileById(id: string): Promise<{
-        state: string | null;
-        status: import(".prisma/client").$Enums.ProfileStatus;
-        id: string;
-        gender: import(".prisma/client").$Enums.Gender;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string;
-        firstName: string;
-        lastName: string;
-        dateOfBirth: Date;
-        maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
-        religion: string | null;
-        caste: string | null;
-        subcaste: string | null;
-        nativePlace: string | null;
-        city: string | null;
-        country: string | null;
-        education: string | null;
-        occupation: string | null;
-        organizationName: string | null;
-        designation: string | null;
-        about: string | null;
-        photoUrl: string | null;
-        photos: string | null;
-        isPhysicallyDisabled: boolean;
-        pwbdCategory: string | null;
-        isAbroad: boolean;
-        abroadCountry: string | null;
-        businessIndustry: string | null;
-        businessService: string | null;
-        bloodGroup: string | null;
-        isVankar: boolean;
-        annualIncome: string | null;
-        fatherName: string | null;
-        fatherOccupation: string | null;
-        fatherContact: string | null;
-        motherName: string | null;
-        motherOccupation: string | null;
-        guardianContact: string | null;
-        siblings: string | null;
-        mamasVillage: string | null;
-        addressLine: string | null;
-        pincode: string | null;
-        altPhone: string | null;
-        contactEmail: string | null;
-        motherTongue: string | null;
-        privacySettings: string | null;
-        stateId: string | null;
-        districtId: string | null;
-        talukaId: string | null;
-        parganaId: string | null;
-        villageId: string | null;
-        isVerified: boolean;
-        isFeatured: boolean;
-    }>;
+    private sanitizeProfileForViewer;
+    private sanitizeProfileForListing;
+    getProfileById(id: string, viewerUser?: any): Promise<any>;
     updateProfileByUserId(userId: string, dto: UpdateProfileDto): Promise<{
         state: string | null;
         status: import(".prisma/client").$Enums.ProfileStatus;
@@ -303,106 +248,8 @@ export declare class ProfilesService implements OnModuleInit {
         isVerified: boolean;
         isFeatured: boolean;
     }>;
-    getProfiles(query: BaseProfileQueryDto): Promise<{
-        items: ({
-            user: {
-                email: string;
-                phone: string;
-            };
-            governmentEmployment: {
-                designation: {
-                    name: string;
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    isActive: boolean;
-                    departmentId: string;
-                    gujaratiName: string | null;
-                    code: string | null;
-                };
-                department: {
-                    name: string;
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    isActive: boolean;
-                    gujaratiName: string | null;
-                    code: string | null;
-                };
-            } & {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isFeatured: boolean;
-                profileId: string;
-                rejectionReason: string | null;
-                employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
-                officeLocation: string | null;
-                joiningYear: number | null;
-                verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
-                verificationSubmittedAt: Date | null;
-                verifiedAt: Date | null;
-                verifiedBy: string | null;
-                isActive: boolean;
-                departmentId: string | null;
-                designationId: string | null;
-            };
-        } & {
-            state: string | null;
-            status: import(".prisma/client").$Enums.ProfileStatus;
-            id: string;
-            gender: import(".prisma/client").$Enums.Gender;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            firstName: string;
-            lastName: string;
-            dateOfBirth: Date;
-            maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
-            religion: string | null;
-            caste: string | null;
-            subcaste: string | null;
-            nativePlace: string | null;
-            city: string | null;
-            country: string | null;
-            education: string | null;
-            occupation: string | null;
-            organizationName: string | null;
-            designation: string | null;
-            about: string | null;
-            photoUrl: string | null;
-            photos: string | null;
-            isPhysicallyDisabled: boolean;
-            pwbdCategory: string | null;
-            isAbroad: boolean;
-            abroadCountry: string | null;
-            businessIndustry: string | null;
-            businessService: string | null;
-            bloodGroup: string | null;
-            isVankar: boolean;
-            annualIncome: string | null;
-            fatherName: string | null;
-            fatherOccupation: string | null;
-            fatherContact: string | null;
-            motherName: string | null;
-            motherOccupation: string | null;
-            guardianContact: string | null;
-            siblings: string | null;
-            mamasVillage: string | null;
-            addressLine: string | null;
-            pincode: string | null;
-            altPhone: string | null;
-            contactEmail: string | null;
-            motherTongue: string | null;
-            privacySettings: string | null;
-            stateId: string | null;
-            districtId: string | null;
-            talukaId: string | null;
-            parganaId: string | null;
-            villageId: string | null;
-            isVerified: boolean;
-            isFeatured: boolean;
-        })[];
+    getProfiles(query: BaseProfileQueryDto, viewerUser?: any): Promise<{
+        items: any[];
         meta: {
             page: number;
             limit: number;
@@ -410,7 +257,7 @@ export declare class ProfilesService implements OnModuleInit {
             totalPages: number;
         };
     }>;
-    searchProfiles(query: SearchQueryDto): Promise<{
+    searchProfiles(query: SearchQueryDto, viewerUser?: any): Promise<{
         profiles: {
             id: any;
             fullName: string;
@@ -465,105 +312,7 @@ export declare class ProfilesService implements OnModuleInit {
             privacySettings: any;
             user: any;
         }[];
-        items: ({
-            user: {
-                email: string;
-                phone: string;
-            };
-            governmentEmployment: {
-                designation: {
-                    name: string;
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    isActive: boolean;
-                    departmentId: string;
-                    gujaratiName: string | null;
-                    code: string | null;
-                };
-                department: {
-                    name: string;
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    isActive: boolean;
-                    gujaratiName: string | null;
-                    code: string | null;
-                };
-            } & {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isFeatured: boolean;
-                profileId: string;
-                rejectionReason: string | null;
-                employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
-                officeLocation: string | null;
-                joiningYear: number | null;
-                verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
-                verificationSubmittedAt: Date | null;
-                verifiedAt: Date | null;
-                verifiedBy: string | null;
-                isActive: boolean;
-                departmentId: string | null;
-                designationId: string | null;
-            };
-        } & {
-            state: string | null;
-            status: import(".prisma/client").$Enums.ProfileStatus;
-            id: string;
-            gender: import(".prisma/client").$Enums.Gender;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            firstName: string;
-            lastName: string;
-            dateOfBirth: Date;
-            maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
-            religion: string | null;
-            caste: string | null;
-            subcaste: string | null;
-            nativePlace: string | null;
-            city: string | null;
-            country: string | null;
-            education: string | null;
-            occupation: string | null;
-            organizationName: string | null;
-            designation: string | null;
-            about: string | null;
-            photoUrl: string | null;
-            photos: string | null;
-            isPhysicallyDisabled: boolean;
-            pwbdCategory: string | null;
-            isAbroad: boolean;
-            abroadCountry: string | null;
-            businessIndustry: string | null;
-            businessService: string | null;
-            bloodGroup: string | null;
-            isVankar: boolean;
-            annualIncome: string | null;
-            fatherName: string | null;
-            fatherOccupation: string | null;
-            fatherContact: string | null;
-            motherName: string | null;
-            motherOccupation: string | null;
-            guardianContact: string | null;
-            siblings: string | null;
-            mamasVillage: string | null;
-            addressLine: string | null;
-            pincode: string | null;
-            altPhone: string | null;
-            contactEmail: string | null;
-            motherTongue: string | null;
-            privacySettings: string | null;
-            stateId: string | null;
-            districtId: string | null;
-            talukaId: string | null;
-            parganaId: string | null;
-            villageId: string | null;
-            isVerified: boolean;
-            isFeatured: boolean;
-        })[];
+        items: any[];
         meta: {
             page: number;
             limit: number;
@@ -573,7 +322,7 @@ export declare class ProfilesService implements OnModuleInit {
     }>;
     private syncSamajServicePerson;
     private syncGovernmentEmployment;
-    getFamilyDirectory(search?: string): Promise<{
+    getFamilyDirectory(search?: string, viewerUser?: any): Promise<{
         id: string;
         nameGuj: string;
         nameEng: string;

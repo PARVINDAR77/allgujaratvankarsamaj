@@ -22,22 +22,16 @@ let StorageController = class StorageController {
         this.storageService = storageService;
     }
     async uploadFile(file, body) {
-        const allowedMimeTypes = [
-            "image/jpeg",
-            "image/png",
-            "image/gif",
-            "image/webp",
-            "application/pdf",
-        ];
+        const isPrivate = body?.isPrivate === true ||
+            body?.isPrivate === "true" ||
+            body?.category === "verification" ||
+            body?.documentType != null;
         const MAX_FILE_SIZE = 5 * 1024 * 1024;
         if (file && file.buffer) {
             if (file.buffer.length > MAX_FILE_SIZE) {
-                throw new common_1.BadRequestException("Image size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).");
+                throw new common_1.BadRequestException("File size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).");
             }
-            if (!allowedMimeTypes.includes(file.mimetype)) {
-                throw new common_1.BadRequestException("Invalid file type. Only images and PDFs are allowed.");
-            }
-            const url = await this.storageService.uploadFile(file.buffer, file.mimetype, file.originalname || "image.jpg");
+            const url = await this.storageService.uploadFile(file.buffer, file.mimetype, file.originalname || "image.jpg", isPrivate);
             return { url };
         }
         const base64Data = body?.base64 || body?.file;
@@ -54,26 +48,34 @@ let StorageController = class StorageController {
                     originalName = `upload.${ext}`;
                 }
             }
-            if (!allowedMimeTypes.includes(mimetype)) {
-                throw new common_1.BadRequestException("Invalid file type. Only images and PDFs are allowed.");
-            }
             const fileBuffer = Buffer.from(rawBase64, "base64");
             if (!fileBuffer || fileBuffer.length === 0) {
                 throw new common_1.BadRequestException("Invalid or empty base64 data");
             }
             if (fileBuffer.length > MAX_FILE_SIZE) {
-                throw new common_1.BadRequestException("Image size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).");
+                throw new common_1.BadRequestException("File size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).");
             }
-            const url = await this.storageService.uploadFile(fileBuffer, mimetype, originalName);
+            const url = await this.storageService.uploadFile(fileBuffer, mimetype, originalName, isPrivate);
             return { url };
         }
         throw new common_1.BadRequestException("No file or base64 image data provided");
+    }
+    async uploadVerificationDocument(file) {
+        if (!file || !file.buffer) {
+            throw new common_1.BadRequestException("No verification document file provided");
+        }
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        if (file.buffer.length > MAX_FILE_SIZE) {
+            throw new common_1.BadRequestException("File size exceeds maximum limit of 5 MB.");
+        }
+        const url = await this.storageService.uploadVerificationDocument(file.buffer, file.mimetype, file.originalname || "document.pdf");
+        return { url };
     }
 };
 exports.StorageController = StorageController;
 __decorate([
     (0, common_1.Post)("upload"),
-    (0, swagger_1.ApiOperation)({ summary: "Upload a file (Image or PDF via Multipart or Base64 JSON)" }),
+    (0, swagger_1.ApiOperation)({ summary: "Upload a public media file or private verification document" }),
     (0, swagger_1.ApiConsumes)("multipart/form-data", "application/json"),
     (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)("file")),
     __param(0, (0, common_1.UploadedFile)()),
@@ -82,6 +84,16 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], StorageController.prototype, "uploadFile", null);
+__decorate([
+    (0, common_1.Post)("upload-verification"),
+    (0, swagger_1.ApiOperation)({ summary: "Upload private verification document (ID cards, credentials)" }),
+    (0, swagger_1.ApiConsumes)("multipart/form-data"),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)("file")),
+    __param(0, (0, common_1.UploadedFile)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], StorageController.prototype, "uploadVerificationDocument", null);
 exports.StorageController = StorageController = __decorate([
     (0, swagger_1.ApiTags)("Storage"),
     (0, common_1.Controller)("storage"),

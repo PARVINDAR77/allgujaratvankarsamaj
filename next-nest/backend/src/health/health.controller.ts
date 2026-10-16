@@ -1,6 +1,7 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, NotFoundException, Res } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { HealthService, HealthStatusResponse } from "./health.service";
+import { Response } from "express";
 
 @ApiTags("Health")
 @Controller("health")
@@ -25,9 +26,25 @@ export class HealthController {
     return this.healthService.checkHealth();
   }
 
-  @Get("sync-schema")
-  @ApiOperation({ summary: "Synchronize missing tables and enum columns in database" })
-  async syncSchema() {
-    return this.healthService.syncDatabaseSchema();
+
+  @Get("cookie-test")
+  @ApiOperation({ summary: "Staging-only multi-cookie verification endpoint" })
+  async cookieTest(@Res({ passthrough: true }) res: Response) {
+    if (process.env.NODE_ENV !== "staging" || process.env.ENABLE_STAGING_TEST_ROUTES !== "true") {
+      throw new NotFoundException("Endpoint available only in staging environment with explicit test flag");
+    }
+    res.cookie("stg_test_a", "val_alpha", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+    });
+    res.cookie("stg_test_b", "val_beta", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+    });
+    return { status: "ok", cookieTest: true };
   }
 }

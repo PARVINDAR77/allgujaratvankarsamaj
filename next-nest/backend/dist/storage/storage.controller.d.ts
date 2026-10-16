@@ -5,4 +5,7 @@ export declare class StorageController {
     uploadFile(file?: Express.Multer.File, body?: any): Promise<{
         url: string;
     }>;
+    uploadVerificationDocument(file?: Express.Multer.File): Promise<{
+        url: string;
+    }>;
 }

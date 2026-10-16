@@ -3,12 +3,48 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
+  ConflictException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { User, Role, Status, Gender, ProfileStatus, VerificationStatus } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 import { normalizeGender } from "../profiles/dto/normalize-profile.helper";
+
+export function normalizePhoneNumber(phone?: string | null): {
+  isValid: boolean;
+  canonical10?: string;
+  variants: string[];
+} {
+  if (!phone || typeof phone !== "string") {
+    return { isValid: false, variants: [] };
+  }
+  const trimmed = phone.trim();
+  if (!trimmed) {
+    return { isValid: false, variants: [] };
+  }
+  // Remove all non-digit characters
+  const digitsOnly = trimmed.replace(/\D/g, "");
+
+  if (digitsOnly.length === 10) {
+    return {
+      isValid: true,
+      canonical10: digitsOnly,
+      variants: [digitsOnly, `+91${digitsOnly}`, `91${digitsOnly}`],
+    };
+  }
+
+  if (digitsOnly.length === 12 && digitsOnly.startsWith("91")) {
+    const tenDigit = digitsOnly.slice(2);
+    return {
+      isValid: true,
+      canonical10: tenDigit,
+      variants: [tenDigit, `+91${tenDigit}`, `91${tenDigit}`],
+    };
+  }
+
+  return { isValid: false, variants: [] };
+}
 
 @Injectable()
 export class UsersService {
@@ -25,8 +61,30 @@ export class UsersService {
   }
 
   async findByPhone(phone?: string): Promise<User | null> {
-    if (!phone) return null;
-    return null;
+    const norm = normalizePhoneNumber(phone);
+    if (!norm.isValid || norm.variants.length === 0) {
+      return null;
+    }
+
+    const matches = await this.prisma.user.findMany({
+      where: {
+        phone: { in: norm.variants },
+      },
+      take: 2,
+    });
+
+    if (matches.length === 0) {
+      return null;
+    }
+
+    if (matches.length > 1) {
+      this.logger.error(
+        `Ambiguous phone lookup detected for input: "${phone}". Multiple user records match variants: [${norm.variants.join(", ")}]. Failing safely.`,
+      );
+      return null;
+    }
+
+    return matches[0];
   }
 
   async findById(id: string): Promise<User | null> {
@@ -47,18 +105,27 @@ export class UsersService {
     const normalizedEmail =
       data.email?.toLowerCase().trim() || `${uuidv4()}@vankar.org`;
     const resolvedGender = normalizeGender(data.gender);
-    const user = await this.prisma.user.create({
-      data: {
-        email: normalizedEmail,
-        phone: data.phone,
-        name: data.name,
-        gender: resolvedGender,
-        passwordHash: data.passwordHash,
-        role: data.role || Role.USER,
-        status: data.status || Status.ACTIVE,
-      },
-    });
-    return user;
+    try {
+      const user = await this.prisma.user.create({
+        data: {
+          email: normalizedEmail,
+          phone: data.phone,
+          name: data.name,
+          gender: resolvedGender,
+          passwordHash: data.passwordHash,
+          role: data.role || Role.USER,
+          status: data.status || Status.ACTIVE,
+        },
+      });
+      return user;
+    } catch (err: any) {
+      if (err.code === "P2002") {
+        throw new ConflictException(
+          "આ ઈમેઈલ અથવા મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે (Email or mobile number is already registered)",
+        );
+      }
+      throw err;
+    }
   }
 
   // --- Admin Endpoints ---

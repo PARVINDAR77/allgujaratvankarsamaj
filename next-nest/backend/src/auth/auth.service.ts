@@ -81,28 +81,25 @@ export class AuthService {
     }
 
     if (!user) {
-      // Auto-provision user on the fly so login succeeds for any entered phone/email during dev/offline testing!
-      const saltRounds = 10;
-      const passwordHash = await bcrypt.hash(dto.password, saltRounds);
-      user = await this.usersService.createUser({
-        email: dto.email,
-        phone: dto.phone,
-        passwordHash,
-      });
-    } else {
-      const isPasswordValid = await bcrypt.compare(
-        dto.password,
-        user.passwordHash,
+      throw new UnauthorizedException(
+        "અમાન્ય ઓળખપત્ર (Invalid email/phone or password)",
       );
-      if (!isPasswordValid) {
-        // If password does not match, allow updating or logging in during development
-        const saltRounds = 10;
-        user.passwordHash = await bcrypt.hash(dto.password, saltRounds);
-      }
+    }
+
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(
+        "અમાન્ય ઓળખપત્ર (Invalid email/phone or password)",
+      );
     }
 
     if (user.status !== "ACTIVE") {
-      user.status = "ACTIVE" as any;
+      throw new UnauthorizedException(
+        "આ એકાઉન્ટ નિષ્ક્રિય છે (Account is deactivated)",
+      );
     }
 
     const profile = await this.prisma.matrimonialProfile.findUnique({

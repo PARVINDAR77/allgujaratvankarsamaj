@@ -11,11 +11,38 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var UsersService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersService = void 0;
+exports.normalizePhoneNumber = normalizePhoneNumber;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const uuid_1 = require("uuid");
 const normalize_profile_helper_1 = require("../profiles/dto/normalize-profile.helper");
+function normalizePhoneNumber(phone) {
+    if (!phone || typeof phone !== "string") {
+        return { isValid: false, variants: [] };
+    }
+    const trimmed = phone.trim();
+    if (!trimmed) {
+        return { isValid: false, variants: [] };
+    }
+    const digitsOnly = trimmed.replace(/\D/g, "");
+    if (digitsOnly.length === 10) {
+        return {
+            isValid: true,
+            canonical10: digitsOnly,
+            variants: [digitsOnly, `+91${digitsOnly}`, `91${digitsOnly}`],
+        };
+    }
+    if (digitsOnly.length === 12 && digitsOnly.startsWith("91")) {
+        const tenDigit = digitsOnly.slice(2);
+        return {
+            isValid: true,
+            canonical10: tenDigit,
+            variants: [tenDigit, `+91${tenDigit}`, `91${tenDigit}`],
+        };
+    }
+    return { isValid: false, variants: [] };
+}
 let UsersService = UsersService_1 = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -30,9 +57,24 @@ let UsersService = UsersService_1 = class UsersService {
         });
     }
     async findByPhone(phone) {
-        if (!phone)
+        const norm = normalizePhoneNumber(phone);
+        if (!norm.isValid || norm.variants.length === 0) {
             return null;
-        return null;
+        }
+        const matches = await this.prisma.user.findMany({
+            where: {
+                phone: { in: norm.variants },
+            },
+            take: 2,
+        });
+        if (matches.length === 0) {
+            return null;
+        }
+        if (matches.length > 1) {
+            this.logger.error(`Ambiguous phone lookup detected for input: "${phone}". Multiple user records match variants: [${norm.variants.join(", ")}]. Failing safely.`);
+            return null;
+        }
+        return matches[0];
     }
     async findById(id) {
         return await this.prisma.user.findUnique({
@@ -42,18 +84,26 @@ let UsersService = UsersService_1 = class UsersService {
     async createUser(data) {
         const normalizedEmail = data.email?.toLowerCase().trim() || `${(0, uuid_1.v4)()}@vankar.org`;
         const resolvedGender = (0, normalize_profile_helper_1.normalizeGender)(data.gender);
-        const user = await this.prisma.user.create({
-            data: {
-                email: normalizedEmail,
-                phone: data.phone,
-                name: data.name,
-                gender: resolvedGender,
-                passwordHash: data.passwordHash,
-                role: data.role || client_1.Role.USER,
-                status: data.status || client_1.Status.ACTIVE,
-            },
-        });
-        return user;
+        try {
+            const user = await this.prisma.user.create({
+                data: {
+                    email: normalizedEmail,
+                    phone: data.phone,
+                    name: data.name,
+                    gender: resolvedGender,
+                    passwordHash: data.passwordHash,
+                    role: data.role || client_1.Role.USER,
+                    status: data.status || client_1.Status.ACTIVE,
+                },
+            });
+            return user;
+        }
+        catch (err) {
+            if (err.code === "P2002") {
+                throw new common_1.ConflictException("આ ઈમેઈલ અથવા મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે (Email or mobile number is already registered)");
+            }
+            throw err;
+        }
     }
     async getAllUsersForAdmin() {
         try {

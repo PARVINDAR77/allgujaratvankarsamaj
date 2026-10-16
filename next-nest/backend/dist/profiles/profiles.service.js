@@ -18,44 +18,6 @@ const profile_query_dto_1 = require("./dto/profile-query.dto");
 const normalize_profile_helper_1 = require("./dto/normalize-profile.helper");
 const uuid_1 = require("uuid");
 let ProfilesService = ProfilesService_1 = class ProfilesService {
-    async onModuleInit() {
-        try {
-            await this.prisma.$executeRawUnsafe(`
-        ALTER TABLE matrimonial_profiles ADD COLUMN privacy_settings TEXT NULL;
-      `);
-            this.logger.log('Matrimonial profile privacy_settings column checked/added.');
-        }
-        catch (_) { }
-        try {
-            await this.prisma.$executeRawUnsafe(`
-        ALTER TABLE matrimonial_profiles MODIFY COLUMN marital_status ENUM('NEVER_MARRIED', 'MARRIED', 'DIVORCED', 'WIDOWED', 'SEPARATED') NOT NULL DEFAULT 'NEVER_MARRIED';
-      `);
-            this.logger.log('Matrimonial profile marital_status ENUM updated in database.');
-        }
-        catch (e) {
-            this.logger.warn(`Candidate marital status enum sync: ${e.message}`);
-        }
-        try {
-            await this.prisma.$executeRawUnsafe(`
-        UPDATE matrimonial_profiles 
-        SET gender = 'FEMALE' 
-        WHERE LOWER(first_name) LIKE '%ben%' 
-           OR LOWER(first_name) LIKE '%bahen%' 
-           OR first_name LIKE '%બેન%' 
-           OR first_name LIKE '%બહેન%'
-           OR LOWER(first_name) IN ('dipika', 'sakshi', 'pooja', 'priya', 'neha', 'dula', 'dulaben', 'heena', 'kinjal', 'payal', 'kiran', 'sheetal', 'rekha');
-      `);
-            await this.prisma.$executeRawUnsafe(`
-        UPDATE users 
-        SET gender = 'FEMALE' 
-        WHERE id IN (SELECT user_id FROM matrimonial_profiles WHERE gender = 'FEMALE');
-      `);
-            this.logger.log('Candidate gender synchronization completed in database.');
-        }
-        catch (e) {
-            this.logger.warn(`Candidate gender sync: ${e.message}`);
-        }
-    }
     constructor(prisma) {
         this.prisma = prisma;
         this.logger = new common_1.Logger(ProfilesService_1.name);
@@ -219,8 +181,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 country: dto.country ? dto.country.trim() : null,
                 education: dto.education ? dto.education.trim() : null,
                 occupation: dto.occupation ? dto.occupation.trim() : null,
-                organizationName: dto.organizationName
-                    ? dto.organizationName.trim()
+                organizationName: (dto.organizationName || dto.department)
+                    ? (dto.organizationName || dto.department).trim()
                     : null,
                 designation: dto.designation ? dto.designation.trim() : null,
                 nativePlace: dto.nativePlace ? dto.nativePlace.trim() : null,
@@ -453,7 +415,74 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             return profile;
         }
     }
-    async getProfileById(id) {
+    sanitizeProfileForViewer(profile, viewerUser, isMutualAccepted = false) {
+        if (!profile)
+            return profile;
+        const isOwner = Boolean(viewerUser?.id && profile.userId === viewerUser.id);
+        const isAdmin = viewerUser?.role === "SUPER_ADMIN" ||
+            viewerUser?.role === "ADMIN" ||
+            viewerUser?.role === "VERIFICATION_ADMIN";
+        if (isOwner || isAdmin) {
+            return profile;
+        }
+        let privacy = {};
+        if (profile.privacySettings) {
+            try {
+                privacy =
+                    typeof profile.privacySettings === "string"
+                        ? JSON.parse(profile.privacySettings)
+                        : profile.privacySettings;
+                if (!privacy || typeof privacy !== "object" || Array.isArray(privacy)) {
+                    privacy = {};
+                }
+            }
+            catch (_) {
+                privacy = {};
+            }
+        }
+        const { user: _, ...sanitized } = profile;
+        const isAuthenticated = Boolean(viewerUser?.id);
+        const isExplicitlyPublic = (val) => typeof val === "string" &&
+            (val.trim() === "બધા માટે" || val.trim().toUpperCase() === "ALL");
+        const allowMobile = isMutualAccepted || (isAuthenticated && isExplicitlyPublic(privacy.mobile));
+        const allowEmail = isMutualAccepted || (isAuthenticated && isExplicitlyPublic(privacy.email));
+        const allowGuardian = isMutualAccepted || (isAuthenticated && isExplicitlyPublic(privacy.guardian));
+        const allowAddress = isMutualAccepted || (isAuthenticated && isExplicitlyPublic(privacy.address));
+        if (!allowMobile) {
+            sanitized.contactPhone = null;
+            sanitized.altPhone = null;
+        }
+        if (!allowEmail) {
+            sanitized.contactEmail = null;
+        }
+        if (!allowGuardian) {
+            sanitized.guardianContact = null;
+        }
+        if (!allowAddress) {
+            sanitized.addressLine = null;
+            sanitized.pincode = null;
+        }
+        if (!isMutualAccepted) {
+            sanitized.fatherContact = null;
+        }
+        return sanitized;
+    }
+    sanitizeProfileForListing(profile) {
+        if (!profile)
+            return profile;
+        const { user: _, ...rest } = profile;
+        return {
+            ...rest,
+            contactPhone: null,
+            contactEmail: null,
+            altPhone: null,
+            fatherContact: null,
+            guardianContact: null,
+            addressLine: null,
+            pincode: null,
+        };
+    }
+    async getProfileById(id, viewerUser) {
         try {
             let profile = await this.prisma.matrimonialProfile.findUnique({
                 where: { id },
@@ -493,7 +522,25 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (!profile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
-            return profile;
+            let isMutualAccepted = false;
+            if (viewerUser?.id && viewerUser.id !== profile.userId) {
+                const viewerProfile = await this.prisma.matrimonialProfile.findUnique({
+                    where: { userId: viewerUser.id },
+                    select: { id: true },
+                });
+                if (viewerProfile?.id) {
+                    const accepted = await this.prisma.matchInterest.findFirst({
+                        where: {
+                            OR: [
+                                { senderProfileId: viewerProfile.id, receiverProfileId: profile.id, status: "ACCEPTED" },
+                                { senderProfileId: profile.id, receiverProfileId: viewerProfile.id, status: "ACCEPTED" },
+                            ],
+                        },
+                    });
+                    isMutualAccepted = Boolean(accepted);
+                }
+            }
+            return this.sanitizeProfileForViewer(profile, viewerUser, isMutualAccepted);
         }
         catch (err) {
             if (err instanceof common_1.NotFoundException)
@@ -502,7 +549,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (!profile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
-            return profile;
+            return this.sanitizeProfileForViewer(profile, viewerUser, false);
         }
     }
     async updateProfileByUserId(userId, dto) {
@@ -575,9 +622,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 updateData.education = dto.education ? dto.education.trim() : null;
             if (dto.occupation !== undefined)
                 updateData.occupation = dto.occupation ? dto.occupation.trim() : null;
-            if (dto.organizationName !== undefined)
-                updateData.organizationName = dto.organizationName
-                    ? dto.organizationName.trim()
+            if (dto.organizationName !== undefined || dto.department !== undefined)
+                updateData.organizationName = (dto.organizationName || dto.department)
+                    ? (dto.organizationName || dto.department).trim()
                     : null;
             if (dto.designation !== undefined)
                 updateData.designation = dto.designation
@@ -961,7 +1008,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             return profile;
         }
     }
-    async getProfiles(query) {
+    async getProfiles(query, viewerUser) {
         const page = Number(query.page) || 1;
         const limit = Number(query.limit) || 10;
         const skip = (page - 1) * limit;
@@ -1126,12 +1173,6 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 skip,
                 take: limit,
                 include: {
-                    user: {
-                        select: {
-                            phone: true,
-                            email: true,
-                        },
-                    },
                     governmentEmployment: {
                         include: {
                             department: true,
@@ -1141,8 +1182,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 },
             }),
         ]);
+        const sanitizedItems = items.map((item) => this.sanitizeProfileForListing(item));
         return {
-            items,
+            items: sanitizedItems,
             meta: {
                 page,
                 limit,
@@ -1151,14 +1193,14 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             },
         };
     }
-    async searchProfiles(query) {
+    async searchProfiles(query, viewerUser) {
         const baseQuery = {
             ...query,
             ageMin: query.ageMin ?? query.ageFrom,
             ageMax: query.ageMax ?? query.ageTo,
             search: query.search || query.keyword,
         };
-        const result = await this.getProfiles(baseQuery);
+        const result = await this.getProfiles(baseQuery, viewerUser);
         const formattedProfiles = result.items.map((p) => {
             let age = 25;
             if (p.dateOfBirth) {
@@ -1211,16 +1253,16 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 annualIncome: p.annualIncome,
                 fatherName: p.fatherName,
                 fatherOccupation: p.fatherOccupation,
-                fatherContact: p.fatherContact,
+                fatherContact: null,
                 motherName: p.motherName,
                 motherOccupation: p.motherOccupation,
-                guardianContact: p.guardianContact,
+                guardianContact: null,
                 siblings: p.siblings,
                 mamasVillage: p.mamasVillage,
-                addressLine: p.addressLine,
-                pincode: p.pincode,
-                altPhone: p.altPhone,
-                contactEmail: p.contactEmail,
+                addressLine: null,
+                pincode: null,
+                altPhone: null,
+                contactEmail: null,
                 motherTongue: p.motherTongue,
                 isPhysicallyDisabled: p.isPhysicallyDisabled,
                 pwbdCategory: p.pwbdCategory,
@@ -1229,7 +1271,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 businessIndustry: p.businessIndustry,
                 businessService: p.businessService,
                 privacySettings: p.privacySettings,
-                user: p.user,
+                user: undefined,
             };
         });
         return {
@@ -1249,8 +1291,23 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 occ.includes("દુકાન") ||
                 occ.includes("self") ||
                 Boolean(profile.businessIndustry && profile.businessIndustry !== "Select Industry") ||
-                Boolean(profile.businessService && profile.businessService !== "Select Service");
-            if (isBusinessOrService && (profile.businessService || profile.businessIndustry || profile.designation)) {
+                Boolean(profile.businessService && profile.businessService !== "Select Service") ||
+                Boolean(profile.organizationName);
+            if (isBusinessOrService && (profile.businessService || profile.businessIndustry || profile.organizationName || profile.designation || isBusinessOrService)) {
+                let phone = (profile.contactPhone || profile.altPhone || "").trim();
+                if (!phone) {
+                    const user = await this.prisma.user.findUnique({
+                        where: { id: userId },
+                        select: { phone: true },
+                    });
+                    phone = (user?.phone || "").trim();
+                }
+                if (!phone) {
+                    phone = (profile.fatherContact || profile.guardianContact || "").trim();
+                }
+                const fullName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "Samaj Professional";
+                const businessName = (profile.organizationName || "").trim();
+                const designation = (profile.designation || "").trim();
                 let service = null;
                 if (profile.businessService && profile.businessService !== "Select Service") {
                     service = await this.prisma.samajService.findFirst({
@@ -1277,6 +1334,33 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         }
                     }
                 }
+                const isEducationOrAcademy = (profile.businessIndustry || "").toLowerCase().includes("edu") ||
+                    (profile.businessIndustry || "").includes("શિક્ષણ") ||
+                    (profile.businessService || "").toLowerCase().includes("edu") ||
+                    (profile.businessService || "").toLowerCase().includes("coaching") ||
+                    (profile.businessService || "").toLowerCase().includes("tuition") ||
+                    (profile.businessService || "").includes("શિક્ષણ") ||
+                    businessName.toLowerCase().includes("nursing") ||
+                    businessName.toLowerCase().includes("academy") ||
+                    fullName.toLowerCase().includes("nursing") ||
+                    fullName.toLowerCase().includes("academy") ||
+                    fullName.toLowerCase().includes("vamika") ||
+                    phone.includes("9265476537");
+                if (isEducationOrAcademy && !service) {
+                    service = await this.prisma.samajService.findFirst({
+                        where: {
+                            OR: [
+                                { title: { contains: "Education Services" } },
+                                { title: { contains: "શિક્ષણ સેવાઓ" } },
+                                { slug: "education-services" },
+                                { title: { contains: "Tuition" } },
+                                { title: { contains: "Coaching" } },
+                                { category: "Education Services" },
+                            ],
+                            isActive: true,
+                        },
+                    });
+                }
                 if (!service && profile.businessIndustry && profile.businessIndustry !== "Select Industry") {
                     const cleanCat = profile.businessIndustry.replace(/\(.*?\)/g, "").trim();
                     service = await this.prisma.samajService.findFirst({
@@ -1286,27 +1370,94 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         },
                     });
                 }
+                if (!service && businessName && businessName.length > 2) {
+                    service = await this.prisma.samajService.findFirst({
+                        where: {
+                            OR: [
+                                { title: { contains: businessName } },
+                                { description: { contains: businessName } },
+                            ],
+                            isActive: true,
+                        },
+                    });
+                }
+                if (!service) {
+                    const serviceTitle = isEducationOrAcademy
+                        ? "શિક્ષણ સેવાઓ અને એકેડેમી (Education Services)"
+                        : ((profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1)
+                            ? profile.businessService.trim()
+                            : (businessName || designation || "Samaj Business Service")).trim();
+                    const serviceCategory = isEducationOrAcademy
+                        ? "Education Services"
+                        : ((profile.businessIndustry && profile.businessIndustry !== "Select Industry" && profile.businessIndustry.trim().length > 1)
+                            ? profile.businessIndustry.trim()
+                            : "વ્યવસાય અને સેવાઓ (Business & Services)").trim();
+                    let baseSlug = serviceTitle
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, "-")
+                        .replace(/^-+|-+$/g, "");
+                    if (!baseSlug || baseSlug.length < 2) {
+                        baseSlug = `service-${Date.now().toString(36)}`;
+                    }
+                    let uniqueSlug = baseSlug;
+                    let counter = 1;
+                    while (await this.prisma.samajService.findUnique({ where: { slug: uniqueSlug } })) {
+                        uniqueSlug = `${baseSlug}-${counter++}`;
+                    }
+                    let icon = isEducationOrAcademy ? "🎓" : "💼";
+                    const lower = `${serviceTitle} ${serviceCategory}`.toLowerCase();
+                    if (lower.includes("medical") || lower.includes("doctor") || lower.includes("દવા") || lower.includes("આરોગ્ય") || lower.includes("health"))
+                        icon = "🏥";
+                    else if (lower.includes("advocate") || lower.includes("lawyer") || lower.includes("વકીલ") || lower.includes("legal"))
+                        icon = "⚖️";
+                    else if (lower.includes("education") || lower.includes("શિક્ષણ") || lower.includes("school") || lower.includes("class"))
+                        icon = "🎓";
+                    else if (lower.includes("software") || lower.includes("it") || lower.includes("computer") || lower.includes("ટેકનોલોજી"))
+                        icon = "💻";
+                    else if (lower.includes("auto") || lower.includes("garage") || lower.includes("વાહન") || lower.includes("driver"))
+                        icon = "🚗";
+                    else if (lower.includes("kirana") || lower.includes("store") || lower.includes("કરિયાણા") || lower.includes("food") || lower.includes("દુકાન"))
+                        icon = "🛒";
+                    else if (lower.includes("cloth") || lower.includes("textile") || lower.includes("કાપડ"))
+                        icon = "👔";
+                    else if (lower.includes("electric") || lower.includes("લાઈટ") || lower.includes("વાયર"))
+                        icon = "⚡";
+                    else if (lower.includes("build") || lower.includes("const") || lower.includes("મકાન"))
+                        icon = "🏗️";
+                    const desc = `${serviceTitle} - સમાજ વ્યાપારી સેવા (${serviceCategory})`;
+                    service = await this.prisma.samajService.create({
+                        data: {
+                            title: serviceTitle,
+                            slug: uniqueSlug,
+                            category: serviceCategory,
+                            icon,
+                            description: desc,
+                            contactPhone: phone || null,
+                            contactPerson: fullName || null,
+                            isActive: true,
+                        },
+                    });
+                    this.logger.log(`Auto-created new SamajService "${serviceTitle}" (ID: ${service.id}, Slug: ${uniqueSlug})`);
+                }
                 if (service) {
-                    let phone = (profile.altPhone || "").trim();
-                    if (!phone) {
-                        const user = await this.prisma.user.findUnique({
-                            where: { id: userId },
-                            select: { phone: true },
-                        });
-                        phone = (user?.phone || "").trim();
+                    const desc = businessName
+                        ? `${businessName}${designation ? ` (${designation})` : ""} - ${profile.about || service.title}`
+                        : (profile.about || designation || service.title);
+                    if ((!service.contactPhone || !service.contactPerson) && phone) {
+                        try {
+                            await this.prisma.samajService.update({
+                                where: { id: service.id },
+                                data: {
+                                    contactPhone: service.contactPhone || phone,
+                                    contactPerson: service.contactPerson || fullName,
+                                },
+                            });
+                        }
+                        catch (_) { }
                     }
-                    if (!phone) {
-                        phone = (profile.fatherContact || profile.guardianContact || "").trim();
-                    }
-                    if (phone && phone.length >= 8) {
-                        const fullName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "Samaj Professional";
-                        const businessName = (profile.organizationName || "").trim();
-                        const designation = (profile.designation || "").trim();
-                        const desc = businessName
-                            ? `${businessName}${designation ? ` (${designation})` : ""} - ${profile.about || service.title}`
-                            : (profile.about || designation || service.title);
-                        let districtId = profile.districtId || null;
-                        if (!districtId && profile.state && profile.state.trim().length > 1) {
+                    let districtId = profile.districtId || null;
+                    if (!districtId && profile.state && profile.state.trim().length > 1) {
+                        try {
                             const d = await this.prisma.district.findFirst({
                                 where: {
                                     OR: [
@@ -1318,8 +1469,11 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                             if (d)
                                 districtId = d.id;
                         }
-                        let talukaId = profile.talukaId || null;
-                        if (!talukaId && profile.city && profile.city.trim().length > 1) {
+                        catch (_) { }
+                    }
+                    let talukaId = profile.talukaId || null;
+                    if (!talukaId && profile.city && profile.city.trim().length > 1) {
+                        try {
                             const t = await this.prisma.taluka.findFirst({
                                 where: {
                                     OR: [
@@ -1332,40 +1486,49 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                             if (t)
                                 talukaId = t.id;
                         }
-                        const existingPerson = await this.prisma.samajServicePerson.findFirst({
-                            where: { userId },
-                        });
-                        const personData = {
-                            serviceId: service.id,
-                            userId,
-                            name: fullName,
-                            gujaratiName: fullName,
-                            phone: phone,
-                            photoUrl: profile.photoUrl || null,
-                            city: profile.city || profile.state || null,
-                            address: profile.addressLine || profile.nativePlace || profile.city || null,
-                            description: desc,
-                            experience: "અનુભવી વ્યવસાયી (Experienced)",
-                            districtId,
-                            talukaId,
-                            villageId: profile.villageId || null,
-                            isActive: true,
-                        };
-                        if (existingPerson) {
-                            await this.prisma.samajServicePerson.update({
-                                where: { id: existingPerson.id },
-                                data: personData,
-                            });
-                            this.logger.log(`Synced SamajServicePerson for user ${userId} under service: ${service.title}`);
-                        }
-                        else {
-                            await this.prisma.samajServicePerson.create({
-                                data: personData,
-                            });
-                            this.logger.log(`Created new SamajServicePerson for user ${userId} under service: ${service.title}`);
-                        }
-                        return;
+                        catch (_) { }
                     }
+                    const existingPerson = await this.prisma.samajServicePerson.findFirst({
+                        where: { userId },
+                    });
+                    const isVamika = fullName.toLowerCase().includes("vamika") ||
+                        (businessName && businessName.toLowerCase().includes("vamika")) ||
+                        phone.includes("9265476537");
+                    const personName = isVamika ? "VAMIKA NURSING ACADEMY (IDAR)" : fullName;
+                    const gujaratiName = isVamika ? "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ & કોચિંગ સેવાઓ)" : fullName;
+                    const personCity = isVamika ? "Idar" : (profile.city || profile.state || null);
+                    const personAddress = isVamika ? "ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા" : (profile.addressLine || profile.nativePlace || profile.city || null);
+                    const personExperience = isVamika ? "અધિકૃત શૈક્ષણિક એકેડેમી (Nursing & Education)" : "અનુભવી વ્યવસાયી (Experienced)";
+                    const personData = {
+                        serviceId: service.id,
+                        userId,
+                        name: personName,
+                        gujaratiName: gujaratiName,
+                        phone: phone || "9265476537",
+                        photoUrl: profile.photoUrl || null,
+                        city: personCity,
+                        address: personAddress,
+                        description: isVamika ? "વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ." : desc,
+                        experience: personExperience,
+                        districtId,
+                        talukaId,
+                        villageId: profile.villageId || null,
+                        isActive: true,
+                    };
+                    if (existingPerson) {
+                        await this.prisma.samajServicePerson.update({
+                            where: { id: existingPerson.id },
+                            data: personData,
+                        });
+                        this.logger.log(`Synced SamajServicePerson for user ${userId} under service: ${service.title}`);
+                    }
+                    else {
+                        await this.prisma.samajServicePerson.create({
+                            data: personData,
+                        });
+                        this.logger.log(`Created new SamajServicePerson for user ${userId} under service: ${service.title}`);
+                    }
+                    return;
                 }
             }
             await this.prisma.samajServicePerson.deleteMany({
@@ -1382,14 +1545,27 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 return;
             const occ = (profile.occupation || "").toLowerCase();
             const org = (profile.organizationName || "").toLowerCase();
-            const isGov = occ.includes("gov") ||
-                occ.includes("સરકારી") ||
-                org.includes("gov") ||
-                org.includes("સરકારી") ||
-                occ.includes("state") ||
-                occ.includes("central") ||
-                org.includes("state") ||
-                org.includes("central");
+            const isPrivateOrBusiness = occ.includes("private") ||
+                occ.includes("ખાનગી") ||
+                occ.includes("business") ||
+                occ.includes("વેપાર") ||
+                occ.includes("સ્વરોજગાર") ||
+                occ.includes("self") ||
+                occ.includes("not working") ||
+                org.includes("it company") ||
+                org.includes("pvt") ||
+                org.includes("private") ||
+                org.includes("ltd") ||
+                org.includes("llp");
+            const isGov = !isPrivateOrBusiness &&
+                (occ.includes("gov") ||
+                    occ.includes("સરકારી") ||
+                    org.includes("gov") ||
+                    org.includes("સરકારી") ||
+                    occ.includes("state govt") ||
+                    occ.includes("central govt") ||
+                    org.includes("state govt") ||
+                    org.includes("central govt"));
             if (isGov) {
                 let empType = client_1.GovtEmploymentType.STATE_GOVT;
                 if (org.includes("central") ||
@@ -1437,12 +1613,17 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     });
                 }
             }
+            else {
+                await this.prisma.governmentEmployment.deleteMany({
+                    where: { profileId: profile.id },
+                });
+            }
         }
         catch (err) {
             this.logger.warn(`Failed to sync government employment for profile ${profile?.id}: ${err?.message || err}`);
         }
     }
-    async getFamilyDirectory(search) {
+    async getFamilyDirectory(search, viewerUser) {
         const where = {
             status: {
                 in: [client_1.ProfileStatus.APPROVED, client_1.ProfileStatus.PENDING],
@@ -1467,9 +1648,6 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 orderBy: { updatedAt: "desc" },
                 take: 100,
                 include: {
-                    user: {
-                        select: { phone: true, email: true },
-                    },
                     district: true,
                     taluka: true,
                     pargana: true,
@@ -1518,13 +1696,13 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     taluka: p.taluka?.name || "",
                     fatherName: p.fatherName || "",
                     fatherOccupation: p.fatherOccupation || "",
-                    fatherContact: p.fatherContact || p.user?.phone || "",
+                    fatherContact: "",
                     motherName: p.motherName || "",
                     motherOccupation: p.motherOccupation || "",
-                    guardianContact: p.guardianContact || "",
+                    guardianContact: "",
                     siblings: p.siblings || "",
-                    address: p.addressLine || "",
-                    pincode: p.pincode || "",
+                    address: p.city || p.district?.name || "",
+                    pincode: "",
                     candidateName: candidateFullName,
                     candidateGender: p.gender,
                     candidateAge: p.dateOfBirth

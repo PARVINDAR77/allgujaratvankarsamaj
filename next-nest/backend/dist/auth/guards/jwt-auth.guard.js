@@ -19,17 +19,48 @@ let JwtAuthGuard = class JwtAuthGuard extends (0, passport_1.AuthGuard)("jwt") {
         super();
         this.reflector = reflector;
     }
-    canActivate(context) {
+    async canActivate(context) {
         const isPublic = this.reflector.getAllAndOverride(public_decorator_1.IS_PUBLIC_KEY, [
             context.getHandler(),
             context.getClass(),
         ]);
         if (isPublic) {
+            const req = context.switchToHttp().getRequest();
+            if (req) {
+                req.user = null;
+            }
+            try {
+                const hasAuth = req?.headers?.authorization || req?.cookies?.["admin_token"];
+                if (hasAuth) {
+                    const result = super.canActivate(context);
+                    if (result instanceof Promise) {
+                        await result;
+                    }
+                }
+            }
+            catch (_) {
+                if (req) {
+                    req.user = null;
+                }
+            }
+            if (req && !req.user) {
+                req.user = null;
+            }
             return true;
         }
         return super.canActivate(context);
     }
-    handleRequest(err, user, info) {
+    handleRequest(err, user, info, context) {
+        const isPublic = this.reflector.getAllAndOverride(public_decorator_1.IS_PUBLIC_KEY, [
+            context?.getHandler(),
+            context?.getClass(),
+        ]);
+        if (isPublic) {
+            if (err || !user) {
+                return null;
+            }
+            return user;
+        }
         if (err || !user) {
             throw err || new common_1.UnauthorizedException("Unauthorized access");
         }

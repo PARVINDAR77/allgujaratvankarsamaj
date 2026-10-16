@@ -58,4 +58,6 @@ export declare class VerificationsService {
             createdAt: Date;
         };
     }>;
+    servePrivateDocument(filename: string, res: any): Promise<void>;
+    serveCandidatePrivateDocument(userId: string, filename: string, res: any): Promise<void>;
 }

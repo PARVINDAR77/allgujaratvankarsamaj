@@ -269,6 +269,16 @@ class _CandidateProfileDetailScreenState
                     ],
                   ),
 
+                  // 💼 સમાજ વ્યવસાય પ્રોફાઇલ (Samaj Business Profile)
+                  if ((profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty) ||
+                      (profile.businessService != null && profile.businessService!.isNotEmpty) ||
+                      profile.employmentType.toLowerCase().contains('business') ||
+                      profile.employmentType.toLowerCase().contains('સ્વરોજગાર') ||
+                      profile.employmentType.toLowerCase().contains('વેપાર')) ...[
+                    const SizedBox(height: 12),
+                    _buildBusinessCard(profile),
+                  ],
+
                   const SizedBox(height: 12),
 
                   _buildSectionCard(
@@ -773,6 +783,169 @@ class _CandidateProfileDetailScreenState
                 fontSize: 13,
                 color: valueColor ?? Colors.black87,
                 fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBusinessCard(ProfileModel profile) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF041126), Color(0xFF0F2B5C)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF041126).withValues(alpha: 0.18),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+                ),
+                child: const Icon(
+                  Icons.storefront_rounded,
+                  color: Color(0xFFD4AF37),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'સમાજ વ્યવસાય પ્રોફાઇલ',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Samaj Business Directory Registered',
+                      style: TextStyle(
+                        color: Color(0xFFD4AF37),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFF10B981)),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified, size: 12, color: Color(0xFF10B981)),
+                    SizedBox(width: 4),
+                    Text(
+                      'સર્વિસ લિંક્ડ',
+                      style: TextStyle(
+                        color: Color(0xFF10B981),
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            child: Column(
+              children: [
+                if (profile.department.isNotEmpty && profile.department != 'Not specified')
+                  _buildBusinessRow('પેઢી / દુકાનનું નામ (Business)', profile.department, Icons.business),
+                if (profile.designation.isNotEmpty && profile.designation != 'Not specified')
+                  _buildBusinessRow('હોદ્દો (Designation / Role)', profile.designation, Icons.badge_outlined),
+                if (profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty)
+                  _buildBusinessRow('ઉદ્યોગ / ક્ષેત્ર (Industry)', profile.businessIndustry!, Icons.category_outlined),
+                if (profile.businessService != null && profile.businessService!.isNotEmpty)
+                  _buildBusinessRow('સમાજ સેવા (Service Title)', profile.businessService!, Icons.handshake_outlined),
+                if (profile.city != null && profile.city!.isNotEmpty)
+                  _buildBusinessRow('સ્થળ (City / Place)', profile.city!, Icons.location_on_outlined),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Row(
+            children: [
+              Icon(Icons.info_outline, size: 14, color: Colors.white70),
+              SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'આ વ્યવસાય આપમેળે "સમાજ સર્વિસીસ" ડિરેક્ટરીમાં લિંક થયેલ છે.',
+                  style: TextStyle(color: Colors.white70, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBusinessRow(String label, String value, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFFD4AF37)),
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 4,
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            flex: 5,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),

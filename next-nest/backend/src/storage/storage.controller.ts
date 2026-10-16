@@ -7,7 +7,7 @@ import {
   BadRequestException,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from "@nestjs/swagger";
+import { ApiTags, ApiOperation, ApiConsumes } from "@nestjs/swagger";
 import { StorageService } from "./storage.service";
 
 @ApiTags("Storage")
@@ -16,20 +16,18 @@ export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post("upload")
-  @ApiOperation({ summary: "Upload a file (Image or PDF via Multipart or Base64 JSON)" })
+  @ApiOperation({ summary: "Upload a public media file or private verification document" })
   @ApiConsumes("multipart/form-data", "application/json")
   @UseInterceptors(FileInterceptor("file"))
   async uploadFile(
     @UploadedFile() file?: Express.Multer.File,
     @Body() body?: any,
   ) {
-    const allowedMimeTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-      "application/pdf",
-    ];
+    const isPrivate =
+      body?.isPrivate === true ||
+      body?.isPrivate === "true" ||
+      body?.category === "verification" ||
+      body?.documentType != null;
 
     const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB limit
 
@@ -37,18 +35,14 @@ export class StorageController {
     if (file && file.buffer) {
       if (file.buffer.length > MAX_FILE_SIZE) {
         throw new BadRequestException(
-          "Image size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).",
-        );
-      }
-      if (!allowedMimeTypes.includes(file.mimetype)) {
-        throw new BadRequestException(
-          "Invalid file type. Only images and PDFs are allowed.",
+          "File size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).",
         );
       }
       const url = await this.storageService.uploadFile(
         file.buffer,
         file.mimetype,
         file.originalname || "image.jpg",
+        isPrivate,
       );
       return { url };
     }
@@ -71,19 +65,13 @@ export class StorageController {
         }
       }
 
-      if (!allowedMimeTypes.includes(mimetype)) {
-        throw new BadRequestException(
-          "Invalid file type. Only images and PDFs are allowed.",
-        );
-      }
-
       const fileBuffer = Buffer.from(rawBase64, "base64");
       if (!fileBuffer || fileBuffer.length === 0) {
         throw new BadRequestException("Invalid or empty base64 data");
       }
       if (fileBuffer.length > MAX_FILE_SIZE) {
         throw new BadRequestException(
-          "Image size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).",
+          "File size exceeds maximum limit of 5 MB (મહત્તમ ફાઈલ સાઈઝ 5 MB છે).",
         );
       }
 
@@ -91,10 +79,35 @@ export class StorageController {
         fileBuffer,
         mimetype,
         originalName,
+        isPrivate,
       );
       return { url };
     }
 
     throw new BadRequestException("No file or base64 image data provided");
   }
+
+  @Post("upload-verification")
+  @ApiOperation({ summary: "Upload private verification document (ID cards, credentials)" })
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("file"))
+  async uploadVerificationDocument(
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!file || !file.buffer) {
+      throw new BadRequestException("No verification document file provided");
+    }
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+    if (file.buffer.length > MAX_FILE_SIZE) {
+      throw new BadRequestException("File size exceeds maximum limit of 5 MB.");
+    }
+
+    const url = await this.storageService.uploadVerificationDocument(
+      file.buffer,
+      file.mimetype,
+      file.originalname || "document.pdf",
+    );
+    return { url };
+  }
 }
+

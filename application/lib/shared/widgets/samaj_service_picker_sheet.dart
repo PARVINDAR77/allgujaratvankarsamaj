@@ -239,6 +239,64 @@ class _SamajServicePickerSheetState extends State<SamajServicePickerSheet> {
             ),
           ),
 
+          // Quick "Add New Custom Service" Option if user is searching and no exact match
+          if (_searchQuery.isNotEmpty && !filteredServices.any((s) => s.title.toLowerCase() == _searchQuery.toLowerCase()))
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: InkWell(
+                onTap: () {
+                  final newCat = (_selectedCategory != null && _selectedCategory != 'All')
+                      ? _selectedCategory!
+                      : 'વ્યવસાય અને સેવાઓ (Business)';
+                  widget.onSelected(newCat, _searchQuery);
+                  Navigator.of(context).pop();
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEFF6FF),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF93C5FD)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1D4ED8),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.add_business_rounded, color: Colors.white, size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '+ નવી સર્વિસ ઉમેરો: "$_searchQuery"',
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1D4ED8),
+                              ),
+                            ),
+                            const Text(
+                              'આ નવી સર્વિસ સમાજ સર્વિસીસ ડિરેક્ટરીમાં આપમેળે બની જશે',
+                              style: TextStyle(fontSize: 11, color: Color(0xFF059669)),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFF1D4ED8)),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
           // Services List
           Expanded(
             child: filteredServices.isEmpty
@@ -264,6 +322,26 @@ class _SamajServicePickerSheetState extends State<SamajServicePickerSheet> {
                             'બીજો શબ્દ શોધો અથવા બધી સેવાઓ જુઓ',
                             style: TextStyle(fontSize: 12, color: Colors.black54),
                           ),
+                          if (_searchQuery.isNotEmpty) ...[
+                            const SizedBox(height: 16),
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                final newCat = (_selectedCategory != null && _selectedCategory != 'All')
+                                    ? _selectedCategory!
+                                    : 'વ્યવસાય અને સેવાઓ (Business)';
+                                widget.onSelected(newCat, _searchQuery);
+                                Navigator.of(context).pop();
+                              },
+                              icon: const Icon(Icons.add_business_rounded, size: 18),
+                              label: Text('નવી સર્વિસ તરીકે ઉમેરો: "$_searchQuery"'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1D4ED8),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

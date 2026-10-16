@@ -137,8 +137,10 @@ async function run() {
     const r8 = await request('PATCH', `/api/v1/admin/users/${targetUserId}/role`, { role: 'SUPER_ADMIN' }, adminToken);
     console.log(`[Test] Role escalation by ADMIN -> ${r8.status} (Expected: 403)`);
 
-    // To test role change success, we need to login as SUPER_ADMIN (Parvindar)
-    const superAdminRes = await login('panjabiparvindar77@gmail.com', 'password123');
+    // To test role change success, we need to login as SUPER_ADMIN
+    const adminEmail = process.env.TEST_ADMIN_EMAIL || 'admin@vankarsamaj.org';
+    const adminPass = process.env.TEST_ADMIN_PASSWORD || 'TestAdminPassword123!';
+    const superAdminRes = await login(adminEmail, adminPass);
     if (superAdminRes.status === 200) {
       const r9 = await request('PATCH', `/api/v1/admin/users/${targetUserId}/role`, { role: 'ADMIN' }, superAdminRes.token);
       console.log(`[Test] Role update by SUPER_ADMIN -> ${r9.status} (Expected: 200)`);

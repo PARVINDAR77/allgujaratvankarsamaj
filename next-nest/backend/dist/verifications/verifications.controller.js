@@ -31,6 +31,9 @@ let VerificationsController = class VerificationsController {
     async getMyVerificationStatus(req) {
         return this.verificationsService.getMyVerificationStatus(req.user.id);
     }
+    async getMyVerificationDocument(req, filename, res) {
+        return this.verificationsService.serveCandidatePrivateDocument(req.user.id, filename, res);
+    }
 };
 exports.VerificationsController = VerificationsController;
 __decorate([
@@ -52,6 +55,17 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], VerificationsController.prototype, "getMyVerificationStatus", null);
+__decorate([
+    (0, common_1.Get)("my-document/:filename"),
+    (0, swagger_1.ApiOperation)({ summary: "Get candidate's own uploaded verification document" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Document stream" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("filename")),
+    __param(2, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], VerificationsController.prototype, "getMyVerificationDocument", null);
 exports.VerificationsController = VerificationsController = __decorate([
     (0, swagger_1.ApiTags)("Verifications"),
     (0, swagger_1.ApiBearerAuth)(),
@@ -80,6 +94,9 @@ let AdminVerificationsController = class AdminVerificationsController {
             },
         }));
     }
+    async getVerificationDocumentAdmin(filename, res) {
+        return this.verificationsService.servePrivateDocument(filename, res);
+    }
     async updateStatusAdmin(req, id, dto) {
         const ipAddress = req.ip || req.connection?.remoteAddress || null;
         return this.verificationsService.updateVerificationStatus(id, req.user.id, dto, ipAddress);
@@ -95,6 +112,17 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AdminVerificationsController.prototype, "getPendingVerificationsAdmin", null);
+__decorate([
+    (0, permissions_decorator_1.Permissions)(permissions_1.Permission.VERIFICATION_READ),
+    (0, common_1.Get)("documents/:filename"),
+    (0, swagger_1.ApiOperation)({ summary: "Get private verification document (Admin RBAC required)" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Document stream" }),
+    __param(0, (0, common_1.Param)("filename")),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], AdminVerificationsController.prototype, "getVerificationDocumentAdmin", null);
 __decorate([
     (0, permissions_decorator_1.Permissions)(permissions_1.Permission.VERIFICATION_REVIEW),
     (0, common_1.Patch)(":id/verify"),

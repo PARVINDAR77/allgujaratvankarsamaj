@@ -94,7 +94,24 @@ export class ShortlistsService {
       },
     });
 
-    const profileMap = new Map(profiles.map((p) => [p.id, p]));
+    const profileMap = new Map(
+      profiles.map((p) => {
+        const { user: _, ...rest } = p as any;
+        return [
+          p.id,
+          {
+            ...rest,
+            contactPhone: null,
+            contactEmail: null,
+            altPhone: null,
+            fatherContact: null,
+            guardianContact: null,
+            addressLine: null,
+            pincode: null,
+          },
+        ];
+      }),
+    );
     return targetIds
       .map((id) => profileMap.get(id))
       .filter((p) => p !== undefined);

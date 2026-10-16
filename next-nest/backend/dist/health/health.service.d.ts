@@ -10,9 +10,4 @@ export declare class HealthService {
     private readonly logger;
     constructor(prisma: PrismaService);
     checkHealth(): Promise<HealthStatusResponse>;
-    syncDatabaseSchema(): Promise<{
-        success: boolean;
-        message: string;
-        timestamp: string;
-    }>;
 }

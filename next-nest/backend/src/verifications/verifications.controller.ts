@@ -6,8 +6,11 @@ import {
   Patch,
   Post,
   Request,
+  Res,
   UseGuards,
 } from "@nestjs/common";
+import { Response } from "express";
+
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -48,6 +51,21 @@ export class VerificationsController {
   async getMyVerificationStatus(@Request() req: any) {
     return this.verificationsService.getMyVerificationStatus(req.user.id);
   }
+
+  @Get("my-document/:filename")
+  @ApiOperation({ summary: "Get candidate's own uploaded verification document" })
+  @ApiResponse({ status: 200, description: "Document stream" })
+  async getMyVerificationDocument(
+    @Request() req: any,
+    @Param("filename") filename: string,
+    @Res() res: Response,
+  ) {
+    return this.verificationsService.serveCandidatePrivateDocument(
+      req.user.id,
+      filename,
+      res,
+    );
+  }
 }
 
 @ApiTags("Admin Verifications")
@@ -79,6 +97,17 @@ export class AdminVerificationsController {
     }));
   }
 
+  @Permissions(Permission.VERIFICATION_READ)
+  @Get("documents/:filename")
+  @ApiOperation({ summary: "Get private verification document (Admin RBAC required)" })
+  @ApiResponse({ status: 200, description: "Document stream" })
+  async getVerificationDocumentAdmin(
+    @Param("filename") filename: string,
+    @Res() res: Response,
+  ) {
+    return this.verificationsService.servePrivateDocument(filename, res);
+  }
+
   @Permissions(Permission.VERIFICATION_REVIEW)
   @Patch(":id/verify")
   @ApiOperation({ summary: "Update verification status (Admin)" })
@@ -97,3 +126,4 @@ export class AdminVerificationsController {
     );
   }
 }
+

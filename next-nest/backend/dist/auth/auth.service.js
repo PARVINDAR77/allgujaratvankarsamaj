@@ -70,23 +70,14 @@ let AuthService = class AuthService {
             user = await this.usersService.findByEmail(dto.email);
         }
         if (!user) {
-            const saltRounds = 10;
-            const passwordHash = await bcrypt.hash(dto.password, saltRounds);
-            user = await this.usersService.createUser({
-                email: dto.email,
-                phone: dto.phone,
-                passwordHash,
-            });
+            throw new common_1.UnauthorizedException("અમાન્ય ઓળખપત્ર (Invalid email/phone or password)");
         }
-        else {
-            const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
-            if (!isPasswordValid) {
-                const saltRounds = 10;
-                user.passwordHash = await bcrypt.hash(dto.password, saltRounds);
-            }
+        const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+        if (!isPasswordValid) {
+            throw new common_1.UnauthorizedException("અમાન્ય ઓળખપત્ર (Invalid email/phone or password)");
         }
         if (user.status !== "ACTIVE") {
-            user.status = "ACTIVE";
+            throw new common_1.UnauthorizedException("આ એકાઉન્ટ નિષ્ક્રિય છે (Account is deactivated)");
         }
         const profile = await this.prisma.matrimonialProfile.findUnique({
             where: { userId: user.id },
