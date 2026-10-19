@@ -11,3 +11,7 @@ final samajServicePersonsProvider = FutureProvider.family<List<SamajServicePerso
   final repository = ref.watch(samajServiceRepositoryProvider);
   return repository.fetchPersonsByServiceId(serviceId);
 });
+final allSamajServicePersonsProvider = FutureProvider.family<List<SamajServicePerson>, String>((ref, query) async {
+  final repository = ref.watch(samajServiceRepositoryProvider);
+  return repository.fetchPersonsByServiceId('all', search: query.trim().isNotEmpty ? query.trim() : null);
+});

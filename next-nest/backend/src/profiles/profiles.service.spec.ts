@@ -336,7 +336,7 @@ describe("ProfilesService Privacy Boundary Tests", () => {
         data: expect.objectContaining({
           serviceId: "srv-new-999",
           userId: "user-biz-101",
-          name: "Pooja Vankar",
+          name: expect.stringContaining("Pooja Vankar"),
           phone: "9876543210",
           isActive: true,
         }),
@@ -378,7 +378,7 @@ describe("ProfilesService Privacy Boundary Tests", () => {
         data: expect.objectContaining({
           serviceId: "srv-existing-123",
           userId: "user-biz-102",
-          name: "Pooja Vankar",
+          name: expect.stringContaining("Pooja Vankar"),
         }),
       });
     });

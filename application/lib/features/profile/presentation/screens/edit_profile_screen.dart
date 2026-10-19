@@ -337,7 +337,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _education = profile.education.isNotEmpty ? profile.education : 'Select Degree';
               _employmentType = profile.employmentType.isNotEmpty ? profile.employmentType : 'Private Sector (ખાનગી નોકરી / સેકટર)';
               _department = profile.department;
-              _companyName = profile.department;
+              final isGovtPlaceholder = profile.department.contains('Government') ||
+                  profile.department.contains('સરકાર') ||
+                  profile.department.contains('Select');
+              _companyName = isGovtPlaceholder ? null : profile.department;
               _businessIndustry = (profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty) ? profile.businessIndustry! : 'Select Industry';
               _businessService = (profile.businessService != null && profile.businessService!.isNotEmpty) ? profile.businessService! : 'Select Service';
               _designation = profile.designation;
@@ -871,23 +874,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       updateData['education'] = (_education.contains('Other') && _customEducation.isNotEmpty) ? _customEducation : _education;
                     }
                     if (_employmentType != 'Select Sector') updateData['occupation'] = _employmentType;
-                    if (_department != 'Select Department') {
+                    if (_employmentType.contains('Government') && _department != 'Select Department') {
                       updateData['organizationName'] = (_govCategory != 'Select Category' && _govCategory.contains('Other') && _customGovCategory.isNotEmpty)
                           ? _customGovCategory
                           : _department;
+                    } else if (_employmentType.contains('Business')) {
+                      updateData['businessIndustry'] = _businessIndustry != 'Select Industry' ? _businessIndustry : profile.businessIndustry;
+                      updateData['businessService'] = _businessService != 'Select Service' ? _businessService : profile.businessService;
+                      final isGovtPlaceholder = _companyName != null &&
+                          (_companyName!.contains('Government') ||
+                           _companyName!.contains('સરકાર') ||
+                           _companyName!.contains('Select'));
+                      if (_companyName != null && _companyName!.trim().isNotEmpty && !isGovtPlaceholder) {
+                        updateData['organizationName'] = _companyName!.trim();
+                      } else {
+                        updateData['organizationName'] = null;
+                      }
+                    } else if (_employmentType.contains('Private')) {
+                      updateData['organizationName'] = _companyName ?? profile.department;
                     }
                     if (_pargana != 'Select Pargana') updateData['nativePlace'] = _pargana;
                     if (_yearlyIncome != 'Select Income') updateData['annualIncome'] = _yearlyIncome;
-                    if (_employmentType.contains('Business')) {
-                      updateData['businessIndustry'] = _businessIndustry != 'Select Industry' ? _businessIndustry : profile.businessIndustry;
-                      updateData['businessService'] = _businessService != 'Select Service' ? _businessService : profile.businessService;
-                      if (_companyName != null && _companyName!.isNotEmpty) {
-                        updateData['organizationName'] = _companyName;
-                      }
-                    }
-                    if (_employmentType.contains('Private')) {
-                      updateData['organizationName'] = _companyName ?? profile.department;
-                    }
 
                     if (_firstName != null) updateData['firstName'] = _firstName;
                     if (_lastName != null) updateData['lastName'] = _lastName;

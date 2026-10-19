@@ -9,6 +9,8 @@ class SamajServicePerson {
   final String? city;
   final String? description;
   final String? experience;
+  final String? serviceTitle;
+  final String? serviceIcon;
 
   SamajServicePerson({
     required this.id,
@@ -21,9 +23,17 @@ class SamajServicePerson {
     this.city,
     this.description,
     this.experience,
+    this.serviceTitle,
+    this.serviceIcon,
   });
 
   factory SamajServicePerson.fromJson(Map<String, dynamic> json) {
+    String? svcTitle;
+    String? svcIcon;
+    if (json['service'] is Map) {
+      svcTitle = json['service']['title']?.toString();
+      svcIcon = json['service']['icon']?.toString();
+    }
     return SamajServicePerson(
       id: json['id'] ?? '',
       serviceId: json['serviceId'] ?? json['service_id'] ?? '',
@@ -35,6 +45,8 @@ class SamajServicePerson {
       city: json['city'],
       description: json['description'],
       experience: json['experience'],
+      serviceTitle: svcTitle,
+      serviceIcon: svcIcon,
     );
   }
 }

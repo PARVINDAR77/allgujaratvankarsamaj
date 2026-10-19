@@ -21,6 +21,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _villageController = TextEditingController();
   String _searchQuery = '';
+  int _selectedTabIndex = 0; // 0 = Professionals Directory, 1 = Categories
 
   // Colors for dynamic categories
   final List<Color> _categoryColors = [
@@ -333,6 +334,318 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfessionalDirectoryCard(BuildContext context, SamajServicePerson person) {
+    final effectiveServiceName = person.serviceTitle ?? 'સમાજ સેવા';
+    final effectiveIcon = person.serviceIcon ?? '💼';
+
+    return InkWell(
+      onTap: () => _showProviderDetail(context, person, effectiveServiceName),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFD4AF37).withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Avatar Photo
+                Stack(
+                  children: [
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF041126),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(11),
+                        child: person.photoUrl != null && person.photoUrl!.isNotEmpty
+                            ? Image.network(
+                                person.photoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Center(
+                                  child: Icon(Icons.person, color: Color(0xFFD4AF37), size: 28),
+                                ),
+                              )
+                            : const Center(
+                                child: Icon(Icons.person, color: Color(0xFFD4AF37), size: 28),
+                              ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.check, size: 10, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 12),
+                // Name & Info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        person.name,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF041126),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (person.gujaratiName != null && person.gujaratiName != person.name) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          person.gujaratiName!,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                      const SizedBox(height: 4),
+                      // Service Badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEFF6FF),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFBFDBFE)),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(effectiveIcon, style: const TextStyle(fontSize: 12)),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                effectiveServiceName,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF1D4ED8),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            if (person.city != null && person.city!.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.location_on, size: 14, color: Color(0xFFD4AF37)),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      person.address != null && person.address!.isNotEmpty
+                          ? '${person.city}, ${person.address}'
+                          : person.city!,
+                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            if (person.description != null && person.description!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                person.description!,
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+            const SizedBox(height: 10),
+            // Action Buttons Row (Call & WhatsApp)
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _makePhoneCall(person.phone),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4AF37),
+                      foregroundColor: const Color(0xFF041126),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.call, size: 14),
+                    label: const Text(
+                      'Call Now',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openWhatsApp(person.phone, person.name, effectiveServiceName),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF25D366),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.chat, size: 14),
+                    label: const Text(
+                      'WhatsApp',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAllProfessionalsView(BuildContext context, bool isDesktop) {
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(allSamajServicePersonsProvider(_searchQuery));
+      },
+      child: ref.watch(allSamajServicePersonsProvider(_searchQuery)).when(
+        data: (allPersons) {
+          final filtered = allPersons.where((p) {
+            if (selectedDistrict != null && selectedDistrict!.isNotEmpty) {
+              final d = selectedDistrict!.toLowerCase();
+              final matchesCity = (p.city ?? '').toLowerCase().contains(d);
+              final matchesAddress = (p.address ?? '').toLowerCase().contains(d);
+              if (!matchesCity && !matchesAddress) return false;
+            }
+            if (selectedTaluka != null && selectedTaluka!.isNotEmpty) {
+              final t = selectedTaluka!.toLowerCase();
+              final matchesCity = (p.city ?? '').toLowerCase().contains(t);
+              final matchesAddress = (p.address ?? '').toLowerCase().contains(t);
+              if (!matchesCity && !matchesAddress) return false;
+            }
+            if (_villageController.text.trim().isNotEmpty) {
+              final v = _villageController.text.trim().toLowerCase();
+              final matchesAddress = (p.address ?? '').toLowerCase().contains(v);
+              if (!matchesAddress) return false;
+            }
+            return true;
+          }).toList();
+
+          if (filtered.isEmpty) {
+            return ListView(
+              children: [
+                const SizedBox(height: 60),
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.person_off_rounded,
+                          size: 64, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'કોઈ વ્યવસાયી મળ્યા નથી (No Professionals Found)',
+                        style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black54),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'તમારો વ્યવસાય ઉમેરવા માટે ઉપર "+ ઉમેરો" બટન દબાવો',
+                        style: TextStyle(fontSize: 13, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          }
+
+          if (isDesktop) {
+            return GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.8,
+              ),
+              itemCount: filtered.length,
+              itemBuilder: (context, index) => _buildProfessionalDirectoryCard(context, filtered[index]),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            itemCount: filtered.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) => _buildProfessionalDirectoryCard(context, filtered[index]),
+          );
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+        ),
+        error: (err, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 12),
+              Text('ડેટા લોડ કરવામાં ક્ષતિ: $err'),
+              const SizedBox(height: 12),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(allSamajServicePersonsProvider(_searchQuery)),
+                child: const Text('ફરી પ્રયાસ કરો (Retry)'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -1001,13 +1314,119 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                     ),
                     // --- END SEARCH & FILTER SECTION ---
 
-                    // Services List
+                    // Tab Selector: Professionals vs Categories
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                          width: 1,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => setState(() => _selectedTabIndex = 0),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: _selectedTabIndex == 0
+                                      ? const Color(0xFF041126)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.badge_rounded,
+                                      size: 18,
+                                      color: _selectedTabIndex == 0
+                                          ? const Color(0xFFD4AF37)
+                                          : Colors.grey.shade600,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'વ્યવસાયકારો (Professionals)',
+                                      style: TextStyle(
+                                        color: _selectedTabIndex == 0
+                                            ? Colors.white
+                                            : Colors.grey.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: InkWell(
+                              onTap: () => setState(() => _selectedTabIndex = 1),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: _selectedTabIndex == 1
+                                      ? const Color(0xFF041126)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                alignment: Alignment.center,
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.grid_view_rounded,
+                                      size: 18,
+                                      color: _selectedTabIndex == 1
+                                          ? const Color(0xFFD4AF37)
+                                          : Colors.grey.shade600,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'સેવા કેટેગરી (Categories)',
+                                      style: TextStyle(
+                                        color: _selectedTabIndex == 1
+                                            ? Colors.white
+                                            : Colors.grey.shade700,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Content View
                     Expanded(
-                      child: RefreshIndicator(
-                        onRefresh: () async {
-                          ref.invalidate(samajServicesProvider);
-                        },
-                        child: ref.watch(samajServicesProvider).when(
+                      child: _selectedTabIndex == 0
+                          ? _buildAllProfessionalsView(context, isDesktop)
+                          : RefreshIndicator(
+                              onRefresh: () async {
+                                ref.invalidate(samajServicesProvider);
+                              },
+                              child: ref.watch(samajServicesProvider).when(
                           data: (services) {
                             final query = _searchQuery.toLowerCase();
                             final filteredServices = services.where((service) {

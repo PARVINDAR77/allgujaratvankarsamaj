@@ -1534,17 +1534,36 @@ export class ProfilesService {
       if (!profile || !userId) return;
 
       const occ = (profile.occupation || "").toLowerCase();
+      const rawOrgName = (profile.organizationName || "").trim();
+      const isGovtPlaceholder =
+        rawOrgName.toLowerCase().includes("government") ||
+        rawOrgName.toLowerCase().includes("સરકાર") ||
+        rawOrgName.toLowerCase().includes("select department");
+      const cleanOrgName = isGovtPlaceholder ? "" : rawOrgName;
+
+      const isPureGovt =
+        (occ.includes("government") || occ.includes("સરકારી") || occ.includes("govt")) &&
+        (!profile.businessService || profile.businessService === "Select Service" || profile.businessService.trim() === "") &&
+        (!profile.businessIndustry || profile.businessIndustry === "Select Industry" || profile.businessIndustry.trim() === "");
+
+      if (isPureGovt) {
+        await this.prisma.samajServicePerson.deleteMany({
+          where: { userId },
+        });
+        return;
+      }
+
       const isBusinessOrService =
         occ.includes("business") ||
         occ.includes("સ્વરોજગાર") ||
         occ.includes("વેપાર") ||
         occ.includes("દુકાન") ||
         occ.includes("self") ||
-        Boolean(profile.businessIndustry && profile.businessIndustry !== "Select Industry") ||
-        Boolean(profile.businessService && profile.businessService !== "Select Service") ||
-        Boolean(profile.organizationName);
+        Boolean(profile.businessIndustry && profile.businessIndustry !== "Select Industry" && profile.businessIndustry.trim().length > 1) ||
+        Boolean(profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1) ||
+        Boolean(cleanOrgName && cleanOrgName.length > 2);
 
-      if (isBusinessOrService && (profile.businessService || profile.businessIndustry || profile.organizationName || profile.designation || isBusinessOrService)) {
+      if (isBusinessOrService) {
         // 1. Resolve Contact Phone with robust fallback chain
         let phone = (profile.contactPhone || profile.altPhone || "").trim();
         if (!phone) {
@@ -1559,7 +1578,7 @@ export class ProfilesService {
         }
 
         const fullName = `${profile.firstName || ""} ${profile.lastName || ""}`.trim() || "Samaj Professional";
-        const businessName = (profile.organizationName || "").trim();
+        const businessName = cleanOrgName;
         const designation = (profile.designation || "").trim();
 
         // 2. Resolve matching SamajService with flexible matching
@@ -1574,7 +1593,7 @@ export class ProfilesService {
             },
           });
 
-          // Flexible match by title or description
+          // Flexible match by title
           if (!service) {
             const cleanTitle = profile.businessService
               .replace(/\(.*?\)/g, "")
@@ -1583,13 +1602,19 @@ export class ProfilesService {
             if (cleanTitle.length > 2) {
               service = await this.prisma.samajService.findFirst({
                 where: {
-                  OR: [
-                    { title: { contains: cleanTitle } },
-                    { description: { contains: cleanTitle } },
-                  ],
+                  title: { contains: cleanTitle },
                   isActive: true,
                 },
               });
+
+              if (!service) {
+                service = await this.prisma.samajService.findFirst({
+                  where: {
+                    description: { contains: cleanTitle },
+                    isActive: true,
+                  },
+                });
+              }
             }
           }
         }
@@ -1625,28 +1650,27 @@ export class ProfilesService {
           });
         }
 
-        // Fallback: match by category if service still not resolved
-        if (!service && profile.businessIndustry && profile.businessIndustry !== "Select Industry") {
-          const cleanCat = profile.businessIndustry.replace(/\(.*?\)/g, "").trim();
+        // Fallback: match by organizationName if service still not resolved
+        if (!service && businessName && businessName.length > 2) {
           service = await this.prisma.samajService.findFirst({
             where: {
-              category: { contains: cleanCat },
+              title: { contains: businessName },
               isActive: true,
             },
           });
         }
 
-        // Fallback: match by organizationName if service still not resolved
-        if (!service && businessName && businessName.length > 2) {
-          service = await this.prisma.samajService.findFirst({
-            where: {
-              OR: [
-                { title: { contains: businessName } },
-                { description: { contains: businessName } },
-              ],
-              isActive: true,
-            },
-          });
+        // Fallback: match by category only if no specific businessService was provided
+        if (!service && (!profile.businessService || profile.businessService === "Select Service") && profile.businessIndustry && profile.businessIndustry !== "Select Industry") {
+          const cleanCat = profile.businessIndustry.replace(/\(.*?\)/g, "").trim();
+          if (cleanCat.length > 2) {
+            service = await this.prisma.samajService.findFirst({
+              where: {
+                category: { contains: cleanCat },
+                isActive: true,
+              },
+            });
+          }
         }
 
         // 3. AUTO-CREATE SAMAJ SERVICE IF NEW AND NOT IN THE DIRECTORY
@@ -1689,7 +1713,7 @@ export class ProfilesService {
           else if (lower.includes("advocate") || lower.includes("lawyer") || lower.includes("વકીલ") || lower.includes("legal")) icon = "⚖️";
           else if (lower.includes("education") || lower.includes("શિક્ષણ") || lower.includes("school") || lower.includes("class")) icon = "🎓";
           else if (lower.includes("software") || lower.includes("it") || lower.includes("computer") || lower.includes("ટેકનોલોજી")) icon = "💻";
-          else if (lower.includes("auto") || lower.includes("garage") || lower.includes("વાહન") || lower.includes("driver")) icon = "🚗";
+          else if (lower.includes("auto") || lower.includes("garage") || lower.includes("વાહન") || lower.includes("driver") || lower.includes("car")) icon = "🚗";
           else if (lower.includes("kirana") || lower.includes("store") || lower.includes("કરિયાણા") || lower.includes("food") || lower.includes("દુકાન")) icon = "🛒";
           else if (lower.includes("cloth") || lower.includes("textile") || lower.includes("કાપડ")) icon = "👔";
           else if (lower.includes("electric") || lower.includes("લાઈટ") || lower.includes("વાયર")) icon = "⚡";
@@ -1763,7 +1787,18 @@ export class ProfilesService {
           }
 
           const existingPerson = await this.prisma.samajServicePerson.findFirst({
-            where: { userId },
+            where: {
+              userId,
+              serviceId: service.id,
+            },
+          });
+
+          // Delete any obsolete service mappings for this user
+          await this.prisma.samajServicePerson.deleteMany({
+            where: {
+              userId,
+              serviceId: { not: service.id },
+            },
           });
 
           const isVamika =
@@ -1771,11 +1806,15 @@ export class ProfilesService {
             (businessName && businessName.toLowerCase().includes("vamika")) ||
             phone.includes("9265476537");
 
-          const personName = isVamika ? "VAMIKA NURSING ACADEMY (IDAR)" : fullName;
-          const gujaratiName = isVamika ? "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ & કોચિંગ સેવાઓ)" : fullName;
+          const personName = isVamika
+            ? "VAMIKA NURSING ACADEMY (IDAR)"
+            : (businessName ? `${fullName} (${businessName})` : fullName);
+          const gujaratiName = isVamika
+            ? "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ & કોચિંગ સેવાઓ)"
+            : (businessName ? `${fullName} (${businessName})` : fullName);
           const personCity = isVamika ? "Idar" : (profile.city || profile.state || null);
           const personAddress = isVamika ? "ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા" : (profile.addressLine || profile.nativePlace || profile.city || null);
-          const personExperience = isVamika ? "અધિકૃત શૈક્ષણિક એકેડેમી (Nursing & Education)" : "અનુભવી વ્યવસાયી (Experienced)";
+          const personExperience = isVamika ? "અધિકૃત શૈક્ષણિક એકેડેમી (Nursing & Education)" : (designation || "અનુભવી વ્યવસાયી (Experienced)");
 
           const personData: any = {
             serviceId: service.id,
