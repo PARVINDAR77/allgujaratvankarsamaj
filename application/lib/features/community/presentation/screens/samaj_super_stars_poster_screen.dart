@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,11 @@ class SamajSuperStarsPosterScreen extends ConsumerStatefulWidget {
 
 class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPosterScreen> {
   final ScrollController _scrollController = ScrollController();
+  final PageController _carouselController = PageController();
+  int _currentCardIndex = 0;
+  Timer? _autoSlideTimer;
+  bool _isUserInteracting = false;
+  bool _isListViewMode = false;
 
   @override
   void initState() {
@@ -23,8 +29,48 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
     });
   }
 
+  void _startAutoSlide(int totalItems) {
+    if (totalItems <= 1 || _autoSlideTimer != null) return;
+    _autoSlideTimer = Timer.periodic(const Duration(milliseconds: 4500), (timer) {
+      if (!mounted || _isListViewMode || _isUserInteracting || !_carouselController.hasClients) return;
+      final next = (_currentCardIndex + 1) % totalItems;
+      _carouselController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOutCubic,
+      );
+    });
+  }
+
+  void _stopAutoSlide() {
+    _autoSlideTimer?.cancel();
+    _autoSlideTimer = null;
+  }
+
+  void _nextSlide(int total) {
+    if (!_carouselController.hasClients || total <= 0) return;
+    final next = (_currentCardIndex + 1) % total;
+    _carouselController.animateToPage(
+      next,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  void _prevSlide(int total) {
+    if (!_carouselController.hasClients || total <= 0) return;
+    final prev = _currentCardIndex > 0 ? _currentCardIndex - 1 : total - 1;
+    _carouselController.animateToPage(
+      prev,
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
   @override
   void dispose() {
+    _stopAutoSlide();
+    _carouselController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -203,31 +249,124 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                                   ],
                                 ),
                               ),
-                              // Live Count Pill
+                              // View Mode Toggle & Live Count Pill
                               starsAsync.when(
-                                data: (stars) => Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFFD700).withValues(alpha: 0.18),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: const Color(0xFFFFD700), width: 1),
-                                  ),
-                                  child: Row(
+                                data: (stars) {
+                                  if (stars.isEmpty) return const SizedBox.shrink();
+                                  return Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(Icons.people_alt, color: Color(0xFFFFD700), size: 14),
-                                      const SizedBox(width: 5),
-                                      Text(
-                                        '${stars.length} સ્ટાર્સ',
-                                        style: const TextStyle(
-                                          color: Color(0xFFFFD700),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
+                                      Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF041126),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(color: const Color(0x55FFD700)),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Slider View Button
+                                            GestureDetector(
+                                              onTap: () {
+                                                if (_isListViewMode) {
+                                                  setState(() => _isListViewMode = false);
+                                                  _startAutoSlide(stars.length);
+                                                }
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: !_isListViewMode ? const Color(0xFFFFD700) : Colors.transparent,
+                                                  borderRadius: BorderRadius.circular(16),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.view_carousel_rounded,
+                                                      size: 14,
+                                                      color: !_isListViewMode ? Colors.black : Colors.white70,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      'સ્લાઇડર',
+                                                      style: TextStyle(
+                                                        color: !_isListViewMode ? Colors.black : Colors.white70,
+                                                        fontSize: 10.5,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                            // List View Button
+                                            GestureDetector(
+                                              onTap: () {
+                                                if (!_isListViewMode) {
+                                                  setState(() => _isListViewMode = true);
+                                                  _stopAutoSlide();
+                                                }
+                                              },
+                                              child: Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: _isListViewMode ? const Color(0xFFFFD700) : Colors.transparent,
+                                                  borderRadius: BorderRadius.circular(16),
+                                                ),
+                                                child: Row(
+                                                  mainAxisSize: MainAxisSize.min,
+                                                  children: [
+                                                    Icon(
+                                                      Icons.view_agenda_rounded,
+                                                      size: 14,
+                                                      color: _isListViewMode ? Colors.black : Colors.white70,
+                                                    ),
+                                                    const SizedBox(width: 4),
+                                                    Text(
+                                                      'યાદી',
+                                                      style: TextStyle(
+                                                        color: _isListViewMode ? Colors.black : Colors.white70,
+                                                        fontSize: 10.5,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      // Live Count Pill
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                                          borderRadius: BorderRadius.circular(20),
+                                          border: Border.all(color: const Color(0xFFFFD700), width: 1),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.people_alt, color: Color(0xFFFFD700), size: 14),
+                                            const SizedBox(width: 5),
+                                            Text(
+                                              '${stars.length} સ્ટાર્સ',
+                                              style: const TextStyle(
+                                                color: Color(0xFFFFD700),
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
-                                  ),
-                                ),
+                                  );
+                                },
                                 loading: () => const SizedBox.shrink(),
                                 error: (_, __) => const SizedBox.shrink(),
                               ),
@@ -287,16 +426,26 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                               );
                             }
 
-                            return ListView.separated(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: stars.length,
-                              separatorBuilder: (_, __) => const SizedBox(height: 14),
-                              itemBuilder: (context, index) {
-                                final star = stars[index];
-                                return _buildSuperStarCard(context, star, index + 1);
-                              },
-                            );
+                            if (stars.isNotEmpty && !_isListViewMode && _autoSlideTimer == null) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                _startAutoSlide(stars.length);
+                              });
+                            }
+
+                            if (_isListViewMode) {
+                              return ListView.separated(
+                                shrinkWrap: true,
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: stars.length,
+                                separatorBuilder: (_, __) => const SizedBox(height: 14),
+                                itemBuilder: (context, index) {
+                                  final star = stars[index];
+                                  return _buildSuperStarCard(context, star, index + 1);
+                                },
+                              );
+                            }
+
+                            return _buildCarouselSlider(stars);
                           },
                           loading: () => Container(
                             padding: const EdgeInsets.symmetric(vertical: 40),
@@ -564,6 +713,161 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // --- Right-to-Left (RTL) Horizontal Carousel Slider Widget ---
+  Widget _buildCarouselSlider(List<SamajSuperStar> stars) {
+    if (stars.isEmpty) return const SizedBox.shrink();
+
+    return Listener(
+      onPointerDown: (_) => _isUserInteracting = true,
+      onPointerUp: (_) => _isUserInteracting = false,
+      onPointerCancel: (_) => _isUserInteracting = false,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            clipBehavior: Clip.none,
+            children: [
+              // Horizontal Right-to-Left PageView
+              SizedBox(
+                height: 290,
+                child: PageView.builder(
+                  controller: _carouselController,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: stars.length,
+                  onPageChanged: (idx) {
+                    setState(() => _currentCardIndex = idx);
+                  },
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: _buildSuperStarCard(context, stars[index], index + 1),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+              // Left Navigation Arrow Button (<)
+              if (stars.length > 1)
+                Positioned(
+                  left: -6,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _prevSlide(stars.length),
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          color: const Color(0xE6041126),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black87, blurRadius: 8, offset: Offset(0, 3)),
+                          ],
+                        ),
+                        child: const Icon(Icons.arrow_back_ios_new, color: Color(0xFFFFD700), size: 18),
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Right Navigation Arrow Button (>)
+              if (stars.length > 1)
+                Positioned(
+                  right: -6,
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () => _nextSlide(stars.length),
+                      borderRadius: BorderRadius.circular(24),
+                      child: Container(
+                        padding: const EdgeInsets.all(9),
+                        decoration: BoxDecoration(
+                          color: const Color(0xE6041126),
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                          boxShadow: const [
+                            BoxShadow(color: Colors.black87, blurRadius: 8, offset: Offset(0, 3)),
+                          ],
+                        ),
+                        child: const Icon(Icons.arrow_forward_ios, color: Color(0xFFFFD700), size: 18),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 14),
+
+          // Dots & Position Indicator Row
+          if (stars.length > 1)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Pill indicator
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F1E36),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0x44FFD700)),
+                  ),
+                  child: Text(
+                    '${_currentCardIndex + 1} / ${stars.length}',
+                    style: const TextStyle(
+                      color: Color(0xFFFFD700),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                // Dots
+                Flexible(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List.generate(stars.length, (idx) {
+                        final isSelected = idx == _currentCardIndex;
+                        return GestureDetector(
+                          onTap: () {
+                            _carouselController.animateToPage(
+                              idx,
+                              duration: const Duration(milliseconds: 350),
+                              curve: Curves.easeInOutCubic,
+                            );
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 250),
+                            margin: const EdgeInsets.symmetric(horizontal: 3),
+                            width: isSelected ? 22 : 7,
+                            height: 7,
+                            decoration: BoxDecoration(
+                              color: isSelected ? const Color(0xFFFFD700) : Colors.white24,
+                              borderRadius: BorderRadius.circular(4),
+                              boxShadow: isSelected
+                                  ? [BoxShadow(color: const Color(0xFFFFD700).withValues(alpha: 0.5), blurRadius: 4)]
+                                  : null,
+                            ),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );
