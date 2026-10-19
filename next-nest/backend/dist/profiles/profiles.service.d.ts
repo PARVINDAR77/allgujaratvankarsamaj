@@ -76,6 +76,7 @@ export declare class ProfilesService {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }>;
     getProfileByUserId(userId: string): Promise<{
         state: string | null;
@@ -132,6 +133,7 @@ export declare class ProfilesService {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }>;
     private sanitizeProfileForViewer;
     private sanitizeProfileForListing;
@@ -191,6 +193,7 @@ export declare class ProfilesService {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }>;
     deleteProfileByUserId(userId: string): Promise<{
         success: boolean;
@@ -250,6 +253,7 @@ export declare class ProfilesService {
             villageId: string | null;
             isVerified: boolean;
             isFeatured: boolean;
+            showInMatrimony: boolean;
         };
     } | {
         success: boolean;
@@ -317,6 +321,7 @@ export declare class ProfilesService {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            showInMatrimony: boolean;
             privacySettings: any;
             user: any;
         }[];

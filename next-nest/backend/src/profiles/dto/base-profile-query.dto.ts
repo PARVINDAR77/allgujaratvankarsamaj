@@ -59,6 +59,10 @@ export class BaseProfileQueryDto extends PaginationQueryDto {
   @IsEnum(MaritalStatus)
   maritalStatus?: MaritalStatus;
 
+  @ApiPropertyOptional({ description: "Filter by showInMatrimony flag" })
+  @IsOptional()
+  showInMatrimony?: any;
+
   @ApiPropertyOptional({ enum: VerificationStatus })
   @IsOptional()
   @IsEnum(VerificationStatus)

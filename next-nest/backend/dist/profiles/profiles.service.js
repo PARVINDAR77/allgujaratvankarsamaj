@@ -216,6 +216,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
                 motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
                 privacySettings: resolvedPrivacySettings,
+                showInMatrimony: dto.showInMatrimony !== undefined
+                    ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
+                    : true,
             };
             if (existingProfile) {
                 profile = await this.prisma.matrimonialProfile.update({
@@ -368,6 +371,9 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 status: client_1.ProfileStatus.PENDING,
                 isVerified: false,
                 isFeatured: false,
+                showInMatrimony: dto.showInMatrimony !== undefined
+                    ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
+                    : true,
                 createdAt: new Date(),
                 updatedAt: new Date(),
             };
@@ -732,6 +738,13 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     currentPrivacy.shareClassGroup = dto.shareClassGroup === true || dto.shareClassGroup === 'true';
                 updateData.privacySettings = JSON.stringify(currentPrivacy);
             }
+            if (dto.showInMatrimony !== undefined) {
+                updateData.showInMatrimony =
+                    dto.showInMatrimony === true ||
+                        dto.showInMatrimony === 'true' ||
+                        dto.showInMatrimony === 1 ||
+                        dto.showInMatrimony === '1';
+            }
             const updatedProfile = await this.prisma.matrimonialProfile.update({
                 where: { userId },
                 data: updateData,
@@ -1092,6 +1105,16 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 ],
             };
         }
+        if (query.showInMatrimony !== undefined) {
+            where.showInMatrimony =
+                query.showInMatrimony === true ||
+                    query.showInMatrimony === "true" ||
+                    query.showInMatrimony === 1 ||
+                    query.showInMatrimony === "1";
+        }
+        else if (!query.includeAllProfiles) {
+            where.showInMatrimony = true;
+        }
         const minAge = query.ageMin ?? query.ageFrom;
         const maxAge = query.ageMax ?? query.ageTo;
         if (minAge || maxAge) {
@@ -1348,6 +1371,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 abroadCountry: p.abroadCountry,
                 businessIndustry: p.businessIndustry,
                 businessService: p.businessService,
+                showInMatrimony: p.showInMatrimony !== false,
                 privacySettings: p.privacySettings,
                 user: undefined,
             };

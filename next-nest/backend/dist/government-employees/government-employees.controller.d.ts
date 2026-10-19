@@ -365,6 +365,7 @@ export declare class GovernmentEmployeesController {
                 villageId: string | null;
                 isVerified: boolean;
                 isFeatured: boolean;
+                showInMatrimony: boolean;
             };
             designation: {
                 name: string;
@@ -504,6 +505,7 @@ export declare class GovernmentEmployeesController {
                 villageId: string | null;
                 isVerified: boolean;
                 isFeatured: boolean;
+                showInMatrimony: boolean;
             };
             designation: {
                 name: string;

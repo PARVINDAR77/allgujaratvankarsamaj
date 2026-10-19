@@ -55,4 +55,5 @@ export declare class CreateProfileDto {
     addressPrivacy?: string;
     guardianPrivacy?: string;
     shareClassGroup?: any;
+    showInMatrimony?: any;
 }

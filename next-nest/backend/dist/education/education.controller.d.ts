@@ -6,29 +6,6 @@ export declare class EducationController {
     getEducation(): Promise<{
         statusCode: number;
         data: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
-            headerTitle: string | null;
-            headerSubtitle: string | null;
-            box1Title: string | null;
-            box1Subtitle: string | null;
-            box1PdfUrl: string | null;
-            box1FileName: string | null;
-            box2Title: string | null;
-            box2Content: string | null;
-            box2Author: string | null;
-            box3Title: string | null;
-            box3YoutubeUrl: string | null;
-            box3Description: string | null;
-            box4Title: string | null;
-            box4YoutubeUrl: string | null;
-            box4Description: string | null;
-        };
-    } | {
-        statusCode: number;
-        data: {
             id: any;
             headerTitle: any;
             headerSubtitle: any;
@@ -80,29 +57,6 @@ export declare class EducationController {
         };
     }>;
     getAdminEducation(): Promise<{
-        statusCode: number;
-        data: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            isActive: boolean;
-            headerTitle: string | null;
-            headerSubtitle: string | null;
-            box1Title: string | null;
-            box1Subtitle: string | null;
-            box1PdfUrl: string | null;
-            box1FileName: string | null;
-            box2Title: string | null;
-            box2Content: string | null;
-            box2Author: string | null;
-            box3Title: string | null;
-            box3YoutubeUrl: string | null;
-            box3Description: string | null;
-            box4Title: string | null;
-            box4YoutubeUrl: string | null;
-            box4Description: string | null;
-        };
-    } | {
         statusCode: number;
         data: {
             id: any;
@@ -178,6 +132,10 @@ export declare class EducationController {
             box4Title: string | null;
             box4YoutubeUrl: string | null;
             box4Description: string | null;
+            box5Title: string | null;
+            box5Subtitle: string | null;
+            box5ImageUrl: string | null;
+            box5Description: string | null;
         };
     } | {
         statusCode: number;

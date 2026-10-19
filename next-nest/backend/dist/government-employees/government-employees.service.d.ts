@@ -417,6 +417,7 @@ export declare class GovernmentEmployeesService {
                 villageId: string | null;
                 isVerified: boolean;
                 isFeatured: boolean;
+                showInMatrimony: boolean;
             };
             designation: {
                 name: string;
@@ -556,6 +557,7 @@ export declare class GovernmentEmployeesService {
                 villageId: string | null;
                 isVerified: boolean;
                 isFeatured: boolean;
+                showInMatrimony: boolean;
             };
             designation: {
                 name: string;

@@ -126,6 +126,7 @@ export declare class StatisticsController {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }[]>;
     getSectionViews(): Promise<{
         id: string;

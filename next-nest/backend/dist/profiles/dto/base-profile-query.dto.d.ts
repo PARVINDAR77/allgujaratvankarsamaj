@@ -9,6 +9,7 @@ export declare class BaseProfileQueryDto extends PaginationQueryDto {
     ageMin?: number;
     ageMax?: number;
     maritalStatus?: MaritalStatus;
+    showInMatrimony?: any;
     verificationStatus?: VerificationStatus;
     stateId?: string;
     districtId?: string;

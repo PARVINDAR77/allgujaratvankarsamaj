@@ -6,6 +6,7 @@ export declare class SearchQueryDto {
     gender?: Gender;
     lookingFor?: string;
     maritalStatus?: MaritalStatus;
+    showInMatrimony?: any;
     ageMin?: number;
     ageMax?: number;
     ageFrom?: number;

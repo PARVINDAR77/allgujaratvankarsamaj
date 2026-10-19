@@ -497,4 +497,8 @@ export class CreateProfileDto {
   @ApiPropertyOptional({ description: "Share in class group" })
   @IsOptional()
   shareClassGroup?: any;
+
+  @ApiPropertyOptional({ description: "Whether to include profile in matrimony listings" })
+  @IsOptional()
+  showInMatrimony?: any;
 }

@@ -69,6 +69,11 @@ __decorate([
     __metadata("design:type", String)
 ], BaseProfileQueryDto.prototype, "maritalStatus", void 0);
 __decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Filter by showInMatrimony flag" }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], BaseProfileQueryDto.prototype, "showInMatrimony", void 0);
+__decorate([
     (0, swagger_1.ApiPropertyOptional)({ enum: profile_enums_1.VerificationStatus }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsEnum)(profile_enums_1.VerificationStatus),

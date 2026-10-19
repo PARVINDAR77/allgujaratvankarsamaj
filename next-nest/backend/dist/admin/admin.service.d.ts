@@ -235,6 +235,7 @@ export declare class AdminService {
                     villageId: string | null;
                     isVerified: boolean;
                     isFeatured: boolean;
+                    showInMatrimony: boolean;
                 };
             };
             userB: {
@@ -308,6 +309,7 @@ export declare class AdminService {
                     villageId: string | null;
                     isVerified: boolean;
                     isFeatured: boolean;
+                    showInMatrimony: boolean;
                 };
             };
             compatibility: string;

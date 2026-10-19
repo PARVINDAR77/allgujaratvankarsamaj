@@ -148,6 +148,7 @@ model MatrimonialProfile {
   status               ProfileStatus         @default(PENDING)
   isVerified           Boolean               @default(false) @map("is_verified")
   isFeatured           Boolean               @default(false) @map("is_featured")
+  showInMatrimony      Boolean               @default(true) @map("show_in_matrimony")
   createdAt            DateTime              @default(now()) @map("created_at")
   updatedAt            DateTime              @updatedAt @map("updated_at")
   governmentEmployment GovernmentEmployment?

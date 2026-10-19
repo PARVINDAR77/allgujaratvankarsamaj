@@ -251,6 +251,7 @@ export declare class InterestsController {
             villageId: string | null;
             isVerified: boolean;
             isFeatured: boolean;
+            showInMatrimony: boolean;
         };
         conversationId: string;
         status: import(".prisma/client").$Enums.InterestStatus;

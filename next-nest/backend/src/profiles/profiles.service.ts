@@ -275,6 +275,9 @@ export class ProfilesService {
         contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
         motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
         privacySettings: resolvedPrivacySettings,
+        showInMatrimony: dto.showInMatrimony !== undefined
+          ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
+          : true,
       };
 
       if (existingProfile) {
@@ -430,6 +433,9 @@ export class ProfilesService {
         status: ProfileStatus.PENDING,
         isVerified: false,
         isFeatured: false,
+        showInMatrimony: dto.showInMatrimony !== undefined
+          ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
+          : true,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -844,6 +850,14 @@ export class ProfilesService {
         if (dto.guardianPrivacy !== undefined) currentPrivacy.guardian = dto.guardianPrivacy;
         if (dto.shareClassGroup !== undefined) currentPrivacy.shareClassGroup = dto.shareClassGroup === true || dto.shareClassGroup === 'true';
         updateData.privacySettings = JSON.stringify(currentPrivacy);
+      }
+
+      if (dto.showInMatrimony !== undefined) {
+        updateData.showInMatrimony =
+          dto.showInMatrimony === true ||
+          dto.showInMatrimony === 'true' ||
+          dto.showInMatrimony === 1 ||
+          dto.showInMatrimony === '1';
       }
 
       const updatedProfile = await this.prisma.matrimonialProfile.update({
@@ -1265,6 +1279,17 @@ export class ProfilesService {
       };
     }
 
+    if ((query as any).showInMatrimony !== undefined) {
+      where.showInMatrimony =
+        (query as any).showInMatrimony === true ||
+        (query as any).showInMatrimony === "true" ||
+        (query as any).showInMatrimony === 1 ||
+        (query as any).showInMatrimony === "1";
+    } else if (!(query as any).includeAllProfiles) {
+      // By default in matrimonial candidate listings, only show candidates who opted into matrimony (default true)
+      where.showInMatrimony = true;
+    }
+
     // Age filtering based on date of birth
     const minAge = query.ageMin ?? (query as any).ageFrom;
     const maxAge = query.ageMax ?? (query as any).ageTo;
@@ -1563,6 +1588,7 @@ export class ProfilesService {
         abroadCountry: p.abroadCountry,
         businessIndustry: p.businessIndustry,
         businessService: p.businessService,
+        showInMatrimony: p.showInMatrimony !== false,
         privacySettings: p.privacySettings,
         user: undefined,
       };

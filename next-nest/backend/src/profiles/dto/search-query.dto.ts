@@ -37,6 +37,10 @@ export class SearchQueryDto {
   @IsEnum(MaritalStatus)
   maritalStatus?: MaritalStatus;
 
+  @ApiPropertyOptional({ description: "Filter by showInMatrimony flag" })
+  @IsOptional()
+  showInMatrimony?: any;
+
   @ApiPropertyOptional({ description: "Min age" })
   @IsOptional()
   @Type(() => Number)

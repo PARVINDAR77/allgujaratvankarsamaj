@@ -106,6 +106,7 @@ export declare class StatisticsService {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }[]>;
     getSectionViews(): Promise<{
         id: string;

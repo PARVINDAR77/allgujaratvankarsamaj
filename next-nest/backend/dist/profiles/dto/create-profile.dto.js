@@ -557,4 +557,9 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
 ], CreateProfileDto.prototype, "shareClassGroup", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Whether to include profile in matrimony listings" }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProfileDto.prototype, "showInMatrimony", void 0);
 //# sourceMappingURL=create-profile.dto.js.map

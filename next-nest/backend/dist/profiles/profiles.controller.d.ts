@@ -67,6 +67,7 @@ export declare class ProfilesController {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            showInMatrimony: boolean;
             privacySettings: any;
             user: any;
         }[];
@@ -130,6 +131,7 @@ export declare class ProfilesController {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            showInMatrimony: boolean;
             privacySettings: any;
             user: any;
         }[];
@@ -234,6 +236,7 @@ export declare class ProfilesController {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }>;
     getMyProfile(req: any): Promise<{
         state: string | null;
@@ -290,6 +293,7 @@ export declare class ProfilesController {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }>;
     updateMyProfile(req: any, dto: UpdateProfileDto): Promise<{
         state: string | null;
@@ -346,6 +350,7 @@ export declare class ProfilesController {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
+        showInMatrimony: boolean;
     }>;
     deleteMyProfile(req: any): Promise<{
         success: boolean;
@@ -405,6 +410,7 @@ export declare class ProfilesController {
             villageId: string | null;
             isVerified: boolean;
             isFeatured: boolean;
+            showInMatrimony: boolean;
         };
     } | {
         success: boolean;

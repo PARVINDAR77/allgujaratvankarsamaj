@@ -79,6 +79,7 @@ class ProfileModel {
   final String? addressPrivacy;
   final String? guardianPrivacy;
   final bool shareClassGroup;
+  final bool showInMatrimony;
 
   const ProfileModel({
     required this.id,
@@ -137,6 +138,7 @@ class ProfileModel {
     this.addressPrivacy,
     this.guardianPrivacy,
     this.shareClassGroup = false,
+    this.showInMatrimony = true,
   });
 
   String get fullName => '$firstName $lastName'.trim().isEmpty ? 'Member' : '$firstName $lastName'.trim();
@@ -568,10 +570,16 @@ class ProfileModel {
       addressPrivacy: addrPriv,
       guardianPrivacy: guardPriv,
       shareClassGroup: shareClass,
+      showInMatrimony: (json['showInMatrimony'] ?? json['show_in_matrimony']) as bool? ?? true,
     );
   }
 
   Map<String, dynamic> toJson() {
+    final isBusinessGovPlaceholder = employmentType.contains('Business') &&
+        (department.contains('Government') ||
+         department.contains('સરકાર') ||
+         department.contains('Select'));
+
     final map = <String, dynamic>{
       if (id.isNotEmpty && !id.startsWith('NEW')) 'id': id,
       'firstName': firstName.trim().isNotEmpty ? firstName.trim() : 'New',
@@ -586,7 +594,7 @@ class ProfileModel {
       'dateOfBirth': dateOfBirth.trim().isNotEmpty ? dateOfBirth.trim() : '2000-01-01',
       if (education.trim().isNotEmpty && education != 'Select Degree') 'education': education.trim(),
       if (employmentType.trim().isNotEmpty) 'occupation': employmentType.trim(),
-      if (department.trim().isNotEmpty) 'organizationName': department.trim(),
+      if (department.trim().isNotEmpty && !isBusinessGovPlaceholder) 'organizationName': department.trim(),
       if (designation.trim().isNotEmpty) 'designation': designation.trim(),
       if (annualIncome != null && annualIncome!.trim().isNotEmpty && annualIncome != 'Select Income') 'annualIncome': annualIncome!.trim(),
       if (pargana.trim().isNotEmpty && pargana != 'Select Pargana') 'nativePlace': pargana.trim() else if (nativePlace != null && nativePlace!.trim().isNotEmpty) 'nativePlace': nativePlace!.trim(),
@@ -625,6 +633,7 @@ class ProfileModel {
       if (addressPrivacy != null) 'addressPrivacy': addressPrivacy,
       if (guardianPrivacy != null) 'guardianPrivacy': guardianPrivacy,
       'shareClassGroup': shareClassGroup,
+      'showInMatrimony': showInMatrimony,
     };
 
     return map;

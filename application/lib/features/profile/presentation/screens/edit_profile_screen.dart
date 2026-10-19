@@ -88,6 +88,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _pwbdCategory;
   bool _isAbroad = false;
   String? _abroadCountry;
+  bool _showInMatrimony = true;
   bool _isInitialized = false;
   
   String? _firstName;
@@ -313,6 +314,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _isInitialized = true;
               _gender = profile.displayGender;
               _maritalStatus = ProfileModel.normalizeMaritalStatusToDisplay(profile.maritalStatus);
+              _showInMatrimony = profile.showInMatrimony;
               _bloodGroup = profile.bloodGroup;
               _isVankar = profile.isVankar == true ? 'Yes (હા)' : 'No (ના)';
               _religion = (profile.religion != null && profile.religion!.isNotEmpty) ? profile.religion! : 'Hindu (હિન્દુ)';
@@ -408,7 +410,51 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 Icons.favorite_border,
                 ['Never Married (અપરિણીત)', 'Married (પરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'],
                 value: _maritalStatus ?? ProfileModel.normalizeMaritalStatusToDisplay(profile.maritalStatus),
-                onChanged: (v) => setState(() => _maritalStatus = v),
+                onChanged: (v) => setState(() {
+                  _maritalStatus = v;
+                  if (v == 'Married (પરિણીત)') {
+                    _showInMatrimony = false;
+                  }
+                }),
+              ),
+              // Show in Matrimony Directory Toggle
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.favorite, color: Color(0xFFD4AF37)),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Show in Matrimony (મેરેજ બ્યુરોમાં દર્શાવો)',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            _showInMatrimony
+                                ? 'તમારી પ્રોફાઇલ વૈવાહિક ઉમેદવારોમાં દેખાશે (Visible in Matrimony)'
+                                : 'પ્રોફાઇલ માત્ર ડિરેક્ટરી/સેવામાં રહેશે (Hidden from Matrimony)',
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: _showInMatrimony,
+                      activeColor: const Color(0xFFD4AF37),
+                      onChanged: (val) => setState(() => _showInMatrimony = val),
+                    ),
+                  ],
+                ),
               ),
               _buildDropdownField(
                 'Blood Group (બ્લડ ગ્રુપ)',
@@ -865,6 +911,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     final selectedGender = _gender ?? profile.displayGender;
                     updateData['gender'] = ProfileModel.normalizeGenderToApi(selectedGender);
                     if (_maritalStatus != null) updateData['maritalStatus'] = ProfileModel.normalizeMaritalStatusToApi(_maritalStatus);
+                    updateData['showInMatrimony'] = _showInMatrimony;
                     if (_casteCategory != null) updateData['caste'] = _casteCategory;
                     if (_dob != null) updateData['dateOfBirth'] = _dob;
                     if (_religion != 'Select Religion') updateData['religion'] = _religion;
