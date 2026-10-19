@@ -7,6 +7,25 @@ export declare class SamajServicesService {
     constructor(prisma: PrismaService);
     private readonly defaultServices;
     syncMissingBusinessProfiles(): Promise<void>;
+    fixDatabaseRecords(): Promise<{
+        success: boolean;
+        message: string;
+        totalPersons: number;
+        persons: {
+            id: string;
+            name: string;
+            gujaratiName: string;
+            phone: string;
+            city: string;
+            service: string;
+            category: string;
+        }[];
+        servicesWithCounts: {
+            title: string;
+            category: string;
+            count: number;
+        }[];
+    }>;
     getPublicServices(search?: string, category?: string): Promise<{
         id: string;
         title: string;
@@ -73,6 +92,38 @@ export declare class SamajServicesService {
                 icon: string;
             };
         }[];
+        description: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        isActive: boolean;
+        title: string;
+        contactPhone: string | null;
+        sortOrder: number;
+        slug: string;
+        category: string;
+        icon: string;
+        contactPerson: string | null;
+    } | {
+        persons: {
+            id: string;
+            serviceId: string;
+            name: string;
+            gujaratiName: string;
+            photoUrl: string;
+            phone: string;
+            address: string;
+            city: string;
+            description: string;
+            experience: string;
+            isActive: boolean;
+            service: {
+                id: string;
+                title: string;
+                category: string;
+                icon: string;
+            };
+        }[];
         id: string;
         title: string;
         category: string;
@@ -104,18 +155,12 @@ export declare class SamajServicesService {
                 icon: string;
             };
         }[];
-        description: string | null;
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        isActive: boolean;
         title: string;
-        contactPhone: string | null;
-        sortOrder: number;
-        slug: string;
         category: string;
         icon: string;
-        contactPerson: string | null;
+        description: string;
+        isActive: true;
     }>;
     private readonly defaultPersons;
     getPublicPersonsByServiceId(serviceId: string, filters?: {
@@ -213,32 +258,25 @@ export declare class SamajServicesService {
         icon: string;
         contactPerson: string | null;
     }>;
-    getAllAdminServicePersons(serviceId?: string): Promise<({
+    getAllAdminServicePersons(serviceId?: string): Promise<{
+        id: string;
+        serviceId: string;
+        name: string;
+        gujaratiName: string;
+        photoUrl: string;
+        phone: string;
+        address: string;
+        city: string;
+        description: string;
+        experience: string;
+        isActive: boolean;
         service: {
             id: string;
             title: string;
             category: string;
             icon: string;
         };
-    } & {
-        description: string | null;
-        name: string;
-        id: string;
-        phone: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string | null;
-        city: string | null;
-        photoUrl: string | null;
-        districtId: string | null;
-        talukaId: string | null;
-        villageId: string | null;
-        isActive: boolean;
-        gujaratiName: string | null;
-        serviceId: string;
-        address: string | null;
-        experience: string | null;
-    })[]>;
+    }[]>;
     createServicePerson(dto: CreateServicePersonDto): Promise<{
         service: {
             id: string;

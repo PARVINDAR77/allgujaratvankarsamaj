@@ -23,6 +23,7 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
+        deleteMany: jest.fn(),
       },
       matrimonialProfile: {
         findMany: jest.fn(),
@@ -43,10 +44,16 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
   });
 
   it("MUST auto-sync VAMIKA NURSING ACADEMY into Education Services", async () => {
-    // 1. Mock finding or creating Education Services
+    prisma.samajServicePerson.findMany.mockResolvedValue([]);
+    prisma.samajServicePerson.deleteMany.mockResolvedValue({ count: 0 });
+
+    // 1. Mock finding or creating services
     prisma.samajService.findFirst
+      .mockResolvedValueOnce(null) // garmentService cleanup check
+      .mockResolvedValueOnce(null) // bikeService cleanup check
       .mockResolvedValueOnce(null) // eduService initially null -> will create
-      .mockResolvedValueOnce(null); // tuitionService initially null -> will create
+      .mockResolvedValueOnce(null) // tuitionService initially null -> will create
+      .mockResolvedValueOnce(null); // itService initially null -> will create
 
     prisma.samajService.create
       .mockResolvedValueOnce({
@@ -61,6 +68,13 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
         title: "ટ્યુશન અને કોચિંગ ક્લાસીસ (Tuition / Coaching)",
         category: "Education Services",
         slug: "tuition-coaching-classes",
+        isActive: true,
+      })
+      .mockResolvedValueOnce({
+        id: "srv-it-001",
+        title: "કમ્પ્યુટર અને આઇટી સેવાઓ (Computer & IT Services)",
+        category: "કમ્પ્યુટર અને ટેકનોલોજી (IT & Computer)",
+        slug: "computer-it-services",
         isActive: true,
       });
 

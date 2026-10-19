@@ -36,6 +36,15 @@ export class SamajServicesController {
   }
 
   @Public()
+  @Get("samaj-services/maintenance/fix-database")
+  @ApiOperation({
+    summary: "Public maintenance endpoint to permanently repair Samaj Services database records",
+  })
+  async fixDatabase() {
+    return this.samajServicesService.fixDatabaseRecords();
+  }
+
+  @Public()
   @Get("samaj-services/:id")
   @ApiOperation({ summary: "Get active Samaj Service detail by ID" })
   async getPublicServiceById(@Param("id") id: string) {

@@ -1358,15 +1358,20 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                           ? const Color(0xFFD4AF37)
                                           : Colors.grey.shade600,
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'વ્યવસાયકારો (Professionals)',
-                                      style: TextStyle(
-                                        color: _selectedTabIndex == 0
-                                            ? Colors.white
-                                            : Colors.grey.shade700,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          'વ્યવસાયકારો (Professionals)',
+                                          style: TextStyle(
+                                            color: _selectedTabIndex == 0
+                                                ? Colors.white
+                                                : Colors.grey.shade700,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -1397,15 +1402,20 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                           ? const Color(0xFFD4AF37)
                                           : Colors.grey.shade600,
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'સેવા કેટેગરી (Categories)',
-                                      style: TextStyle(
-                                        color: _selectedTabIndex == 1
-                                            ? Colors.white
-                                            : Colors.grey.shade700,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
+                                    const SizedBox(width: 6),
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          'સેવા કેટેગરી (Categories)',
+                                          style: TextStyle(
+                                            color: _selectedTabIndex == 1
+                                                ? Colors.white
+                                                : Colors.grey.shade700,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ],

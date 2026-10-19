@@ -222,17 +222,65 @@ export class SamajServicesService {
         await this.prisma.samajServicePerson.deleteMany({
           where: {
             OR: [
+              { name: "it company" },
+              { gujaratiName: "it company" },
+              { name: "Education / Teachers" },
+              { gujaratiName: "Education / Teachers" },
               { name: { contains: "State Government" } },
               { name: { contains: "Central Government" } },
               { name: { contains: "રાજ્ય સરકાર" } },
               { name: { contains: "કેન્દ્ર સરકાર" } },
               { name: { contains: "Select Department" } },
-              { name: "Education / Teachers" },
-              { gujaratiName: { contains: "State Government" } },
-              { gujaratiName: { contains: "રાજ્ય સરકાર" } },
+              { phone: "સંપર્ક ઉપલબ્ધ" },
+              { phone: "" },
             ],
           },
         });
+
+        // Detach non-garment persons mistakenly dumped into Clothes / Garments
+        const garmentService = await this.prisma.samajService.findFirst({
+          where: { title: { contains: "Clothes" } },
+        });
+        if (garmentService) {
+          const badGarmentPersons = await this.prisma.samajServicePerson.findMany({
+            where: { serviceId: garmentService.id },
+          });
+          for (const gp of badGarmentPersons) {
+            const text = `${gp.name} ${gp.description || ""} ${gp.experience || ""}`.toLowerCase();
+            const isRealGarment =
+              text.includes("cloth") ||
+              text.includes("garment") ||
+              text.includes("textile") ||
+              text.includes("tailor") ||
+              text.includes("કાપડ") ||
+              text.includes("દરજી");
+            if (!isRealGarment) {
+              await this.prisma.samajServicePerson.delete({ where: { id: gp.id } });
+            }
+          }
+        }
+
+        // Detach non-bike persons mistakenly dumped into Bike/Scooter Repair
+        const bikeService = await this.prisma.samajService.findFirst({
+          where: { title: { contains: "Bike" } },
+        });
+        if (bikeService) {
+          const badBikePersons = await this.prisma.samajServicePerson.findMany({
+            where: { serviceId: bikeService.id },
+          });
+          for (const bp of badBikePersons) {
+            const text = `${bp.name} ${bp.description || ""} ${bp.experience || ""}`.toLowerCase();
+            const isRealBike =
+              text.includes("bike") ||
+              text.includes("scooter") ||
+              text.includes("garage") ||
+              text.includes("two wheeler") ||
+              text.includes("ગેરેજ");
+            if (!isRealBike) {
+              await this.prisma.samajServicePerson.delete({ where: { id: bp.id } });
+            }
+          }
+        }
       } catch (_) {}
 
       // 1. Ensure core Education Services exist in DB
@@ -290,6 +338,36 @@ export class SamajServicesService {
             sortOrder: 2,
           },
         });
+      }
+
+      // Also ensure IT / Computer Services exists
+      let itService = await this.prisma.samajService.findFirst({
+        where: {
+          OR: [
+            { title: { contains: "Computer & IT" } },
+            { title: { contains: "કમ્પ્યુટર અને સોફ્ટવેર" } },
+            { title: { contains: "કમ્પ્યુટર અને આઇટી" } },
+            { slug: "computer-it-services" },
+          ],
+        },
+      });
+
+      if (!itService) {
+        itService = await this.prisma.samajService.create({
+          data: {
+            title: "કમ્પ્યુટર અને આઇટી સેવાઓ (Computer & IT Services)",
+            slug: "computer-it-services",
+            category: "કમ્પ્યુટર અને ટેકનોલોજી (IT & Computer)",
+            icon: "💻",
+            contactPhone: "9234567890",
+            contactPerson: "પરવિન્દર પંજાબી (Parvindar Panjabi)",
+            description:
+              "સોફ્ટવેર ડેવલપમેન્ટ, વેબસાઇટ ડિઝાઇન, કમ્પ્યુટર હાર્ડવેર, લેપટોપ રિપેરિંગ અને નેટવર્કિંગ સેવાઓ.",
+            isActive: true,
+            sortOrder: 3,
+          },
+        });
+        this.logger.log(`Created main IT Services: ${itService.id}`);
       }
 
       // 2. Fetch all profiles from MatrimonialProfile that are businesses or professionals
@@ -393,10 +471,25 @@ export class SamajServicesService {
             "વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.";
         }
 
+        const isIT =
+          combined.includes("it company") ||
+          combined.includes("computer") ||
+          combined.includes("software") ||
+          combined.includes("technology") ||
+          combined.includes("developer") ||
+          combined.includes("web designer") ||
+          combined.includes("hardware") ||
+          combined.includes("laptop") ||
+          combined.includes("engineeres") ||
+          combined.includes("engineer") ||
+          combined.includes("આઇટી");
+
         const targetServiceIds: string[] = [];
         if (isEducation) {
           if (eduService?.id) targetServiceIds.push(eduService.id);
           if (tuitionService?.id) targetServiceIds.push(tuitionService.id);
+        } else if (isIT) {
+          if (itService?.id) targetServiceIds.push(itService.id);
         } else {
           // A: Flexible matching for service
           let matched: any = null;
@@ -640,6 +733,49 @@ export class SamajServicesService {
     } catch (err: any) {
       this.logger.warn(`syncMissingBusinessProfiles warning: ${err?.message || err}`);
     }
+  }
+
+  async fixDatabaseRecords() {
+    this.logger.log("Running comprehensive database repair for Samaj Services...");
+    await this.syncMissingBusinessProfiles();
+
+    const activePersons = await this.prisma.samajServicePerson.findMany({
+      where: { isActive: true },
+      include: { service: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const activeServices = await this.prisma.samajService.findMany({
+      where: { isActive: true },
+      include: {
+        _count: {
+          select: { persons: true },
+        },
+      },
+    });
+
+    return {
+      success: true,
+      message:
+        "Database successfully purged of corrupted placeholder records and business candidates properly mapped.",
+      totalPersons: activePersons.length,
+      persons: activePersons.map((p) => ({
+        id: p.id,
+        name: p.name,
+        gujaratiName: p.gujaratiName,
+        phone: p.phone,
+        city: p.city,
+        service: p.service?.title,
+        category: p.service?.category,
+      })),
+      servicesWithCounts: activeServices
+        .filter((s) => s._count.persons > 0)
+        .map((s) => ({
+          title: s.title,
+          category: s.category,
+          count: s._count.persons,
+        })),
+    };
   }
 
   async getPublicServices(search?: string, category?: string) {

@@ -26,6 +26,9 @@ let SamajServicesController = class SamajServicesController {
     async getPublicServices(search, category) {
         return this.samajServicesService.getPublicServices(search, category);
     }
+    async fixDatabase() {
+        return this.samajServicesService.fixDatabaseRecords();
+    }
     async getPublicServiceById(id) {
         return this.samajServicesService.getPublicServiceById(id);
     }
@@ -75,6 +78,16 @@ __decorate([
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
 ], SamajServicesController.prototype, "getPublicServices", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Get)("samaj-services/maintenance/fix-database"),
+    (0, swagger_1.ApiOperation)({
+        summary: "Public maintenance endpoint to permanently repair Samaj Services database records",
+    }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], SamajServicesController.prototype, "fixDatabase", null);
 __decorate([
     (0, public_decorator_1.Public)(),
     (0, common_1.Get)("samaj-services/:id"),
