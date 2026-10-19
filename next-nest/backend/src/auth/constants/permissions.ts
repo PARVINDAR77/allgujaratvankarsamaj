@@ -3,6 +3,7 @@ export enum Permission {
   MEMBERS_READ = "members.read",
   MEMBERS_UPDATE = "members.update",
   MEMBERS_BLOCK = "members.block",
+  MEMBERS_DELETE = "members.delete",
 
   // Verification
   VERIFICATION_READ = "verification.read",
@@ -37,6 +38,7 @@ export const RolePermissions: Record<AdminRole, Permission[]> = {
     Permission.MEMBERS_READ,
     Permission.MEMBERS_UPDATE,
     Permission.MEMBERS_BLOCK,
+    Permission.MEMBERS_DELETE,
     Permission.GOVERNMENT_READ,
     Permission.CONTENT_READ,
     Permission.STATISTICS_VIEW,

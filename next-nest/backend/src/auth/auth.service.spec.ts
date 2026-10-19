@@ -270,4 +270,60 @@ describe("AuthService Security & Regression Tests", () => {
       );
     });
   });
+
+  describe("Forgot & Reset Password Workflow", () => {
+    it("MUST generate OTP code when user exists with email", async () => {
+      (usersService.findByPhone as jest.Mock).mockResolvedValue(null);
+      (usersService.findByEmail as jest.Mock).mockResolvedValue({
+        id: "user-100",
+        email: "test.candidate@vankarsamaj.org",
+        phone: "9104082237",
+        status: Status.ACTIVE,
+      });
+
+      const res = await authService.forgotPassword({
+        identifier: "test.candidate@vankarsamaj.org",
+      });
+
+      expect(res.success).toBe(true);
+      expect(res.code).toBeDefined();
+      expect(res.code.length).toBe(6);
+    });
+
+    it("MUST verify valid OTP code and reset password", async () => {
+      (usersService.findByPhone as jest.Mock).mockResolvedValue({
+        id: "user-100",
+        email: "test.candidate@vankarsamaj.org",
+        phone: "9104082237",
+        status: Status.ACTIVE,
+      });
+
+      const forgotRes = await authService.forgotPassword({
+        identifier: "9104082237",
+      });
+      const otp = forgotRes.code;
+
+      const verifyRes = await authService.verifyResetCode({
+        identifier: "9104082237",
+        code: otp,
+      });
+      expect(verifyRes.success).toBe(true);
+
+      const resetRes = await authService.resetPassword({
+        identifier: "9104082237",
+        code: otp,
+        newPassword: "BrandNewSecurePassword123!",
+      });
+      expect(resetRes.success).toBe(true);
+      expect(prismaService.user.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { id: "user-100" },
+          data: expect.objectContaining({
+            passwordHash: expect.stringMatching(/^\$2[aby]?\$\d+\$/),
+          }),
+        }),
+      );
+    });
+  });
 });
+

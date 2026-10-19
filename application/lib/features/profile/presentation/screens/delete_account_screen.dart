@@ -44,12 +44,14 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Perform logout / deletion
-      await ref.read(authNotifierProvider.notifier).logout();
+      final res = await ref.read(authNotifierProvider.notifier).deleteAccount();
+      if (res['success'] != true) {
+        throw Exception(res['message'] ?? 'Failed to delete account');
+      }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Your account deletion request has been processed.'),
+          SnackBar(
+            content: Text(res['message'] ?? 'તમારું એકાઉન્ટ કાયમ માટે કાઢી નાખવામાં આવ્યું છે.'),
             backgroundColor: AppColors.accentRed,
           ),
         );
@@ -58,7 +60,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(content: Text('ભૂલ: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {

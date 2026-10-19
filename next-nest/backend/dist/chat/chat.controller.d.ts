@@ -48,10 +48,10 @@ export declare class ChatController {
             content: string;
             id: string;
             createdAt: Date;
+            receiverId: string;
+            senderId: string;
             conversationId: string;
             isRead: boolean;
-            senderId: string;
-            receiverId: string;
         }[];
     }>;
     getConversationMessages(req: any, conversationId: string): Promise<{
@@ -75,20 +75,20 @@ export declare class ChatController {
             content: string;
             id: string;
             createdAt: Date;
+            receiverId: string;
+            senderId: string;
             conversationId: string;
             isRead: boolean;
-            senderId: string;
-            receiverId: string;
         }[];
     }>;
     sendMessage(req: any, dto: SendMessageDto): Promise<{
         content: string;
         id: string;
         createdAt: Date;
+        receiverId: string;
+        senderId: string;
         conversationId: string;
         isRead: boolean;
-        senderId: string;
-        receiverId: string;
     }>;
     markAsRead(req: any, conversationId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
 }

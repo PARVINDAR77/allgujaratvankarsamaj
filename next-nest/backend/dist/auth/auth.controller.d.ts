@@ -1,10 +1,13 @@
 import { AuthService } from "./auth.service";
+import { UsersService } from "../users/users.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
+import { ForgotPasswordDto, VerifyResetCodeDto, ResetPasswordDto } from "./dto/password-reset.dto";
 import { Response } from "express";
 export declare class AuthController {
     private readonly authService;
-    constructor(authService: AuthService);
+    private readonly usersService;
+    constructor(authService: AuthService, usersService: UsersService);
     register(dto: RegisterDto): Promise<{
         isVerified: boolean;
         hasProfile: boolean;
@@ -43,4 +46,23 @@ export declare class AuthController {
         message: string;
     }>;
     getProfile(req: any): Promise<any>;
+    forgotPassword(dto: ForgotPasswordDto): Promise<{
+        success: boolean;
+        message: string;
+        identifier: string;
+        maskedContact: string;
+        code: string;
+    }>;
+    verifyResetCode(dto: VerifyResetCodeDto): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    resetPassword(dto: ResetPasswordDto): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    deleteMyAccount(req: any): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

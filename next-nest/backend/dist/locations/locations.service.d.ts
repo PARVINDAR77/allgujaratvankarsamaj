@@ -10,8 +10,8 @@ export declare class LocationsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string;
+        gujaratiName: string | null;
     }[]>;
     getAdminStates(): Promise<({
         _count: {
@@ -23,8 +23,8 @@ export declare class LocationsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string;
+        gujaratiName: string | null;
     })[]>;
     createState(data: {
         name: string;
@@ -37,8 +37,8 @@ export declare class LocationsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string;
+        gujaratiName: string | null;
     }>;
     updateState(id: string, data: Partial<{
         name: string;
@@ -51,8 +51,8 @@ export declare class LocationsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string;
+        gujaratiName: string | null;
     }>;
     deleteState(id: string): Promise<{
         name: string;
@@ -60,8 +60,8 @@ export declare class LocationsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string;
+        gujaratiName: string | null;
     }>;
     getPublicDistricts(stateId?: string): Promise<{
         name: string;
@@ -70,8 +70,8 @@ export declare class LocationsService {
         updatedAt: Date;
         stateId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }[]>;
     getAdminDistricts(stateId?: string): Promise<({
         state: {
@@ -89,8 +89,8 @@ export declare class LocationsService {
         updatedAt: Date;
         stateId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     })[]>;
     createDistrict(data: {
         stateId: string;
@@ -105,8 +105,8 @@ export declare class LocationsService {
         updatedAt: Date;
         stateId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     updateDistrict(id: string, data: Partial<{
         stateId: string;
@@ -121,8 +121,8 @@ export declare class LocationsService {
         updatedAt: Date;
         stateId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     deleteDistrict(id: string): Promise<{
         name: string;
@@ -131,8 +131,8 @@ export declare class LocationsService {
         updatedAt: Date;
         stateId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     getPublicTalukas(districtId?: string): Promise<{
         name: string;
@@ -141,8 +141,8 @@ export declare class LocationsService {
         updatedAt: Date;
         districtId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }[]>;
     getAdminTalukas(districtId?: string): Promise<({
         district: {
@@ -160,8 +160,8 @@ export declare class LocationsService {
         updatedAt: Date;
         districtId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     })[]>;
     createTaluka(data: {
         districtId: string;
@@ -176,8 +176,8 @@ export declare class LocationsService {
         updatedAt: Date;
         districtId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     updateTaluka(id: string, data: Partial<{
         districtId: string;
@@ -192,8 +192,8 @@ export declare class LocationsService {
         updatedAt: Date;
         districtId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     deleteTaluka(id: string): Promise<{
         name: string;
@@ -202,8 +202,8 @@ export declare class LocationsService {
         updatedAt: Date;
         districtId: string;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     getPublicParganas(talukaId?: string): Promise<{
         computedVillageCount: string;
@@ -216,9 +216,9 @@ export declare class LocationsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
+        code: string | null;
         contactPhone: string | null;
         gujaratiName: string | null;
-        code: string | null;
         villageCount: string | null;
         districtRegion: string | null;
         leaderName: string | null;
@@ -246,9 +246,9 @@ export declare class LocationsService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
+        code: string | null;
         contactPhone: string | null;
         gujaratiName: string | null;
-        code: string | null;
         villageCount: string | null;
         districtRegion: string | null;
         leaderName: string | null;
@@ -268,8 +268,8 @@ export declare class LocationsService {
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }[]>;
     getAdminVillages(query: {
         parganaId?: string;
@@ -295,8 +295,8 @@ export declare class LocationsService {
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     })[]>;
     createVillage(data: {
         parganaId?: string;
@@ -315,8 +315,8 @@ export declare class LocationsService {
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     updateVillage(id: string, data: Partial<{
         parganaId: string;
@@ -335,8 +335,8 @@ export declare class LocationsService {
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
     deleteVillage(id: string): Promise<{
         name: string;
@@ -347,7 +347,7 @@ export declare class LocationsService {
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
-        gujaratiName: string | null;
         code: string | null;
+        gujaratiName: string | null;
     }>;
 }

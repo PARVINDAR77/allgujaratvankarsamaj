@@ -16,12 +16,15 @@ exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("./auth.service");
+const users_service_1 = require("../users/users.service");
 const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
+const password_reset_dto_1 = require("./dto/password-reset.dto");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 let AuthController = class AuthController {
-    constructor(authService) {
+    constructor(authService, usersService) {
         this.authService = authService;
+        this.usersService = usersService;
     }
     async register(dto) {
         return this.authService.register(dto);
@@ -48,6 +51,18 @@ let AuthController = class AuthController {
     }
     async getProfile(req) {
         return req.user;
+    }
+    async forgotPassword(dto) {
+        return this.authService.forgotPassword(dto);
+    }
+    async verifyResetCode(dto) {
+        return this.authService.verifyResetCode(dto);
+    }
+    async resetPassword(dto) {
+        return this.authService.resetPassword(dto);
+    }
+    async deleteMyAccount(req) {
+        return this.usersService.deleteUserAccount(req.user.id);
     }
 };
 exports.AuthController = AuthController;
@@ -126,9 +141,67 @@ __decorate([
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "getProfile", null);
+__decorate([
+    (0, common_1.Post)("forgot-password"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: "Request password reset code using registered email or mobile number",
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Verification code sent" }),
+    (0, swagger_1.ApiResponse)({ status: 404, description: "No account found" }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [password_reset_dto_1.ForgotPasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "forgotPassword", null);
+__decorate([
+    (0, common_1.Post)("verify-reset-code"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: "Verify password reset code",
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Verification code is valid" }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: "Invalid or expired code" }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [password_reset_dto_1.VerifyResetCodeDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "verifyResetCode", null);
+__decorate([
+    (0, common_1.Post)("reset-password"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: "Set new password using verified reset code",
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Password reset successful" }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: "Validation error or invalid code" }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [password_reset_dto_1.ResetPasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "resetPassword", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Delete)("account/me"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: "Permanently delete user account and all associated personal data",
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: "User account and all data deleted permanently",
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized access" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "deleteMyAccount", null);
 exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)("Authentication"),
     (0, common_1.Controller)("auth"),
-    __metadata("design:paramtypes", [auth_service_1.AuthService])
+    __metadata("design:paramtypes", [auth_service_1.AuthService,
+        users_service_1.UsersService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

@@ -69,6 +69,21 @@ export default function AdminProfilesPage() {
     }
   };
 
+  const handleDeleteProfile = async (profileId: string, name: string) => {
+    if (confirm(`Are you sure you want to permanently delete matrimonial profile "${name}"? This removes candidate listing, biodata, and photos.`)) {
+      try {
+        await adminApi.deleteProfile(profileId);
+        setProfiles((prev) => prev.filter((p) => p.id !== profileId));
+        if (selectedProfile && selectedProfile.id === profileId) {
+          setSelectedProfile(null);
+        }
+        alert(`Profile "${name}" deleted successfully.`);
+      } catch (err: any) {
+        alert(err.message || "Failed to delete profile.");
+      }
+    }
+  };
+
   const getFullUrl = (url?: string) => {
     if (!url) return "";
     if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
@@ -506,6 +521,30 @@ export default function AdminProfilesPage() {
                       className={p.status === "APPROVED" ? "hover:bg-[#E11D48] hover:text-white" : "hover:bg-[#10B981] hover:text-white"}
                     >
                       {p.status === "APPROVED" ? "Reject" : "Approve"}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProfile(p.id, p.name);
+                      }}
+                      title="Delete Candidate Profile"
+                      style={{
+                        padding: "8px 12px",
+                        fontSize: "12px",
+                        fontWeight: 800,
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "rgba(225, 29, 72, 0.15)",
+                        color: "#FB7185",
+                        border: "1px solid rgba(225, 29, 72, 0.4)",
+                        transition: "all 0.3s ease",
+                      }}
+                      className="hover:bg-[#E11D48] hover:text-white"
+                    >
+                      Delete
                     </button>
                   </div>
                 </div>

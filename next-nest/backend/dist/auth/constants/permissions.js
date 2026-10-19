@@ -6,6 +6,7 @@ var Permission;
     Permission["MEMBERS_READ"] = "members.read";
     Permission["MEMBERS_UPDATE"] = "members.update";
     Permission["MEMBERS_BLOCK"] = "members.block";
+    Permission["MEMBERS_DELETE"] = "members.delete";
     Permission["VERIFICATION_READ"] = "verification.read";
     Permission["VERIFICATION_REVIEW"] = "verification.review";
     Permission["GOVERNMENT_READ"] = "government.read";
@@ -29,6 +30,7 @@ exports.RolePermissions = {
         Permission.MEMBERS_READ,
         Permission.MEMBERS_UPDATE,
         Permission.MEMBERS_BLOCK,
+        Permission.MEMBERS_DELETE,
         Permission.GOVERNMENT_READ,
         Permission.CONTENT_READ,
         Permission.STATISTICS_VIEW,

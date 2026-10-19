@@ -77,4 +77,12 @@ export declare class UsersService {
         id: string;
         isFeatured: boolean;
     }>;
+    deleteUserAccount(userId: string, deletedByAdminId?: string, ipAddress?: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    deleteProfileAdmin(profileIdOrUserId: string, adminId: string, ipAddress?: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

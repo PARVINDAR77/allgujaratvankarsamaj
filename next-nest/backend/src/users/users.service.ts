@@ -446,4 +446,231 @@ export class UsersService {
       return { id: profileId, isFeatured: updatedProfile.isFeatured };
     });
   }
+
+  async deleteUserAccount(
+    userId: string,
+    deletedByAdminId?: string,
+    ipAddress?: string,
+  ): Promise<{ success: boolean; message: string }> {
+    return this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        include: { profile: true },
+      });
+
+      if (!user) {
+        throw new NotFoundException("વપરાશકર્તા મળ્યો નથી (User not found)");
+      }
+
+      // Security check: Admin cannot delete their own account
+      if (deletedByAdminId && deletedByAdminId === userId) {
+        throw new BadRequestException(
+          "એડમિન પોતાનું એકાઉન્ટ ડિલીટ કરી શકતા નથી (Super Admin cannot delete their own account)",
+        );
+      }
+
+      // Security check: Protect root admin
+      if (
+        user.email === "admin@vankarsamaj.org" ||
+        user.email === "admin@vankarsamaj.com"
+      ) {
+        throw new BadRequestException(
+          "રૂટ સિસ્ટમ એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (Root System Administrator cannot be deleted)",
+        );
+      }
+
+      const profile = user.profile;
+      if (profile) {
+        const profileId = profile.id;
+
+        // 1. Delete verification requests
+        await tx.verificationRequest.deleteMany({
+          where: { profileId },
+        });
+
+        // 2. Delete government employment & verifications
+        const govt = await tx.governmentEmployment.findUnique({
+          where: { profileId },
+        });
+        if (govt) {
+          await tx.governmentEmploymentVerification.deleteMany({
+            where: { employmentId: govt.id },
+          });
+          await tx.governmentEmployment.delete({
+            where: { id: govt.id },
+          });
+        }
+
+        // 3. Delete match interests (both sent and received)
+        await tx.matchInterest.deleteMany({
+          where: {
+            OR: [
+              { senderProfileId: profileId },
+              { receiverProfileId: profileId },
+            ],
+          },
+        });
+
+        // 4. Delete shortlists targeting this profile
+        await tx.shortlist.deleteMany({
+          where: { targetProfileId: profileId },
+        });
+
+        // 5. Delete reports targeting this profile
+        await tx.report.deleteMany({
+          where: { targetProfileId: profileId },
+        });
+
+        // 6. Delete matrimonial profile
+        await tx.matrimonialProfile.delete({
+          where: { id: profileId },
+        });
+      }
+
+      // 7. Delete user's own shortlists
+      await tx.shortlist.deleteMany({
+        where: { userId },
+      });
+
+      // 8. Delete user notifications
+      await tx.userNotification.deleteMany({
+        where: { userId },
+      });
+
+      // 9. Delete chat messages
+      await tx.chatMessage.deleteMany({
+        where: {
+          OR: [{ senderId: userId }, { receiverId: userId }],
+        },
+      });
+
+      // 10. Delete chat conversations
+      await tx.chatConversation.deleteMany({
+        where: {
+          OR: [{ participant1Id: userId }, { participant2Id: userId }],
+        },
+      });
+
+      // 11. Delete reports created by user
+      await tx.report.deleteMany({
+        where: { reporterUserId: userId },
+      });
+
+      // 12. Delete samaj service persons registered by or linked to user
+      await tx.samajServicePerson.deleteMany({
+        where: { userId },
+      });
+
+      // 13. Audit log if deleted by admin
+      if (deletedByAdminId) {
+        await tx.adminAuditLog.create({
+          data: {
+            adminId: deletedByAdminId,
+            action: "DELETE_USER_ACCOUNT",
+            entityId: userId,
+            entityType: "User",
+            oldValue: JSON.stringify({
+              id: user.id,
+              email: user.email,
+              phone: user.phone,
+              name: user.name,
+              role: user.role,
+            }),
+            newValue: null,
+            ipAddress: ipAddress || null,
+          },
+        });
+      }
+
+      // 14. Finally delete User record
+      await tx.user.delete({
+        where: { id: userId },
+      });
+
+      return {
+        success: true,
+        message:
+          "વપરાશકર્તા એકાઉન્ટ અને તમામ ડેટા કાયમ માટે કાઢી નાખવામાં આવ્યા છે (User account and all data deleted permanently)",
+      };
+    });
+  }
+
+  async deleteProfileAdmin(
+    profileIdOrUserId: string,
+    adminId: string,
+    ipAddress?: string,
+  ): Promise<{ success: boolean; message: string }> {
+    return this.prisma.$transaction(async (tx) => {
+      let profile = await tx.matrimonialProfile.findUnique({
+        where: { id: profileIdOrUserId },
+      });
+      if (!profile) {
+        profile = await tx.matrimonialProfile.findUnique({
+          where: { userId: profileIdOrUserId },
+        });
+      }
+
+      if (!profile) {
+        throw new NotFoundException("પ્રોફાઇલ મળી નથી (Profile not found)");
+      }
+
+      const profileId = profile.id;
+
+      // 1. Delete verification requests
+      await tx.verificationRequest.deleteMany({ where: { profileId } });
+
+      // 2. Delete government employment & verifications
+      const govt = await tx.governmentEmployment.findUnique({
+        where: { profileId },
+      });
+      if (govt) {
+        await tx.governmentEmploymentVerification.deleteMany({
+          where: { employmentId: govt.id },
+        });
+        await tx.governmentEmployment.delete({ where: { id: govt.id } });
+      }
+
+      // 3. Delete match interests
+      await tx.matchInterest.deleteMany({
+        where: {
+          OR: [
+            { senderProfileId: profileId },
+            { receiverProfileId: profileId },
+          ],
+        },
+      });
+
+      // 4. Delete shortlists targeting this profile
+      await tx.shortlist.deleteMany({ where: { targetProfileId: profileId } });
+
+      // 5. Delete reports
+      await tx.report.deleteMany({ where: { targetProfileId: profileId } });
+
+      // 6. Delete profile
+      await tx.matrimonialProfile.delete({ where: { id: profileId } });
+
+      // 7. Audit log
+      await tx.adminAuditLog.create({
+        data: {
+          adminId,
+          action: "DELETE_PROFILE",
+          entityId: profileId,
+          entityType: "MatrimonialProfile",
+          oldValue: JSON.stringify({
+            id: profile.id,
+            userId: profile.userId,
+            name: `${profile.firstName} ${profile.lastName}`,
+          }),
+          newValue: null,
+          ipAddress: ipAddress || null,
+        },
+      });
+
+      return {
+        success: true,
+        message:
+          "મેટ્રિમોનિયલ પ્રોફાઇલ સફળતાપૂર્વક કાઢી નાખવામાં આવી છે (Matrimonial profile deleted successfully)",
+      };
+    });
+  }
 }

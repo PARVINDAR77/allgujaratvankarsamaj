@@ -1,6 +1,9 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
+  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -11,9 +14,20 @@ import { PrismaService } from "../prisma/prisma.service";
 import { UsersService } from "../users/users.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
+import {
+  ForgotPasswordDto,
+  VerifyResetCodeDto,
+  ResetPasswordDto,
+} from "./dto/password-reset.dto";
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+  private resetCodes = new Map<
+    string,
+    { code: string; userId: string; expiresAt: number; attempts: number }
+  >();
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -144,6 +158,161 @@ export class AuthService {
       },
       tokenType: "Bearer",
       expiresIn,
+    };
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto) {
+    const rawIdentifier = dto.identifier.trim();
+    if (!rawIdentifier) {
+      throw new BadRequestException(
+        "ઈમેઈલ અથવા મોબાઇલ નંબર દાખલ કરો (Please enter email or mobile number)",
+      );
+    }
+
+    // Try finding user by phone first, then by email
+    let user = await this.usersService.findByPhone(rawIdentifier);
+    if (!user) {
+      user = await this.usersService.findByEmail(rawIdentifier);
+    }
+
+    if (!user) {
+      throw new NotFoundException(
+        "આ ઈમેઈલ અથવા મોબાઇલ નંબર સાથે કોઈ એકાઉન્ટ મળ્યું નથી (No account found with this email or mobile number)",
+      );
+    }
+
+    // Generate secure 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+
+    const normKey =
+      user.email?.toLowerCase().trim() ||
+      user.phone?.trim() ||
+      rawIdentifier.toLowerCase();
+    this.resetCodes.set(normKey, {
+      code,
+      userId: user.id,
+      expiresAt,
+      attempts: 0,
+    });
+    this.resetCodes.set(rawIdentifier.toLowerCase(), {
+      code,
+      userId: user.id,
+      expiresAt,
+      attempts: 0,
+    });
+    if (user.phone) {
+      this.resetCodes.set(user.phone.trim(), {
+        code,
+        userId: user.id,
+        expiresAt,
+        attempts: 0,
+      });
+    }
+
+    this.logger.log(
+      `Password reset code for user ${user.id} (${user.email || user.phone}): ${code}`,
+    );
+
+    // Masked identifier for UX
+    let masked = "";
+    if (user.phone && user.phone.length >= 10) {
+      masked = `${user.phone.slice(0, 2)}******${user.phone.slice(-2)}`;
+    } else if (user.email && user.email.includes("@")) {
+      const [local, dom] = user.email.split("@");
+      masked = `${local.slice(0, 2)}***@${dom}`;
+    } else {
+      masked = "તમારો નોંધાયેલ સંપર્ક";
+    }
+
+    return {
+      success: true,
+      message: `પાસવર્ડ રીસેટ કોડ મોકલવામાં આવ્યો છે (${masked})`,
+      identifier: rawIdentifier,
+      maskedContact: masked,
+      code, // Returned for instant smooth verification without SMS gateway
+    };
+  }
+
+  async verifyResetCode(dto: VerifyResetCodeDto) {
+    const rawIdentifier = dto.identifier.trim().toLowerCase();
+    const entry = this.resetCodes.get(rawIdentifier);
+
+    if (!entry) {
+      throw new BadRequestException(
+        "કોઈ સક્રિય રીસેટ વિનંતી મળી નથી. કૃપા કરીને ફરીથી પ્રયાસ કરો (No active reset request found. Please request again.)",
+      );
+    }
+
+    if (Date.now() > entry.expiresAt) {
+      this.resetCodes.delete(rawIdentifier);
+      throw new BadRequestException(
+        "ચકાસણી કોડની સમયસીમા સમાપ્ત થઈ ગઈ છે (Verification code has expired. Please request a new one.)",
+      );
+    }
+
+    if (entry.code !== dto.code.trim()) {
+      entry.attempts += 1;
+      if (entry.attempts >= 5) {
+        this.resetCodes.delete(rawIdentifier);
+        throw new BadRequestException(
+          "ખૂબ ખોટા પ્રયાસો. કૃપા કરીને નવો કોડ મેળવો (Too many invalid attempts. Please request a new code.)",
+        );
+      }
+      throw new BadRequestException(
+        "અમાન્ય ચકાસણી કોડ (Invalid verification code)",
+      );
+    }
+
+    return {
+      success: true,
+      message: "ચકાસણી સફળ (Verification successful)",
+    };
+  }
+
+  async resetPassword(dto: ResetPasswordDto) {
+    const rawIdentifier = dto.identifier.trim().toLowerCase();
+    const entry = this.resetCodes.get(rawIdentifier);
+
+    if (!entry) {
+      throw new BadRequestException(
+        "કોઈ સક્રિય રીસેટ વિનંતી મળી નથી. કૃપા કરીને ફરીથી પ્રયાસ કરો (No active reset request found. Please request again.)",
+      );
+    }
+
+    if (Date.now() > entry.expiresAt) {
+      this.resetCodes.delete(rawIdentifier);
+      throw new BadRequestException(
+        "ચકાસણી કોડની સમયસીમા સમાપ્ત થઈ ગઈ છે (Verification code has expired)",
+      );
+    }
+
+    if (entry.code !== dto.code.trim()) {
+      throw new BadRequestException(
+        "અમાન્ય ચકાસણી કોડ (Invalid verification code)",
+      );
+    }
+
+    if (!dto.newPassword || dto.newPassword.length < 6) {
+      throw new BadRequestException(
+        "પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)",
+      );
+    }
+
+    const saltRounds = 10;
+    const passwordHash = await bcrypt.hash(dto.newPassword, saltRounds);
+
+    await this.prisma.user.update({
+      where: { id: entry.userId },
+      data: { passwordHash },
+    });
+
+    this.resetCodes.delete(rawIdentifier);
+
+    return {
+      success: true,
+      message:
+        "તમારો પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે. હવે તમે નવા પાસવર્ડથી લોગિન કરી શકો છો (Password has been reset successfully. You can now login.)",
     };
   }
 }

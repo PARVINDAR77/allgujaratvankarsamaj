@@ -87,12 +87,13 @@ export default function AdminUsersPage() {
   };
 
   const handleDeleteUser = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to permanently delete user "${name}"?`)) {
+    if (confirm(`Are you sure you want to permanently delete user "${name}" and all their associated data (profile, photos, messages)? This cannot be undone.`)) {
       try {
         await adminApi.deleteUser(id);
-        setUsers(users.filter((u) => u.id !== id));
-      } catch (err) {
-        alert("Failed to delete user.");
+        setUsers((prev) => prev.filter((u) => u.id !== id));
+        alert(`User "${name}" has been permanently deleted.`);
+      } catch (err: any) {
+        alert(err.message || "Failed to delete user.");
       }
     }
   };

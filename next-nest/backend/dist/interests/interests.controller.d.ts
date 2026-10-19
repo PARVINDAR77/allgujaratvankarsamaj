@@ -10,8 +10,8 @@ export declare class InterestsController {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            senderProfileId: string;
             receiverProfileId: string;
+            senderProfileId: string;
         };
         conversationId: string;
     } | {
@@ -21,8 +21,8 @@ export declare class InterestsController {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            senderProfileId: string;
             receiverProfileId: string;
+            senderProfileId: string;
         };
     }>;
     sendInterest(req: any, dto: CreateInterestDto): Promise<{
@@ -32,8 +32,8 @@ export declare class InterestsController {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            senderProfileId: string;
             receiverProfileId: string;
+            senderProfileId: string;
         };
         conversationId: string;
     } | {
@@ -43,8 +43,8 @@ export declare class InterestsController {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            senderProfileId: string;
             receiverProfileId: string;
+            senderProfileId: string;
         };
     }>;
     getInterestStatus(req: any, targetProfileId: string): Promise<{
@@ -67,8 +67,8 @@ export declare class InterestsController {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            senderProfileId: string;
             receiverProfileId: string;
+            senderProfileId: string;
         };
         conversationId: string;
     }>;
@@ -76,24 +76,24 @@ export declare class InterestsController {
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        senderProfileId: string;
         receiverProfileId: string;
+        senderProfileId: string;
     }>;
     getSentInterests(req: any): Promise<{
         receiverProfile: any;
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        senderProfileId: string;
         receiverProfileId: string;
+        senderProfileId: string;
     }[]>;
     getReceivedInterests(req: any): Promise<{
         senderProfile: any;
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        senderProfileId: string;
         receiverProfileId: string;
+        senderProfileId: string;
     }[]>;
     getMutualInterests(req: any): Promise<{
         otherProfile: {
@@ -108,8 +108,8 @@ export declare class InterestsController {
                 updatedAt: Date;
                 stateId: string;
                 isActive: boolean;
-                gujaratiName: string | null;
                 code: string | null;
+                gujaratiName: string | null;
             };
             taluka: {
                 name: string;
@@ -118,8 +118,8 @@ export declare class InterestsController {
                 updatedAt: Date;
                 districtId: string;
                 isActive: boolean;
-                gujaratiName: string | null;
                 code: string | null;
+                gujaratiName: string | null;
             };
             pargana: {
                 description: string | null;
@@ -128,9 +128,9 @@ export declare class InterestsController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
+                code: string | null;
                 contactPhone: string | null;
                 gujaratiName: string | null;
-                code: string | null;
                 villageCount: string | null;
                 districtRegion: string | null;
                 leaderName: string | null;
@@ -146,8 +146,8 @@ export declare class InterestsController {
                 talukaId: string | null;
                 parganaId: string | null;
                 isActive: boolean;
-                gujaratiName: string | null;
                 code: string | null;
+                gujaratiName: string | null;
             };
             governmentEmployment: {
                 designation: {
@@ -157,8 +157,8 @@ export declare class InterestsController {
                     updatedAt: Date;
                     isActive: boolean;
                     departmentId: string;
-                    gujaratiName: string | null;
                     code: string | null;
+                    gujaratiName: string | null;
                 };
                 department: {
                     name: string;
@@ -166,8 +166,8 @@ export declare class InterestsController {
                     createdAt: Date;
                     updatedAt: Date;
                     isActive: boolean;
-                    gujaratiName: string | null;
                     code: string | null;
+                    gujaratiName: string | null;
                 };
             } & {
                 id: string;
@@ -193,8 +193,8 @@ export declare class InterestsController {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                gujaratiName: string | null;
                 code: string;
+                gujaratiName: string | null;
             };
         } & {
             state: string | null;
@@ -256,7 +256,7 @@ export declare class InterestsController {
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        senderProfileId: string;
         receiverProfileId: string;
+        senderProfileId: string;
     }[]>;
 }

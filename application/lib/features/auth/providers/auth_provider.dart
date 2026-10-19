@@ -176,6 +176,85 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = AuthState.unauthenticated();
   }
 
+  Future<Map<String, dynamic>> requestPasswordReset(String identifier) async {
+    try {
+      final res = await _dio.post('/auth/forgot-password', data: {
+        'identifier': identifier.trim(),
+      });
+      return {
+        'success': true,
+        'message': res.data['message'] ?? 'ચકાસણી કોડ મોકલવામાં આવ્યો છે',
+        'code': res.data['code'],
+        'maskedContact': res.data['maskedContact'],
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {'success': false, 'message': failure.message};
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> resetPassword({
+    required String identifier,
+    required String code,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/reset-password', data: {
+        'identifier': identifier.trim(),
+        'code': code.trim(),
+        'newPassword': newPassword,
+      });
+      return {
+        'success': true,
+        'message': res.data['message'] ?? 'પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે',
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {'success': false, 'message': failure.message};
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteAccount() async {
+    try {
+      final res = await _dio.delete('/auth/account/me');
+      await logout();
+      return {
+        'success': true,
+        'message': res.data['message'] ?? 'એકાઉન્ટ સફળતાપૂર્વક કાઢી નાખવામાં આવ્યું છે',
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {'success': false, 'message': failure.message};
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> deleteProfile() async {
+    try {
+      final res = await _dio.delete('/profiles/me');
+      if (state.user != null) {
+        state = AuthState.authenticated(state.user!.copyWith(
+          hasProfile: false,
+          isVerified: false,
+        ));
+      }
+      return {
+        'success': true,
+        'message': res.data['message'] ?? 'પ્રોફાઇલ સફળતાપૂર્વક કાઢી નાખવામાં આવી છે',
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {'success': false, 'message': failure.message};
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
   ApiFailure _mapDioException(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||

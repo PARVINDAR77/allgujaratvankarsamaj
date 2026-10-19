@@ -6,9 +6,9 @@ export declare class NotificationsController {
     findAllPublic(): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }[]>;
     findUserNotifications(req: any): Promise<{
@@ -16,8 +16,8 @@ export declare class NotificationsController {
         id: string;
         createdAt: Date;
         userId: string;
-        title: string;
         message: string;
+        title: string;
         metadata: string | null;
         isRead: boolean;
     }[]>;
@@ -33,25 +33,25 @@ export declare class NotificationsController {
     findAllAdmin(): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }[]>;
     create(dto: CreateNotificationDto): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }>;
     remove(id: string): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }>;
 }

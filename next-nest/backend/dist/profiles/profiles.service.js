@@ -997,15 +997,47 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 where: { userId },
             });
             if (!existingProfile) {
+                if (this.memoryProfiles.has(userId)) {
+                    const profile = this.memoryProfiles.get(userId);
+                    this.memoryProfiles.delete(userId);
+                    return { success: true, message: "Profile deleted successfully", profile };
+                }
                 throw new common_1.NotFoundException("Profile not found");
             }
+            const profileId = existingProfile.id;
+            await this.prisma.$transaction(async (tx) => {
+                await tx.verificationRequest.deleteMany({ where: { profileId } });
+                const govt = await tx.governmentEmployment.findUnique({ where: { profileId } });
+                if (govt) {
+                    await tx.governmentEmploymentVerification.deleteMany({
+                        where: { employmentId: govt.id },
+                    });
+                    await tx.governmentEmployment.delete({ where: { id: govt.id } });
+                }
+                await tx.matchInterest.deleteMany({
+                    where: {
+                        OR: [
+                            { senderProfileId: profileId },
+                            { receiverProfileId: profileId },
+                        ],
+                    },
+                });
+                await tx.shortlist.deleteMany({ where: { targetProfileId: profileId } });
+                await tx.report.deleteMany({ where: { targetProfileId: profileId } });
+                await tx.matrimonialProfile.delete({ where: { id: profileId } });
+            });
+            this.memoryProfiles.delete(userId);
+            return {
+                success: true,
+                message: "તમારી મેટ્રિમોનિયલ પ્રોફાઇલ સફળતાપૂર્વક કાઢી નાખવામાં આવી છે (Matrimonial profile deleted successfully)",
+            };
         }
         catch (err) {
             if (err instanceof common_1.NotFoundException)
                 throw err;
             const profile = this.memoryProfiles.get(userId);
             this.memoryProfiles.delete(userId);
-            return profile;
+            return { success: true, message: "Profile deleted", profile };
         }
     }
     async getProfiles(query, viewerUser) {

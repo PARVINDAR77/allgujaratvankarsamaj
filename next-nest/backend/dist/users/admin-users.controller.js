@@ -50,6 +50,20 @@ let AdminUsersController = class AdminUsersController {
         const ipAddress = req.ip || req.connection?.remoteAddress || null;
         return this.usersService.toggleProfileFeaturedAdmin(id, req.user.id, isFeatured, ipAddress);
     }
+    async deleteUserAdmin(req, id) {
+        if (req.user.role !== client_1.Role.SUPER_ADMIN && req.user.role !== client_1.Role.ADMIN) {
+            throw new common_1.ForbiddenException("માત્ર સુપર એડમિન અથવા એડમિન વપરાશકર્તા એકાઉન્ટ ડિલીટ કરી શકે છે (Only SUPER_ADMIN or ADMIN can delete accounts)");
+        }
+        const ipAddress = req.ip || req.connection?.remoteAddress || null;
+        return this.usersService.deleteUserAccount(id, req.user.id, ipAddress);
+    }
+    async deleteProfileAdmin(req, id) {
+        if (req.user.role !== client_1.Role.SUPER_ADMIN && req.user.role !== client_1.Role.ADMIN) {
+            throw new common_1.ForbiddenException("માત્ર સુપર એડમિન અથવા એડમિન પ્રોફાઇલ ડિલીટ કરી શકે છે (Only SUPER_ADMIN or ADMIN can delete profiles)");
+        }
+        const ipAddress = req.ip || req.connection?.remoteAddress || null;
+        return this.usersService.deleteProfileAdmin(id, req.user.id, ipAddress);
+    }
 };
 exports.AdminUsersController = AdminUsersController;
 __decorate([
@@ -116,6 +130,32 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, Boolean]),
     __metadata("design:returntype", Promise)
 ], AdminUsersController.prototype, "toggleProfileFeaturedAdmin", null);
+__decorate([
+    (0, permissions_decorator_1.Permissions)(permissions_1.Permission.MEMBERS_DELETE),
+    (0, common_1.Delete)("users/:id"),
+    (0, swagger_1.ApiOperation)({
+        summary: "Permanently delete user and all associated data (Admin / Super Admin)",
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "User account deleted successfully" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AdminUsersController.prototype, "deleteUserAdmin", null);
+__decorate([
+    (0, permissions_decorator_1.Permissions)(permissions_1.Permission.MEMBERS_DELETE),
+    (0, common_1.Delete)("profiles/:id"),
+    (0, swagger_1.ApiOperation)({
+        summary: "Permanently delete matrimonial profile (Admin / Super Admin)",
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Matrimonial profile deleted successfully" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AdminUsersController.prototype, "deleteProfileAdmin", null);
 exports.AdminUsersController = AdminUsersController = __decorate([
     (0, swagger_1.ApiTags)("Admin Users"),
     (0, swagger_1.ApiBearerAuth)(),

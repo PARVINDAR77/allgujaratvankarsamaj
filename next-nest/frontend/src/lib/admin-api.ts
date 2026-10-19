@@ -323,10 +323,26 @@ export const adminApi = {
   },
 
   async deleteUser(userId: string) {
-    const res = await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+    const res = await adminFetch(`${API_BASE_URL}/admin/users/${userId}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to delete user account");
+    }
+    return res.json();
+  },
+
+  async deleteProfile(profileId: string) {
+    const res = await adminFetch(`${API_BASE_URL}/admin/profiles/${profileId}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to delete matrimonial profile");
+    }
     return res.json();
   },
 

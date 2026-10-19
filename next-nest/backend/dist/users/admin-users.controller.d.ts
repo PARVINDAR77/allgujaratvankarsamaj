@@ -59,4 +59,12 @@ export declare class AdminUsersController {
         id: string;
         isFeatured: boolean;
     }>;
+    deleteUserAdmin(req: any, id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    deleteProfileAdmin(req: any, id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

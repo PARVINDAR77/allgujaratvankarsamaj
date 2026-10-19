@@ -2,6 +2,7 @@ export declare enum Permission {
     MEMBERS_READ = "members.read",
     MEMBERS_UPDATE = "members.update",
     MEMBERS_BLOCK = "members.block",
+    MEMBERS_DELETE = "members.delete",
     VERIFICATION_READ = "verification.read",
     VERIFICATION_REVIEW = "verification.review",
     GOVERNMENT_READ = "government.read",

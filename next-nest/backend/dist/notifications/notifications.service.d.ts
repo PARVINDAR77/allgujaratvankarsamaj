@@ -7,33 +7,33 @@ export declare class NotificationsService {
     findAllPublic(): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }[]>;
     findAllAdmin(): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }[]>;
     create(dto: CreateNotificationDto): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }>;
     remove(id: string): Promise<{
         id: string;
         createdAt: Date;
+        message: string;
         title: string;
         route: string | null;
-        message: string;
         target: string;
     }>;
     getUserNotifications(userId: string): Promise<{
@@ -41,8 +41,8 @@ export declare class NotificationsService {
         id: string;
         createdAt: Date;
         userId: string;
-        title: string;
         message: string;
+        title: string;
         metadata: string | null;
         isRead: boolean;
     }[]>;

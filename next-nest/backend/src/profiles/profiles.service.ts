@@ -1149,13 +1149,62 @@ export class ProfilesService {
       });
 
       if (!existingProfile) {
+        // Fallback to memoryProfiles if present
+        if (this.memoryProfiles.has(userId)) {
+          const profile = this.memoryProfiles.get(userId);
+          this.memoryProfiles.delete(userId);
+          return { success: true, message: "Profile deleted successfully", profile };
+        }
         throw new NotFoundException("Profile not found");
       }
+
+      const profileId = existingProfile.id;
+
+      await this.prisma.$transaction(async (tx) => {
+        // 1. Delete verification requests
+        await tx.verificationRequest.deleteMany({ where: { profileId } });
+
+        // 2. Delete government employment & verifications
+        const govt = await tx.governmentEmployment.findUnique({ where: { profileId } });
+        if (govt) {
+          await tx.governmentEmploymentVerification.deleteMany({
+            where: { employmentId: govt.id },
+          });
+          await tx.governmentEmployment.delete({ where: { id: govt.id } });
+        }
+
+        // 3. Delete match interests
+        await tx.matchInterest.deleteMany({
+          where: {
+            OR: [
+              { senderProfileId: profileId },
+              { receiverProfileId: profileId },
+            ],
+          },
+        });
+
+        // 4. Delete shortlists targeting this profile
+        await tx.shortlist.deleteMany({ where: { targetProfileId: profileId } });
+
+        // 5. Delete reports
+        await tx.report.deleteMany({ where: { targetProfileId: profileId } });
+
+        // 6. Delete matrimonial profile
+        await tx.matrimonialProfile.delete({ where: { id: profileId } });
+      });
+
+      this.memoryProfiles.delete(userId);
+
+      return {
+        success: true,
+        message:
+          "તમારી મેટ્રિમોનિયલ પ્રોફાઇલ સફળતાપૂર્વક કાઢી નાખવામાં આવી છે (Matrimonial profile deleted successfully)",
+      };
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
       const profile = this.memoryProfiles.get(userId);
       this.memoryProfiles.delete(userId);
-      return profile;
+      return { success: true, message: "Profile deleted", profile };
     }
   }
 

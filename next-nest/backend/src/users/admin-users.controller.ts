@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -116,4 +117,43 @@ export class AdminUsersController {
       ipAddress,
     );
   }
+
+  @Permissions(Permission.MEMBERS_DELETE)
+  @Delete("users/:id")
+  @ApiOperation({
+    summary: "Permanently delete user and all associated data (Admin / Super Admin)",
+  })
+  @ApiResponse({ status: 200, description: "User account deleted successfully" })
+  async deleteUserAdmin(
+    @Request() req: any,
+    @Param("id") id: string,
+  ) {
+    if (req.user.role !== Role.SUPER_ADMIN && req.user.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        "માત્ર સુપર એડમિન અથવા એડમિન વપરાશકર્તા એકાઉન્ટ ડિલીટ કરી શકે છે (Only SUPER_ADMIN or ADMIN can delete accounts)",
+      );
+    }
+    const ipAddress = req.ip || req.connection?.remoteAddress || null;
+    return this.usersService.deleteUserAccount(id, req.user.id, ipAddress);
+  }
+
+  @Permissions(Permission.MEMBERS_DELETE)
+  @Delete("profiles/:id")
+  @ApiOperation({
+    summary: "Permanently delete matrimonial profile (Admin / Super Admin)",
+  })
+  @ApiResponse({ status: 200, description: "Matrimonial profile deleted successfully" })
+  async deleteProfileAdmin(
+    @Request() req: any,
+    @Param("id") id: string,
+  ) {
+    if (req.user.role !== Role.SUPER_ADMIN && req.user.role !== Role.ADMIN) {
+      throw new ForbiddenException(
+        "માત્ર સુપર એડમિન અથવા એડમિન પ્રોફાઇલ ડિલીટ કરી શકે છે (Only SUPER_ADMIN or ADMIN can delete profiles)",
+      );
+    }
+    const ipAddress = req.ip || req.connection?.remoteAddress || null;
+    return this.usersService.deleteProfileAdmin(id, req.user.id, ipAddress);
+  }
 }
+

@@ -273,8 +273,8 @@ export declare class AdminController {
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        senderProfileId: string;
         receiverProfileId: string;
+        senderProfileId: string;
     } | {
         success: boolean;
         message: string;
