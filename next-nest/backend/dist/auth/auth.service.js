@@ -225,6 +225,31 @@ let AuthService = AuthService_1 = class AuthService {
             message: "તમારો પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે. હવે તમે નવા પાસવર્ડથી લોગિન કરી શકો છો (Password has been reset successfully. You can now login.)",
         };
     }
+    async updatePassword(userId, dto) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException("વપરાશકર્તા મળ્યા નથી (User not found)");
+        }
+        const isCurrentValid = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+        if (!isCurrentValid) {
+            throw new common_1.BadRequestException("હાલનો પાસવર્ડ ખોટો છે (Current password is incorrect)");
+        }
+        if (dto.newPassword.length < 6) {
+            throw new common_1.BadRequestException("નવો પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (New password must be at least 6 characters)");
+        }
+        const saltRounds = 10;
+        const passwordHash = await bcrypt.hash(dto.newPassword, saltRounds);
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { passwordHash },
+        });
+        return {
+            success: true,
+            message: "પાસવર્ડ સફળતાપૂર્વક અપડેટ થયો છે (Password has been updated successfully)",
+        };
+    }
 };
 exports.AuthService = AuthService;
 exports.AuthService = AuthService = AuthService_1 = __decorate([

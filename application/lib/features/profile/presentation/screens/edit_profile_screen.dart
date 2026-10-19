@@ -1329,60 +1329,49 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildDropdownField(String label, String hint, IconData prefixIcon, List<String> items, {String? value, void Function(String?)? onChanged}) {
-    String? internalValue;
-    return StatefulBuilder(
-      builder: (context, setState) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: DropdownButtonFormField<String>(
-                  value: value ?? internalValue,
-                  onChanged: (val) {
-                    if (onChanged != null) {
-                      onChanged(val);
-                    } else {
-                      setState(() {
-                        internalValue = val;
-                      });
-                    }
-                  },
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(prefixIcon, color: Colors.black87, size: 20),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  ),
-                  hint: Text(hint, style: const TextStyle(color: Colors.black38, fontSize: 14)),
-                  isExpanded: true,
-                  dropdownColor: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  elevation: 8,
-                  menuMaxHeight: 300,
-                  iconEnabledColor: const Color(0xFFD4AF37),
-                  style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
-                  items: items.map((item) {
-                    return DropdownMenuItem(
-                      value: item,
-                      child: Text(item, style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
-                    );
-                  }).toList(),
-                ),
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
           ),
-        );
-      }
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey.shade300),
+            ),
+            child: DropdownButtonFormField<String>(
+              value: value,
+              onChanged: onChanged,
+              decoration: InputDecoration(
+                prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              ),
+              hint: Text(hint, style: const TextStyle(color: Colors.black38, fontSize: 14)),
+              icon: const Icon(Icons.arrow_drop_down, color: Colors.black54),
+              isExpanded: true,
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              elevation: 8,
+              menuMaxHeight: 300,
+              iconEnabledColor: const Color(0xFFD4AF37),
+              style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+              items: items.map((item) {
+                return DropdownMenuItem<String>(
+                  value: item,
+                  child: Text(item, style: const TextStyle(fontSize: 14, color: Colors.black, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis),
+                );
+              }).toList(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

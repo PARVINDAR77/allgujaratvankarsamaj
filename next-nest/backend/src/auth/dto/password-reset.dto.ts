@@ -55,3 +55,23 @@ export class ResetPasswordDto {
   @MinLength(6, { message: "પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)" })
   newPassword: string;
 }
+
+export class UpdatePasswordDto {
+  @ApiProperty({
+    description: "Current account password",
+    example: "OldPassword123!",
+  })
+  @IsNotEmpty({ message: "હાલનો પાસવર્ડ જરૂરી છે (Current password is required)" })
+  @IsString()
+  currentPassword: string;
+
+  @ApiProperty({
+    description: "New password (minimum 6 characters)",
+    example: "NewPassword123!",
+  })
+  @IsNotEmpty({ message: "નવો પાસવર્ડ જરૂરી છે (New password is required)" })
+  @IsString()
+  @MinLength(6, { message: "નવો પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)" })
+  newPassword: string;
+}
+

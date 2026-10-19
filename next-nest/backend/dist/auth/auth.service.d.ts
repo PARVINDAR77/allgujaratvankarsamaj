@@ -4,7 +4,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { UsersService } from "../users/users.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
-import { ForgotPasswordDto, VerifyResetCodeDto, ResetPasswordDto } from "./dto/password-reset.dto";
+import { ForgotPasswordDto, VerifyResetCodeDto, ResetPasswordDto, UpdatePasswordDto } from "./dto/password-reset.dto";
 export declare class AuthService {
     private readonly usersService;
     private readonly jwtService;
@@ -58,6 +58,10 @@ export declare class AuthService {
         message: string;
     }>;
     resetPassword(dto: ResetPasswordDto): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    updatePassword(userId: string, dto: UpdatePasswordDto): Promise<{
         success: boolean;
         message: string;
     }>;

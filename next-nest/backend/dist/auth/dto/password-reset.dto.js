@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ResetPasswordDto = exports.VerifyResetCodeDto = exports.ForgotPasswordDto = void 0;
+exports.UpdatePasswordDto = exports.ResetPasswordDto = exports.VerifyResetCodeDto = exports.ForgotPasswordDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 class ForgotPasswordDto {
@@ -76,4 +76,26 @@ __decorate([
     (0, class_validator_1.MinLength)(6, { message: "પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)" }),
     __metadata("design:type", String)
 ], ResetPasswordDto.prototype, "newPassword", void 0);
+class UpdatePasswordDto {
+}
+exports.UpdatePasswordDto = UpdatePasswordDto;
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: "Current account password",
+        example: "OldPassword123!",
+    }),
+    (0, class_validator_1.IsNotEmpty)({ message: "હાલનો પાસવર્ડ જરૂરી છે (Current password is required)" }),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], UpdatePasswordDto.prototype, "currentPassword", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({
+        description: "New password (minimum 6 characters)",
+        example: "NewPassword123!",
+    }),
+    (0, class_validator_1.IsNotEmpty)({ message: "નવો પાસવર્ડ જરૂરી છે (New password is required)" }),
+    (0, class_validator_1.IsString)(),
+    (0, class_validator_1.MinLength)(6, { message: "નવો પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)" }),
+    __metadata("design:type", String)
+], UpdatePasswordDto.prototype, "newPassword", void 0);
 //# sourceMappingURL=password-reset.dto.js.map

@@ -84,7 +84,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String _taluka = '';
   String _pargana = 'Select Pargana';
   String? _gender;
-  String? _maritalStatus;
+  String? _maritalStatus = 'Never Married (અપરિણીત)';
   String? _bloodGroup;
   String? _isVankar;
   String? _casteCategory;

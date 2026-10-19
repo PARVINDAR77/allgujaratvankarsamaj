@@ -2,7 +2,7 @@ import { AuthService } from "./auth.service";
 import { UsersService } from "../users/users.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
-import { ForgotPasswordDto, VerifyResetCodeDto, ResetPasswordDto } from "./dto/password-reset.dto";
+import { ForgotPasswordDto, VerifyResetCodeDto, ResetPasswordDto, UpdatePasswordDto } from "./dto/password-reset.dto";
 import { Response } from "express";
 export declare class AuthController {
     private readonly authService;
@@ -58,6 +58,14 @@ export declare class AuthController {
         message: string;
     }>;
     resetPassword(dto: ResetPasswordDto): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    changePassword(req: any, dto: UpdatePasswordDto): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    updatePassword(req: any, dto: UpdatePasswordDto): Promise<{
         success: boolean;
         message: string;
     }>;

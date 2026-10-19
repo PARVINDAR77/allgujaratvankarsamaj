@@ -24,6 +24,7 @@ import {
   ForgotPasswordDto,
   VerifyResetCodeDto,
   ResetPasswordDto,
+  UpdatePasswordDto,
 } from "./dto/password-reset.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
@@ -154,6 +155,31 @@ export class AuthController {
   @ApiResponse({ status: 400, description: "Validation error or invalid code" })
   async resetPassword(@Body() dto: ResetPasswordDto) {
     return this.authService.resetPassword(dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post("change-password")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Change/Update account password for authenticated user",
+  })
+  @ApiResponse({ status: 200, description: "Password updated successfully" })
+  @ApiResponse({ status: 400, description: "Current password incorrect or validation error" })
+  @ApiResponse({ status: 401, description: "Unauthorized access" })
+  async changePassword(@Request() req: any, @Body() dto: UpdatePasswordDto) {
+    return this.authService.updatePassword(req.user.id, dto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Post("update-password")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: "Change/Update account password alias",
+  })
+  async updatePassword(@Request() req: any, @Body() dto: UpdatePasswordDto) {
+    return this.authService.updatePassword(req.user.id, dto);
   }
 
   @UseGuards(JwtAuthGuard)

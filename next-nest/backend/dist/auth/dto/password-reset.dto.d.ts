@@ -10,3 +10,7 @@ export declare class ResetPasswordDto {
     code: string;
     newPassword: string;
 }
+export declare class UpdatePasswordDto {
+    currentPassword: string;
+    newPassword: string;
+}

@@ -218,6 +218,29 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<Map<String, dynamic>> updatePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/change-password', data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      });
+      return {
+        'success': true,
+        'message': res.data != null && res.data['message'] != null
+            ? res.data['message']
+            : 'પાસવર્ડ સફળતાપૂર્વક અપડેટ થયો છે (Password updated successfully)',
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {'success': false, 'message': failure.message};
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
   Future<Map<String, dynamic>> deleteAccount() async {
     try {
       final res = await _dio.delete('/auth/account/me');

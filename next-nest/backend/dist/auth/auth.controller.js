@@ -61,6 +61,12 @@ let AuthController = class AuthController {
     async resetPassword(dto) {
         return this.authService.resetPassword(dto);
     }
+    async changePassword(req, dto) {
+        return this.authService.updatePassword(req.user.id, dto);
+    }
+    async updatePassword(req, dto) {
+        return this.authService.updatePassword(req.user.id, dto);
+    }
     async deleteMyAccount(req) {
         return this.usersService.deleteUserAccount(req.user.id);
     }
@@ -180,6 +186,37 @@ __decorate([
     __metadata("design:paramtypes", [password_reset_dto_1.ResetPasswordDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "resetPassword", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)("change-password"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: "Change/Update account password for authenticated user",
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Password updated successfully" }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: "Current password incorrect or validation error" }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: "Unauthorized access" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, password_reset_dto_1.UpdatePasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "changePassword", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, common_1.Post)("update-password"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({
+        summary: "Change/Update account password alias",
+    }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, password_reset_dto_1.UpdatePasswordDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "updatePassword", null);
 __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, swagger_1.ApiBearerAuth)(),
