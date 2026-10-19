@@ -1286,8 +1286,11 @@ export class ProfilesService {
         (query as any).showInMatrimony === 1 ||
         (query as any).showInMatrimony === "1";
     } else if (!(query as any).includeAllProfiles) {
-      // By default in matrimonial candidate listings, only show candidates who opted into matrimony (default true)
-      where.showInMatrimony = true;
+      // By default in matrimonial candidate listings, exclude candidates who opted out of matrimony
+      where.NOT = [
+        ...(((where as any).NOT as any[]) || []),
+        { showInMatrimony: false },
+      ];
     }
 
     // Age filtering based on date of birth

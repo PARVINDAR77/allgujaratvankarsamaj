@@ -1113,7 +1113,10 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     query.showInMatrimony === "1";
         }
         else if (!query.includeAllProfiles) {
-            where.showInMatrimony = true;
+            where.NOT = [
+                ...(where.NOT || []),
+                { showInMatrimony: false },
+            ];
         }
         const minAge = query.ageMin ?? query.ageFrom;
         const maxAge = query.ageMax ?? query.ageTo;

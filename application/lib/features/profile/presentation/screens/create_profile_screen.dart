@@ -94,6 +94,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String? _pwbdCategory;
   bool _isAbroad = false;
   String? _abroadCountry;
+  bool _showInMatrimony = true;
 
   // Contact Details
   String _mobileNumber = '';
@@ -539,6 +540,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       addressPrivacy: 'પરિવારજનો',
       guardianPrivacy: 'બધા માટે',
       shareClassGroup: false,
+      showInMatrimony: _showInMatrimony,
     );
 
     String finalProfileId = uniqueId;
@@ -732,7 +734,46 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               _buildTextField('Last Name (અટક / ઉપનામ) *', 'Enter Last Name (અટક / ઉપનામ)', Icons.badge_outlined, onChanged: (v) => setState(() => _lastName = v)),
               _buildTextField('Date of Birth *', _dob ?? 'Tap to select date of birth', Icons.cake_outlined, isDropdown: true, readOnly: true, onTap: () => _selectDate(context)),
               _buildDropdownField('Gender (જાતિ) *', 'Male (પુરુષ)', Icons.people_alt_outlined, ['Male (પુરુષ)', 'Female (સ્ત્રી)'], value: _gender, onChanged: (v) => setState(() => _gender = v)),
-              _buildDropdownField('Marital Status (વૈવાહિક સ્થિતિ) *', 'Never Married (અપરિણીત)', Icons.favorite_border, ['Never Married (અપરિણીત)', 'Married (પરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'], value: _maritalStatus, onChanged: (v) => setState(() => _maritalStatus = v)),
+              _buildDropdownField(
+                'Marital Status (વૈવાહિક સ્થિતિ) *',
+                'Never Married (અપરિણીત)',
+                Icons.favorite_border,
+                ['Never Married (અપરિણીત)', 'Married (પરિણીત)', 'Divorced (છૂટાછેડા લીધેલ)', 'Widowed (વિધવા / વિધુર)', 'Awaiting Divorce (છૂટાછેડાની રાહમાં)'],
+                value: _maritalStatus,
+                onChanged: (v) => setState(() {
+                  final previousStatus = _maritalStatus;
+                  _maritalStatus = v;
+                  if (v == 'Married (પરિણીત)') {
+                    _showInMatrimony = false;
+                  } else if (previousStatus == 'Married (પરિણીત)') {
+                    _showInMatrimony = true;
+                  }
+                }),
+              ),
+              if (_maritalStatus == 'Married (પરિણીત)')
+                Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.amber.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, color: Colors.amber.shade800, size: 20),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'પરિણીત સભ્યોની પ્રોફાઇલ મેટ્રિમોની (વૈવાહિક વિભાગ) માં દર્શાવવામાં આવતી નથી (Married members are excluded from Matrimony)',
+                          style: TextStyle(fontSize: 12, color: Colors.amber.shade900, fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                _buildMatrimonyOptionField(),
               _buildDropdownField('Blood Group (બ્લડ ગ્રુપ)', 'Select Blood Group', Icons.water_drop_outlined, ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-', 'Don\'t Know (ખબર નથી)'], value: _bloodGroup, onChanged: (v) => setState(() => _bloodGroup = v)),
               _buildDropdownField('Are you Vankar? (તમે વણકર છો?) *', 'Yes (હા)', Icons.verified_user_outlined, ['Yes (હા)', 'No (ના)'], value: _isVankar, onChanged: (v) => setState(() => _isVankar = v)),
               
@@ -1345,6 +1386,194 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 );
               }).toList(),
               onChanged: onChanged,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMatrimonyOptionField() {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.favorite, size: 18, color: Color(0xFFD4AF37)),
+              const SizedBox(width: 8),
+              const Expanded(
+                child: Text(
+                  'Add Profile in Matrimony? (મેરેજ બ્યુરોમાં પ્રોફાઇલ ઉમેરવી છે?) *',
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _showInMatrimony ? const Color(0xFFD4AF37).withOpacity(0.5) : Colors.grey.shade300,
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.03),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => setState(() => _showInMatrimony = true),
+                          borderRadius: BorderRadius.circular(10),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: _showInMatrimony ? const Color(0xFFD4AF37) : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: _showInMatrimony ? const Color(0xFFB89628) : Colors.grey.shade300,
+                                width: _showInMatrimony ? 2 : 1,
+                              ),
+                              boxShadow: _showInMatrimony
+                                  ? [
+                                      BoxShadow(
+                                        color: const Color(0xFFD4AF37).withOpacity(0.35),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _showInMatrimony ? Icons.check_circle : Icons.radio_button_unchecked,
+                                  size: 18,
+                                  color: _showInMatrimony ? Colors.black87 : Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Yes (હા) - ઉમેરો',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: _showInMatrimony ? Colors.black87 : Colors.grey.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => setState(() => _showInMatrimony = false),
+                          borderRadius: BorderRadius.circular(10),
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: !_showInMatrimony ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: !_showInMatrimony ? const Color(0xFF0F172A) : Colors.grey.shade300,
+                                width: !_showInMatrimony ? 2 : 1,
+                              ),
+                              boxShadow: !_showInMatrimony
+                                  ? [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.25),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  !_showInMatrimony ? Icons.cancel : Icons.radio_button_unchecked,
+                                  size: 18,
+                                  color: !_showInMatrimony ? Colors.white : Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'No (ના) - ન ઉમેરો',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                    color: !_showInMatrimony ? Colors.white : Colors.grey.shade700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  decoration: BoxDecoration(
+                    color: _showInMatrimony ? const Color(0xFFFFFBEB) : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: _showInMatrimony ? const Color(0xFFFDE68A) : const Color(0xFFE2E8F0),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        _showInMatrimony ? Icons.verified : Icons.visibility_off_outlined,
+                        size: 16,
+                        color: _showInMatrimony ? const Color(0xFFB45309) : const Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          _showInMatrimony
+                              ? 'તમારી પ્રોફાઇલ વૈવાહિક ઉમેદવારો (Matrimony) માં દેખાશે (Visible in Matrimony)'
+                              : 'પ્રોફાઇલ મેટ્રિમોનીમાં નહીં દેખાય, માત્ર ડિરેક્ટરી/સેવામાં રહેશે (Hidden from Matrimony)',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: _showInMatrimony ? const Color(0xFF92400E) : const Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],
