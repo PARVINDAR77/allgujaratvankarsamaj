@@ -30,6 +30,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   Uint8List? _profileImageBytes;
   final List<Uint8List> _galleryPhotosBytes = [];
   String _idProofType = 'Aadhaar Card (આધાર કાર્ડ)';
+  String _idProofNumber = '';
   Uint8List? _idFrontBytes;
   Uint8List? _idBackBytes;
   final List<String> _idProofOptions = [
@@ -374,7 +375,18 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       return;
     }
 
-    // 9. ID Proof validation (Front & Back both mandatory for any document)
+    // 9. ID Proof validation (Number & Front/Back both mandatory for any document)
+    if (_idProofNumber.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('કૃપા કરીને $_idProofType નો નંબર દાખલ કરો (Please enter $_idProofType number)'),
+          backgroundColor: Colors.red.shade700,
+          duration: const Duration(seconds: 4),
+        ),
+      );
+      return;
+    }
+
     if (_idFrontBytes == null && _idBackBytes == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -496,6 +508,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       idProofType: _idProofType,
       idProofFrontUrl: uploadedIdFront,
       idProofBackUrl: uploadedIdBack,
+      idProofNumber: _idProofNumber.trim(),
       gender: ProfileModel.normalizeGenderToDisplay(_gender),
       maritalStatus: _maritalStatus ?? 'Never Married (અપરિણીત)',
       dateOfBirth: _dob ?? '2000-01-01',
@@ -2059,6 +2072,59 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   if (val != null) setState(() => _idProofType = val);
                 },
               ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // ID Proof Number Field
+          Text(
+            '$_idProofType Number (ઓળખપત્ર / કાર્ડ નંબર) *',
+            style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            initialValue: _idProofNumber,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              hintText: _idProofType.contains('Aadhaar')
+                  ? 'દા.ત. 1234 5678 9012 (12-digit Aadhaar No)'
+                  : _idProofType.contains('PAN')
+                      ? 'દા.ત. ABCDE1234F (10-char PAN)'
+                      : _idProofType.contains('Voter')
+                          ? 'દા.ત. ABC1234567 (Voter ID No)'
+                          : 'Enter ${_idProofType.split('(').first.trim()} Number',
+              hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+              prefixIcon: const Icon(Icons.numbers_outlined, color: Color(0xFF1E3A8A), size: 20),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF1E3A8A), width: 1.5)),
+            ),
+            onChanged: (val) => _idProofNumber = val.trim(),
+          ),
+          const SizedBox(height: 8),
+
+          // One Person One Time Disclaimer
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.lock_clock_outlined, size: 16, color: Color(0xFF1E3A8A)),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'એક વ્યક્તિ માત્ર એક જ વાર ઓળખપત્ર ઉમેરી શકે છે. આ ઓળખપત્ર અન્ય કોઈ વ્યક્તિ વાપરી શકશે નહીં.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF1E3A8A), fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),

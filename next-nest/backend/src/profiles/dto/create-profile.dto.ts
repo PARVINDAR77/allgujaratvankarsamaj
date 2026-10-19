@@ -262,6 +262,14 @@ export class CreateProfileDto {
   idProofBackUrl?: string;
 
   @ApiPropertyOptional({
+    description: "ID Proof Document / Card Number (Aadhaar / PAN / Voter ID / License number)",
+    example: "1234 5678 9012",
+  })
+  @IsOptional()
+  @IsString()
+  idProofNumber?: string;
+
+  @ApiPropertyOptional({
     description: "Whether the candidate is physically disabled",
     example: true,
   })

@@ -28,6 +28,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   List<String> _existingPhotoUrls = [];
   final List<Uint8List> _newGalleryPhotosBytes = [];
   String _idProofType = 'Aadhaar Card (આધાર કાર્ડ)';
+  String? _idProofNumber;
   String? _existingIdFrontUrl;
   String? _existingIdBackUrl;
   Uint8List? _idFrontBytes;
@@ -367,6 +368,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               if (profile.idProofType != null && profile.idProofType!.isNotEmpty) {
                 _idProofType = profile.idProofType!;
               }
+              _idProofNumber ??= profile.idProofNumber;
             }
 
             return SingleChildScrollView(
@@ -888,7 +890,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 20),
 
               // Box 2: ID Proof Verification (Front & Back Mandatory) - Bottom
-              _buildIdProofBox(),
+              _buildIdProofBox(profile),
               const SizedBox(height: 32),
 
               // Submit Button
@@ -977,37 +979,50 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       return;
                     }
 
-                    final hasFront = _idFrontBytes != null || (_existingIdFrontUrl != null && _existingIdFrontUrl!.isNotEmpty);
-                    final hasBack = _idBackBytes != null || (_existingIdBackUrl != null && _existingIdBackUrl!.isNotEmpty);
-                    if (!hasFront && !hasBack) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('કૃપા કરીને $_idProofType ના આગળ અને પાછળ બંને ફોટા અપલોડ કરો (Both Front and Back photos required)'),
-                          backgroundColor: Colors.red.shade700,
-                          duration: const Duration(seconds: 4),
-                        ),
-                      );
-                      return;
-                    }
-                    if (!hasFront) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('કૃપા કરીને $_idProofType નો આગળનો ફોટો (Front Side) અપલોડ કરો (Front photo of $_idProofType is required)'),
-                          backgroundColor: Colors.red.shade700,
-                          duration: const Duration(seconds: 4),
-                        ),
-                      );
-                      return;
-                    }
-                    if (!hasBack) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('કૃપા કરીને $_idProofType નો પાછળનો ફોટો (Back Side) અપલોડ કરો (Back photo of $_idProofType is required)'),
-                          backgroundColor: Colors.red.shade700,
-                          duration: const Duration(seconds: 4),
-                        ),
-                      );
-                      return;
+                    if (profile.isVerified != true) {
+                      if (_idProofNumber == null || _idProofNumber!.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('કૃપા કરીને $_idProofType નો નંબર દાખલ કરો (Please enter $_idProofType number)'),
+                            backgroundColor: Colors.red.shade700,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                        return;
+                      }
+
+                      final hasFront = _idFrontBytes != null || (_existingIdFrontUrl != null && _existingIdFrontUrl!.isNotEmpty);
+                      final hasBack = _idBackBytes != null || (_existingIdBackUrl != null && _existingIdBackUrl!.isNotEmpty);
+                      if (!hasFront && !hasBack) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('કૃપા કરીને $_idProofType ના આગળ અને પાછળ બંને ફોટા અપલોડ કરો (Both Front and Back photos required)'),
+                            backgroundColor: Colors.red.shade700,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                        return;
+                      }
+                      if (!hasFront) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('કૃપા કરીને $_idProofType નો આગળનો ફોટો (Front Side) અપલોડ કરો (Front photo of $_idProofType is required)'),
+                            backgroundColor: Colors.red.shade700,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                        return;
+                      }
+                      if (!hasBack) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('કૃપા કરીને $_idProofType નો પાછળનો ફોટો (Back Side) અપલોડ કરો (Back photo of $_idProofType is required)'),
+                            backgroundColor: Colors.red.shade700,
+                            duration: const Duration(seconds: 4),
+                          ),
+                        );
+                        return;
+                      }
                     }
 
                     Future<String?> uploadBytes(Uint8List bytes, String filenamePrefix) async {
@@ -1097,9 +1112,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (updateData['photoUrl'] == null && allFinalPhotos.isNotEmpty) {
                       updateData['photoUrl'] = allFinalPhotos[0];
                     }
-                    updateData['idProofType'] = _idProofType;
-                    if (finalIdFront != null) updateData['idProofFrontUrl'] = finalIdFront;
-                    if (finalIdBack != null) updateData['idProofBackUrl'] = finalIdBack;
+                    if (profile.isVerified != true) {
+                      updateData['idProofType'] = _idProofType;
+                      if (_idProofNumber != null && _idProofNumber!.trim().isNotEmpty) {
+                        updateData['idProofNumber'] = _idProofNumber!.trim();
+                      }
+                      if (finalIdFront != null) updateData['idProofFrontUrl'] = finalIdFront;
+                      if (finalIdBack != null) updateData['idProofBackUrl'] = finalIdBack;
+                    }
 
                     // Fallback to profile values if creating a new profile and fields were untouched
                     if (profile.id == 'NEW') {
@@ -1886,7 +1906,143 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildIdProofBox() {
+  Widget _buildIdProofBox(ProfileModel profile) {
+    if (profile.isVerified == true) {
+      final docNum = profile.idProofNumber ?? _idProofNumber ?? 'Verified';
+      final maskedNum = docNum.length > 4
+          ? '${'X' * (docNum.length - 4)}${docNum.substring(docNum.length - 4)}'
+          : docNum;
+
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0FDF4),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF10B981), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.green.withOpacity(0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDCFCE7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.verified, color: Color(0xFF15803D), size: 24),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '✓ Verified Candidate (પ્રમાણિત ઉમેદવાર)',
+                        style: TextStyle(
+                          color: Color(0xFF15803D),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                      Text(
+                        'ઓળખપત્ર સફળતાપૂર્વક ચકાસાયેલ છે (ID Proof Verified)',
+                        style: TextStyle(
+                          color: Color(0xFF166534),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDCFCE7),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF86EFAC)),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.lock_rounded, size: 14, color: Color(0xFF15803D)),
+                      SizedBox(width: 4),
+                      Text(
+                        'Locked',
+                        style: TextStyle(
+                          color: Color(0xFF15803D),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFBBF7D0)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.badge_outlined, size: 18, color: Color(0xFF15803D)),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Document: ${profile.idProofType ?? _idProofType}',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.numbers_outlined, size: 18, color: Color(0xFF15803D)),
+                      const SizedBox(width: 8),
+                      Text(
+                        'ID Number: $maskedNum',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.black87),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.info_outline, size: 16, color: Color(0xFF15803D)),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'નિયમ અનુસાર એક વ્યક્તિ માત્ર એક જ વાર ઓળખપત્ર ઉમેરી શકે છે. વેરિફિકેશન પૂર્ણ થયા બાદ ઓળખપત્ર બદલી શકાતું નથી. (As per security policy, ID proof can only be added once. Once verified, it cannot be edited or modified.)',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF166534), height: 1.3),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     final hasFront = _idFrontBytes != null || (_existingIdFrontUrl != null && _existingIdFrontUrl!.isNotEmpty);
     final hasBack = _idBackBytes != null || (_existingIdBackUrl != null && _existingIdBackUrl!.isNotEmpty);
     final isBothUploaded = hasFront && hasBack;
@@ -2055,6 +2211,59 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   if (val != null) setState(() => _idProofType = val);
                 },
               ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // ID Proof Number Field
+          Text(
+            '$_idProofType Number (ઓળખપત્ર / કાર્ડ નંબર) *',
+            style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 6),
+          TextFormField(
+            initialValue: _idProofNumber,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              hintText: _idProofType.contains('Aadhaar')
+                  ? 'દા.ત. 1234 5678 9012 (12-digit Aadhaar No)'
+                  : _idProofType.contains('PAN')
+                      ? 'દા.ત. ABCDE1234F (10-char PAN)'
+                      : _idProofType.contains('Voter')
+                          ? 'દા.ત. ABC1234567 (Voter ID No)'
+                          : 'Enter ${_idProofType.split('(').first.trim()} Number',
+              hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+              prefixIcon: const Icon(Icons.numbers_outlined, color: Color(0xFF1E3A8A), size: 20),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.grey.shade300)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF1E3A8A), width: 1.5)),
+            ),
+            onChanged: (val) => _idProofNumber = val.trim(),
+          ),
+          const SizedBox(height: 8),
+
+          // One Person One Time Disclaimer
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.lock_clock_outlined, size: 16, color: Color(0xFF1E3A8A)),
+                SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'એક વ્યક્તિ માત્ર એક જ વાર ઓળખપત્ર ઉમેરી શકે છે. આ ઓળખપત્ર અન્ય કોઈ વ્યક્તિ વાપરી શકશે નહીં.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFF1E3A8A), fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),

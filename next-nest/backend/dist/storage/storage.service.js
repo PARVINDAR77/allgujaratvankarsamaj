@@ -12,6 +12,7 @@ const common_1 = require("@nestjs/common");
 const uuid_1 = require("uuid");
 const fs = require("fs/promises");
 const path = require("path");
+const crypto = require("crypto");
 let StorageService = StorageService_1 = class StorageService {
     constructor() {
         this.logger = new common_1.Logger(StorageService_1.name);
@@ -31,7 +32,17 @@ let StorageService = StorageService_1 = class StorageService {
         await fs.mkdir(this.uploadDir, { recursive: true });
         const rawExt = (originalName.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
         const ext = ["jpg", "jpeg", "png", "webp", "gif"].includes(rawExt) ? rawExt : "jpg";
-        const uniqueFilename = `${(0, uuid_1.v4)()}.${ext}`;
+        const isIdProof = originalName.toLowerCase().includes("id_proof") ||
+            originalName.toLowerCase().includes("idproof") ||
+            originalName.toLowerCase().includes("doc");
+        let uniqueFilename;
+        if (isIdProof) {
+            const fileHash = crypto.createHash("sha256").update(fileBuffer).digest("hex").substring(0, 32);
+            uniqueFilename = `idproof_${fileHash}_${(0, uuid_1.v4)().substring(0, 8)}.${ext}`;
+        }
+        else {
+            uniqueFilename = `${(0, uuid_1.v4)()}.${ext}`;
+        }
         const filePath = path.join(this.uploadDir, uniqueFilename);
         await fs.writeFile(filePath, fileBuffer);
         this.logger.log(`Uploaded public media: ${uniqueFilename}`);
@@ -50,7 +61,8 @@ let StorageService = StorageService_1 = class StorageService {
         await fs.mkdir(this.privateUploadDir, { recursive: true, mode: 0o700 });
         const rawExt = (originalName.split(".").pop() || "pdf").toLowerCase().replace(/[^a-z0-9]/g, "");
         const ext = ["jpg", "jpeg", "png", "webp", "pdf"].includes(rawExt) ? rawExt : "pdf";
-        const uniqueFilename = `doc_${(0, uuid_1.v4)()}.${ext}`;
+        const fileHash = crypto.createHash("sha256").update(fileBuffer).digest("hex").substring(0, 32);
+        const uniqueFilename = `doc_${fileHash}_${(0, uuid_1.v4)().substring(0, 8)}.${ext}`;
         const filePath = path.join(this.privateUploadDir, uniqueFilename);
         await fs.writeFile(filePath, fileBuffer, { mode: 0o600 });
         this.logger.log(`Uploaded private verification document: ${uniqueFilename}`);

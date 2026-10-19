@@ -9,6 +9,7 @@ class ProfileModel {
   final String? idProofType;
   final String? idProofFrontUrl;
   final String? idProofBackUrl;
+  final String? idProofNumber;
 
   // Personal
   final String gender;
@@ -90,6 +91,7 @@ class ProfileModel {
     this.idProofType,
     this.idProofFrontUrl,
     this.idProofBackUrl,
+    this.idProofNumber,
     required this.gender,
     required this.maritalStatus,
     required this.dateOfBirth,
@@ -484,10 +486,17 @@ class ProfileModel {
     String? idDocType = json['idProofType']?.toString();
     String? idDocFront = json['idProofFrontUrl']?.toString();
     String? idDocBack = json['idProofBackUrl']?.toString();
+    String? idDocNumber = json['idProofNumber']?.toString() ?? json['id_proof_number']?.toString();
+
     if (json['verification'] is Map) {
       idDocType ??= json['verification']['documentType']?.toString();
       idDocFront ??= json['verification']['documentUrl']?.toString();
       idDocBack ??= json['verification']['documentBackUrl']?.toString();
+      final vDocType = json['verification']['documentType']?.toString();
+      if (idDocNumber == null && vDocType != null) {
+        final match = RegExp(r'\[ID:\s*([^\]]+)\]', caseSensitive: false).firstMatch(vDocType);
+        if (match != null) idDocNumber = match.group(1)?.trim();
+      }
     }
 
     // Extract privacy settings
@@ -522,6 +531,7 @@ class ProfileModel {
       idProofType: idDocType,
       idProofFrontUrl: idDocFront,
       idProofBackUrl: idDocBack,
+      idProofNumber: idDocNumber,
       gender: resolvedGender,
       maritalStatus: normalizeMaritalStatusToDisplay(json['maritalStatus'] ?? json['marital_status'] ?? json['maritialStatus']),
       dateOfBirth: (json['dateOfBirth'] ?? json['date_of_birth'] ?? '').toString(),
@@ -589,6 +599,7 @@ class ProfileModel {
       if (idProofType != null && idProofType!.trim().isNotEmpty) 'idProofType': idProofType!.trim(),
       if (idProofFrontUrl != null && idProofFrontUrl!.trim().isNotEmpty) 'idProofFrontUrl': idProofFrontUrl!.trim(),
       if (idProofBackUrl != null && idProofBackUrl!.trim().isNotEmpty) 'idProofBackUrl': idProofBackUrl!.trim(),
+      if (idProofNumber != null && idProofNumber!.trim().isNotEmpty) 'idProofNumber': idProofNumber!.trim(),
       'gender': normalizeGenderToApi(gender).isNotEmpty ? normalizeGenderToApi(gender) : 'MALE',
       'maritalStatus': normalizeMaritalStatusToApi(maritalStatus).isNotEmpty ? normalizeMaritalStatusToApi(maritalStatus) : 'NEVER_MARRIED',
       'dateOfBirth': dateOfBirth.trim().isNotEmpty ? dateOfBirth.trim() : '2000-01-01',

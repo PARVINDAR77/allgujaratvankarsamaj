@@ -64,15 +64,21 @@ let VerificationsService = class VerificationsService {
         }
         const cleanDoc = documentUrl.trim().toLowerCase();
         const docFilename = cleanDoc.split("/").pop()?.split("?")[0];
+        const docHashMatch = docFilename?.match(/(?:idproof|doc)_([a-f0-9]{16,64})/i);
+        const docHash = docHashMatch ? docHashMatch[1] : null;
+        const docFilters = [{ documentUrl: cleanDoc }, { documentBackUrl: cleanDoc }];
+        if (docFilename && docFilename.length > 5) {
+            docFilters.push({ documentUrl: { contains: docFilename } });
+            docFilters.push({ documentBackUrl: { contains: docFilename } });
+        }
+        if (docHash) {
+            docFilters.push({ documentUrl: { contains: docHash } });
+            docFilters.push({ documentBackUrl: { contains: docHash } });
+        }
         const docUsedElsewhere = await this.prisma.verificationRequest.findFirst({
             where: {
                 profileId: { not: profile.id },
-                OR: [
-                    { documentUrl: cleanDoc },
-                    ...(docFilename && docFilename.length > 5
-                        ? [{ documentUrl: { contains: docFilename } }]
-                        : []),
-                ],
+                OR: docFilters,
             },
         });
         if (docUsedElsewhere) {
@@ -80,12 +86,7 @@ let VerificationsService = class VerificationsService {
         }
         const docUsedInGovt = await this.prisma.governmentEmploymentVerification.findFirst({
             where: {
-                OR: [
-                    { documentUrl: cleanDoc },
-                    ...(docFilename && docFilename.length > 5
-                        ? [{ documentUrl: { contains: docFilename } }]
-                        : []),
-                ],
+                OR: docFilters.map((f) => ({ documentUrl: f.documentUrl || f.documentBackUrl })),
             },
         });
         if (docUsedInGovt) {

@@ -85,6 +85,118 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             return this.calculateCompleteness(profile);
         }
     }
+    async validateIdProofUniqueness(currentProfileId, dto, isAlreadyVerified = false) {
+        const hasAnyIdProof = !!((dto.idProofNumber && dto.idProofNumber.trim().length > 0) ||
+            (dto.idProofFrontUrl && dto.idProofFrontUrl.trim().length > 0) ||
+            (dto.idProofBackUrl && dto.idProofBackUrl.trim().length > 0));
+        if (!hasAnyIdProof)
+            return;
+        if (isAlreadyVerified) {
+            throw new common_1.ConflictException("તમારી પ્રોફાઇલ પહેલેથી જ વેરિફાઈડ છે. ઓળખપત્ર માત્ર એક જ વાર ઉમેરી શકાય છે. (Your profile is already verified. ID proof can only be added one time.)");
+        }
+        if (currentProfileId) {
+            const alreadyApproved = await this.prisma.verificationRequest.findFirst({
+                where: {
+                    profileId: currentProfileId,
+                    status: client_1.VerificationStatus.VERIFIED,
+                },
+            });
+            if (alreadyApproved) {
+                throw new common_1.ConflictException("તમારા દસ્તાવેજો પહેલેથી જ મંજૂર થયેલ છે. ઓળખપત્ર માત્ર એક જ વાર ઉમેરી શકાય છે. (Verification already approved. ID proof can only be used one time.)");
+            }
+        }
+        const rawNumber = dto.idProofNumber?.trim();
+        if (rawNumber && rawNumber.length > 0) {
+            const cleanNumber = rawNumber.replace(/[\s\-_]/g, "").toUpperCase();
+            if (cleanNumber.length >= 4) {
+                const numUsedInVerif = await this.prisma.verificationRequest.findFirst({
+                    where: {
+                        ...(currentProfileId ? { profileId: { not: currentProfileId } } : {}),
+                        OR: [
+                            { documentType: { contains: cleanNumber } },
+                            { rejectionReason: { contains: cleanNumber } },
+                        ],
+                    },
+                });
+                if (numUsedInVerif) {
+                    throw new common_1.ConflictException("આ ઓળખપત્ર નંબર અન્ય સભ્ય દ્વારા પહેલેથી જ ઉપયોગમાં લેવાયેલ છે. એક ઓળખપત્ર માત્ર એક જ વ્યક્તિ ઉપયોગ કરી શકે છે. (This ID proof number has already been used by another candidate. Each ID proof can only be used once.)");
+                }
+                const numUsedInProfile = await this.prisma.matrimonialProfile.findFirst({
+                    where: {
+                        ...(currentProfileId ? { id: { not: currentProfileId } } : {}),
+                        privacySettings: { contains: cleanNumber },
+                    },
+                });
+                if (numUsedInProfile) {
+                    throw new common_1.ConflictException("આ ઓળખપત્ર નંબર અન્ય સભ્ય દ્વારા પહેલેથી જ ઉપયોગમાં લેવાયેલ છે. એક ઓળખપત્ર માત્ર એક જ વ્યક્તિ ઉપયોગ કરી શકે છે. (This ID proof number has already been used by another candidate. Each ID proof can only be used once.)");
+                }
+            }
+        }
+        const frontUrl = dto.idProofFrontUrl?.trim().toLowerCase();
+        const backUrl = dto.idProofBackUrl?.trim().toLowerCase();
+        const extractIdentifier = (url) => {
+            if (!url)
+                return null;
+            const filename = url.split("/").pop()?.split("?")[0];
+            if (!filename || filename.length < 5)
+                return null;
+            return filename;
+        };
+        const frontFile = extractIdentifier(frontUrl);
+        const backFile = extractIdentifier(backUrl);
+        const extractHash = (filename) => {
+            if (!filename)
+                return null;
+            const match = filename.match(/idproof_([a-f0-9]{16,64})/i) || filename.match(/doc_([a-f0-9]{16,64})/i);
+            return match ? match[1] : null;
+        };
+        const frontHash = extractHash(frontFile);
+        const backHash = extractHash(backFile);
+        const docFilters = [];
+        if (frontUrl && !frontUrl.includes("default-id.png")) {
+            docFilters.push({ documentUrl: frontUrl });
+            docFilters.push({ documentBackUrl: frontUrl });
+        }
+        if (backUrl) {
+            docFilters.push({ documentUrl: backUrl });
+            docFilters.push({ documentBackUrl: backUrl });
+        }
+        if (frontFile && !frontFile.includes("default-id.png")) {
+            docFilters.push({ documentUrl: { contains: frontFile } });
+            docFilters.push({ documentBackUrl: { contains: frontFile } });
+        }
+        if (backFile) {
+            docFilters.push({ documentUrl: { contains: backFile } });
+            docFilters.push({ documentBackUrl: { contains: backFile } });
+        }
+        if (frontHash) {
+            docFilters.push({ documentUrl: { contains: frontHash } });
+            docFilters.push({ documentBackUrl: { contains: frontHash } });
+        }
+        if (backHash) {
+            docFilters.push({ documentUrl: { contains: backHash } });
+            docFilters.push({ documentBackUrl: { contains: backHash } });
+        }
+        if (docFilters.length > 0) {
+            const docUsedElsewhere = await this.prisma.verificationRequest.findFirst({
+                where: {
+                    ...(currentProfileId ? { profileId: { not: currentProfileId } } : {}),
+                    OR: docFilters,
+                },
+            });
+            if (docUsedElsewhere) {
+                throw new common_1.ConflictException("આ ઓળખપત્ર દસ્તાવેજ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ જમા થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (This ID proof document has already been submitted for another candidate. Documents can only be used one time.)");
+            }
+            const govtDocUsed = await this.prisma.governmentEmploymentVerification.findFirst({
+                where: {
+                    OR: docFilters.map((f) => ({ documentUrl: f.documentUrl || f.documentBackUrl })),
+                },
+            });
+            if (govtDocUsed) {
+                throw new common_1.ConflictException("આ ઓળખપત્ર દસ્તાવેજ પહેલેથી જ જમા થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (This document has already been submitted. Documents can only be used one time.)");
+            }
+        }
+    }
     async createProfile(userId, dto) {
         const gender = (0, normalize_profile_helper_1.normalizeGender)(dto.gender) || dto.gender || client_1.Gender.MALE;
         const maritalStatus = (0, normalize_profile_helper_1.normalizeMaritalStatus)(dto.maritalStatus) || dto.maritalStatus || client_1.MaritalStatus.NEVER_MARRIED;
@@ -166,6 +278,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             const existingProfile = await this.prisma.matrimonialProfile.findUnique({
                 where: { userId },
             });
+            await this.validateIdProofUniqueness(existingProfile ? existingProfile.id : null, dto, existingProfile ? existingProfile.isVerified : false);
             let profile;
             const profilePayload = {
                 firstName: (dto.firstName || "User").trim(),
@@ -273,8 +386,24 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 catch (_) { }
             }
             const docType = dto.idProofType?.trim() || "Aadhaar Card";
+            const cleanNum = dto.idProofNumber ? dto.idProofNumber.replace(/[\s\-_]/g, "").toUpperCase() : null;
+            const fullDocType = cleanNum ? `${docType} [ID: ${cleanNum}]` : docType;
             const docFront = dto.idProofFrontUrl?.trim() || profile.photoUrl || dto.photoUrl || "/uploads/default-id.png";
             const docBack = dto.idProofBackUrl?.trim() || null;
+            if (cleanNum) {
+                try {
+                    const parsedPrivacy = typeof profile.privacySettings === 'string'
+                        ? JSON.parse(profile.privacySettings)
+                        : (profile.privacySettings || {});
+                    parsedPrivacy.idProofNumber = cleanNum;
+                    parsedPrivacy.idProofType = docType;
+                    await this.prisma.matrimonialProfile.update({
+                        where: { id: profile.id },
+                        data: { privacySettings: JSON.stringify(parsedPrivacy) },
+                    });
+                }
+                catch (_) { }
+            }
             const existingReq = await this.prisma.verificationRequest.findFirst({
                 where: { profileId: profile.id, status: client_1.VerificationStatus.PENDING },
             });
@@ -282,7 +411,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 await this.prisma.verificationRequest.update({
                     where: { id: existingReq.id },
                     data: {
-                        documentType: docType,
+                        documentType: fullDocType,
                         documentUrl: docFront,
                         documentBackUrl: docBack,
                         status: client_1.VerificationStatus.PENDING,
@@ -294,7 +423,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 await this.prisma.verificationRequest.create({
                     data: {
                         profileId: profile.id,
-                        documentType: docType,
+                        documentType: fullDocType,
                         documentUrl: docFront,
                         documentBackUrl: docBack,
                         status: client_1.VerificationStatus.PENDING,
@@ -385,6 +514,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
         try {
             let profile = await this.prisma.matrimonialProfile.findUnique({
                 where: { userId },
+                include: {
+                    verificationRequests: {
+                        orderBy: { createdAt: "desc" },
+                        take: 1,
+                    },
+                },
             });
             if (!profile) {
                 const user = await this.prisma.user.findUnique({
@@ -409,6 +544,32 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (!profile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
+            let idNumber = null;
+            let idType = null;
+            const latestVerif = profile.verificationRequests?.[0];
+            if (latestVerif) {
+                profile.verification = latestVerif;
+                if (latestVerif.documentType) {
+                    const match = latestVerif.documentType.match(/\[ID:\s*([^\]]+)\]/i);
+                    if (match)
+                        idNumber = match[1].trim();
+                }
+                profile.idProofFrontUrl = latestVerif.documentUrl;
+                profile.idProofBackUrl = latestVerif.documentBackUrl;
+            }
+            if (!idNumber && profile.privacySettings) {
+                try {
+                    const parsed = typeof profile.privacySettings === 'string' ? JSON.parse(profile.privacySettings) : profile.privacySettings;
+                    if (parsed.idProofNumber)
+                        idNumber = parsed.idProofNumber;
+                    if (parsed.idProofType)
+                        idType = parsed.idProofType;
+                }
+                catch (_) { }
+            }
+            profile.idProofNumber = idNumber;
+            if (idType)
+                profile.idProofType = idType;
             return profile;
         }
         catch (err) {
@@ -566,6 +727,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (!existingProfile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
+            await this.validateIdProofUniqueness(existingProfile.id, dto, existingProfile.isVerified);
             const phoneRegex = /^[6-9]\d{9}$/;
             if (dto.contactPhone && !phoneRegex.test(dto.contactPhone.trim())) {
                 throw new common_1.BadRequestException("મોબાઇલ નંબર માન્ય 10 અંકનો હોવો જોઈએ (Mobile number must be exactly 10 digits starting with 6-9)");
@@ -774,13 +936,29 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 }
                 catch (_) { }
             }
-            if (dto.idProofFrontUrl || dto.idProofBackUrl) {
+            if (dto.idProofFrontUrl || dto.idProofBackUrl || dto.idProofNumber) {
                 try {
                     const docType = dto.idProofType?.trim() || "Aadhaar Card";
+                    const cleanNum = dto.idProofNumber ? dto.idProofNumber.replace(/[\s\-_]/g, "").toUpperCase() : null;
+                    const fullDocType = cleanNum ? `${docType} [ID: ${cleanNum}]` : docType;
                     const docFront = dto.idProofFrontUrl?.trim() ||
                         updatedProfile.photoUrl ||
                         "/uploads/default-id.png";
                     const docBack = dto.idProofBackUrl?.trim() || null;
+                    if (cleanNum) {
+                        try {
+                            const curPrivacy = typeof updatedProfile.privacySettings === 'string'
+                                ? JSON.parse(updatedProfile.privacySettings)
+                                : (updatedProfile.privacySettings || {});
+                            curPrivacy.idProofNumber = cleanNum;
+                            curPrivacy.idProofType = docType;
+                            await this.prisma.matrimonialProfile.update({
+                                where: { id: updatedProfile.id },
+                                data: { privacySettings: JSON.stringify(curPrivacy) },
+                            });
+                        }
+                        catch (_) { }
+                    }
                     const existingReq = await this.prisma.verificationRequest.findFirst({
                         where: {
                             profileId: updatedProfile.id,
@@ -791,7 +969,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         await this.prisma.verificationRequest.update({
                             where: { id: existingReq.id },
                             data: {
-                                documentType: docType,
+                                documentType: fullDocType,
                                 documentUrl: docFront,
                                 documentBackUrl: docBack,
                                 status: client_1.VerificationStatus.PENDING,
@@ -803,7 +981,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         await this.prisma.verificationRequest.create({
                             data: {
                                 profileId: updatedProfile.id,
-                                documentType: docType,
+                                documentType: fullDocType,
                                 documentUrl: docFront,
                                 documentBackUrl: docBack,
                                 status: client_1.VerificationStatus.PENDING,

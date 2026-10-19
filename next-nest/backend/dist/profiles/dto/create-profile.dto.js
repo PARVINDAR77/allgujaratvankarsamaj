@@ -292,6 +292,15 @@ __decorate([
 ], CreateProfileDto.prototype, "idProofBackUrl", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
+        description: "ID Proof Document / Card Number (Aadhaar / PAN / Voter ID / License number)",
+        example: "1234 5678 9012",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "idProofNumber", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
         description: "Whether the candidate is physically disabled",
         example: true,
     }),

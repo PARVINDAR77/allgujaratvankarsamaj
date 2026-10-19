@@ -25,6 +25,7 @@ export declare class CreateProfileDto {
     idProofType?: string;
     idProofFrontUrl?: string;
     idProofBackUrl?: string;
+    idProofNumber?: string;
     isPhysicallyDisabled?: boolean;
     pwbdCategory?: string;
     isAbroad?: boolean;

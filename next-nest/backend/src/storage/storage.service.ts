@@ -2,6 +2,7 @@ import { Injectable, Logger, BadRequestException } from "@nestjs/common";
 import { v4 as uuidv4 } from "uuid";
 import * as fs from "fs/promises";
 import * as path from "path";
+import * as crypto from "crypto";
 
 @Injectable()
 export class StorageService {
@@ -36,7 +37,19 @@ export class StorageService {
 
     const rawExt = (originalName.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "");
     const ext = ["jpg", "jpeg", "png", "webp", "gif"].includes(rawExt) ? rawExt : "jpg";
-    const uniqueFilename = `${uuidv4()}.${ext}`;
+    const isIdProof =
+      originalName.toLowerCase().includes("id_proof") ||
+      originalName.toLowerCase().includes("idproof") ||
+      originalName.toLowerCase().includes("doc");
+
+    let uniqueFilename: string;
+    if (isIdProof) {
+      const fileHash = crypto.createHash("sha256").update(fileBuffer).digest("hex").substring(0, 32);
+      uniqueFilename = `idproof_${fileHash}_${uuidv4().substring(0, 8)}.${ext}`;
+    } else {
+      uniqueFilename = `${uuidv4()}.${ext}`;
+    }
+
     const filePath = path.join(this.uploadDir, uniqueFilename);
 
     await fs.writeFile(filePath, fileBuffer);
@@ -71,7 +84,8 @@ export class StorageService {
 
     const rawExt = (originalName.split(".").pop() || "pdf").toLowerCase().replace(/[^a-z0-9]/g, "");
     const ext = ["jpg", "jpeg", "png", "webp", "pdf"].includes(rawExt) ? rawExt : "pdf";
-    const uniqueFilename = `doc_${uuidv4()}.${ext}`;
+    const fileHash = crypto.createHash("sha256").update(fileBuffer).digest("hex").substring(0, 32);
+    const uniqueFilename = `doc_${fileHash}_${uuidv4().substring(0, 8)}.${ext}`;
     const filePath = path.join(this.privateUploadDir, uniqueFilename);
 
     await fs.writeFile(filePath, fileBuffer, { mode: 0o600 });
