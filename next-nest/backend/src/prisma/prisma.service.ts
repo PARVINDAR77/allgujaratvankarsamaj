@@ -17,7 +17,7 @@ export class PrismaService
     try {
       await this.$connect();
       this.logger.log("Successfully connected to MySQL database via Prisma");
-      if (process.env.ENABLE_RUNTIME_SCHEMA_SYNC === "true") {
+      if (process.env.DISABLE_RUNTIME_SCHEMA_SYNC !== "true") {
         await this.syncSchema();
       }
     } catch (error: any) {
@@ -79,6 +79,26 @@ export class PrismaService
           PRIMARY KEY (\`id\`),
           KEY \`samaj_service_persons_service_id_idx\` (\`service_id\`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+
+      // Ensure supplementary columns exist on existing tables
+      await this.$executeRawUnsafe(`
+        ALTER TABLE \`samaj_service_persons\` ADD COLUMN IF NOT EXISTS \`user_id\` VARCHAR(191) NULL;
+      `);
+      await this.$executeRawUnsafe(`
+        ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`address\` TEXT NULL;
+      `);
+      await this.$executeRawUnsafe(`
+        ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`description\` TEXT NULL;
+      `);
+      await this.$executeRawUnsafe(`
+        ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`photo_url\` TEXT NULL;
+      `);
+      await this.$executeRawUnsafe(`
+        ALTER TABLE \`verification_requests\` ADD COLUMN IF NOT EXISTS \`document_back_url\` VARCHAR(191) NULL;
+      `);
+      await this.$executeRawUnsafe(`
+        ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`show_in_matrimony\` TINYINT(1) NOT NULL DEFAULT 1;
       `);
 
       await this.$executeRawUnsafe(`

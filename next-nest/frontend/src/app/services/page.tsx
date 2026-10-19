@@ -100,18 +100,37 @@ export default function ServicesPage() {
   const handleOpenService = async (svc: ServiceItem) => {
     setActiveService(svc);
     setLoadingPersons(true);
+    let resolvedPersons: ServicePerson[] = [];
+
     try {
+      // 1. Try detail endpoint
       const res = await fetch(`${API_BASE}/samaj-services/${svc.id}`);
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.persons) && data.persons.length > 0) {
-          setServicePersons(data.persons);
-          return;
+          resolvedPersons = data.persons;
         }
       }
-    } catch (_) {}
-    finally {
+
+      // 2. Try persons endpoint if detail had 0 persons
+      if (resolvedPersons.length === 0) {
+        const resPersons = await fetch(`${API_BASE}/samaj-services/${svc.id}/persons`);
+        if (resPersons.ok) {
+          const personsData = await resPersons.json();
+          if (Array.isArray(personsData) && personsData.length > 0) {
+            resolvedPersons = personsData;
+          }
+        }
+      }
+    } catch (_) {
+      // fallback
+    } finally {
       setLoadingPersons(false);
+    }
+
+    if (resolvedPersons.length > 0) {
+      setServicePersons(resolvedPersons);
+      return;
     }
 
     const isEdu =

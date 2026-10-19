@@ -264,6 +264,13 @@ CREATE TABLE IF NOT EXISTS \`samaj_service_persons\` (
   KEY \`samaj_service_persons_service_id_idx\` (\`service_id\`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+ALTER TABLE \`samaj_service_persons\` ADD COLUMN IF NOT EXISTS \`user_id\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`address\` text DEFAULT NULL;
+ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`description\` text DEFAULT NULL;
+ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`photo_url\` text DEFAULT NULL;
+ALTER TABLE \`verification_requests\` ADD COLUMN IF NOT EXISTS \`document_back_url\` varchar(191) DEFAULT NULL;
+ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`show_in_matrimony\` tinyint(1) NOT NULL DEFAULT 1;
+
 CREATE TABLE IF NOT EXISTS \`system_notifications\` (
   \`id\` varchar(191) NOT NULL,
   \`title\` varchar(191) NOT NULL,

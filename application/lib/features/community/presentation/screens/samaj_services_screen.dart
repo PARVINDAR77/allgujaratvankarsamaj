@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/models/samaj_service_person.dart';
 
@@ -33,6 +34,29 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     _searchController.dispose();
     _villageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _makePhoneCall(String phone) async {
+    final clean = phone.replaceAll(RegExp(r'[^0-9+]'), '');
+    if (clean.isEmpty) return;
+    final uri = Uri.parse('tel:$clean');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _openWhatsApp(String phone, String name, String serviceName) async {
+    var clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (clean.length == 10) clean = '91$clean';
+    final text = Uri.encodeComponent('નમસ્તે $name, મેં વણકર સમાજ ડિરેક્ટરીમાંથી તમારી સેવા ($serviceName) જોઈ સંપર્ક કર્યો છે.');
+    final uri = Uri.parse('https://wa.me/$clean?text=$text');
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
   }
 
   void _performSearch() {
@@ -165,7 +189,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                     ),
                     itemCount: effectivePersons.length,
                     itemBuilder: (context, index) {
-                      return _buildProviderGridCard(context, effectivePersons[index]);
+                      return _buildProviderGridCard(context, effectivePersons[index], serviceName);
                     },
                   );
                 },
@@ -179,9 +203,9 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
-  Widget _buildProviderGridCard(BuildContext context, dynamic provider) {
+  Widget _buildProviderGridCard(BuildContext context, dynamic provider, String serviceName) {
     return GestureDetector(
-      onTap: () => _showProviderDetail(context, provider),
+      onTap: () => _showProviderDetail(context, provider, serviceName),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
@@ -289,11 +313,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Calling ${provider.phone}...')),
-                          );
-                        },
+                        onPressed: () => _makePhoneCall(provider.phone),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFD4AF37),
                           foregroundColor: const Color(0xFF041126),
@@ -318,7 +338,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
-  void _showProviderDetail(BuildContext context, dynamic provider) {
+  void _showProviderDetail(BuildContext context, dynamic provider, String serviceName) {
     int currentRating = 0;
     showModalBottomSheet(
       context: context,
@@ -446,11 +466,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Calling ${provider.phone}...')),
-                            );
-                          },
+                          onPressed: () => _makePhoneCall(provider.phone),
                           icon: const Icon(Icons.call, size: 18),
                           label: const Text('Call Now'),
                           style: OutlinedButton.styleFrom(
@@ -463,14 +479,14 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () => _openWhatsApp(provider.phone, provider.name, serviceName),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFD4AF37),
+                            backgroundColor: const Color(0xFF25D366),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
-                          icon: const Icon(Icons.message, size: 18),
-                          label: const Text('Message'),
+                          icon: const Icon(Icons.chat, size: 18),
+                          label: const Text('WhatsApp'),
                         ),
                       ),
                     ],
@@ -620,6 +636,83 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                 size: isDesktop ? 48 : 36,
                               ),
                             ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Add Business Callout Banner
+                    Container(
+                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF070C18), Color(0xFF132238)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFD4AF37),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.storefront, color: Color(0xFFD4AF37), size: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'તમારો વ્યવસાય અહીં દર્શાવો',
+                                  style: TextStyle(
+                                    color: Color(0xFFD4AF37),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                Text(
+                                  'પ્રોફાઇલમાં બિઝનેસ ઉમેરી સમાજ સાથે જોડાઓ',
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              context.push('/profile/edit');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD4AF37),
+                              foregroundColor: const Color(0xFF041126),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              '+ ઉમેરો',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            ),
                           ),
                         ],
                       ),

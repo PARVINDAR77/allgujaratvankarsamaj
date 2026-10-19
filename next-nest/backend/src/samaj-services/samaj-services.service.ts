@@ -201,6 +201,22 @@ export class SamajServicesService {
   // ==========================================
   async syncMissingBusinessProfiles() {
     try {
+      // 0. Ensure supplementary database columns exist
+      try {
+        await this.prisma.$executeRawUnsafe(
+          "ALTER TABLE `samaj_service_persons` ADD COLUMN IF NOT EXISTS `user_id` VARCHAR(191) NULL",
+        );
+        await this.prisma.$executeRawUnsafe(
+          "ALTER TABLE `samaj_service_persons` MODIFY COLUMN `address` TEXT NULL",
+        );
+        await this.prisma.$executeRawUnsafe(
+          "ALTER TABLE `samaj_service_persons` MODIFY COLUMN `description` TEXT NULL",
+        );
+        await this.prisma.$executeRawUnsafe(
+          "ALTER TABLE `samaj_service_persons` MODIFY COLUMN `photo_url` TEXT NULL",
+        );
+      } catch (_) {}
+
       // 1. Ensure core Education Services exist in DB
       let eduService = await this.prisma.samajService.findFirst({
         where: {
@@ -323,8 +339,8 @@ export class SamajServicesService {
           p.nativePlace ||
           (isVamika ? "Idar, 35 Gam Pargana" : (city ? `${city}, Gujarat` : "Gujarat"));
 
-        let displayName = orgName || `${fName} ${lName}`.trim();
-        let gujaratiName = orgName || `${fName} ${lName}`.trim();
+        let displayName = orgName || `${fName} ${lName}`.trim() || "Samaj Professional";
+        let gujaratiName = orgName || `${fName} ${lName}`.trim() || "સમાજ વ્યવસાયી";
         let description = p.about || `${displayName} - સમાજ અધિકૃત વ્યાપારી સેવા`;
 
         if (isVamika) {
@@ -339,68 +355,169 @@ export class SamajServicesService {
           if (eduService?.id) targetServiceIds.push(eduService.id);
           if (tuitionService?.id) targetServiceIds.push(tuitionService.id);
         } else {
-          const matched = await this.prisma.samajService.findFirst({
-            where: {
-              OR: [
-                { title: { contains: p.businessService || orgName || "General" } },
-                { category: { contains: p.businessIndustry || "Business" } },
-              ],
-              isActive: true,
-            },
-          });
+          // A: Flexible matching for service
+          let matched: any = null;
+
+          if (p.businessService && p.businessService !== "Select Service") {
+            // Exact title
+            matched = await this.prisma.samajService.findFirst({
+              where: { title: p.businessService.trim(), isActive: true },
+            });
+
+            // Clean title (remove parens like "(કંકોત્રી ઇન્વિટેશન)")
+            if (!matched) {
+              const cleanSvc = p.businessService.replace(/\(.*?\)/g, "").replace(/[-—/]/g, " ").trim();
+              if (cleanSvc.length > 2) {
+                matched = await this.prisma.samajService.findFirst({
+                  where: {
+                    OR: [
+                      { title: { contains: cleanSvc } },
+                      { description: { contains: cleanSvc } },
+                    ],
+                    isActive: true,
+                  },
+                });
+              }
+            }
+          }
+
+          // B: Match by organizationName
+          if (!matched && orgName && orgName.length > 2) {
+            matched = await this.prisma.samajService.findFirst({
+              where: {
+                OR: [
+                  { title: { contains: orgName } },
+                  { description: { contains: orgName } },
+                ],
+                isActive: true,
+              },
+            });
+          }
+
+          // C: Match by businessIndustry category
+          if (!matched && p.businessIndustry && p.businessIndustry !== "Select Industry") {
+            const cleanInd = p.businessIndustry.replace(/\(.*?\)/g, "").trim();
+            matched = await this.prisma.samajService.findFirst({
+              where: {
+                category: { contains: cleanInd },
+                isActive: true,
+              },
+            });
+          }
+
+          // D: AUTO-CREATE SAMAJ SERVICE IF NOT FOUND
+          if (!matched) {
+            const serviceTitle = (
+              (p.businessService && p.businessService !== "Select Service" && p.businessService.trim().length > 1)
+                ? p.businessService.trim()
+                : (orgName || p.designation || "Samaj Business Service")
+            ).trim();
+
+            const serviceCategory = (
+              (p.businessIndustry && p.businessIndustry !== "Select Industry" && p.businessIndustry.trim().length > 1)
+                ? p.businessIndustry.trim()
+                : "વ્યવસાય અને સેવાઓ (Business & Services)"
+            ).trim();
+
+            let baseSlug = serviceTitle
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/^-+|-+$/g, "");
+            if (!baseSlug || baseSlug.length < 2) {
+              baseSlug = `service-${Date.now().toString(36)}`;
+            }
+
+            let uniqueSlug = baseSlug;
+            let counter = 1;
+            while (await this.prisma.samajService.findUnique({ where: { slug: uniqueSlug } })) {
+              uniqueSlug = `${baseSlug}-${counter++}`;
+            }
+
+            try {
+              matched = await this.prisma.samajService.create({
+                data: {
+                  title: serviceTitle,
+                  slug: uniqueSlug,
+                  category: serviceCategory,
+                  icon: "💼",
+                  description: `${serviceTitle} - સમાજ વ્યાપારી સેવા`,
+                  contactPhone: phone,
+                  contactPerson: displayName,
+                  isActive: true,
+                },
+              });
+            } catch (_) {}
+          }
+
           if (matched) targetServiceIds.push(matched.id);
         }
 
         for (const sId of targetServiceIds) {
-          const existing = await this.prisma.samajServicePerson.findFirst({
-            where: {
+          try {
+            const existing = await this.prisma.samajServicePerson.findFirst({
+              where: {
+                serviceId: sId,
+                OR: [
+                  ...(p.userId ? [{ userId: p.userId }] : []),
+                  { phone: phone },
+                  ...(displayName ? [{ name: displayName }] : []),
+                ],
+              },
+            });
+
+            let parsedPhoto = p.photoUrl;
+            if (!parsedPhoto && p.photos) {
+              try {
+                const photoArr = JSON.parse(p.photos);
+                if (Array.isArray(photoArr) && photoArr.length > 0) {
+                  parsedPhoto = photoArr[0];
+                }
+              } catch (_) {}
+            }
+
+            const personPayload = {
               serviceId: sId,
-              OR: [
-                { userId: p.userId },
-                { phone: phone },
-                ...(isVamika ? [{ name: { contains: "VAMIKA" } }] : []),
-              ],
-            },
-          });
+              userId: p.userId || null,
+              name: displayName,
+              gujaratiName: gujaratiName,
+              phone: phone,
+              city: city,
+              address: address,
+              description: description,
+              experience: isVamika
+                ? "અધિકૃત શૈક્ષણિક એકેડેમી (Nursing & Education)"
+                : (p.designation || "અનુભવી વ્યાવસાયિક"),
+              photoUrl: parsedPhoto || null,
+              districtId: p.districtId || null,
+              talukaId: p.talukaId || null,
+              villageId: p.villageId || null,
+              isActive: true,
+            };
 
-          let parsedPhoto = p.photoUrl;
-          if (!parsedPhoto && p.photos) {
-            try {
-              const photoArr = JSON.parse(p.photos);
-              if (Array.isArray(photoArr) && photoArr.length > 0) {
-                parsedPhoto = photoArr[0];
-              }
-            } catch (_) {}
-          }
+            if (existing) {
+              await this.prisma.samajServicePerson.update({
+                where: { id: existing.id },
+                data: personPayload,
+              });
+            } else {
+              await this.prisma.samajServicePerson.create({
+                data: personPayload,
+              });
+            }
 
-          const personPayload = {
-            serviceId: sId,
-            userId: p.userId,
-            name: displayName,
-            gujaratiName: gujaratiName,
-            phone: phone,
-            city: city,
-            address: address,
-            description: description,
-            experience: isVamika
-              ? "અધિકૃત શૈક્ષણિક એકેડેમી (Nursing & Education)"
-              : (p.designation || "અનુભવી વ્યાવસાયિક"),
-            photoUrl: parsedPhoto || null,
-            districtId: p.districtId || null,
-            talukaId: p.talukaId || null,
-            villageId: p.villageId || null,
-            isActive: true,
-          };
-
-          if (existing) {
-            await this.prisma.samajServicePerson.update({
-              where: { id: existing.id },
-              data: personPayload,
+            // Update service contact info if missing
+            await this.prisma.samajService.updateMany({
+              where: {
+                id: sId,
+                OR: [{ contactPhone: null }, { contactPerson: null }],
+              },
+              data: {
+                contactPhone: phone,
+                contactPerson: displayName,
+              },
             });
-          } else {
-            await this.prisma.samajServicePerson.create({
-              data: personPayload,
-            });
+          } catch (personErr: any) {
+            this.logger.warn(`Could not sync person for service ${sId}: ${personErr?.message || personErr}`);
           }
         }
       }
@@ -408,31 +525,33 @@ export class SamajServicesService {
       // Guarantee Vamika Nursing Academy person exists in eduService and tuitionService
       const targetIds = [eduService?.id, tuitionService?.id].filter(Boolean) as string[];
       for (const sId of targetIds) {
-        const found = await this.prisma.samajServicePerson.findFirst({
-          where: {
-            serviceId: sId,
-            OR: [
-              { phone: { contains: "9265476537" } },
-              { name: { contains: "VAMIKA" } },
-            ],
-          },
-        });
-        if (!found) {
-          await this.prisma.samajServicePerson.create({
-            data: {
+        try {
+          const found = await this.prisma.samajServicePerson.findFirst({
+            where: {
               serviceId: sId,
-              name: "VAMIKA NURSING ACADEMY (IDAR)",
-              gujaratiName: "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ & કોચિંગ સેવાઓ)",
-              phone: "9265476537",
-              city: "ઇડર (Idar)",
-              address: "ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા",
-              description:
-                "વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.",
-              experience: "અધિકૃત શૈક્ષણિક એકેડેમી (Education Services)",
-              isActive: true,
+              OR: [
+                { phone: { contains: "9265476537" } },
+                { name: { contains: "VAMIKA" } },
+              ],
             },
           });
-        }
+          if (!found) {
+            await this.prisma.samajServicePerson.create({
+              data: {
+                serviceId: sId,
+                name: "VAMIKA NURSING ACADEMY (IDAR)",
+                gujaratiName: "વામિકા નર્સિંગ એકેડેમી - ઇડર (શિક્ષણ & કોચિંગ સેવાઓ)",
+                phone: "9265476537",
+                city: "ઇડર (Idar)",
+                address: "ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા",
+                description:
+                  "વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.",
+                experience: "અધિકૃત શૈક્ષણિક એકેડેમી (Education Services)",
+                isActive: true,
+              },
+            });
+          }
+        } catch (_) {}
       }
     } catch (err: any) {
       this.logger.warn(`syncMissingBusinessProfiles warning: ${err?.message || err}`);
@@ -493,19 +612,37 @@ export class SamajServicesService {
   }
 
   async getPublicServiceById(id: string) {
-    await this.syncMissingBusinessProfiles();
+    try {
+      await this.syncMissingBusinessProfiles();
 
-    const service = await this.prisma.samajService.findFirst({
-      where: { id, isActive: true },
-      include: {
-        persons: {
-          where: { isActive: true },
-          orderBy: { createdAt: "desc" },
+      const service = await this.prisma.samajService.findFirst({
+        where: { id, isActive: true },
+        include: {
+          persons: {
+            where: { isActive: true },
+            orderBy: { createdAt: "desc" },
+          },
         },
-      },
-    });
+      });
 
-    if (!service) {
+      if (service) {
+        if (!service.persons || service.persons.length === 0) {
+          const fallbackPersons = this.defaultPersons.filter(
+            (p) =>
+              p.serviceId === id ||
+              (service.category?.toLowerCase().includes("edu") &&
+                p.service?.category === "Education Services"),
+          );
+          if (fallbackPersons.length > 0) {
+            return {
+              ...service,
+              persons: fallbackPersons,
+            };
+          }
+        }
+        return service;
+      }
+
       const fallback = this.defaultServices.find((s) => s.id === id);
       if (fallback) {
         const fallbackPersons = this.defaultPersons.filter(
@@ -516,27 +653,26 @@ export class SamajServicesService {
           persons: fallbackPersons,
         };
       }
+
       throw new NotFoundException(
         `Samaj Service with ID ${id} not found or inactive`,
       );
+    } catch (error) {
+      if (error instanceof NotFoundException) throw error;
+      this.logger.warn(`Error in getPublicServiceById for ${id}: ${error?.message || error}`);
+      const fallback = this.defaultServices.find((s) => s.id === id) || {
+        id,
+        title: "Samaj Service",
+        category: "General",
+        icon: "💼",
+        description: "સમાજ વ્યાપારી સેવા",
+        isActive: true,
+      };
+      return {
+        ...fallback,
+        persons: this.defaultPersons.filter((p) => p.serviceId === id),
+      };
     }
-
-    if (!service.persons || service.persons.length === 0) {
-      const fallbackPersons = this.defaultPersons.filter(
-        (p) =>
-          p.serviceId === id ||
-          (service.category?.toLowerCase().includes("edu") &&
-            p.service?.category === "Education Services"),
-      );
-      if (fallbackPersons.length > 0) {
-        return {
-          ...service,
-          persons: fallbackPersons,
-        };
-      }
-    }
-
-    return service;
   }
 
   private readonly defaultPersons = [
@@ -674,40 +810,65 @@ export class SamajServicesService {
     try {
       await this.syncMissingBusinessProfiles();
 
-      const whereClause: any = {
-        isActive: true,
-      };
-
+      // Resolve service if ID or slug was provided
+      let targetServiceId = serviceId;
       if (serviceId !== "all") {
-        whereClause.serviceId = serviceId;
+        const foundSvc = await this.prisma.samajService.findFirst({
+          where: { OR: [{ id: serviceId }, { slug: serviceId }] },
+          select: { id: true },
+        });
+        if (foundSvc) {
+          targetServiceId = foundSvc.id;
+        }
+      }
+
+      const AND: any[] = [{ isActive: true }];
+
+      if (targetServiceId !== "all") {
+        AND.push({ serviceId: targetServiceId });
       }
 
       if (filters?.search && filters.search.trim()) {
         const q = filters.search.trim();
-        whereClause.OR = [
-          { name: { contains: q } },
-          { gujaratiName: { contains: q } },
-          { description: { contains: q } },
-          { city: { contains: q } },
-          { address: { contains: q } },
-          { phone: { contains: q } },
-        ];
+        AND.push({
+          OR: [
+            { name: { contains: q } },
+            { gujaratiName: { contains: q } },
+            { description: { contains: q } },
+            { city: { contains: q } },
+            { address: { contains: q } },
+            { phone: { contains: q } },
+            { experience: { contains: q } },
+          ],
+        });
       }
 
       if (filters?.district && filters.district.trim()) {
-        whereClause.district = {
-          name: { contains: filters.district.trim() },
-        };
+        const d = filters.district.trim();
+        AND.push({
+          OR: [
+            { district: { name: { contains: d } } },
+            { district: { gujaratiName: { contains: d } } },
+            { city: { contains: d } },
+            { address: { contains: d } },
+          ],
+        });
       }
 
       if (filters?.taluka && filters.taluka.trim()) {
-        whereClause.taluka = {
-          name: { contains: filters.taluka.trim() },
-        };
+        const t = filters.taluka.trim();
+        AND.push({
+          OR: [
+            { taluka: { name: { contains: t } } },
+            { taluka: { gujaratiName: { contains: t } } },
+            { city: { contains: t } },
+            { address: { contains: t } },
+          ],
+        });
       }
 
       const res = await this.prisma.samajServicePerson.findMany({
-        where: whereClause,
+        where: { AND },
         include: {
           service: {
             select: {
@@ -716,6 +877,12 @@ export class SamajServicesService {
               category: true,
               icon: true,
             },
+          },
+          district: {
+            select: { id: true, name: true, gujaratiName: true },
+          },
+          taluka: {
+            select: { id: true, name: true, gujaratiName: true },
           },
         },
         orderBy: { createdAt: "desc" },
@@ -727,15 +894,15 @@ export class SamajServicesService {
 
       // If DB has no persons for this serviceId yet, return matching fallback
       const matchingFallbacks = this.defaultPersons.filter(
-        (p) => p.serviceId === serviceId || serviceId === "all",
+        (p) => p.serviceId === targetServiceId || targetServiceId === "all",
       );
       if (matchingFallbacks.length > 0) {
         return matchingFallbacks;
       }
 
       return res;
-    } catch {
-      // Fallback only if DB fails
+    } catch (err: any) {
+      this.logger.warn(`Error in getPublicPersonsByServiceId: ${err?.message || err}`);
       return this.defaultPersons.filter(
         (p) => p.serviceId === serviceId || serviceId === "all",
       );
@@ -841,21 +1008,26 @@ export class SamajServicesService {
   // ==========================================
 
   async getAllAdminServicePersons(serviceId?: string) {
-    await this.syncMissingBusinessProfiles();
-    return this.prisma.samajServicePerson.findMany({
-      where: serviceId ? { serviceId } : undefined,
-      include: {
-        service: {
-          select: {
-            id: true,
-            title: true,
-            category: true,
-            icon: true,
+    try {
+      await this.syncMissingBusinessProfiles();
+      return await this.prisma.samajServicePerson.findMany({
+        where: serviceId ? { serviceId } : undefined,
+        include: {
+          service: {
+            select: {
+              id: true,
+              title: true,
+              category: true,
+              icon: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
+        orderBy: { createdAt: "desc" },
+      });
+    } catch (err: any) {
+      this.logger.warn(`getAllAdminServicePersons error: ${err?.message || err}`);
+      return this.defaultPersons.filter((p) => !serviceId || p.serviceId === serviceId);
+    }
   }
 
   async createServicePerson(dto: CreateServicePersonDto) {
