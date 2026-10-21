@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   int _currentPage = 0;
   bool _obscureDesktopPassword = true;
+  bool _rememberMe = true;
 
   @override
   void initState() {
@@ -45,7 +47,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (inputEmail.isEmpty || inputPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('કૃપા કરીને તમારો ઈમેલ અને પાસવર્ડ દાખલ કરો (Please enter your email and password)'),
+          content: Text('કૃપા કરીને તમારો મોબાઈલ / ઈમેલ અને પાસવર્ડ દાખલ કરો (Please enter your mobile or email and password)'),
           backgroundColor: Colors.orangeAccent,
           duration: Duration(seconds: 3),
         ),
@@ -195,7 +197,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               const SizedBox(height: 8),
               Align(
-                alignment: Alignment.centerRight,
+                alignment: const Alignment(0.35, 0.0),
                 child: TextButton(
                   onPressed: () {
                     Navigator.pop(dialogCtx);
@@ -612,865 +614,428 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildWebQuickChip(String label, VoidCallback onTap) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0C2448),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0x77FFD700), width: 1.2),
-            boxShadow: const [
-              BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
-            ],
-          ),
-          child: Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFFFFDF73),
-              fontSize: 12.5,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ),
+  Widget _buildGoogleIcon() {
+    return SizedBox(
+      width: 20,
+      height: 20,
+      child: CustomPaint(
+        painter: _GoogleLogoPainter(),
       ),
     );
   }
 
-  Widget _buildWebPillarCard({
-    required IconData icon,
-    required Color iconColor,
-    required String title,
-    required String subtitle,
-    required String actionLabel,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildLeftPromotionalPanel(double width, double height) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Image.asset(
+        'assets/images/buddha_login_poster.png',
+        width: width,
+        height: height,
+        fit: BoxFit.fill,
+        errorBuilder: (ctx, err, _) => Container(color: const Color(0xFFFAF6F0)),
+      ),
+    );
+  }
+
+  Widget _buildRightLoginPanel(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF041228),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.35), width: 1.2),
-        boxShadow: const [
-          BoxShadow(color: Colors.black54, blurRadius: 12, offset: Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: iconColor.withValues(alpha: 0.6), width: 1.2),
-                ),
-                child: Icon(icon, color: iconColor, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFFFFDF73),
-                    fontSize: 15.5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            subtitle,
-            style: const TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 14),
-          Align(
-            alignment: Alignment.centerRight,
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(8),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
+      color: Colors.white,
+      alignment: Alignment.centerLeft,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(44, 20, 40, 20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top-Right: Don't have an account? Register Button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      actionLabel,
-                      style: const TextStyle(
-                        color: Color(0xFFFFD700),
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.arrow_forward, color: Color(0xFFFFD700), size: 14),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWebValueBadge(String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF071936),
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.45), width: 1.2),
-        boxShadow: const [
-          BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(0, 2)),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: const Color(0xFFFFD700), size: 16),
-          const SizedBox(width: 8),
-          Text(
-            label,
-            style: const TextStyle(
-              color: Color(0xFFFFDF73),
-              fontSize: 12.5,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDesktopWebLoginView(Size size, double availableHeight) {
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // ==================== 1. GRAND PEACOCK & ROYAL HEADER ====================
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF030D1E), Color(0xFF0A224A), Color(0xFF030D1E)],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              ),
-              border: Border(
-                bottom: BorderSide(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.45),
-                  width: 1.5,
-                ),
-              ),
-              boxShadow: const [
-                BoxShadow(color: Colors.black87, blurRadius: 12, offset: Offset(0, 3)),
-              ],
-            ),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1260),
-                child: Row(
-                  children: [
-                    // Royal Monogram / Logo
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x66FFD700), blurRadius: 10),
-                        ],
-                      ),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/images/logo.png',
-                          fit: BoxFit.cover,
-                          errorBuilder: (ctx, err, _) => Container(
-                            color: const Color(0xFFD4AF37),
-                            child: const Icon(Icons.temple_buddhist, color: Colors.black, size: 28),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-
-                    // Organization Title & Taglines
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'ALL GUJARAT VANKAR SAMAJ',
-                            style: TextStyle(
-                              color: Color(0xFFFFDF73),
-                              fontSize: 18,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.4,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Row(
-                            children: [
-                              const Text(
-                                'એક સમાજ, એક વિચાર, એક પરિવાર',
-                                style: TextStyle(
-                                  color: Color(0xFFFFD700),
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0D2C5E),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: const Color(0x88FFD700), width: 0.8),
-                                ),
-                                child: const Text(
-                                  'UNITY • IDENTITY • PROGRESS',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Header Action Buttons
-                    OutlinedButton.icon(
-                      onPressed: () => context.push('/admin/login'),
-                      icon: const Icon(Icons.admin_panel_settings_outlined, color: Color(0xFFFFD700), size: 16),
-                      label: const Text(
-                        'કમિટી પોર્ટલ (Admin)',
-                        style: TextStyle(color: Color(0xFFFFD700), fontSize: 12.5, fontWeight: FontWeight.bold),
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const Text(
+                      "Don't have an account?",
+                      style: TextStyle(
+                        color: Color(0xFF74819B),
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const SizedBox(width: 12),
-                    ElevatedButton.icon(
+                    OutlinedButton(
                       onPressed: () => context.push('/register'),
-                      icon: const Icon(Icons.person_add_alt_1, color: Colors.black, size: 16),
-                      label: const Text(
-                        'નવી નોંધણી (Register)',
-                        style: TextStyle(color: Colors.black, fontSize: 12.5, fontWeight: FontWeight.w900),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFFA4143D), width: 1.3),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFD4AF37),
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        elevation: 4,
+                      child: const Text(
+                        'Register',
+                        style: TextStyle(
+                          color: Color(0xFFA4143D),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
-          ),
 
-          // ==================== 2. MAIN HERO SECTION (BUDDHA ARTWORK + LOGIN CARD) ====================
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1260),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(28, 28, 28, 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                const SizedBox(height: 38),
+
+                // Welcome Back Heading
+                const Text(
+                  'Welcome Back',
+                  style: TextStyle(
+                    color: Color(0xFF101B36),
+                    fontSize: 32,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.6,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Login to your account to continue',
+                  style: TextStyle(
+                    color: Color(0xFF74819B),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+
+                // Mobile Number or Email Input Field
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  textInputAction: TextInputAction.next,
+                  style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14.5),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.phone_iphone, color: Color(0xFF74819B), size: 20),
+                    hintText: 'Mobile Number or Email',
+                    hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(9),
+                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(9),
+                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(9),
+                      borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.8),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 18),
+
+                // Password Input Field
+                TextField(
+                  controller: _passwordController,
+                  obscureText: _obscureDesktopPassword,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) {
+                    if (!_isLoading) _performLogin();
+                  },
+                  style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14.5),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF74819B), size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureDesktopPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: const Color(0xFF74819B),
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscureDesktopPassword = !_obscureDesktopPassword;
+                        });
+                      },
+                    ),
+                    hintText: 'Password',
+                    hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+                    filled: true,
+                    fillColor: Colors.white,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(9),
+                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(9),
+                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(9),
+                      borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.8),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // Remember me & Forgot Password Row
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // --- Left Column (58%): Sacred Lord Buddha & Heritage Showcase ---
-                    Expanded(
-                      flex: 6,
-                      child: Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF071936), Color(0xFF020914)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: Checkbox(
+                            value: _rememberMe,
+                            activeColor: const Color(0xFFA4143D),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                            onChanged: (val) => setState(() => _rememberMe = val ?? true),
                           ),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.55),
-                            width: 1.6,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.7),
-                              blurRadius: 24,
-                              offset: const Offset(0, 8),
-                            ),
-                            BoxShadow(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.12),
-                              blurRadius: 18,
-                            ),
-                          ],
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Top Inspirational Spiritual Banner
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF0A2248),
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: const Color(0x66FFD700), width: 1.2),
-                              ),
-                              child: const Column(
-                                children: [
-                                  Text(
-                                    '🌸 Be Kind • Be United • Be Strong For a Better Society 🌸',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Color(0xFFFFDF73),
-                                      fontSize: 14.5,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 0.4,
-                                    ),
-                                  ),
-                                  SizedBox(height: 3),
-                                  Text(
-                                    'શાંતિ • સદ્ભાવના • સમાનતા • સર્વાંગી પ્રગતિ (Peace, Harmony, Equality & Progress)',
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 11.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Sacred Lord Buddha Image in Golden Arch Frame
-                            Container(
-                              constraints: const BoxConstraints(maxHeight: 460),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: const Color(0xFFFFD700).withValues(alpha: 0.7),
-                                  width: 1.8,
-                                ),
-                                boxShadow: const [
-                                  BoxShadow(color: Colors.black87, blurRadius: 16, offset: Offset(0, 6)),
-                                ],
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: Image.asset(
-                                  'assets/images/buddha_home_poster.jpeg',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (ctx, err, _) => Image.asset(
-                                    'assets/images/login_poster_2.jpg',
-                                    fit: BoxFit.contain,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // Bottom Compassion Banner & Quick Pills
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF041024),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: const Color(0x55FFD700), width: 1),
-                              ),
-                              child: const Center(
-                                child: Text(
-                                  '✨ May Compassion Guide Us Always • ભગવાન્ બુદ્ધનો સમતા અને કરુણાનો સંદેશ ✨',
-                                  style: TextStyle(
-                                    color: Color(0xFFFFD700),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
-
-                            // Quick Navigation Pills Row
-                            Wrap(
-                              alignment: WrapAlignment.center,
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                _buildWebQuickChip('🏛️ સરકારી કર્મચારી', () => context.push('/government-employees')),
-                                _buildWebQuickChip('⭐ સુપર સ્ટાર્સ', () => context.push('/samaj-super-stars')),
-                                _buildWebQuickChip('📜 પાવન પ્રેરણાદાતા', () => context.push('/pavan-prernadata')),
-                                _buildWebQuickChip('🤝 સેવાઓ', () => context.push('/samaj-services')),
-                              ],
-                            ),
-                          ],
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Remember me',
+                          style: TextStyle(
+                            color: Color(0xFF374151),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    TextButton(
+                      onPressed: _showForgotPasswordDialog,
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Forgot Password?',
+                        style: TextStyle(
+                          color: Color(0xFFA4143D),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
+                  ],
+                ),
 
-                    const SizedBox(width: 24),
+                const SizedBox(height: 22),
 
-                    // --- Right Column (42%): Direct Royal Web Login Card ---
-                    Expanded(
-                      flex: 5,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 30),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF041024),
-                          borderRadius: BorderRadius.circular(22),
-                          border: Border.all(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.65),
-                            width: 1.6,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.75),
-                              blurRadius: 28,
-                              offset: const Offset(0, 10),
-                            ),
-                            BoxShadow(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                              blurRadius: 20,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                // Full-width Deep Maroon Login Button
+                ElevatedButton(
+                  onPressed: _isLoading ? null : () => _performLogin(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFA4143D),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: const Color(0x88A4143D),
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                    elevation: 0,
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // Monogram Icon Header
-                            Center(
-                              child: Container(
-                                width: 62,
-                                height: 62,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFD4AF37), Color(0xFFAA820A)],
-                                  ),
-                                  border: Border.all(color: const Color(0xFFFFF2C2), width: 2),
-                                  boxShadow: const [
-                                    BoxShadow(color: Color(0x66FFD700), blurRadius: 16),
-                                  ],
-                                ),
-                                child: const Center(
-                                  child: Icon(Icons.lock_person, color: Colors.black, size: 30),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-
-                            const Text(
-                              'સભ્ય લોગિન (Member Login)',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Color(0xFFFFDF73),
-                                fontSize: 21,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.4,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
                             Text(
-                              'All Gujarat Vankar Samaj • સત્તાવાર વેબ પોર્ટલ',
-                              textAlign: TextAlign.center,
+                              'Login',
                               style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.7),
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-
-                            // Email Input Field
-                            const Text(
-                              'ઈમેલ સરનામું (Email Address) *',
-                              style: TextStyle(
-                                color: Color(0xFFFFD700),
-                                fontSize: 12,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
+                                letterSpacing: 0.3,
                               ),
                             ),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              textInputAction: TextInputAction.next,
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFFD700), size: 20),
-                                hintText: 'તમારો ઈમેલ દાખલ કરો (e.g. name@gmail.com)',
-                                hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
-                                filled: true,
-                                fillColor: const Color(0xFF030D1E),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Password Input Field
-                            const Text(
-                              'પાસવર્ડ (Password) *',
-                              style: TextStyle(
-                                color: Color(0xFFFFD700),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            TextField(
-                              controller: _passwordController,
-                              obscureText: _obscureDesktopPassword,
-                              textInputAction: TextInputAction.done,
-                              onSubmitted: (_) {
-                                if (!_isLoading) _performLogin();
-                              },
-                              style: const TextStyle(color: Colors.white, fontSize: 14),
-                              decoration: InputDecoration(
-                                prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFFD700), size: 20),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscureDesktopPassword ? Icons.visibility_off : Icons.visibility,
-                                    color: const Color(0xFFFFD700),
-                                    size: 20,
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscureDesktopPassword = !_obscureDesktopPassword;
-                                    });
-                                  },
-                                ),
-                                hintText: '••••••••',
-                                hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
-                                filled: true,
-                                fillColor: const Color(0xFF030D1E),
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
-                                ),
-                              ),
-                            ),
-
-                            // Forgot Password Link
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
-                                onPressed: _showForgotPasswordDialog,
-                                child: const Text(
-                                  'પાસવર્ડ ભૂલી ગયા છો? (Forgot Password?)',
-                                  style: TextStyle(
-                                    color: Color(0xFFFFD700),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 10),
-
-                            // Submit Login Button
-                            ElevatedButton(
-                              onPressed: _isLoading ? null : () => _performLogin(),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD4AF37),
-                                foregroundColor: Colors.black,
-                                disabledBackgroundColor: const Color(0x88D4AF37),
-                                padding: const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                elevation: 6,
-                                shadowColor: const Color(0x66FFD700),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      width: 22,
-                                      height: 22,
-                                      child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
-                                    )
-                                  : const Text(
-                                      'પ્રવેશ કરો (Sign In)',
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Divider
-                            Row(
-                              children: [
-                                Expanded(child: Container(height: 1, color: Colors.white12)),
-                                const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 12),
-                                  child: Text('અથવા (OR)', style: TextStyle(color: Colors.white38, fontSize: 12)),
-                                ),
-                                Expanded(child: Container(height: 1, color: Colors.white12)),
-                              ],
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // New Registration Button
-                            OutlinedButton.icon(
-                              onPressed: () => context.push('/register'),
-                              icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFFFD700), size: 18),
-                              label: const Text(
-                                'નવી નોંધણી કરો (New Member Registration)',
-                                style: TextStyle(
-                                  color: Color(0xFFFFD700),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
-                                padding: const EdgeInsets.symmetric(vertical: 13),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                            ),
-
-                            const SizedBox(height: 14),
-
-                            // Admin Portal Shortcut
-                            Center(
-                              child: TextButton.icon(
-                                onPressed: () => context.push('/admin/login'),
-                                icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.white54, size: 16),
-                                label: const Text(
-                                  'કમિટી / એડમિન લોગિન (Admin Portal)',
-                                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                                ),
-                              ),
-                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward, size: 18),
                           ],
                         ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // OR Divider
+                Row(
+                  children: [
+                    Expanded(child: Container(height: 1, color: const Color(0xFFE5E7EB))),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'OR',
+                        style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),
+                    Expanded(child: Container(height: 1, color: const Color(0xFFE5E7EB))),
                   ],
                 ),
-              ),
-            ),
-          ),
 
-          // ==================== 3. THE 4 COMMUNITY PILLARS SECTION ====================
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1260),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                const SizedBox(height: 18),
+
+                // Continue with Google Button
+                OutlinedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('ગૂગલ લોગિન આગામી અપડેટમાં ઉપલબ્ધ થશે (Google Login will be available soon)'),
+                        backgroundColor: Color(0xFFA4143D),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  icon: _buildGoogleIcon(),
+                  label: const Text(
+                    'Continue with Google',
+                    style: TextStyle(
+                      color: Color(0xFF374151),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Continue with Facebook Button
+                OutlinedButton.icon(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('ફેસબુક લોગિન આગામી અપડેટમાં ઉપલબ્ધ થશે (Facebook Login will be available soon)'),
+                        backgroundColor: Color(0xFFA4143D),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.facebook, color: Color(0xFF1877F2), size: 22),
+                  label: const Text(
+                    'Continue with Facebook',
+                    style: TextStyle(
+                      color: Color(0xFF374151),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+                  ),
+                ),
+
+                const SizedBox(height: 26),
+
+                // Terms & Privacy Legal Footer
+                Column(
                   children: [
-                    // Section Divider Title
+                    const Text(
+                      'By continuing, you agree to our',
+                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+                    ),
+                    const SizedBox(height: 4),
                     Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(child: Container(height: 1.2, color: const Color(0x55FFD700))),
+                        InkWell(
+                          onTap: () => context.push('/privacy-policy'),
+                          child: const Text(
+                            'Terms & Conditions',
+                            style: TextStyle(
+                              color: Color(0xFFA4143D),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 18),
-                              SizedBox(width: 8),
-                              Text(
-                                'સમાજના મુખ્ય આધારસ્તંભો (COMMUNITY PILLARS)',
-                                style: TextStyle(
-                                  color: Color(0xFFFFDF73),
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.8,
-                                ),
-                              ),
-                            ],
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text('|', style: TextStyle(color: Color(0xFFD1D5DB))),
                         ),
-                        Expanded(child: Container(height: 1.2, color: const Color(0x55FFD700))),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-
-                    // 4 Pillars Row
-                    Row(
-                      children: [
-                        // 1. Govt Employees
-                        Expanded(
-                          child: _buildWebPillarCard(
-                            icon: Icons.account_balance,
-                            iconColor: const Color(0xFFE5A93C),
-                            title: 'સરકારી કર્મચારી',
-                            subtitle: 'IAS | IPS | IFS | વર્ગ ૧-૩ | શિક્ષક | પોલીસ | આરોગ્ય કર્મીઓ',
-                            actionLabel: 'માહિતી જુઓ',
-                            onTap: () => context.push('/government-employees'),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-
-                        // 2. Matrimony Hub
-                        Expanded(
-                          child: _buildWebPillarCard(
-                            icon: Icons.favorite,
-                            iconColor: const Color(0xFFE91E63),
-                            title: 'મેટ્રિમોની પોર્ટલ',
-                            subtitle: 'સમાજમાં યોગ્ય જીવનસાથીની પસંદગી કરો • ૧૦૦% વેરિફાઇડ પ્રોફાઇલ',
-                            actionLabel: 'લગ્ન સેવા',
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('મેટ્રિમોની સેવા જોવા માટે કૃપા કરીને ઉપર આપેલા ફોર્મથી લોગિન કરો'),
-                                  backgroundColor: Color(0xFFD4AF37),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-
-                        // 3. Private Jobs & Business
-                        Expanded(
-                          child: _buildWebPillarCard(
-                            icon: Icons.business_center,
-                            iconColor: const Color(0xFF2196F3),
-                            title: 'ખાનગી નોકરી & વેપાર',
-                            subtitle: 'Business | Professional | Self-Employed | Career Guidance',
-                            actionLabel: 'તકો જુઓ',
-                            onTap: () => context.push('/private-employees'),
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-
-                        // 4. Samaj Services
-                        Expanded(
-                          child: _buildWebPillarCard(
-                            icon: Icons.volunteer_activism,
-                            iconColor: const Color(0xFF4CAF50),
-                            title: 'સમાજ સેવાઓ',
-                            subtitle: 'સહાય | માર્ગદર્શન | ઈમરજન્સી સપોર્ટ | સામાજિક કલ્યાણ મંચ',
-                            actionLabel: 'સેવાઓ જુઓ',
-                            onTap: () => context.push('/samaj-services'),
+                        InkWell(
+                          onTap: () => context.push('/privacy-policy'),
+                          child: const Text(
+                            'Privacy Policy',
+                            style: TextStyle(
+                              color: Color(0xFFA4143D),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
           ),
+        ),
+    );
+  }
 
-          // ==================== 4. SAMAJ VALUES & COMMUNITY FOOTER ====================
-          Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1260),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 20),
-                child: Column(
-                  children: [
-                    // 4 Core Value Badges
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      spacing: 14,
-                      runSpacing: 10,
-                      children: [
-                        _buildWebValueBadge('વિવિધતામાં એકતા (Unity in Diversity)', Icons.diversity_3),
-                        _buildWebValueBadge('સહકારથી પ્રગતિ (Progress Through Support)', Icons.trending_up),
-                        _buildWebValueBadge('સમાજ સેવા (Service to Society)', Icons.handshake),
-                        _buildWebValueBadge('મજબૂત મૂળ, ઉજ્જવળ ભવિષ્ય', Icons.eco),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
+  Widget _buildBuddhaWebSplitLoginView(Size size, double availableHeight) {
+    // Exact aspect ratio of the left poster in the reference image (601 / 678)
+    const posterRatio = 601.0 / 678.0;
+    final idealLeftWidth = availableHeight * posterRatio;
+    final maxLeftWidth = size.width - 400.0;
+    final leftWidth = idealLeftWidth > maxLeftWidth ? maxLeftWidth : idealLeftWidth;
 
-                    // Copyright & Links Footer
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      decoration: const BoxDecoration(
-                        border: Border(top: BorderSide(color: Colors.white12)),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            '© 2026 All Gujarat Vankar Samaj • એક સમાજ, એક વિચાર, એક પરિવાર • સત્તાવાર વેબ પોર્ટલ',
-                            style: TextStyle(color: Colors.white54, fontSize: 12),
-                          ),
-                          Row(
-                            children: [
-                              TextButton(
-                                onPressed: () => context.push('/privacy-policy'),
-                                child: const Text('ગોપનીયતા નીતિ (Privacy)', style: TextStyle(color: Colors.white60, fontSize: 12)),
-                              ),
-                              const Text('•', style: TextStyle(color: Colors.white24)),
-                              TextButton(
-                                onPressed: () => context.push('/privacy-contact'),
-                                child: const Text('સંપર્ક (Contact)', style: TextStyle(color: Colors.white60, fontSize: 12)),
-                              ),
-                              const Text('•', style: TextStyle(color: Colors.white24)),
-                              TextButton(
-                                onPressed: () => context.push('/admin/login'),
-                                child: const Text('એડમિન (Admin)', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+    return SizedBox(
+      width: size.width,
+      height: size.height,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Left Panel: Full-height Buddha & Heritage Poster (No White Gaps, No Clipping)
+          _buildLeftPromotionalPanel(leftWidth, availableHeight),
+
+          // Right Panel: Clean White Login Form
+          Expanded(
+            child: _buildRightLoginPanel(context),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBuddhaWebMobileLoginView(Size size, double availableHeight) {
+    return Container(
+      color: Colors.white,
+      child: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Top Compact Buddha Banner
+            SizedBox(
+              height: 220,
+              width: double.infinity,
+              child: Image.asset(
+                'assets/images/buddha_login_poster.png',
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+              ),
+            ),
+            // Login Card Form
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: _buildRightLoginPanel(context),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1480,15 +1045,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final size = MediaQuery.of(context).size;
     final padding = MediaQuery.paddingOf(context);
     final availableHeight = size.height - padding.top - padding.bottom;
-    final isDesktop = size.width >= 850;
 
-    if (isDesktop) {
-      return Scaffold(
-        backgroundColor: const Color(0xFF020B18),
-        body: SafeArea(
-          child: _buildDesktopWebLoginView(size, availableHeight),
-        ),
-      );
+    if (kIsWeb) {
+      if (size.width >= 850) {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: _buildBuddhaWebSplitLoginView(size, availableHeight),
+        );
+      } else {
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: SafeArea(
+            child: _buildBuddhaWebMobileLoginView(size, availableHeight),
+          ),
+        );
+      }
     }
 
     return _buildMobileLoginView(size, availableHeight);
@@ -1926,4 +1497,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       );
   }
+}
+
+
+class _GoogleLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final center = Offset(w / 2, h / 2);
+    final radius = w / 2;
+    final bluePaint = Paint()..color = const Color(0xFF4285F4)..style = PaintingStyle.stroke..strokeWidth = 2.8;
+    final redPaint = Paint()..color = const Color(0xFFEA4335)..style = PaintingStyle.stroke..strokeWidth = 2.8;
+    final yellowPaint = Paint()..color = const Color(0xFFFBBC05)..style = PaintingStyle.stroke..strokeWidth = 2.8;
+    final greenPaint = Paint()..color = const Color(0xFF34A853)..style = PaintingStyle.stroke..strokeWidth = 2.8;
+    final rect = Rect.fromCircle(center: center, radius: radius - 2);
+    canvas.drawArc(rect, -2.4, 1.2, false, redPaint);
+    canvas.drawArc(rect, -1.2, 1.2, false, yellowPaint);
+    canvas.drawArc(rect, 0.0, 1.3, false, greenPaint);
+    canvas.drawArc(rect, 1.3, 1.0, false, bluePaint);
+    canvas.drawLine(Offset(center.dx - 1, center.dy), Offset(w - 2, center.dy), Paint()..color = const Color(0xFF4285F4)..strokeWidth = 2.8);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
