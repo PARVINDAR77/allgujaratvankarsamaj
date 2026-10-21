@@ -19,7 +19,6 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
   int _currentCardIndex = 0;
   Timer? _autoSlideTimer;
   bool _isUserInteracting = false;
-  bool _isListViewMode = false;
 
   @override
   void initState() {
@@ -31,8 +30,8 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
 
   void _startAutoSlide(int totalItems) {
     if (totalItems <= 1 || _autoSlideTimer != null) return;
-    _autoSlideTimer = Timer.periodic(const Duration(milliseconds: 4500), (timer) {
-      if (!mounted || _isListViewMode || _isUserInteracting || !_carouselController.hasClients) return;
+    _autoSlideTimer = Timer.periodic(const Duration(milliseconds: 4000), (timer) {
+      if (!mounted || _isUserInteracting || !_carouselController.hasClients) return;
       final next = (_currentCardIndex + 1) % totalItems;
       _carouselController.animateToPage(
         next,
@@ -80,7 +79,7 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(16),
+        insetPadding: const EdgeInsets.all(12),
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -92,7 +91,7 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                 child: Image.network(
                   imageUrl,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Container(
+                  errorBuilder: (context, error, stackTrace) => Container(
                     padding: const EdgeInsets.all(32),
                     color: const Color(0xFF0F172A),
                     child: const Icon(Icons.broken_image, color: Colors.white54, size: 64),
@@ -131,7 +130,7 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
       backgroundColor: const Color(0xFF030A14),
       body: Stack(
         children: [
-          // 1. Smooth Scrollable Container with Poster and Dynamic Super Stars Cards
+          // 1. Main Scrollable Container with Poster and Dynamic Super Stars Image Slider
           Positioned.fill(
             child: RefreshIndicator(
               color: const Color(0xFFFFD700),
@@ -183,9 +182,9 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                           ),
                         ),
 
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 18),
 
-                        // --- Section Header: Samaj Super Stars List ---
+                        // --- Section Header: Samaj Super Stars ---
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                           decoration: BoxDecoration(
@@ -249,126 +248,36 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                                   ],
                                 ),
                               ),
-                              // View Mode Toggle & Live Count Pill
+                              // Live Count Pill
                               starsAsync.when(
                                 data: (stars) {
                                   if (stars.isEmpty) return const SizedBox.shrink();
-                                  return Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF041126),
-                                          borderRadius: BorderRadius.circular(20),
-                                          border: Border.all(color: const Color(0x55FFD700)),
+                                  return Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(color: const Color(0xFFFFD700), width: 1),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(Icons.people_alt, color: Color(0xFFFFD700), size: 14),
+                                        const SizedBox(width: 5),
+                                        Text(
+                                          '${stars.length} સ્ટાર્સ',
+                                          style: const TextStyle(
+                                            color: Color(0xFFFFD700),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            // Slider View Button
-                                            GestureDetector(
-                                              onTap: () {
-                                                if (_isListViewMode) {
-                                                  setState(() => _isListViewMode = false);
-                                                  _startAutoSlide(stars.length);
-                                                }
-                                              },
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: !_isListViewMode ? const Color(0xFFFFD700) : Colors.transparent,
-                                                  borderRadius: BorderRadius.circular(16),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.view_carousel_rounded,
-                                                      size: 14,
-                                                      color: !_isListViewMode ? Colors.black : Colors.white70,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      'સ્લાઇડર',
-                                                      style: TextStyle(
-                                                        color: !_isListViewMode ? Colors.black : Colors.white70,
-                                                        fontSize: 10.5,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                            // List View Button
-                                            GestureDetector(
-                                              onTap: () {
-                                                if (!_isListViewMode) {
-                                                  setState(() => _isListViewMode = true);
-                                                  _stopAutoSlide();
-                                                }
-                                              },
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                decoration: BoxDecoration(
-                                                  color: _isListViewMode ? const Color(0xFFFFD700) : Colors.transparent,
-                                                  borderRadius: BorderRadius.circular(16),
-                                                ),
-                                                child: Row(
-                                                  mainAxisSize: MainAxisSize.min,
-                                                  children: [
-                                                    Icon(
-                                                      Icons.view_agenda_rounded,
-                                                      size: 14,
-                                                      color: _isListViewMode ? Colors.black : Colors.white70,
-                                                    ),
-                                                    const SizedBox(width: 4),
-                                                    Text(
-                                                      'યાદી',
-                                                      style: TextStyle(
-                                                        color: _isListViewMode ? Colors.black : Colors.white70,
-                                                        fontSize: 10.5,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      // Live Count Pill
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFFFFD700).withValues(alpha: 0.18),
-                                          borderRadius: BorderRadius.circular(20),
-                                          border: Border.all(color: const Color(0xFFFFD700), width: 1),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(Icons.people_alt, color: Color(0xFFFFD700), size: 14),
-                                            const SizedBox(width: 5),
-                                            Text(
-                                              '${stars.length} સ્ટાર્સ',
-                                              style: const TextStyle(
-                                                color: Color(0xFFFFD700),
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   );
                                 },
                                 loading: () => const SizedBox.shrink(),
-                                error: (_, __) => const SizedBox.shrink(),
+                                error: (err, stack) => const SizedBox.shrink(),
                               ),
                             ],
                           ),
@@ -376,7 +285,7 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
 
                         const SizedBox(height: 16),
 
-                        // --- Dynamic Candidate Posts from Admin ---
+                        // --- Dynamic Image Slider from Admin Data ---
                         starsAsync.when(
                           data: (stars) {
                             if (stars.isEmpty) {
@@ -426,26 +335,13 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                               );
                             }
 
-                            if (stars.isNotEmpty && !_isListViewMode && _autoSlideTimer == null) {
+                            if (stars.isNotEmpty && _autoSlideTimer == null) {
                               WidgetsBinding.instance.addPostFrameCallback((_) {
                                 _startAutoSlide(stars.length);
                               });
                             }
 
-                            if (_isListViewMode) {
-                              return ListView.separated(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: stars.length,
-                                separatorBuilder: (_, __) => const SizedBox(height: 14),
-                                itemBuilder: (context, index) {
-                                  final star = stars[index];
-                                  return _buildSuperStarCard(context, star, index + 1);
-                                },
-                              );
-                            }
-
-                            return _buildCarouselSlider(stars);
+                            return _buildNormalImageSlider(stars);
                           },
                           loading: () => Container(
                             padding: const EdgeInsets.symmetric(vertical: 40),
@@ -560,17 +456,19 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF0F172A), Color(0xFF061224)],
+                          colors: [Color(0xFF0F1E36), Color(0xFF071224)],
                         ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.8),
-                          width: 1.2,
-                        ),
-                        boxShadow: const [
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
+                        boxShadow: [
                           BoxShadow(
-                            color: Colors.black54,
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                             blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                          const BoxShadow(
+                            color: Colors.black54,
+                            blurRadius: 4,
                             offset: Offset(0, 2),
                           ),
                         ],
@@ -578,14 +476,14 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.stars, color: Color(0xFFFFD700), size: 16),
+                          Icon(Icons.stars, color: Color(0xFFFFD700), size: 17),
                           SizedBox(width: 6),
                           Text(
                             'Samaj Super Stars',
                             style: TextStyle(
                               color: Color(0xFFFFDF73),
-                              fontSize: 14,
                               fontWeight: FontWeight.w900,
+                              fontSize: 14,
                               letterSpacing: 0.4,
                             ),
                           ),
@@ -600,7 +498,7 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                 // Refresh Button
                 GestureDetector(
                   onTap: () {
-                    ref.refresh(samajSuperStarsProvider);
+                    ref.invalidate(samajSuperStarsProvider);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('સુપર સ્ટાર્સ યાદી અપડેટ થઈ રહી છે...'),
@@ -718,8 +616,8 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
     );
   }
 
-  // --- Right-to-Left (RTL) Horizontal Carousel Slider Widget ---
-  Widget _buildCarouselSlider(List<SamajSuperStar> stars) {
+  // --- Normal Image Slider Widget (Matching Advertisements Screen Behavior) ---
+  Widget _buildNormalImageSlider(List<SamajSuperStar> stars) {
     if (stars.isEmpty) return const SizedBox.shrink();
 
     return Listener(
@@ -731,11 +629,10 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
         children: [
           Stack(
             alignment: Alignment.center,
-            clipBehavior: Clip.none,
             children: [
-              // Horizontal Right-to-Left PageView
+              // Clean Horizontal Image PageView (Moves smoothly left to right)
               SizedBox(
-                height: 290,
+                height: 380,
                 child: PageView.builder(
                   controller: _carouselController,
                   physics: const BouncingScrollPhysics(),
@@ -744,62 +641,64 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                     setState(() => _currentCardIndex = idx);
                   },
                   itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                      child: SingleChildScrollView(
-                        physics: const BouncingScrollPhysics(),
-                        child: _buildSuperStarCard(context, stars[index], index + 1),
-                      ),
-                    );
+                    return _buildNormalImageSlide(context, stars[index], index, stars.length);
                   },
                 ),
               ),
 
-              // Left Navigation Arrow Button (<)
+              // Left Navigation Arrow Button (<) positioned cleanly on the margin
               if (stars.length > 1)
                 Positioned(
-                  left: -6,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _prevSlide(stars.length),
-                      borderRadius: BorderRadius.circular(24),
-                      child: Container(
-                        padding: const EdgeInsets.all(9),
-                        decoration: BoxDecoration(
-                          color: const Color(0xE6041126),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black87, blurRadius: 8, offset: Offset(0, 3)),
-                          ],
+                  left: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _prevSlide(stars.length),
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 2)),
+                            ],
+                          ),
+                          child: const Icon(Icons.arrow_back_ios_new, color: Color(0xFFFFD700), size: 18),
                         ),
-                        child: const Icon(Icons.arrow_back_ios_new, color: Color(0xFFFFD700), size: 18),
                       ),
                     ),
                   ),
                 ),
 
-              // Right Navigation Arrow Button (>)
+              // Right Navigation Arrow Button (>) positioned cleanly on the margin
               if (stars.length > 1)
                 Positioned(
-                  right: -6,
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () => _nextSlide(stars.length),
-                      borderRadius: BorderRadius.circular(24),
-                      child: Container(
-                        padding: const EdgeInsets.all(9),
-                        decoration: BoxDecoration(
-                          color: const Color(0xE6041126),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                          boxShadow: const [
-                            BoxShadow(color: Colors.black87, blurRadius: 8, offset: Offset(0, 3)),
-                          ],
+                  right: 8,
+                  top: 0,
+                  bottom: 0,
+                  child: Center(
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        onTap: () => _nextSlide(stars.length),
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.65),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                            boxShadow: const [
+                              BoxShadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 2)),
+                            ],
+                          ),
+                          child: const Icon(Icons.arrow_forward_ios, color: Color(0xFFFFD700), size: 18),
                         ),
-                        child: const Icon(Icons.arrow_forward_ios, color: Color(0xFFFFD700), size: 18),
                       ),
                     ),
                   ),
@@ -807,14 +706,14 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
             ],
           ),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
 
           // Dots & Position Indicator Row
           if (stars.length > 1)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Pill indicator
+                // Position Counter Pill
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
@@ -832,39 +731,34 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Dots
-                Flexible(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: List.generate(stars.length, (idx) {
-                        final isSelected = idx == _currentCardIndex;
-                        return GestureDetector(
-                          onTap: () {
-                            _carouselController.animateToPage(
-                              idx,
-                              duration: const Duration(milliseconds: 350),
-                              curve: Curves.easeInOutCubic,
-                            );
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            margin: const EdgeInsets.symmetric(horizontal: 3),
-                            width: isSelected ? 22 : 7,
-                            height: 7,
-                            decoration: BoxDecoration(
-                              color: isSelected ? const Color(0xFFFFD700) : Colors.white24,
-                              borderRadius: BorderRadius.circular(4),
-                              boxShadow: isSelected
-                                  ? [BoxShadow(color: const Color(0xFFFFD700).withValues(alpha: 0.5), blurRadius: 4)]
-                                  : null,
-                            ),
-                          ),
+                // Gold Dots Indicator (Tap to jump to slide)
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(stars.length, (idx) {
+                    final isSelected = idx == _currentCardIndex;
+                    return GestureDetector(
+                      onTap: () {
+                        _carouselController.animateToPage(
+                          idx,
+                          duration: const Duration(milliseconds: 350),
+                          curve: Curves.easeInOutCubic,
                         );
-                      }),
-                    ),
-                  ),
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: isSelected ? 22 : 7,
+                        height: 7,
+                        decoration: BoxDecoration(
+                          color: isSelected ? const Color(0xFFFFD700) : Colors.white24,
+                          borderRadius: BorderRadius.circular(4),
+                          boxShadow: isSelected
+                              ? [BoxShadow(color: const Color(0xFFFFD700).withValues(alpha: 0.5), blurRadius: 4)]
+                              : null,
+                        ),
+                      ),
+                    );
+                  }),
                 ),
               ],
             ),
@@ -873,252 +767,217 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
     );
   }
 
-  // --- Beautiful Candidate Card Widget ---
-  Widget _buildSuperStarCard(BuildContext context, SamajSuperStar star, int rank) {
+  // --- Normal Image Slide: High-Res Poster Frame with Caption Overlay ---
+  Widget _buildNormalImageSlide(BuildContext context, SamajSuperStar star, int index, int total) {
     final hasPhoto = star.photoUrl != null && star.photoUrl!.trim().isNotEmpty;
+    final hasName = star.name.trim().isNotEmpty;
     final hasGujarati = star.gujaratiName != null && star.gujaratiName!.trim().isNotEmpty;
     final hasDesignation = star.designation != null && star.designation!.trim().isNotEmpty;
-    final hasYear = star.year != null && star.year!.trim().isNotEmpty;
     final hasDescription = star.description != null && star.description!.trim().isNotEmpty;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0C1B33), Color(0xFF061122)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFFFD700).withValues(alpha: 0.45),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: hasPhoto ? () => _showFullImageDialog(context, star.photoUrl!, star.name) : null,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF041126),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+            width: 1.5,
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row: Rank Badge & Samaj Star Pill
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Rank Pill
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFD4AF37), Color(0xFFAA820A)],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                      blurRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.emoji_events, color: Colors.black, size: 14),
-                    const SizedBox(width: 4),
-                    Text(
-                      '#$rank SUPER STAR',
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 11,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // Samaj Pride Pill
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0B2545),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.verified, color: Color(0xFFFFD700), size: 13),
-                    SizedBox(width: 4),
-                    Text(
-                      'સમાજ ગૌરવ',
-                      style: TextStyle(
-                        color: Color(0xFFFFDF73),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          const SizedBox(height: 12),
-
-          // Main Candidate Details Row
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Photo Avatar with Glowing Gold Ring
-              GestureDetector(
-                onTap: hasPhoto ? () => _showFullImageDialog(context, star.photoUrl!, star.name) : null,
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFFFD700), width: 2),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                        blurRadius: 10,
-                        spreadRadius: 1,
-                      ),
-                    ],
-                  ),
-                  child: ClipOval(
-                    child: hasPhoto
-                        ? Image.network(
-                            star.photoUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: const Color(0xFF041126),
-                              child: const Icon(Icons.person, color: Color(0xFFFFD700), size: 36),
-                            ),
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) return child;
-                              return Container(
-                                color: const Color(0xFF041126),
-                                child: const Center(
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Color(0xFFFFD700),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            color: const Color(0xFF041126),
-                            child: const Icon(Icons.person, color: Color(0xFFFFD700), size: 36),
-                          ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 14),
-
-              // Name, Gujarati Name, Designation & Year
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Primary Name
-                    Text(
-                      star.name,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-
-                    // Gujarati Name / Secondary Title
-                    if (hasGujarati) ...[
-                      const SizedBox(height: 2),
-                      Text(
-                        star.gujaratiName!,
-                        style: const TextStyle(
-                          color: Color(0xFFFFD700),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-
-                    // Designation & Year Tag
-                    if (hasDesignation || hasYear) ...[
-                      const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.school, size: 13, color: Color(0xFFFFD700)),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                [
-                                  if (hasDesignation) star.designation!,
-                                  if (hasYear) '(${star.year!})',
-                                ].join(' '),
-                                style: const TextStyle(
-                                  color: Color(0xFFFFDF73),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          ),
-
-          // Description / Achievement Notes
-          if (hasDescription) ...[
-            const SizedBox(height: 12),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.35),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: Text(
-                star.description!,
-                style: const TextStyle(
-                  color: Color(0xFFE2E8F0),
-                  fontSize: 12.5,
-                  height: 1.45,
-                ),
-              ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.6),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
+            ),
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+              blurRadius: 8,
             ),
           ],
-        ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Full High-Resolution Poster Graphic
+              if (hasPhoto)
+                Image.network(
+                  star.photoUrl!,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                  loadingBuilder: (context, child, progress) {
+                    if (progress == null) return child;
+                    return Container(
+                      color: const Color(0xFF071426),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFFFFD700),
+                          strokeWidth: 2.5,
+                        ),
+                      ),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    color: const Color(0xFF071426),
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.broken_image, color: Colors.white38, size: 48),
+                          SizedBox(height: 8),
+                          Text('ઈમેજ લોડ થઈ શકી નથી', style: TextStyle(color: Colors.white54, fontSize: 12)),
+                        ],
+                      ),
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  color: const Color(0xFF071426),
+                  child: const Center(
+                    child: Icon(Icons.person, color: Color(0xFFFFD700), size: 64),
+                  ),
+                ),
+
+              // Top Badges: Rank Pill & Tap-to-Zoom Hint
+              Positioned(
+                top: 10,
+                left: 12,
+                right: 12,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Rank Pill
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFD4AF37), Color(0xFFAA820A)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.emoji_events, color: Colors.black, size: 13),
+                          const SizedBox(width: 4),
+                          Text(
+                            '#${index + 1} SUPER STAR',
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 10.5,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Tap to zoom hint badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.black54,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0x66FFD700)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.zoom_in, color: Color(0xFFFFD700), size: 14),
+                          SizedBox(width: 4),
+                          Text(
+                            'ઝૂમ કરો',
+                            style: TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Bottom Gradient Caption Overlay (Matching Advertisements Section)
+              if (hasName || hasDescription)
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.88),
+                          Colors.black.withValues(alpha: 0.5),
+                          Colors.transparent,
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                hasGujarati ? '${star.name} (${star.gujaratiName})' : star.name,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  shadows: [Shadow(color: Colors.black, blurRadius: 4)],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (hasDesignation)
+                              Container(
+                                margin: const EdgeInsets.only(left: 6),
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                                ),
+                                child: Text(
+                                  star.designation!,
+                                  style: const TextStyle(color: Color(0xFFFFDF73), fontSize: 10, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                          ],
+                        ),
+                        if (hasDescription) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            star.description!,
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 11.5,
+                              shadows: const [Shadow(color: Colors.black, blurRadius: 4)],
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
