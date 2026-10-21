@@ -52,8 +52,31 @@ export default function AdminProfilesPage() {
       if (selectedProfile && selectedProfile.id === profileId) {
         setSelectedProfile({ ...selectedProfile, status: newStatus });
       }
-    } catch (err) {
-      alert("Failed to update profile status.");
+    } catch (err: any) {
+      alert("Failed to update profile status: " + (err.message || "Unknown error"));
+    }
+  };
+
+  const handleToggleSuspend = async (profileId: string, currentStatus: string) => {
+    const isSuspended = currentStatus === "SUSPENDED";
+    const newStatus = isSuspended ? "APPROVED" : "SUSPENDED";
+    if (
+      !confirm(
+        isSuspended
+          ? "Reactivate this matrimonial profile and user account?"
+          : "Suspend this matrimonial profile? It will be hidden from public matrimonial listings and their login will be deactivated."
+      )
+    ) {
+      return;
+    }
+    try {
+      await adminApi.updateProfileStatus(profileId, newStatus);
+      await loadProfiles();
+      if (selectedProfile && selectedProfile.id === profileId) {
+        setSelectedProfile({ ...selectedProfile, status: newStatus });
+      }
+    } catch (err: any) {
+      alert("Failed to update profile suspension: " + (err.message || "Unknown error"));
     }
   };
 
@@ -505,32 +528,54 @@ export default function AdminProfilesPage() {
                     <button
                       onClick={() => handleStatusChange(p.id, p.status)}
                       style={{
-                        padding: "12px 16px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        fontSize: "11px",
                         fontWeight: 800,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        backgroundColor: p.status === "APPROVED" ? "rgba(225, 29, 72, 0.1)" : "rgba(16, 185, 129, 0.1)",
-                        color: p.status === "APPROVED" ? "#E11D48" : "#10B981",
-                        border: p.status === "APPROVED" ? "1px solid rgba(225, 29, 72, 0.3)" : "1px solid rgba(16, 185, 129, 0.3)",
-                        transition: "all 0.3s ease",
+                        backgroundColor: p.status === "APPROVED" ? "rgba(225, 29, 72, 0.12)" : "rgba(16, 185, 129, 0.12)",
+                        color: p.status === "APPROVED" ? "#FDA4AF" : "#6EE7B7",
+                        border: p.status === "APPROVED" ? "1px solid rgba(225, 29, 72, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
+                        transition: "all 0.2s ease",
                       }}
                       className={p.status === "APPROVED" ? "hover:bg-[#E11D48] hover:text-white" : "hover:bg-[#10B981] hover:text-white"}
+                      title={p.status === "APPROVED" ? "Reject candidate" : "Approve candidate"}
                     >
                       {p.status === "APPROVED" ? "Reject" : "Approve"}
+                    </button>
+                    <button
+                      onClick={() => handleToggleSuspend(p.id, p.status)}
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: "10px",
+                        fontSize: "11px",
+                        fontWeight: 800,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: p.status === "SUSPENDED" ? "rgba(16, 185, 129, 0.15)" : "rgba(234, 88, 12, 0.15)",
+                        color: p.status === "SUSPENDED" ? "#34D399" : "#FB923C",
+                        border: p.status === "SUSPENDED" ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid rgba(234, 88, 12, 0.4)",
+                        transition: "all 0.2s ease",
+                      }}
+                      className={p.status === "SUSPENDED" ? "hover:bg-emerald-600 hover:text-white" : "hover:bg-orange-600 hover:text-white"}
+                      title={p.status === "SUSPENDED" ? "Reactivate profile" : "Suspend profile from listings"}
+                    >
+                      {p.status === "SUSPENDED" ? "Activate" : "Suspend"}
                     </button>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteProfile(p.id, p.name);
                       }}
-                      title="Delete Candidate Profile"
+                      title="Permanently Delete Matrimonial Profile"
                       style={{
-                        padding: "8px 12px",
-                        fontSize: "12px",
+                        padding: "10px 12px",
+                        fontSize: "11px",
                         fontWeight: 800,
                         borderRadius: "10px",
                         cursor: "pointer",
@@ -540,7 +585,7 @@ export default function AdminProfilesPage() {
                         backgroundColor: "rgba(225, 29, 72, 0.15)",
                         color: "#FB7185",
                         border: "1px solid rgba(225, 29, 72, 0.4)",
-                        transition: "all 0.3s ease",
+                        transition: "all 0.2s ease",
                       }}
                       className="hover:bg-[#E11D48] hover:text-white"
                     >
@@ -919,19 +964,37 @@ export default function AdminProfilesPage() {
                   onClick={() => handleStatusChange(selectedProfile.id, selectedProfile.status)}
                   style={{
                     flex: 1,
-                    padding: "14px",
+                    padding: "12px",
                     borderRadius: "12px",
                     backgroundColor: selectedProfile.status === "APPROVED" ? "rgba(225, 29, 72, 0.2)" : "rgba(16, 185, 129, 0.2)",
                     color: selectedProfile.status === "APPROVED" ? "#FDA4AF" : "#6EE7B7",
                     border: selectedProfile.status === "APPROVED" ? "1px solid #E11D48" : "1px solid #10B981",
                     fontWeight: 900,
-                    fontSize: "13px",
+                    fontSize: "12px",
                     cursor: "pointer",
-                    transition: "all 0.3s ease",
+                    transition: "all 0.2s ease",
                   }}
                   className="hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {selectedProfile.status === "APPROVED" ? "Reject Profile" : "Approve Profile"}
+                </button>
+                <button
+                  onClick={() => handleToggleSuspend(selectedProfile.id, selectedProfile.status)}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: "12px",
+                    backgroundColor: selectedProfile.status === "SUSPENDED" ? "rgba(16, 185, 129, 0.2)" : "rgba(234, 88, 12, 0.2)",
+                    color: selectedProfile.status === "SUSPENDED" ? "#6EE7B7" : "#FDBA74",
+                    border: selectedProfile.status === "SUSPENDED" ? "1px solid #10B981" : "1px solid #EA580C",
+                    fontWeight: 900,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  className="hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {selectedProfile.status === "SUSPENDED" ? "Activate Profile" : "Suspend Profile"}
                 </button>
                 <button
                   onClick={() => setSelectedProfile(null)}

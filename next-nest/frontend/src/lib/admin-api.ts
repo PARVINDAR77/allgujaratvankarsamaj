@@ -1,7 +1,9 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 function getAuthHeaders(): Record<string, string> {
-  const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+  const token = typeof window !== "undefined"
+    ? (localStorage.getItem("adminToken") || localStorage.getItem("token") || localStorage.getItem("accessToken"))
+    : null;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -361,6 +363,10 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify({ status }),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to update profile status");
+    }
     return res.json();
   },
 

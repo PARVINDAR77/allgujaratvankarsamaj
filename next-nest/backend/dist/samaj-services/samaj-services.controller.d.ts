@@ -63,8 +63,8 @@ export declare class SamajServicesController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        contactPhone: string | null;
         sortOrder: number;
+        contactPhone: string | null;
         slug: string;
         category: string;
         icon: string;
@@ -95,8 +95,8 @@ export declare class SamajServicesController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        contactPhone: string | null;
         sortOrder: number;
+        contactPhone: string | null;
         slug: string;
         category: string;
         icon: string;
@@ -198,8 +198,8 @@ export declare class SamajServicesController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        contactPhone: string | null;
         sortOrder: number;
+        contactPhone: string | null;
         slug: string;
         category: string;
         icon: string;
@@ -212,8 +212,8 @@ export declare class SamajServicesController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        contactPhone: string | null;
         sortOrder: number;
+        contactPhone: string | null;
         slug: string;
         category: string;
         icon: string;
@@ -226,8 +226,8 @@ export declare class SamajServicesController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        contactPhone: string | null;
         sortOrder: number;
+        contactPhone: string | null;
         slug: string;
         category: string;
         icon: string;

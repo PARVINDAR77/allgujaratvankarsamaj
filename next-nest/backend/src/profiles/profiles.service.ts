@@ -520,7 +520,8 @@ export class ProfilesService {
       }
 
       const existingReq = await this.prisma.verificationRequest.findFirst({
-        where: { profileId: profile.id, status: VerificationStatus.PENDING },
+        where: { profileId: profile.id },
+        orderBy: { createdAt: "desc" },
       });
 
       if (existingReq) {
@@ -531,6 +532,7 @@ export class ProfilesService {
             documentUrl: docFront,
             documentBackUrl: docBack,
             status: VerificationStatus.PENDING,
+            rejectionReason: null,
             createdAt: new Date(),
           },
         });
@@ -1134,8 +1136,8 @@ export class ProfilesService {
           const existingReq = await this.prisma.verificationRequest.findFirst({
             where: {
               profileId: updatedProfile.id,
-              status: VerificationStatus.PENDING,
             },
+            orderBy: { createdAt: "desc" },
           });
           if (existingReq) {
             await this.prisma.verificationRequest.update({
@@ -1145,6 +1147,7 @@ export class ProfilesService {
                 documentUrl: docFront,
                 documentBackUrl: docBack,
                 status: VerificationStatus.PENDING,
+                rejectionReason: null,
                 createdAt: new Date(),
               },
             });

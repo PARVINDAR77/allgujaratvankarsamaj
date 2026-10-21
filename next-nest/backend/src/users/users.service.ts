@@ -204,7 +204,10 @@ export class UsersService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      const user = await tx.user.findUnique({ where: { id: userId } });
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        include: { profile: true },
+      });
       if (!user) throw new NotFoundException("User not found");
 
       const updatedUser = await tx.user.update({
@@ -212,10 +215,49 @@ export class UsersService {
         data: { status },
       });
 
+      // Synchronize matrimonial profile and government employment statuses with user status
+      if (status === Status.INACTIVE) {
+        // Suspend profile and remove from public listings
+        await tx.matrimonialProfile.updateMany({
+          where: { userId },
+          data: {
+            status: ProfileStatus.SUSPENDED,
+            showInMatrimony: false,
+            isVerified: false,
+          },
+        });
+
+        const profileId = user.profile?.id;
+        if (profileId) {
+          await tx.governmentEmployment.updateMany({
+            where: { profileId },
+            data: { isActive: false, isFeatured: false },
+          });
+        }
+      } else if (status === Status.ACTIVE) {
+        // Activate profile and restore to matrimonial listings
+        await tx.matrimonialProfile.updateMany({
+          where: { userId },
+          data: {
+            status: ProfileStatus.APPROVED,
+            showInMatrimony: true,
+            isVerified: true,
+          },
+        });
+
+        const profileId = user.profile?.id;
+        if (profileId) {
+          await tx.governmentEmployment.updateMany({
+            where: { profileId },
+            data: { isActive: true },
+          });
+        }
+      }
+
       await tx.adminAuditLog.create({
         data: {
           adminId,
-          action: "UPDATE_USER_STATUS",
+          action: status === Status.INACTIVE ? "SUSPEND_USER_ACCOUNT" : "ACTIVATE_USER_ACCOUNT",
           entityId: userId,
           entityType: "User",
           oldValue: JSON.stringify({ status: user.status }),
@@ -365,22 +407,50 @@ export class UsersService {
       });
       if (!profile) throw new NotFoundException("Profile not found");
 
-      const isApproved = status === "APPROVED" || status === "ACTIVE";
-      const profileStatus = isApproved ? ProfileStatus.APPROVED : ProfileStatus.REJECTED;
+      let profileStatus: ProfileStatus;
+      let isVerified = false;
+      let showInMatrimony = false;
+      let userStatus: Status = Status.ACTIVE;
+
+      if (status === "APPROVED" || status === "ACTIVE") {
+        profileStatus = ProfileStatus.APPROVED;
+        isVerified = true;
+        showInMatrimony = true;
+        userStatus = Status.ACTIVE;
+      } else if (status === "SUSPENDED" || status === "INACTIVE") {
+        profileStatus = ProfileStatus.SUSPENDED;
+        isVerified = false;
+        showInMatrimony = false;
+        userStatus = Status.INACTIVE;
+      } else {
+        profileStatus = ProfileStatus.REJECTED;
+        isVerified = false;
+        showInMatrimony = false;
+        userStatus = Status.ACTIVE;
+      }
 
       const updatedProfile = await tx.matrimonialProfile.update({
         where: { id: profileId },
         data: {
           status: profileStatus,
-          isVerified: isApproved,
+          isVerified,
+          showInMatrimony,
         },
       });
+
+      // Synchronize with User account status
+      if (profile.userId) {
+        await tx.user.update({
+          where: { id: profile.userId },
+          data: { status: userStatus },
+        });
+      }
 
       // Also update any pending verification requests for this profile
       await tx.verificationRequest.updateMany({
         where: { profileId, status: VerificationStatus.PENDING },
         data: {
-          status: isApproved ? VerificationStatus.VERIFIED : VerificationStatus.REJECTED,
+          status: isVerified ? VerificationStatus.VERIFIED : VerificationStatus.REJECTED,
         },
       });
 
@@ -388,8 +458,8 @@ export class UsersService {
       await tx.governmentEmployment.updateMany({
         where: { profileId },
         data: {
-          verificationStatus: isApproved ? "VERIFIED" : "REJECTED",
-          isActive: isApproved,
+          verificationStatus: isVerified ? "VERIFIED" : "REJECTED",
+          isActive: isVerified,
         },
       });
 
@@ -479,25 +549,28 @@ export class UsersService {
         );
       }
 
-      const profile = user.profile;
-      if (profile) {
-        const profileId = profile.id;
+      // Resolve profileId if exists
+      const profile = user.profile || (await tx.matrimonialProfile.findUnique({ where: { userId } }));
+      const profileId = profile?.id;
 
+      if (profileId) {
         // 1. Delete verification requests
         await tx.verificationRequest.deleteMany({
           where: { profileId },
         });
 
-        // 2. Delete government employment & verifications
-        const govt = await tx.governmentEmployment.findUnique({
+        // 2. Delete government employment verifications & employments
+        const govtList = await tx.governmentEmployment.findMany({
           where: { profileId },
+          select: { id: true },
         });
-        if (govt) {
+        const govtIds = govtList.map((g) => g.id);
+        if (govtIds.length > 0) {
           await tx.governmentEmploymentVerification.deleteMany({
-            where: { employmentId: govt.id },
+            where: { employmentId: { in: govtIds } },
           });
-          await tx.governmentEmployment.delete({
-            where: { id: govt.id },
+          await tx.governmentEmployment.deleteMany({
+            where: { id: { in: govtIds } },
           });
         }
 
@@ -522,7 +595,7 @@ export class UsersService {
         });
 
         // 6. Delete matrimonial profile
-        await tx.matrimonialProfile.delete({
+        await tx.matrimonialProfile.deleteMany({
           where: { id: profileId },
         });
       }
@@ -537,31 +610,49 @@ export class UsersService {
         where: { userId },
       });
 
-      // 9. Delete chat messages
+      // 9. Find all chat conversations involving this user
+      const conversations = await tx.chatConversation.findMany({
+        where: {
+          OR: [{ participant1Id: userId }, { participant2Id: userId }],
+        },
+        select: { id: true },
+      });
+      const convIds = conversations.map((c) => c.id);
+
+      // 10. Delete all messages inside these conversations first (to prevent foreign key restrict errors)
+      if (convIds.length > 0) {
+        await tx.chatMessage.deleteMany({
+          where: { conversationId: { in: convIds } },
+        });
+        await tx.chatConversation.deleteMany({
+          where: { id: { in: convIds } },
+        });
+      }
+
+      // 11. Delete any remaining messages sent or received by this user
       await tx.chatMessage.deleteMany({
         where: {
           OR: [{ senderId: userId }, { receiverId: userId }],
         },
       });
 
-      // 10. Delete chat conversations
-      await tx.chatConversation.deleteMany({
-        where: {
-          OR: [{ participant1Id: userId }, { participant2Id: userId }],
-        },
-      });
-
-      // 11. Delete reports created by user
+      // 12. Delete reports created by user
       await tx.report.deleteMany({
         where: { reporterUserId: userId },
       });
 
-      // 12. Delete samaj service persons registered by or linked to user
+      // 13. Delete samaj service persons registered by or linked to user
       await tx.samajServicePerson.deleteMany({
         where: { userId },
       });
 
-      // 13. Audit log if deleted by admin
+      // 14. Unlink any advertisements created by user
+      await tx.advertisement.updateMany({
+        where: { createdBy: userId },
+        data: { createdBy: null },
+      });
+
+      // 15. Audit log if deleted by admin
       if (deletedByAdminId) {
         await tx.adminAuditLog.create({
           data: {
@@ -582,7 +673,7 @@ export class UsersService {
         });
       }
 
-      // 14. Finally delete User record
+      // 16. Finally delete User record
       await tx.user.delete({
         where: { id: userId },
       });
@@ -620,14 +711,18 @@ export class UsersService {
       await tx.verificationRequest.deleteMany({ where: { profileId } });
 
       // 2. Delete government employment & verifications
-      const govt = await tx.governmentEmployment.findUnique({
+      const govtList = await tx.governmentEmployment.findMany({
         where: { profileId },
+        select: { id: true },
       });
-      if (govt) {
+      const govtIds = govtList.map((g) => g.id);
+      if (govtIds.length > 0) {
         await tx.governmentEmploymentVerification.deleteMany({
-          where: { employmentId: govt.id },
+          where: { employmentId: { in: govtIds } },
         });
-        await tx.governmentEmployment.delete({ where: { id: govt.id } });
+        await tx.governmentEmployment.deleteMany({
+          where: { id: { in: govtIds } },
+        });
       }
 
       // 3. Delete match interests
@@ -647,7 +742,7 @@ export class UsersService {
       await tx.report.deleteMany({ where: { targetProfileId: profileId } });
 
       // 6. Delete profile
-      await tx.matrimonialProfile.delete({ where: { id: profileId } });
+      await tx.matrimonialProfile.deleteMany({ where: { id: profileId } });
 
       // 7. Audit log
       await tx.adminAuditLog.create({

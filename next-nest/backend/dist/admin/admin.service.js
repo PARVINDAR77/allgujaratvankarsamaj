@@ -241,7 +241,18 @@ let AdminService = AdminService_1 = class AdminService {
                     },
                 },
             });
-            return requests;
+            const seen = new Set();
+            const unique = [];
+            for (const req of requests) {
+                const key = req.profileId || (req.profile && req.profile.id);
+                if (!key)
+                    continue;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    unique.push(req);
+                }
+            }
+            return unique;
         }
         catch {
             return [

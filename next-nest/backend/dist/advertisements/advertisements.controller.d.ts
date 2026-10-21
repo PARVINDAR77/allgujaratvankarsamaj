@@ -10,12 +10,12 @@ export declare class AdvertisementsController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        sortOrder: number;
         imageUrl: string;
         targetUrl: string | null;
         placement: import(".prisma/client").$Enums.AdPlacement;
         startAt: Date | null;
         endAt: Date | null;
+        sortOrder: number;
         createdBy: string | null;
     }[]>;
     findAllAdmin(): Promise<{
@@ -24,12 +24,12 @@ export declare class AdvertisementsController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        sortOrder: number;
         imageUrl: string;
         targetUrl: string | null;
         placement: import(".prisma/client").$Enums.AdPlacement;
         startAt: Date | null;
         endAt: Date | null;
+        sortOrder: number;
         createdBy: string | null;
     }[]>;
     findOne(id: string): Promise<{
@@ -38,12 +38,12 @@ export declare class AdvertisementsController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        sortOrder: number;
         imageUrl: string;
         targetUrl: string | null;
         placement: import(".prisma/client").$Enums.AdPlacement;
         startAt: Date | null;
         endAt: Date | null;
+        sortOrder: number;
         createdBy: string | null;
     }>;
     create(req: any, createAdvertisementDto: CreateAdvertisementDto): Promise<{
@@ -52,12 +52,12 @@ export declare class AdvertisementsController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        sortOrder: number;
         imageUrl: string;
         targetUrl: string | null;
         placement: import(".prisma/client").$Enums.AdPlacement;
         startAt: Date | null;
         endAt: Date | null;
+        sortOrder: number;
         createdBy: string | null;
     }>;
     update(req: any, id: string, updateAdvertisementDto: UpdateAdvertisementDto): Promise<{
@@ -66,12 +66,12 @@ export declare class AdvertisementsController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        sortOrder: number;
         imageUrl: string;
         targetUrl: string | null;
         placement: import(".prisma/client").$Enums.AdPlacement;
         startAt: Date | null;
         endAt: Date | null;
+        sortOrder: number;
         createdBy: string | null;
     }>;
     remove(req: any, id: string): Promise<{
@@ -80,12 +80,12 @@ export declare class AdvertisementsController {
         updatedAt: Date;
         isActive: boolean;
         title: string;
-        sortOrder: number;
         imageUrl: string;
         targetUrl: string | null;
         placement: import(".prisma/client").$Enums.AdPlacement;
         startAt: Date | null;
         endAt: Date | null;
+        sortOrder: number;
         createdBy: string | null;
     }>;
 }

@@ -41,13 +41,21 @@ export declare class AdminVerificationsController {
         profileId: any;
         documentType: any;
         documentUrl: any;
+        documentBackUrl: any;
         status: any;
         rejectionReason: any;
         createdAt: any;
         profile: {
             id: any;
-            name: string;
+            name: any;
+            firstName: any;
+            lastName: any;
+            photoUrl: any;
+            photos: any;
+            nativePlace: any;
+            city: any;
             pargana: any;
+            user: any;
         };
     }[]>;
     getVerificationDocumentAdmin(filename: string, res: Response): Promise<void>;

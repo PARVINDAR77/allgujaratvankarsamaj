@@ -12,12 +12,25 @@ export default function AdminVerificationsPage() {
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
+  const [rejectingItem, setRejectingItem] = useState<{ id: string; name: string } | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const [updating, setUpdating] = useState(false);
 
   const fetchVerifications = async () => {
     try {
       setLoading(true);
       const data = await adminApi.getVerifications();
-      setItems(Array.isArray(data) ? data : ((data as any).data || []));
+      const raw = Array.isArray(data) ? data : ((data as any).data || []);
+      const seen = new Set();
+      const unique = [];
+      for (const item of raw) {
+        const key = item.profileId || item.profile?.id || item.id;
+        if (key && !seen.has(key)) {
+          seen.add(key);
+          unique.push(item);
+        }
+      }
+      setItems(unique);
       setError(null);
     } catch (err: any) {
       console.error(err);
@@ -41,19 +54,35 @@ export default function AdminVerificationsPage() {
     }
   }, []);
 
-  const updateStatus = async (id: string, action: string) => {
-    let reason;
-    if (action === "REJECTED") {
-      reason = window.prompt("Please enter a rejection reason:");
-      if (reason === null) return; // User cancelled
+  const updateStatus = async (id: string, action: string, reason?: string) => {
+    if (action === "REJECTED" && !reason) {
+      const item = items.find((i) => i.id === id);
+      const name = item?.profile ? `${item.profile.firstName || ""} ${item.profile.lastName || ""}`.trim() : (item?.name || "Candidate");
+      setRejectingItem({ id, name });
+      setRejectionReason("");
+      return;
     }
-    
+
     try {
+      setUpdating(true);
       await adminApi.updateVerificationStatus(id, action, reason);
+      setRejectingItem(null);
+      setRejectionReason("");
       await fetchVerifications();
     } catch (err: any) {
       alert("Failed to update status: " + (err.message || "Unknown error"));
+    } finally {
+      setUpdating(false);
     }
+  };
+
+  const handleConfirmRejection = () => {
+    if (!rejectingItem) return;
+    if (!rejectionReason.trim()) {
+      alert("કૃપા કરીને અસ્વીકારનું કારણ દાખલ કરો (Please specify a rejection reason)");
+      return;
+    }
+    updateStatus(rejectingItem.id, "REJECTED", rejectionReason.trim());
   };
 
   const getFullUrl = (url?: string) => {
@@ -472,6 +501,153 @@ export default function AdminVerificationsPage() {
                   boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
                 }}
               />
+            </div>
+          </div>
+        )}
+
+        {/* Dedicated Rejection Reason Modal */}
+        {rejectingItem && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(4, 16, 38, 0.85)",
+              backdropFilter: "blur(10px)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 3000,
+              padding: "20px",
+            }}
+            onClick={() => setRejectingItem(null)}
+          >
+            <div
+              style={{
+                backgroundColor: "#0D1B32",
+                border: "1px solid rgba(244, 63, 94, 0.4)",
+                borderRadius: "20px",
+                padding: "28px",
+                width: "100%",
+                maxWidth: "520px",
+                boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⚠️</span>
+                  <h3 className="text-base font-extrabold text-white">
+                    Reject Verification Proof
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setRejectingItem(null)}
+                  className="text-gray-400 hover:text-white font-bold"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-300 mb-4 leading-relaxed">
+                Candidate: <strong className="text-admin-gold">{rejectingItem.name}</strong>
+                <br />
+                Please select or write a reason so the member can correct and re-upload valid proof:
+              </p>
+
+              {/* Quick Reason Pills */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {[
+                  "સ્પષ્ટ ઓળખપત્ર દેખાતું નથી (Blurry / Unreadable ID)",
+                  "નામમાં તફાવત છે (Name mismatch with profile)",
+                  "આગળ અને પાછળ બંને બાજુ જરૂરી છે (Both Front & Back required)",
+                  "અમાન્ય દસ્તાવેજ પ્રકાર (Invalid Document Type)",
+                  "સરકારી ઓળખપત્ર અસ્પષ્ટ છે (Govt ID not legible)",
+                ].map((reasonText, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setRejectionReason(reasonText)}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: "8px",
+                      backgroundColor: rejectionReason === reasonText ? "rgba(244, 63, 94, 0.3)" : "rgba(255, 255, 255, 0.05)",
+                      border: rejectionReason === reasonText ? "1px solid #F43F5E" : "1px solid rgba(255, 255, 255, 0.15)",
+                      color: rejectionReason === reasonText ? "#FDA4AF" : "#CBD5E1",
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      cursor: "pointer",
+                    }}
+                    className="hover:border-rose-400 transition-colors"
+                  >
+                    {reasonText}
+                  </button>
+                ))}
+              </div>
+
+              {/* Custom Input */}
+              <div className="mb-6">
+                <label className="text-[11px] font-bold text-admin-gold block mb-1">
+                  Rejection Reason / અસ્વીકારનું કારણ:
+                </label>
+                <textarea
+                  rows={3}
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Enter rejection reason for candidate..."
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.4)",
+                    borderRadius: "10px",
+                    padding: "10px 14px",
+                    fontSize: "12px",
+                    color: "#FFFFFF",
+                    outline: "none",
+                  }}
+                />
+              </div>
+
+              {/* Modal Buttons */}
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRejectingItem(null)}
+                  style={{
+                    padding: "10px 18px",
+                    borderRadius: "10px",
+                    backgroundColor: "transparent",
+                    color: "#94A3B8",
+                    border: "1px solid rgba(255, 255, 255, 0.2)",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmRejection}
+                  disabled={updating || !rejectionReason.trim()}
+                  style={{
+                    padding: "10px 22px",
+                    borderRadius: "10px",
+                    backgroundColor: "#E11D48",
+                    color: "#FFFFFF",
+                    border: "none",
+                    fontSize: "12px",
+                    fontWeight: 800,
+                    cursor: updating || !rejectionReason.trim() ? "not-allowed" : "pointer",
+                    opacity: updating || !rejectionReason.trim() ? 0.6 : 1,
+                  }}
+                  className="hover:bg-rose-700 transition-colors shadow-lg"
+                >
+                  {updating ? "Saving..." : "Confirm Rejection"}
+                </button>
+              </div>
             </div>
           </div>
         )}

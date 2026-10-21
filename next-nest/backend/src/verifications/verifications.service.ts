@@ -120,20 +120,22 @@ export class VerificationsService {
       );
     }
 
-    // Check if an existing PENDING request already exists for this profile
-    const existingPending = await this.prisma.verificationRequest.findFirst({
+    // Check if an existing request already exists for this profile (any status)
+    const existingReq = await this.prisma.verificationRequest.findFirst({
       where: {
         profileId: profile.id,
-        status: VerificationStatus.PENDING,
       },
+      orderBy: { createdAt: "desc" },
     });
 
-    if (existingPending) {
+    if (existingReq) {
       return this.prisma.verificationRequest.update({
-        where: { id: existingPending.id },
+        where: { id: existingReq.id },
         data: {
           documentType,
           documentUrl,
+          status: VerificationStatus.PENDING,
+          rejectionReason: null,
           createdAt: new Date(),
         },
       });
@@ -223,7 +225,7 @@ export class VerificationsService {
   }
 
   async getPendingVerifications() {
-    return this.prisma.verificationRequest.findMany({
+    const allRequests = await this.prisma.verificationRequest.findMany({
       orderBy: { createdAt: "desc" },
       include: {
         profile: {
@@ -231,15 +233,44 @@ export class VerificationsService {
             id: true,
             firstName: true,
             lastName: true,
+            photoUrl: true,
+            photos: true,
+            nativePlace: true,
+            city: true,
             pargana: {
               select: {
+                id: true,
                 name: true,
+                gujaratiName: true,
+              },
+            },
+            user: {
+              select: {
+                id: true,
+                phone: true,
+                email: true,
+                name: true,
+                status: true,
               },
             },
           },
         },
       },
     });
+
+    // Deduplicate by profileId: return the single latest verification record for each profile
+    const seenProfileIds = new Set<string>();
+    const deduplicated = [];
+    for (const req of allRequests) {
+      const key = req.profileId || (req.profile && req.profile.id);
+      if (!key) continue;
+      if (!seenProfileIds.has(key)) {
+        seenProfileIds.add(key);
+        deduplicated.push(req);
+      }
+    }
+
+    return deduplicated;
   }
 
   async getMyVerificationStatus(userId: string) {

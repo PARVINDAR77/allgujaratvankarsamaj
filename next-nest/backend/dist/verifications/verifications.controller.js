@@ -84,14 +84,24 @@ let AdminVerificationsController = class AdminVerificationsController {
             profileId: req.profileId,
             documentType: req.documentType,
             documentUrl: req.documentUrl,
+            documentBackUrl: req.documentBackUrl || null,
             status: req.status,
             rejectionReason: req.rejectionReason,
             createdAt: req.createdAt,
-            profile: {
-                id: req.profile.id,
-                name: `${req.profile.firstName} ${req.profile.lastName}`.trim(),
-                pargana: req.profile.pargana,
-            },
+            profile: req.profile
+                ? {
+                    id: req.profile.id,
+                    name: `${req.profile.firstName || ""} ${req.profile.lastName || ""}`.trim() || req.profile.user?.name || "Candidate",
+                    firstName: req.profile.firstName,
+                    lastName: req.profile.lastName,
+                    photoUrl: req.profile.photoUrl,
+                    photos: req.profile.photos,
+                    nativePlace: req.profile.nativePlace,
+                    city: req.profile.city,
+                    pargana: req.profile.pargana,
+                    user: req.profile.user,
+                }
+                : null,
         }));
     }
     async getVerificationDocumentAdmin(filename, res) {

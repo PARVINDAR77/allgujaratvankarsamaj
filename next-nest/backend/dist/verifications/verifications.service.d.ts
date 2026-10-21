@@ -25,26 +25,7 @@ export declare class VerificationsService {
         documentBackUrl: string | null;
         rejectionReason: string | null;
     }>;
-    getPendingVerifications(): Promise<({
-        profile: {
-            pargana: {
-                name: string;
-            };
-            id: string;
-            firstName: string;
-            lastName: string;
-        };
-    } & {
-        status: import(".prisma/client").$Enums.VerificationStatus;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        profileId: string;
-        documentType: string;
-        documentUrl: string;
-        documentBackUrl: string | null;
-        rejectionReason: string | null;
-    })[]>;
+    getPendingVerifications(): Promise<any[]>;
     getMyVerificationStatus(userId: string): Promise<{
         hasProfile: boolean;
         isVerified: boolean;

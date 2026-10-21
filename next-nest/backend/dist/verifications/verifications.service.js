@@ -92,18 +92,20 @@ let VerificationsService = class VerificationsService {
         if (docUsedInGovt) {
             throw new common_1.ConflictException("આ દસ્તાવેજ પહેલેથી જ જમા થયેલ છે. દસ્તાવેજો માત્ર એક જ વાર ઉપયોગ કરી શકાય છે. (This document has already been submitted. Documents can only be used one time.)");
         }
-        const existingPending = await this.prisma.verificationRequest.findFirst({
+        const existingReq = await this.prisma.verificationRequest.findFirst({
             where: {
                 profileId: profile.id,
-                status: client_1.VerificationStatus.PENDING,
             },
+            orderBy: { createdAt: "desc" },
         });
-        if (existingPending) {
+        if (existingReq) {
             return this.prisma.verificationRequest.update({
-                where: { id: existingPending.id },
+                where: { id: existingReq.id },
                 data: {
                     documentType,
                     documentUrl,
+                    status: client_1.VerificationStatus.PENDING,
+                    rejectionReason: null,
                     createdAt: new Date(),
                 },
             });
@@ -176,7 +178,7 @@ let VerificationsService = class VerificationsService {
         });
     }
     async getPendingVerifications() {
-        return this.prisma.verificationRequest.findMany({
+        const allRequests = await this.prisma.verificationRequest.findMany({
             orderBy: { createdAt: "desc" },
             include: {
                 profile: {
@@ -184,15 +186,42 @@ let VerificationsService = class VerificationsService {
                         id: true,
                         firstName: true,
                         lastName: true,
+                        photoUrl: true,
+                        photos: true,
+                        nativePlace: true,
+                        city: true,
                         pargana: {
                             select: {
+                                id: true,
                                 name: true,
+                                gujaratiName: true,
+                            },
+                        },
+                        user: {
+                            select: {
+                                id: true,
+                                phone: true,
+                                email: true,
+                                name: true,
+                                status: true,
                             },
                         },
                     },
                 },
             },
         });
+        const seenProfileIds = new Set();
+        const deduplicated = [];
+        for (const req of allRequests) {
+            const key = req.profileId || (req.profile && req.profile.id);
+            if (!key)
+                continue;
+            if (!seenProfileIds.has(key)) {
+                seenProfileIds.add(key);
+                deduplicated.push(req);
+            }
+        }
+        return deduplicated;
     }
     async getMyVerificationStatus(userId) {
         const profile = await this.prisma.matrimonialProfile.findUnique({

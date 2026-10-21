@@ -240,7 +240,19 @@ export class AdminService {
           },
         },
       });
-      return requests;
+
+      // Deduplicate by profileId
+      const seen = new Set<string>();
+      const unique = [];
+      for (const req of requests) {
+        const key = req.profileId || (req.profile && req.profile.id);
+        if (!key) continue;
+        if (!seen.has(key)) {
+          seen.add(key);
+          unique.push(req);
+        }
+      }
+      return unique;
     } catch {
       return [
         {

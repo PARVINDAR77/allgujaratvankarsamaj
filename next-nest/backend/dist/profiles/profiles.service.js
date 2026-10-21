@@ -405,7 +405,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 catch (_) { }
             }
             const existingReq = await this.prisma.verificationRequest.findFirst({
-                where: { profileId: profile.id, status: client_1.VerificationStatus.PENDING },
+                where: { profileId: profile.id },
+                orderBy: { createdAt: "desc" },
             });
             if (existingReq) {
                 await this.prisma.verificationRequest.update({
@@ -415,6 +416,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         documentUrl: docFront,
                         documentBackUrl: docBack,
                         status: client_1.VerificationStatus.PENDING,
+                        rejectionReason: null,
                         createdAt: new Date(),
                     },
                 });
@@ -962,8 +964,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     const existingReq = await this.prisma.verificationRequest.findFirst({
                         where: {
                             profileId: updatedProfile.id,
-                            status: client_1.VerificationStatus.PENDING,
                         },
+                        orderBy: { createdAt: "desc" },
                     });
                     if (existingReq) {
                         await this.prisma.verificationRequest.update({
@@ -973,6 +975,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                                 documentUrl: docFront,
                                 documentBackUrl: docBack,
                                 status: client_1.VerificationStatus.PENDING,
+                                rejectionReason: null,
                                 createdAt: new Date(),
                             },
                         });

@@ -74,26 +74,37 @@ export default function AdminUsersPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const toggleUserStatus = async (id: string, currentStatus: string) => {
-    const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE";
+  const toggleUserStatus = async (id: string, currentStatus: string, name?: string) => {
+    const isSuspending = currentStatus === "ACTIVE";
+    const promptMsg = isSuspending
+      ? `Are you sure you want to suspend account "${name || "User"}"? This will disable login access and remove their profile from public matrimonial listings.`
+      : `Activate account "${name || "User"}" and restore their profile to active listings?`;
+
+    if (!confirm(promptMsg)) return;
+
+    const newStatus = isSuspending ? "INACTIVE" : "ACTIVE";
     try {
       await adminApi.updateUserStatus(id, newStatus);
       setUsers((prev) =>
         prev.map((u) => (u.id === id ? { ...u, status: newStatus as any } : u))
       );
     } catch (err: any) {
-      alert("Failed to update status: " + err.message);
+      alert("Failed to update account status: " + (err.message || "Unknown error"));
     }
   };
 
   const handleDeleteUser = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to permanently delete user "${name}" and all their associated data (profile, photos, messages)? This cannot be undone.`)) {
+    if (
+      confirm(
+        `Are you sure you want to permanently delete user "${name}" and all their associated data (profile, photos, messages, verification)? This action cannot be undone.`
+      )
+    ) {
       try {
         await adminApi.deleteUser(id);
         setUsers((prev) => prev.filter((u) => u.id !== id));
         alert(`User "${name}" has been permanently deleted.`);
       } catch (err: any) {
-        alert(err.message || "Failed to delete user.");
+        alert(err.message || "Failed to delete user account.");
       }
     }
   };
@@ -388,20 +399,21 @@ export default function AdminUsersPage() {
                         <td style={{ padding: "14px 18px", textAlign: "right" }}>
                           <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
                             <button
-                              onClick={() => toggleUserStatus(u.id, u.status)}
+                              onClick={() => toggleUserStatus(u.id, u.status, displayName)}
                               style={{
                                 padding: "6px 14px",
                                 borderRadius: "8px",
                                 fontSize: "11px",
                                 fontWeight: 800,
                                 cursor: "pointer",
-                                backgroundColor: u.status === "ACTIVE" ? "rgba(136, 19, 55, 0.6)" : "rgba(6, 78, 59, 0.6)",
-                                color: u.status === "ACTIVE" ? "#FDA4AF" : "#6EE7B7",
-                                border: u.status === "ACTIVE" ? "1px solid rgba(244, 63, 94, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
+                                backgroundColor: u.status === "ACTIVE" ? "rgba(225, 29, 72, 0.2)" : "rgba(16, 185, 129, 0.2)",
+                                color: u.status === "ACTIVE" ? "#FB7185" : "#34D399",
+                                border: u.status === "ACTIVE" ? "1px solid rgba(244, 63, 94, 0.5)" : "1px solid rgba(16, 185, 129, 0.5)",
                               }}
-                              className="transition-all"
+                              className="transition-all hover:scale-105"
+                              title={u.status === "ACTIVE" ? "Suspend user account and hide profile" : "Activate user account"}
                             >
-                              {u.status === "ACTIVE" ? "Suspend" : "Activate"}
+                              {u.status === "ACTIVE" ? "🚫 Suspend" : "✅ Activate"}
                             </button>
                             <button
                               onClick={() => handleDeleteUser(u.id, displayName)}
@@ -413,11 +425,12 @@ export default function AdminUsersPage() {
                                 cursor: "pointer",
                                 backgroundColor: "rgba(220, 38, 38, 0.15)",
                                 color: "#EF4444",
-                                border: "1px solid rgba(220, 38, 38, 0.3)",
+                                border: "1px solid rgba(220, 38, 38, 0.4)",
                               }}
-                              className="hover:bg-red-500/30 transition-all"
+                              className="hover:bg-red-600 hover:text-white transition-all hover:scale-105"
+                              title="Permanently delete user and all data"
                             >
-                              Delete
+                              🗑️ Delete
                             </button>
                           </div>
                         </td>

@@ -53,40 +53,7 @@ export declare class AdminService {
             date: string;
         }[];
     }>;
-    getVerifications(): Promise<({
-        profile: {
-            user: {
-                name: string;
-                email: string;
-                phone: string;
-            };
-            id: string;
-            firstName: string;
-            lastName: string;
-            nativePlace: string;
-            city: string;
-            photoUrl: string;
-            photos: string;
-        };
-    } & {
-        status: import(".prisma/client").$Enums.VerificationStatus;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        profileId: string;
-        documentType: string;
-        documentUrl: string;
-        documentBackUrl: string | null;
-        rejectionReason: string | null;
-    })[] | {
-        id: string;
-        profileId: string;
-        name: string;
-        type: string;
-        documentUrl: string;
-        status: string;
-        createdAt: Date;
-    }[]>;
+    getVerifications(): Promise<any[]>;
     updateVerificationStatus(id: string, status: any, rejectionReason?: string): Promise<{
         status: import(".prisma/client").$Enums.VerificationStatus;
         id: string;
