@@ -715,7 +715,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               spacing: 8,
                               runSpacing: 8,
                               children: [
-                                _buildWebQuickChip('💍 મેટ્રિમોની', _showCustomLoginDialog),
+                                _buildWebQuickChip('💍 મેટ્રિમોની', () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('મેટ્રિમોની સેવા માટે કૃપા કરીને બાજુના ફોર્મમાં લોગિન કરો (Please sign in to access Matrimony)'),
+                                      backgroundColor: Color(0xFFD4AF37),
+                                      duration: Duration(seconds: 2),
+                                    ),
+                                  );
+                                }),
                                 _buildWebQuickChip('🏛️ સરકારી કર્મચારી', () => context.push('/government-employees')),
                                 _buildWebQuickChip('⭐ સુપર સ્ટાર્સ', () => context.push('/samaj-super-stars')),
                                 _buildWebQuickChip('🤝 સેવાઓ', () => context.push('/samaj-services')),
