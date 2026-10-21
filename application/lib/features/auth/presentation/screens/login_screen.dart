@@ -19,6 +19,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   int _currentPage = 0;
+  bool _obscureDesktopPassword = true;
 
   @override
   void initState() {
@@ -611,11 +612,410 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
+  Widget _buildWebQuickChip(String label, VoidCallback onTap) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0C2448),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0x77FFD700), width: 1.2),
+            boxShadow: const [
+              BoxShadow(color: Colors.black45, blurRadius: 4, offset: Offset(0, 2)),
+            ],
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Color(0xFFFFDF73),
+              fontSize: 12.5,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesktopWebLoginView(Size size, double availableHeight) {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1160),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF041024),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 1.6),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.75),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  blurRadius: 24,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(23),
+              child: IntrinsicHeight(
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // --- Left Column: Sacred Heritage & Poster Showcase (50%) ---
+                    Expanded(
+                      flex: 5,
+                      child: Container(
+                        padding: const EdgeInsets.all(28),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF071936), Color(0xFF020914)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Main Poster Graphic with Golden Border Frame
+                            Container(
+                              constraints: const BoxConstraints(maxHeight: 520),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.65), width: 1.6),
+                                boxShadow: const [
+                                  BoxShadow(color: Colors.black87, blurRadius: 18, offset: Offset(0, 6)),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(15),
+                                child: Image.asset(
+                                  'assets/images/login_poster_2.jpg',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                                    'assets/images/1 (2).jpeg',
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
+                            // Quick Section Pills under Poster
+                            Wrap(
+                              alignment: WrapAlignment.center,
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                _buildWebQuickChip('💍 મેટ્રિમોની', _showCustomLoginDialog),
+                                _buildWebQuickChip('🏛️ સરકારી કર્મચારી', () => context.push('/government-employees')),
+                                _buildWebQuickChip('⭐ સુપર સ્ટાર્સ', () => context.push('/samaj-super-stars')),
+                                _buildWebQuickChip('🤝 સેવાઓ', () => context.push('/samaj-services')),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    // Vertical Divider with Gold Gradient
+                    Container(
+                      width: 1.4,
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Colors.transparent, Color(0xFFFFD700), Colors.transparent],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                    ),
+
+                    // --- Right Column: Direct Web Login Card (50%) ---
+                    Expanded(
+                      flex: 5,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 36),
+                        child: Center(
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 440),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Monogram Icon Header
+                                Center(
+                                  child: Container(
+                                    width: 64,
+                                    height: 64,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFFD4AF37), Color(0xFFAA820A)],
+                                      ),
+                                      border: Border.all(color: const Color(0xFFFFF2C2), width: 2),
+                                      boxShadow: const [
+                                        BoxShadow(color: Color(0x66FFD700), blurRadius: 18),
+                                      ],
+                                    ),
+                                    child: const Center(
+                                      child: Icon(Icons.lock_person, color: Colors.black, size: 32),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 14),
+
+                                const Text(
+                                  'સભ્ય લોગિન (Member Login)',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Color(0xFFFFDF73),
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.4,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'All Gujarat Vankar Samaj • સત્તાવાર વેબ પોર્ટલ',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+
+                                const SizedBox(height: 28),
+
+                                // Email Input Field
+                                const Text(
+                                  'ઈમેલ સરનામું (Email Address) *',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  textInputAction: TextInputAction.next,
+                                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                                  decoration: InputDecoration(
+                                    prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFFD700), size: 20),
+                                    hintText: 'તમારો ઈમેલ દાખલ કરો (e.g. name@gmail.com)',
+                                    hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+                                    filled: true,
+                                    fillColor: const Color(0xFF030D1E),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 18),
+
+                                // Password Input Field
+                                const Text(
+                                  'પાસવર્ડ (Password) *',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                TextField(
+                                  controller: _passwordController,
+                                  obscureText: _obscureDesktopPassword,
+                                  textInputAction: TextInputAction.done,
+                                  onSubmitted: (_) => _performLogin(),
+                                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                                  decoration: InputDecoration(
+                                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFFFD700), size: 20),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscureDesktopPassword ? Icons.visibility_off : Icons.visibility,
+                                        color: Colors.white60,
+                                        size: 20,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          _obscureDesktopPassword = !_obscureDesktopPassword;
+                                        });
+                                      },
+                                    ),
+                                    hintText: '••••••••',
+                                    hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+                                    filled: true,
+                                    fillColor: const Color(0xFF030D1E),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
+                                    ),
+                                  ),
+                                ),
+
+                                // Forgot Password Link
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: TextButton(
+                                    onPressed: _showForgotPasswordDialog,
+                                    child: const Text(
+                                      'પાસવર્ડ ભૂલી ગયા છો? (Forgot Password?)',
+                                      style: TextStyle(
+                                        color: Color(0xFFFFD700),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 10),
+
+                                // Submit Login Button
+                                ElevatedButton(
+                                  onPressed: _isLoading ? null : () => _performLogin(),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFD4AF37),
+                                    foregroundColor: Colors.black,
+                                    disabledBackgroundColor: const Color(0x88D4AF37),
+                                    padding: const EdgeInsets.symmetric(vertical: 14),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    elevation: 6,
+                                    shadowColor: const Color(0x66FFD700),
+                                  ),
+                                  child: _isLoading
+                                      ? const SizedBox(
+                                          width: 22,
+                                          height: 22,
+                                          child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                                        )
+                                      : const Text(
+                                          'પ્રવેશ કરો (Sign In)',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                ),
+
+                                const SizedBox(height: 18),
+
+                                // Divider
+                                Row(
+                                  children: [
+                                    Expanded(child: Container(height: 1, color: Colors.white12)),
+                                    const Padding(
+                                      padding: EdgeInsets.symmetric(horizontal: 12),
+                                      child: Text('અથવા (OR)', style: TextStyle(color: Colors.white38, fontSize: 12)),
+                                    ),
+                                    Expanded(child: Container(height: 1, color: Colors.white12)),
+                                  ],
+                                ),
+
+                                const SizedBox(height: 16),
+
+                                // New Registration Button
+                                OutlinedButton.icon(
+                                  onPressed: () => context.push('/register'),
+                                  icon: const Icon(Icons.person_add_alt_1, color: Color(0xFFFFD700), size: 18),
+                                  label: const Text(
+                                    'નવી નોંધણી કરો (New Member Registration)',
+                                    style: TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+                                    padding: const EdgeInsets.symmetric(vertical: 13),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                ),
+
+                                const SizedBox(height: 18),
+
+                                // Admin Portal Shortcut
+                                Center(
+                                  child: TextButton.icon(
+                                    onPressed: () => context.push('/admin/login'),
+                                    icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.white54, size: 16),
+                                    label: const Text(
+                                      'કમિટી / એડમિન લોગિન (Admin Portal)',
+                                      style: TextStyle(color: Colors.white60, fontSize: 12),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final padding = MediaQuery.paddingOf(context);
     final availableHeight = size.height - padding.top - padding.bottom;
+    final isDesktop = size.width >= 850;
+
+    if (isDesktop) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF020B18),
+        body: SafeArea(
+          child: _buildDesktopWebLoginView(size, availableHeight),
+        ),
+      );
+    }
+
+    return _buildMobileLoginView(size, availableHeight);
+  }
+
+  Widget _buildMobileLoginView(Size size, double availableHeight) {
     final isMobile = size.width < 600;
 
     return Scaffold(
