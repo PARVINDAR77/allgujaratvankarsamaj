@@ -128,6 +128,14 @@ if ($action === 'deploy') {
     @touch($trigger_file);
 }
 
+if ($action === 'clean_restart' || $action === 'kill_stale') {
+    if (function_exists('shell_exec')) {
+        $cleanLog = shell_exec("pkill -9 -f 'pm2' 2>&1; pkill -9 -f 'keep_backend_alive' 2>&1; pkill -9 -f 'dist/main.js' 2>&1; sleep 1; rm -f " . escapeshellarg($socket_file) . " 2>&1; nohup bash " . escapeshellarg($project_dir . "/start_backend_daemon.sh") . " > /dev/null 2>&1 &");
+        $results['clean_log'] = $cleanLog;
+        $results['actions_taken'][] = 'Killed stale processes and launched start_backend_daemon.sh';
+    }
+}
+
 if ($action === 'fix_db') {
     fix_database_genders($project_dir, $results);
 }
