@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -63,7 +64,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authNotifierProvider);
       final location = state.uri.toString();
       final isLoggingIn = location == '/login' || location == '/register';
-      final isCommunityPublicRoute = location.startsWith('/pavan-prernadata') ||
+      final isWebMatrimonyHome = kIsWeb && (location == '/home' || location.startsWith('/home'));
+      final isCommunityPublicRoute = location.startsWith('/main-poster') ||
+          location.startsWith('/main_poster') ||
+          isWebMatrimonyHome ||
+          location.startsWith('/match') ||
+          location.startsWith('/search') ||
+          location.startsWith('/search-results') ||
+          location.startsWith('/candidate-profile-details') ||
+          location.startsWith('/profile-details') ||
+          location.startsWith('/pavan-prernadata') ||
           location.startsWith('/family-details') ||
           location.startsWith('/samaj-services') ||
           location.startsWith('/samaj-super-stars') ||
@@ -149,6 +159,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/main-poster',
         name: 'main-poster',
         builder: (context, state) => const MainPosterScreen(),
+      ),
+      GoRoute(
+        path: '/main_poster',
+        redirect: (context, state) => '/main-poster',
       ),
       GoRoute(
         path: '/statistics',

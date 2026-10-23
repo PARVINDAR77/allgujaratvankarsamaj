@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,10 +15,13 @@ class MainNavigationScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final matchState = ref.watch(matchProvider);
     final receivedRequestsCount = matchState.receivedInterests.length;
+    final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width >= 900;
 
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: Container(
+      bottomNavigationBar: isDesktopWeb
+          ? null
+          : Container(
         color: AppColors.background,
         child: SafeArea(
           top: false,

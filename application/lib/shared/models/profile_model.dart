@@ -159,6 +159,22 @@ class ProfileModel {
 
   String get displayId => '#$shortId';
 
+  String get cleanDisplayId {
+    final raw = id.trim();
+    if (raw.toUpperCase().startsWith('VNK')) return raw.toUpperCase();
+    if (raw.contains('-')) {
+      final part = raw.split('-').first.toUpperCase();
+      return 'VNK-$part';
+    }
+    if (raw.length > 8) {
+      return 'VNK-${raw.substring(0, 6).toUpperCase()}';
+    }
+    if (raw.isNotEmpty) {
+      return 'VNK-$raw'.toUpperCase();
+    }
+    return '#$shortId';
+  }
+
 
   bool get isFemale {
     final s = gender.toUpperCase();

@@ -55,7 +55,14 @@ class SamajServiceRepository {
       if (village != null && village.trim().isNotEmpty) params['village'] = village.trim();
       if (search != null && search.trim().isNotEmpty) params['search'] = search.trim();
 
-      final response = await _dio.get('/samaj-services/$serviceId/persons', queryParameters: params.isNotEmpty ? params : null);
+      final response = await _dio.get(
+        '/samaj-services/$serviceId/persons',
+        queryParameters: params.isNotEmpty ? params : null,
+        options: Options(
+          sendTimeout: const Duration(seconds: 4),
+          receiveTimeout: const Duration(seconds: 4),
+        ),
+      );
       dynamic raw = response.data;
       if (raw is String) {
         try {
@@ -69,10 +76,10 @@ class SamajServiceRepository {
         return raw.map((json) => SamajServicePerson.fromJson(Map<String, dynamic>.from(json as Map))).toList();
       }
       return [];
-    } on DioException catch (e) {
-      throw Exception('Failed to load professionals: ${e.message}');
-    } catch (e) {
-      throw Exception('Database Connection Error: Cannot fetch professionals right now.');
+    } on DioException {
+      return [];
+    } catch (_) {
+      return [];
     }
   }
 }

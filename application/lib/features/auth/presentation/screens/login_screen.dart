@@ -614,386 +614,385 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 
-  Widget _buildGoogleIcon() {
-    return SizedBox(
-      width: 20,
-      height: 20,
-      child: CustomPaint(
-        painter: _GoogleLogoPainter(),
-      ),
-    );
-  }
+  Widget _buildRightLoginPanel(BuildContext context, {bool isScrollable = true}) {
+    final formContent = ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 460),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Top-Right: Don't have an account? Register Button
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const Text(
+                "Don't have an account?",
+                style: TextStyle(
+                  color: Color(0xFF74819B),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(width: 12),
+              OutlinedButton(
+                onPressed: () => context.push('/register'),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Color(0xFFA4143D), width: 1.2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'Register',
+                  style: TextStyle(
+                    color: Color(0xFFA4143D),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
 
-  Widget _buildLeftPromotionalPanel(double width, double height) {
-    return SizedBox(
-      width: width,
-      height: height,
-      child: Image.asset(
-        'assets/images/buddha_login_poster.png',
-        width: width,
-        height: height,
-        fit: BoxFit.fill,
-        errorBuilder: (ctx, err, _) => Container(color: const Color(0xFFFAF6F0)),
-      ),
-    );
-  }
+          const SizedBox(height: 24),
 
-  Widget _buildRightLoginPanel(BuildContext context) {
-    return Container(
-      color: Colors.white,
-      alignment: Alignment.centerLeft,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(44, 20, 40, 20),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 440),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Top-Right: Don't have an account? Register Button
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+          // Welcome Back Heading
+          const Text(
+            'Welcome Back',
+            style: TextStyle(
+              color: Color(0xFF101B36),
+              fontSize: 32,
+              fontWeight: FontWeight.w800,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Login to your account to continue',
+            style: TextStyle(
+              color: Color(0xFF74819B),
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+
+          const SizedBox(height: 22),
+
+          // Mobile Number or Email Input Field
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14.5),
+            decoration: InputDecoration(
+              prefixIcon: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14),
+                child: Icon(Icons.stay_current_portrait_outlined, color: Color(0xFF74819B), size: 21),
+              ),
+              prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 46),
+              hintText: 'Mobile Number or Email',
+              hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.6),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // Password Input Field
+          TextField(
+            controller: _passwordController,
+            obscureText: _obscureDesktopPassword,
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) {
+              if (!_isLoading) _performLogin();
+            },
+            style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14.5),
+            decoration: InputDecoration(
+              prefixIcon: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14),
+                child: Icon(Icons.lock_outline_rounded, color: Color(0xFF74819B), size: 21),
+              ),
+              prefixIconConstraints: const BoxConstraints(minWidth: 46, minHeight: 46),
+              suffixIcon: IconButton(
+                tooltip: _obscureDesktopPassword ? 'Show password' : 'Hide password',
+                icon: Icon(
+                  _obscureDesktopPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                  color: const Color(0xFF74819B),
+                  size: 20,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _obscureDesktopPassword = !_obscureDesktopPassword;
+                  });
+                },
+              ),
+              hintText: 'Password',
+              hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.6),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Remember me & Forgot Password Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: () => setState(() => _rememberMe = !_rememberMe),
+                borderRadius: BorderRadius.circular(4),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Checkbox(
+                        value: _rememberMe,
+                        activeColor: const Color(0xFFA4143D),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        side: const BorderSide(color: Color(0xFFD5DCE7), width: 1.5),
+                        onChanged: (val) => setState(() => _rememberMe = val ?? true),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     const Text(
-                      "Don't have an account?",
+                      'Remember me',
                       style: TextStyle(
-                        color: Color(0xFF74819B),
-                        fontSize: 13,
+                        color: Color(0xFF374151),
+                        fontSize: 13.5,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    OutlinedButton(
-                      onPressed: () => context.push('/register'),
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFA4143D), width: 1.3),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 9),
-                      ),
-                      child: const Text(
-                        'Register',
+                  ],
+                ),
+              ),
+              TextButton(
+                onPressed: _showForgotPasswordDialog,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: Color(0xFFA4143D),
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 18),
+
+          // Full-width Deep Maroon Login Button
+          ElevatedButton(
+            onPressed: _isLoading ? null : () => _performLogin(),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFA4143D),
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: const Color(0x99A4143D),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              elevation: 0,
+            ),
+            child: _isLoading
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                  )
+                : const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Login',
                         style: TextStyle(
-                          color: Color(0xFFA4143D),
-                          fontSize: 13,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
+                          letterSpacing: 0.3,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 38),
-
-                // Welcome Back Heading
-                const Text(
-                  'Welcome Back',
-                  style: TextStyle(
-                    color: Color(0xFF101B36),
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.6,
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward, size: 18),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Login to your account to continue',
-                  style: TextStyle(
-                    color: Color(0xFF74819B),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+          ),
 
-                const SizedBox(height: 28),
+          const SizedBox(height: 24),
 
-                // Mobile Number or Email Input Field
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14.5),
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.phone_iphone, color: Color(0xFF74819B), size: 20),
-                    hintText: 'Mobile Number or Email',
-                    hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.8),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 18),
-
-                // Password Input Field
-                TextField(
-                  controller: _passwordController,
-                  obscureText: _obscureDesktopPassword,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) {
-                    if (!_isLoading) _performLogin();
-                  },
-                  style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14.5),
-                  decoration: InputDecoration(
-                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF74819B), size: 20),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscureDesktopPassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                        color: const Color(0xFF74819B),
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureDesktopPassword = !_obscureDesktopPassword;
-                        });
-                      },
-                    ),
-                    hintText: 'Password',
-                    hintStyle: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-                    filled: true,
-                    fillColor: Colors.white,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(9),
-                      borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.8),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 14),
-
-                // Remember me & Forgot Password Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: Checkbox(
-                            value: _rememberMe,
-                            activeColor: const Color(0xFFA4143D),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-                            onChanged: (val) => setState(() => _rememberMe = val ?? true),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Remember me',
-                          style: TextStyle(
-                            color: Color(0xFF374151),
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                    TextButton(
-                      onPressed: _showForgotPasswordDialog,
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        'Forgot Password?',
-                        style: TextStyle(
-                          color: Color(0xFFA4143D),
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
+          // Terms & Privacy Legal Footer
+          Column(
+            children: [
+              const Text(
+                'By continuing, you agree to our',
+                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: () => context.push('/privacy-policy'),
+                    child: const Text(
+                      'Terms & Conditions',
+                      style: TextStyle(
+                        color: Color(0xFFA4143D),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
-                ),
-
-                const SizedBox(height: 22),
-
-                // Full-width Deep Maroon Login Button
-                ElevatedButton(
-                  onPressed: _isLoading ? null : () => _performLogin(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA4143D),
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: const Color(0x88A4143D),
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
-                    elevation: 0,
                   ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
-                        )
-                      : const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward, size: 18),
-                          ],
-                        ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // OR Divider
-                Row(
-                  children: [
-                    Expanded(child: Container(height: 1, color: const Color(0xFFE5E7EB))),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'OR',
-                        style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12, fontWeight: FontWeight.bold),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: Text('|', style: TextStyle(color: Color(0xFFD1D5DB))),
+                  ),
+                  InkWell(
+                    onTap: () => context.push('/privacy-policy'),
+                    child: const Text(
+                      'Privacy Policy',
+                      style: TextStyle(
+                        color: Color(0xFFA4143D),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    Expanded(child: Container(height: 1, color: const Color(0xFFE5E7EB))),
-                  ],
-                ),
-
-                const SizedBox(height: 18),
-
-                // Continue with Google Button
-                OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('ગૂગલ લોગિન આગામી અપડેટમાં ઉપલબ્ધ થશે (Google Login will be available soon)'),
-                        backgroundColor: Color(0xFFA4143D),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  icon: _buildGoogleIcon(),
-                  label: const Text(
-                    'Continue with Google',
-                    style: TextStyle(
-                      color: Color(0xFF374151),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
-                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+
+    if (!isScrollable) {
+      return Stack(
+        children: [
+          Positioned(
+            top: 0,
+            right: 0,
+            width: 140,
+            height: 140,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.6,
+                child: Image.asset(
+                  'assets/images/mandala_watermark_top.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.topRight,
                 ),
-
-                const SizedBox(height: 10),
-
-                // Continue with Facebook Button
-                OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('ફેસબુક લોગિન આગામી અપડેટમાં ઉપલબ્ધ થશે (Facebook Login will be available soon)'),
-                        backgroundColor: Color(0xFFA4143D),
-                        duration: Duration(seconds: 2),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.facebook, color: Color(0xFF1877F2), size: 22),
-                  label: const Text(
-                    'Continue with Facebook',
-                    style: TextStyle(
-                      color: Color(0xFF374151),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFD5DCE7), width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 13),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
-                  ),
-                ),
-
-                const SizedBox(height: 26),
-
-                // Terms & Privacy Legal Footer
-                Column(
-                  children: [
-                    const Text(
-                      'By continuing, you agree to our',
-                      style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 12),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        InkWell(
-                          onTap: () => context.push('/privacy-policy'),
-                          child: const Text(
-                            'Terms & Conditions',
-                            style: TextStyle(
-                              color: Color(0xFFA4143D),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 8),
-                          child: Text('|', style: TextStyle(color: Color(0xFFD1D5DB))),
-                        ),
-                        InkWell(
-                          onTap: () => context.push('/privacy-policy'),
-                          child: const Text(
-                            'Privacy Policy',
-                            style: TextStyle(
-                              color: Color(0xFFA4143D),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-        ),
+          formContent,
+        ],
+      );
+    }
+
+    return Container(
+      color: Colors.white,
+      child: Stack(
+        children: [
+          // Top-right corner mandala watermark
+          Positioned(
+            top: 0,
+            right: 0,
+            width: 240,
+            height: 240,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.9,
+                child: Image.asset(
+                  'assets/images/mandala_watermark_top.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.topRight,
+                ),
+              ),
+            ),
+          ),
+          // Bottom-right corner mandala watermark
+          Positioned(
+            bottom: 0,
+            right: 0,
+            width: 260,
+            height: 260,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.9,
+                child: Image.asset(
+                  'assets/images/mandala_watermark_bottom.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.bottomRight,
+                ),
+              ),
+            ),
+          ),
+          // Centered Form Content
+          LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
+                  ),
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                      child: formContent,
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildBuddhaWebSplitLoginView(Size size, double availableHeight) {
-    // Exact aspect ratio of the left poster in the reference image (601 / 678)
-    const posterRatio = 601.0 / 678.0;
-    final idealLeftWidth = availableHeight * posterRatio;
-    final maxLeftWidth = size.width - 400.0;
-    final leftWidth = idealLeftWidth > maxLeftWidth ? maxLeftWidth : idealLeftWidth;
+    const double posterRatio = 975.0 / 865.0; // 1.12716763 exact image ratio
+
+    // Ensure the right login panel always gets at least 460px of breathing room
+    final double maxLeftWidth = size.width - 460.0;
+    final double exactHeightWidth = availableHeight * posterRatio;
+
+    // Maintain the exact aspect ratio of the poster so top logo and bottom ribbon are NEVER cut
+    final double leftWidth = exactHeightWidth > maxLeftWidth ? maxLeftWidth : exactHeightWidth;
+    final double leftHeight = leftWidth / posterRatio;
 
     return SizedBox(
       width: size.width,
@@ -1001,10 +1000,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left Panel: Full-height Buddha & Heritage Poster (No White Gaps, No Clipping)
-          _buildLeftPromotionalPanel(leftWidth, availableHeight),
+          // Left Promotional Panel: Full heritage poster, zero cropping at top or bottom!
+          Container(
+            width: leftWidth,
+            height: availableHeight,
+            color: const Color(0xFFF7EFE6),
+            alignment: Alignment.center,
+            child: Image.asset(
+              'assets/images/heritage_login_poster.png',
+              width: leftWidth,
+              height: leftHeight,
+              fit: BoxFit.contain,
+              errorBuilder: (ctx, err, _) => Container(color: const Color(0xFFF7EFE6)),
+            ),
+          ),
 
-          // Right Panel: Clean White Login Form
+          // Right Login Panel: Clean White, centered authentication form with mandalas
           Expanded(
             child: _buildRightLoginPanel(context),
           ),
@@ -1019,20 +1030,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: SingleChildScrollView(
         child: Column(
           children: [
-            // Top Compact Buddha Banner
-            SizedBox(
-              height: 220,
-              width: double.infinity,
+            // Top Compact Heritage Temple Banner
+            AspectRatio(
+              aspectRatio: 975.0 / 620.0,
               child: Image.asset(
-                'assets/images/buddha_login_poster.png',
+                'assets/images/heritage_login_poster.png',
                 fit: BoxFit.cover,
                 alignment: Alignment.topCenter,
               ),
             ),
             // Login Card Form
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: _buildRightLoginPanel(context),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+              child: _buildRightLoginPanel(context, isScrollable: false),
             ),
           ],
         ),
@@ -1047,7 +1057,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final availableHeight = size.height - padding.top - padding.bottom;
 
     if (kIsWeb) {
-      if (size.width >= 850) {
+      if (size.width >= 960) {
         return Scaffold(
           backgroundColor: Colors.white,
           body: _buildBuddhaWebSplitLoginView(size, availableHeight),
@@ -1497,27 +1507,4 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         ),
       );
   }
-}
-
-
-class _GoogleLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-    final center = Offset(w / 2, h / 2);
-    final radius = w / 2;
-    final bluePaint = Paint()..color = const Color(0xFF4285F4)..style = PaintingStyle.stroke..strokeWidth = 2.8;
-    final redPaint = Paint()..color = const Color(0xFFEA4335)..style = PaintingStyle.stroke..strokeWidth = 2.8;
-    final yellowPaint = Paint()..color = const Color(0xFFFBBC05)..style = PaintingStyle.stroke..strokeWidth = 2.8;
-    final greenPaint = Paint()..color = const Color(0xFF34A853)..style = PaintingStyle.stroke..strokeWidth = 2.8;
-    final rect = Rect.fromCircle(center: center, radius: radius - 2);
-    canvas.drawArc(rect, -2.4, 1.2, false, redPaint);
-    canvas.drawArc(rect, -1.2, 1.2, false, yellowPaint);
-    canvas.drawArc(rect, 0.0, 1.3, false, greenPaint);
-    canvas.drawArc(rect, 1.3, 1.0, false, bluePaint);
-    canvas.drawLine(Offset(center.dx - 1, center.dy), Offset(w - 2, center.dy), Paint()..color = const Color(0xFF4285F4)..strokeWidth = 2.8);
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

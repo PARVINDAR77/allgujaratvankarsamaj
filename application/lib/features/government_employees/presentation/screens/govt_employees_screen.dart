@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../../providers/govt_employees_provider.dart';
 import '../../../../core/network/api_failure.dart';
 import '../../../profile/providers/master_data_provider.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../../home/presentation/widgets/web_home_header.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
   const GovtEmployeesScreen({super.key});
@@ -19,6 +21,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     with SingleTickerProviderStateMixin {
   TabController? _tabController;
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   // Local filter state — reflects what is sent to the backend.
   String? _selectedDepartmentId;
@@ -43,12 +46,27 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
         _resetFiltersAndReload();
       }
     });
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.hasClients &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 300) {
+      final empState = ref.read(govtEmployeesProvider);
+      if (empState.meta.hasNextPage &&
+          empState.status == GovtEmployeesStatus.success) {
+        ref.read(govtEmployeesProvider.notifier).loadMore();
+      }
+    }
   }
 
   @override
   void dispose() {
     _searchController.dispose();
     _tabController?.dispose();
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -124,21 +142,29 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     final empState = ref.watch(govtEmployeesProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8FF),
+      appBar: kIsWeb ? const WebHomeHeader(activeRoute: '/government-employees') : null,
+      backgroundColor: const Color(0xFFFAF8F5),
       body: SafeArea(
+        top: !kIsWeb,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth > 850;
             return Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1000),
-                child: Column(
-                  children: [
-                    _buildHeader(isDesktop, context),
-                    _buildTabBar(),
-                    _buildFilters(isDesktop, empState),
-                    Expanded(child: _buildBody(empState, isDesktop)),
-                  ],
+                constraints: BoxConstraints(maxWidth: isDesktop ? 1280 : 1000),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(bottom: isDesktop ? 36 : 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _buildHeader(isDesktop, context),
+                      _buildTabBar(isDesktop),
+                      _buildFilters(isDesktop, empState),
+                      _buildBody(empState, isDesktop),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -151,92 +177,66 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   Widget _buildHeader(bool isDesktop, BuildContext context) {
     return Column(
       children: [
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final bannerWidth = constraints.maxWidth;
-            // Native banner aspect ratio is 1600 x 592 (from WhatsApp Image 2026-10-07 at 5.33.44 PM)
-            final bannerHeight = bannerWidth * (592.0 / 1600.0);
+        Padding(
+          padding: EdgeInsets.only(
+            top: isDesktop ? 12 : 8,
+            left: isDesktop ? 8 : 4,
+            right: isDesktop ? 8 : 4,
+          ),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final bannerWidth = constraints.maxWidth;
+              // Native banner aspect ratio is 1600 x 592 (2.7027:1)
+              final bannerHeight = bannerWidth * (592.0 / 1600.0);
 
-            return SizedBox(
-              width: bannerWidth,
-              height: bannerHeight,
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: Image.asset(
-                      'assets/images/govt_section_banner_new.png',
-                      fit: BoxFit.fill,
-                      errorBuilder: (context, error, stackTrace) => Image.asset(
-                        'assets/images/vankar_header_banner.png',
-                        fit: BoxFit.fill,
-                        errorBuilder: (_, __, ___) => Container(
-                          height: 100,
-                          color: Colors.blue.shade100,
-                          child: const Center(child: Text('Header Image')),
-                        ),
-                      ),
-                    ),
+              return Container(
+                width: bannerWidth,
+                height: bannerHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(isDesktop ? 14 : 10),
+                  border: Border.all(
+                    color: const Color(0xFFD6A34A).withValues(alpha: 0.6),
+                    width: 1.5,
                   ),
-                  // Transparent touch target aligned with the banner's built-in "← પાછા જાઓ (Back)" button
-                  // Native coordinates: x: 20..480, y: 24..170 (out of 1600 x 592)
-                  Positioned(
-                    left: bannerWidth * (20.0 / 1600.0),
-                    top: bannerHeight * (24.0 / 592.0),
-                    width: bannerWidth * (460.0 / 1600.0),
-                    height: bannerHeight * (146.0 / 592.0),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(28),
-                        splashColor: Colors.white.withOpacity(0.35),
-                        highlightColor: Colors.white.withOpacity(0.15),
-                        onTap: () {
-                          if (context.canPop()) {
-                            context.pop();
-                          } else {
-                            context.go('/home');
-                          }
-                        },
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF101B36).withValues(alpha: 0.08),
+                      blurRadius: 14,
+                      offset: const Offset(0, 3),
                     ),
+                  ],
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Image.asset(
+                  'assets/images/govt_section_banner_clean.png',
+                  fit: BoxFit.fill,
+                  errorBuilder: (context, error, stackTrace) => Image.asset(
+                    'assets/images/govt_section_banner_new.png',
+                    fit: BoxFit.fill,
                   ),
-                  // Transparent touch target aligned with the banner's built-in "🔔" notification bell
-                  // Native coordinates: x: 1410..1550, y: 100..240 (out of 1600 x 592)
-                  Positioned(
-                    left: bannerWidth * (1410.0 / 1600.0),
-                    top: bannerHeight * (100.0 / 592.0),
-                    width: bannerWidth * (140.0 / 1600.0),
-                    height: bannerHeight * (140.0 / 592.0),
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        splashColor: Colors.white.withOpacity(0.35),
-                        highlightColor: Colors.white.withOpacity(0.15),
-                        onTap: () {
-                          context.push('/notifications');
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         ),
         const SizedBox(height: 10),
         Container(
           padding: EdgeInsets.symmetric(
-              horizontal: isDesktop ? 32 : 18, vertical: 8),
+              horizontal: isDesktop ? 24 : 16, vertical: 6),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(30),
-            border: Border.all(color: const Color(0xFFF3C34D), width: 2.2),
-            boxShadow: const [
+            border: Border.all(color: const Color(0xFFD6A34A), width: 1.6),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x1A000000),
-                blurRadius: 8,
-                offset: Offset(0, 3),
+                color: const Color(0xFFD6A34A).withValues(alpha: 0.18),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.03),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
               ),
             ],
           ),
@@ -244,13 +244,20 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: isDesktop ? 44 : 38,
-                height: isDesktop ? 44 : 38,
+                width: isDesktop ? 36 : 32,
+                height: isDesktop ? 36 : 32,
+                padding: const EdgeInsets.all(1.5),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
-                  boxShadow: const [
-                    BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFDF7A), Color(0xFFD6A34A), Color(0xFF8C6D15)],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
+                      blurRadius: 5,
+                      offset: const Offset(0, 2),
+                    ),
                   ],
                 ),
                 child: ClipOval(
@@ -258,9 +265,9 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                     'assets/images/logo.png',
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => CircleAvatar(
-                      backgroundColor: const Color(0xFF0056D2),
-                      radius: isDesktop ? 22 : 19,
-                      child: Icon(Icons.groups, color: Colors.white, size: isDesktop ? 24 : 20),
+                      backgroundColor: const Color(0xFFA4143D),
+                      radius: isDesktop ? 18 : 16,
+                      child: Icon(Icons.groups, color: Colors.white, size: isDesktop ? 20 : 18),
                     ),
                   ),
                 ),
@@ -273,18 +280,20 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                   Text(
                     'Government Employees',
                     style: TextStyle(
-                      color: const Color(0xFF0056D2),
-                      fontSize: isDesktop ? 22 : 18,
-                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF101B36),
+                      fontSize: isDesktop ? 18 : 16,
+                      fontWeight: FontWeight.w900,
                       letterSpacing: 0.3,
                     ),
                   ),
+                  const SizedBox(height: 1),
                   Text(
                     'સરકારી સેવા - સમાજની સેવા',
                     style: TextStyle(
-                      color: const Color(0xFF0056D2),
-                      fontSize: isDesktop ? 13 : 11,
-                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFFA4143D),
+                      fontSize: isDesktop ? 11.5 : 10.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
                     ),
                   ),
                 ],
@@ -292,25 +301,37 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
             ],
           ),
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 4),
       ],
     );
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(bool isDesktop) {
     return Container(
-      color: Colors.white,
-      margin: const EdgeInsets.only(top: 8),
+      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5D5BA)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: TabBar(
         controller: _tabController,
         isScrollable: true,
         tabAlignment: TabAlignment.center,
-        labelColor: const Color(0xFF0056D2),
-        unselectedLabelColor: Colors.grey.shade600,
-        indicatorColor: const Color(0xFF0056D2),
-        labelStyle:
-            const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-        indicatorWeight: 3,
+        labelColor: const Color(0xFFA4143D),
+        unselectedLabelColor: const Color(0xFF4B5563),
+        indicatorColor: const Color(0xFFA4143D),
+        indicatorWeight: 3.5,
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, letterSpacing: 0.2),
+        unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
         tabs: const [
           Tab(text: 'All (તમામ સરકારી)'),
           Tab(text: 'Gujarat Gov (ગુજરાત સરકાર)'),
@@ -364,17 +385,17 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     IconData? prefixIcon,
   }) {
     return Container(
-      height: 40,
+      height: 42,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFD6A34A).withValues(alpha: 0.45), width: 1.0),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         children: [
           if (prefixIcon != null) ...[
-            Icon(prefixIcon, color: const Color(0xFF0056D2), size: 16),
+            Icon(prefixIcon, color: const Color(0xFFA4143D), size: 16),
             const SizedBox(width: 6),
           ],
           Expanded(
@@ -385,9 +406,9 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                 dropdownColor: Colors.white,
                 menuMaxHeight: 380,
                 borderRadius: BorderRadius.circular(12),
-                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFF0056D2), size: 20),
-                style: const TextStyle(fontSize: 12, color: Colors.black87, fontWeight: FontWeight.w600),
-                hint: Text(hint, style: const TextStyle(fontSize: 11, color: Colors.black54, fontWeight: FontWeight.normal)),
+                icon: const Icon(Icons.arrow_drop_down, color: Color(0xFFD6A34A), size: 22),
+                style: const TextStyle(fontSize: 12, color: Color(0xFF101B36), fontWeight: FontWeight.w600),
+                hint: Text(hint, style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280), fontWeight: FontWeight.normal)),
                 selectedItemBuilder: (BuildContext context) {
                   return items.map<Widget>((DropdownMenuItem<String?> item) {
                     final itemText = (item.child as Text).data ?? '';
@@ -398,8 +419,8 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF0056D2),
-                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF101B36),
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     );
@@ -420,13 +441,13 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                               style: TextStyle(
                                 fontSize: 12.5,
                                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                color: isSelected ? const Color(0xFF0056D2) : Colors.black87,
+                                color: isSelected ? const Color(0xFFA4143D) : const Color(0xFF101B36),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (isSelected)
-                            const Icon(Icons.check, size: 16, color: Color(0xFF0056D2)),
+                            const Icon(Icons.check, size: 16, color: Color(0xFFA4143D)),
                         ],
                       ),
                     ),
@@ -512,12 +533,19 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     ];
 
     return Container(
-      padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 4, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F9FF),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade100),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5D5BA), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Column(
         children: [
@@ -593,22 +621,28 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
               Expanded(
                 flex: isDesktop ? 6 : 4,
                 child: SizedBox(
-                  height: 40,
+                  height: 42,
                   child: TextField(
                     controller: _searchController,
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF101B36), fontWeight: FontWeight.w500),
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search,
-                          color: Color(0xFF0056D2), size: 20),
+                          color: Color(0xFFA4143D), size: 20),
                       hintText: 'Search by Name (નામથી શોધો)...',
-                      hintStyle: const TextStyle(fontSize: 12),
+                      hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
                       contentPadding: const EdgeInsets.symmetric(
                           vertical: 0, horizontal: 12),
                       border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8)),
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: const Color(0xFFD6A34A).withValues(alpha: 0.45)),
+                      ),
                       enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide:
-                            BorderSide(color: Colors.grey.shade300),
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: BorderSide(color: const Color(0xFFD6A34A).withValues(alpha: 0.45)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.5),
                       ),
                       filled: true,
                       fillColor: Colors.white,
@@ -617,48 +651,88 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               Expanded(
                 flex: isDesktop ? 2 : 3,
                 child: Row(
                   children: [
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _applyCurrentFilters,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          backgroundColor: const Color(0xFF00A2FF),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(0, 40),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                      child: Container(
+                        height: 42,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFA4143D), Color(0xFF7E102F)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFD6A34A), width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFA4143D).withValues(alpha: 0.25),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        child: const Text('Search\n(શોધો)',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.1)),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _applyCurrentFilters,
+                            borderRadius: BorderRadius.circular(10),
+                            child: const Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.search, size: 15, color: Color(0xFFFFDF7A)),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Search (શોધો)',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                     Expanded(
-                      child: ElevatedButton(
-                        onPressed: _resetFiltersAndReload,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 2),
-                          backgroundColor: const Color(0xFFE91E63),
-                          foregroundColor: Colors.white,
-                          minimumSize: const Size(0, 40),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
+                      child: Container(
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF9FAFB),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFD1D5DB), width: 1),
                         ),
-                        child: const Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.refresh, size: 12),
-                            SizedBox(width: 2),
-                            Text('Reset\n(રીસેટ)',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, height: 1.1)),
-                          ],
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _resetFiltersAndReload,
+                            borderRadius: BorderRadius.circular(10),
+                            child: Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.refresh, size: 14, color: Colors.grey.shade700),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Reset (રીસેટ)',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: Colors.grey.shade800,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -676,12 +750,28 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                 final total = validItems.length < empState.items.length
                     ? validItems.length
                     : empState.meta.total;
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Text(
-                    'Showing ${validItems.length} of $total employees',
-                    style:
-                        TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                return Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAF8F5),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFE5D5BA)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.verified, size: 13, color: Color(0xFFA4143D)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Showing ${validItems.length} of $total verified employees',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF101B36),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -700,13 +790,16 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
       case GovtEmployeesStatus.loading:
       case GovtEmployeesStatus.refreshing:
         return const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: Color(0xFF0056D2)),
-              SizedBox(height: 12),
-              Text('Loading...', style: TextStyle(color: Colors.black54)),
-            ],
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 48),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(color: Color(0xFFA4143D)),
+                SizedBox(height: 12),
+                Text('Loading...', style: TextStyle(color: Color(0xFF6B7280))),
+              ],
+            ),
           ),
         );
 
@@ -735,7 +828,8 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0056D2)),
+                      backgroundColor: const Color(0xFFA4143D),
+                      foregroundColor: Colors.white),
                 ),
               ],
             ),
@@ -754,84 +848,132 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
 
   Widget _buildEmptyState() {
     return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
-          const Text(
-            'No government employees found.',
-            style: TextStyle(fontSize: 16, color: Colors.black54),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Try adjusting your search or filters.',
-            style: TextStyle(fontSize: 13, color: Colors.black38),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: _resetFiltersAndReload,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Reset Filters'),
-            style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0056D2)),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search_off, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            const Text(
+              'No government employees found.',
+              style: TextStyle(fontSize: 16, color: Colors.black54),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Try adjusting your search or filters.',
+              style: TextStyle(fontSize: 13, color: Colors.black38),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: _resetFiltersAndReload,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Reset Filters'),
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFA4143D),
+                  foregroundColor: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildTable(GovtEmployeesState empState, List<GovtEmployeeModel> items, bool isDesktop) {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (notification is ScrollEndNotification &&
-            notification.metrics.extentAfter < 200 &&
-            empState.meta.hasNextPage &&
-            empState.status == GovtEmployeesStatus.success) {
-          ref.read(govtEmployeesProvider.notifier).loadMore();
-        }
-        return false;
-      },
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        physics: const BouncingScrollPhysics(),
-        child: SingleChildScrollView(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth - (isDesktop ? 16 : 8);
+        const double baseIndex = 55.0;
+        const double basePhoto = 70.0;
+        const double baseAge = 70.0;
+        const double baseAction = 105.0;
+        const double fixedTotal = baseIndex + basePhoto + baseAge + baseAction; // 300.0
+
+        // Minimum flexible widths
+        const double minName = 220.0;
+        const double minDept = 220.0;
+        const double minPost = 200.0;
+        const double minDistrict = 170.0;
+        const double minFlexTotal = minName + minDept + minPost + minDistrict; // 810.0
+        const double minTableWidth = fixedTotal + minFlexTotal; // 1110.0
+
+        final double tableWidth = availableWidth > minTableWidth ? availableWidth : minTableWidth;
+        final double extraWidth = tableWidth - minTableWidth;
+
+        final double nameWidth = minName + (extraWidth * 0.30);
+        final double deptWidth = minDept + (extraWidth * 0.28);
+        final double postWidth = minPost + (extraWidth * 0.22);
+        final double districtWidth = minDistrict + (extraWidth * 0.20);
+
+        return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            width: tableWidth,
+            margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 4, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Colors.blue.shade100),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5D5BA), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF101B36).withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    _buildHeaderCell('#\n(ક્રમ)', const Color(0xFF00A2FF), 55),
-                    _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 65),
-                    _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 165),
-                    _buildHeaderCell('Department\n(વિભાગ)', const Color(0xFF4CAF50), 180),
-                    _buildHeaderCell('Post\n(હોદ્દો)', const Color(0xFFFF9800), 170),
-                    _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 130),
-                    _buildHeaderCell('Age\n(ઉંમર)', const Color(0xFF009688), 65),
-                    _buildHeaderCell('Action\n(વિગત)', const Color(0xFF0056D2), 85),
-                  ],
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+                  child: Container(
+                    width: tableWidth,
+                    color: const Color(0xFF101B36),
+                    child: Row(
+                      children: [
+                        _buildHeaderCell('#', 'ક્રમ', baseIndex),
+                        _buildHeaderCell('Photo', 'ફોટો', basePhoto),
+                        _buildHeaderCell('Name', 'નામ', nameWidth),
+                        _buildHeaderCell('Department', 'વિભાગ', deptWidth),
+                        _buildHeaderCell('Post', 'હોદ્દો', postWidth),
+                        _buildHeaderCell('District', 'જિલ્લો', districtWidth),
+                        _buildHeaderCell('Age', 'ઉંમર', baseAge),
+                        _buildHeaderCell('Action', 'વિગત', baseAction, isLast: true),
+                      ],
+                    ),
+                  ),
                 ),
                 ...items.asMap().entries.map((entry) {
                   final idx = entry.key;
                   final emp = entry.value;
                   final isEven = idx % 2 == 0;
-                  return _buildRow(idx + 1, emp, isEven);
+                  return _buildRow(
+                    idx + 1,
+                    emp,
+                    isEven,
+                    baseIndex: baseIndex,
+                    basePhoto: basePhoto,
+                    nameWidth: nameWidth,
+                    deptWidth: deptWidth,
+                    postWidth: postWidth,
+                    districtWidth: districtWidth,
+                    baseAge: baseAge,
+                    baseAction: baseAction,
+                  );
                 }),
                 if (empState.status == GovtEmployeesStatus.loadingMore)
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Center(child: CircularProgressIndicator(color: Color(0xFF0056D2))),
+                  Container(
+                    width: tableWidth,
+                    padding: const EdgeInsets.all(16.0),
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFA4143D)),
+                    ),
                   ),
                 if (empState.status == GovtEmployeesStatus.paginationError)
-                  Padding(
+                  Container(
+                    width: tableWidth,
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -842,72 +984,148 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                         TextButton(
                           onPressed: () =>
                               ref.read(govtEmployeesProvider.notifier).loadMore(),
-                          child: const Text('Retry'),
+                          child: const Text('Retry',
+                              style: TextStyle(
+                                  color: Color(0xFFA4143D),
+                                  fontWeight: FontWeight.bold)),
                         ),
                       ],
                     ),
                   ),
                 if (!empState.meta.hasNextPage && items.isNotEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(16.0),
-                    child: Center(
-                      child: Text('All results loaded.',
-                          style: TextStyle(color: Colors.black38, fontSize: 12)),
+                  Container(
+                    width: tableWidth,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFAF8F5),
+                      borderRadius:
+                          const BorderRadius.vertical(bottom: Radius.circular(11)),
+                      border: Border(
+                        top: BorderSide(
+                          color: const Color(0xFFD6A34A).withValues(alpha: 0.2),
+                          width: 1,
+                        ),
+                      ),
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.check_circle_outline,
+                            size: 15, color: Color(0xFFD6A34A)),
+                        SizedBox(width: 7),
+                        Text(
+                          'All results loaded (તમામ રેકોર્ડ લોડ થયેલ છે)',
+                          style: TextStyle(
+                            color: Color(0xFF6B7280),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
               ],
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildRow(int index, GovtEmployeeModel emp, bool isEven) {
+  Widget _buildRow(
+    int index,
+    GovtEmployeeModel emp,
+    bool isEven, {
+    required double baseIndex,
+    required double basePhoto,
+    required double nameWidth,
+    required double deptWidth,
+    required double postWidth,
+    required double districtWidth,
+    required double baseAge,
+    required double baseAction,
+  }) {
+    final hasCustomGujaratiDept = emp.departmentGujaratiName.isNotEmpty &&
+        emp.departmentGujaratiName.trim().toLowerCase() !=
+            emp.departmentName.trim().toLowerCase();
+
+    final hasCustomGujaratiPost = emp.designationGujaratiName.isNotEmpty &&
+        emp.designationGujaratiName.trim().toLowerCase() !=
+            emp.designationName.trim().toLowerCase();
+
     return Container(
-      color: isEven ? Colors.blue.shade50.withValues(alpha: 0.3) : Colors.white,
+      color: isEven ? Colors.white : const Color(0xFFFAF8F5),
       child: Row(
         children: [
           _buildDataCell(
             Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
+                  color: const Color(0xFFFAF8F5),
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.blue.shade200, width: 0.8),
+                  border: Border.all(
+                    color: const Color(0xFFD6A34A).withValues(alpha: 0.4),
+                    width: 0.9,
+                  ),
                 ),
                 child: Text(
                   '$index',
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF0056D2),
-                    fontSize: 12,
+                    color: Color(0xFF101B36),
+                    fontSize: 11.5,
                   ),
                   maxLines: 1,
                   softWrap: false,
                 ),
               ),
             ),
-            55,
+            baseIndex,
           ),
           _buildDataCell(
             Center(
               child: InkWell(
                 onTap: () => _showGovtEmployeeDetails(emp),
-                child: CircleAvatar(
-                  radius: 17,
-                  backgroundColor: Colors.blue.shade50,
-                  backgroundImage: (emp.photoUrl != null && emp.photoUrl!.isNotEmpty)
-                      ? NetworkImage(emp.photoUrl!)
-                      : null,
-                  child: (emp.photoUrl == null || emp.photoUrl!.isEmpty)
-                      ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
-                      : null,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.all(1.5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFD6A34A),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 17,
+                    backgroundColor: const Color(0xFFFAF8F5),
+                    child: ClipOval(
+                      child: (emp.photoUrl != null &&
+                              emp.photoUrl!.trim().isNotEmpty)
+                          ? Image.network(
+                              emp.photoUrl!,
+                              width: 34,
+                              height: 34,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                Icons.person,
+                                color: Color(0xFFA4143D),
+                                size: 20,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              color: Color(0xFFA4143D),
+                              size: 20,
+                            ),
+                    ),
+                  ),
                 ),
               ),
             ),
-            65,
+            basePhoto,
           ),
           _buildDataCell(
             InkWell(
@@ -919,26 +1137,31 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                   Text(
                     emp.fullName,
                     style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF0056D2),
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF101B36),
                       fontSize: 13,
                     ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                  if (emp.gender.isNotEmpty)
+                  if (emp.gender.isNotEmpty) ...[
+                    const SizedBox(height: 2),
                     Text(
                       emp.gender == 'MALE'
                           ? 'Male (પુરુષ)'
                           : (emp.gender == 'FEMALE' ? 'Female (સ્ત્રી)' : emp.gender),
-                      style: const TextStyle(fontSize: 10, color: Colors.black45),
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: Color(0xFF6B7280),
+                      ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
                     ),
+                  ],
                 ],
               ),
             ),
-            165,
+            nameWidth,
           ),
           _buildDataCell(
             Column(
@@ -947,20 +1170,29 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
               children: [
                 Text(
                   emp.departmentName,
-                  style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
-                if (emp.departmentGujaratiName.isNotEmpty)
+                if (hasCustomGujaratiDept) ...[
+                  const SizedBox(height: 2),
                   Text(
                     emp.departmentGujaratiName,
-                    style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF6B7280),
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
+                ],
               ],
             ),
-            180,
+            deptWidth,
           ),
           _buildDataCell(
             Column(
@@ -969,20 +1201,29 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
               children: [
                 Text(
                   emp.designationName,
-                  style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12, fontWeight: FontWeight.w600),
+                  style: const TextStyle(
+                    color: Color(0xFFA4143D),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
-                if (emp.designationGujaratiName.isNotEmpty)
+                if (hasCustomGujaratiPost) ...[
+                  const SizedBox(height: 2),
                   Text(
                     emp.designationGujaratiName,
-                    style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF6B7280),
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
+                ],
               ],
             ),
-            170,
+            postWidth,
           ),
           _buildDataCell(
             Column(
@@ -991,46 +1232,96 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
               children: [
                 Text(
                   emp.districtName ?? '—',
-                  style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                 ),
-                if (emp.districtName != null && _districtTranslations.containsKey(emp.districtName!))
+                if (emp.districtName != null &&
+                    _districtTranslations.containsKey(emp.districtName!)) ...[
+                  const SizedBox(height: 2),
                   Text(
                     _districtTranslations[emp.districtName!]!,
-                    style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF6B7280),
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
+                ],
               ],
             ),
-            130,
+            districtWidth,
           ),
           _buildDataCell(
             Center(
               child: Text(
                 emp.age != null ? '${emp.age} yrs' : '—',
-                style: const TextStyle(color: Colors.black87, fontSize: 12),
-              ),
-            ),
-            65,
-          ),
-          _buildDataCell(
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () => _showGovtEmployeeDetails(emp),
-                icon: const Icon(Icons.remove_red_eye, size: 12),
-                label: const Text('View', style: TextStyle(fontSize: 11)),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                  minimumSize: const Size(64, 28),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                style: const TextStyle(
+                  color: Color(0xFF374151),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
-            85,
+            baseAge,
+          ),
+          _buildDataCell(
+            Center(
+              child: Container(
+                height: 30,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFA4143D), Color(0xFF7E102F)],
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: const Color(0xFFD6A34A),
+                    width: 0.9,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFA4143D).withValues(alpha: 0.25),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _showGovtEmployeeDetails(emp),
+                    borderRadius: BorderRadius.circular(15),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.visibility_outlined,
+                              size: 13, color: Color(0xFFFFDF7A)),
+                          SizedBox(width: 4),
+                          Text(
+                            'View',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            baseAction,
+            isLast: true,
           ),
         ],
       ),
@@ -1075,7 +1366,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Color(0xFF0056D2), Color(0xFF0A2540)],
+                      colors: [Color(0xFFA4143D), Color(0xFF101B36)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -1083,15 +1374,22 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 26,
-                        backgroundColor: Colors.white24,
-                        backgroundImage: (emp.photoUrl != null && emp.photoUrl!.isNotEmpty)
-                            ? NetworkImage(emp.photoUrl!)
-                            : null,
-                        child: (emp.photoUrl == null || emp.photoUrl!.isEmpty)
-                            ? const Icon(Icons.person, color: Colors.white, size: 30)
-                            : null,
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFD6A34A), width: 1.5),
+                        ),
+                        child: CircleAvatar(
+                          radius: 26,
+                          backgroundColor: Colors.white24,
+                          backgroundImage: (emp.photoUrl != null && emp.photoUrl!.isNotEmpty)
+                              ? NetworkImage(emp.photoUrl!)
+                              : null,
+                          child: (emp.photoUrl == null || emp.photoUrl!.isEmpty)
+                              ? const Icon(Icons.person, color: Colors.white, size: 30)
+                              : null,
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -1102,28 +1400,31 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                               emp.fullName,
                               style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF4CAF50),
+                                    color: const Color(0xFFD6A34A),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.verified, size: 11, color: Colors.white),
+                                      Icon(Icons.verified, size: 12, color: Color(0xFF101B36)),
                                       SizedBox(width: 3),
-                                      Text('Verified Govt (પ્રમાણિત)', style: TextStyle(fontSize: 10, color: Colors.white, fontWeight: FontWeight.bold)),
+                                      Text(
+                                        'Verified Govt (પ્રમાણિત)',
+                                        style: TextStyle(fontSize: 10, color: Color(0xFF101B36), fontWeight: FontWeight.w800),
+                                      ),
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 6),
+                                const SizedBox(width: 8),
                                 Text(
                                   emp.employmentType == 'CENTRAL_GOVT' ? 'Central Gov' : 'Gujarat Gov',
-                                  style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                  style: const TextStyle(color: Color(0xFFFFDF7A), fontSize: 11, fontWeight: FontWeight.w600),
                                 ),
                               ],
                             ),
@@ -1221,7 +1522,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                           icon: const Icon(Icons.person_search, size: 16),
                           label: const Text('સંપૂર્ણ પ્રોફાઇલ (View Profile)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF0056D2),
+                            backgroundColor: const Color(0xFFA4143D),
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -1242,15 +1543,15 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: 18, color: const Color(0xFF0056D2)),
+        Icon(icon, size: 18, color: const Color(0xFFA4143D)),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontWeight: FontWeight.w600)),
+              Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF6B7280), fontWeight: FontWeight.w600)),
               const SizedBox(height: 2),
-              Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF0F172A))),
+              Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF101B36))),
             ],
           ),
         ),
@@ -1268,34 +1569,62 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
     };
   }
 
-  Widget _buildHeaderCell(String text, Color color, double width) {
+  Widget _buildHeaderCell(String en, String gu, double width, {bool isLast = false}) {
     return Container(
       width: width,
-      height: 48,
-      color: color,
+      height: 52,
       alignment: Alignment.center,
-      child: Text(
-        text,
-        style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 11,
-            height: 1.2),
-        textAlign: TextAlign.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFF101B36),
+        border: isLast
+            ? null
+            : Border(
+                right: BorderSide(
+                  color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
+                  width: 1,
+                ),
+              ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            en,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 11.5,
+              letterSpacing: 0.3,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '($gu)',
+            style: const TextStyle(
+              color: Color(0xFFFFDF7A),
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildDataCell(Widget child, double width) {
+  Widget _buildDataCell(Widget child, double width, {bool isLast = false}) {
     return Container(
       width: width,
-      height: 58,
+      height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
         border: Border(
-          right: BorderSide(color: Colors.blue.shade100, width: 0.5),
-          bottom: BorderSide(color: Colors.blue.shade100, width: 0.5),
+          right: isLast
+              ? BorderSide.none
+              : const BorderSide(color: Color(0xFFE5E7EB), width: 0.6),
+          bottom: const BorderSide(color: Color(0xFFE5E7EB), width: 0.6),
         ),
       ),
       child: child,

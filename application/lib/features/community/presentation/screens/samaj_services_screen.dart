@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../../../../shared/models/samaj_service_person.dart';
 
 import '../../providers/samaj_services_provider.dart';
 import '../../../profile/providers/master_data_provider.dart';
+import '../../../home/presentation/widgets/web_home_header.dart';
 
 class SamajServicesScreen extends ConsumerStatefulWidget {
   const SamajServicesScreen({super.key});
@@ -22,13 +24,6 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
   final TextEditingController _villageController = TextEditingController();
   String _searchQuery = '';
   int _selectedTabIndex = 0; // 0 = Professionals Directory, 1 = Categories
-
-  // Colors for dynamic categories
-  final List<Color> _categoryColors = [
-    Colors.orange, Colors.blue, Colors.purple, Colors.green,
-    Colors.teal, Colors.indigo, Colors.red, Colors.brown,
-    Colors.blueGrey, Colors.pink, const Color(0xFF388E3C)
-  ];
 
   @override
   void dispose() {
@@ -76,265 +71,560 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     });
   }
 
-  void _showServiceProviders(BuildContext context, String serviceId, String serviceName) {
-    showModalBottomSheet(
+  void _showServiceProviders(BuildContext context, SamajService service) {
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _buildProvidersBottomSheet(ctx, serviceId, serviceName),
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 24,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 680, maxHeight: 720),
+          child: _buildServiceProvidersDialog(ctx, service),
+        ),
+      ),
     );
   }
 
-  Widget _buildProvidersBottomSheet(BuildContext context, String serviceId, String serviceName) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      child: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
-            height: 4,
-            width: 40,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
+  Widget _buildServiceProvidersDialog(BuildContext ctx, SamajService service) {
+    final emoji = service.icon;
+    final title = service.title;
+    final category = service.category;
+    final description = service.description;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1. Executive Midnight Navy Header
+        Container(
+          padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF101B36), Color(0xFF1B2C52)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.1),
+                  border: Border.all(
+                    color: const Color(0xFFD6A34A),
+                    width: 1.5,
+                  ),
+                ),
+                alignment: Alignment.center,
+                child: emoji.isNotEmpty
+                    ? Text(
+                        emoji,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontFamily: 'Roboto',
+                        ),
+                      )
+                    : const Icon(
+                        Icons.handshake_rounded,
+                        color: Color(0xFFFFDF7A),
+                        size: 22,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.2,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$category • વણકર સમાજ સેવાઓ',
+                      style: const TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFFFDF7A),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
+                tooltip: 'બંધ કરો (Close)',
+                onPressed: () => Navigator.pop(ctx),
+              ),
+            ],
+          ),
+        ),
+
+        // 2. Service Description Overview Card (if available)
+        if (description.isNotEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            color: const Color(0xFFFAF8F5),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.people, color: Color(0xFFD4AF37), size: 22),
-                const SizedBox(width: 10),
+                const Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFFA4143D)),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '$serviceName Professionals',
+                    description,
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF041126),
+                      fontSize: 12.5,
+                      color: Color(0xFF334155),
+                      height: 1.35,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          const Divider(height: 1),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: () async {
-                ref.invalidate(samajServicePersonsProvider(serviceId));
-              },
-              child: ref.watch(samajServicePersonsProvider(serviceId)).when(
-                data: (persons) {
-                  List<dynamic> effectivePersons = List<dynamic>.from(persons);
-                  if (effectivePersons.isEmpty) {
-                    final isEdu = serviceName.toLowerCase().contains('edu') ||
-                        serviceName.toLowerCase().contains('tuition') ||
-                        serviceName.toLowerCase().contains('coaching') ||
-                        serviceName.contains('શિક્ષણ') ||
-                        serviceName.contains('નર્સિંગ') ||
-                        serviceName.toLowerCase().contains('nursing') ||
-                        serviceName.toLowerCase().contains('vamika');
-                    if (isEdu) {
-                      effectivePersons = [
-                        SamajServicePerson(
-                          id: 'sp-vamika-01',
-                          serviceId: serviceId,
-                          name: 'VAMIKA NURSING ACADEMY (IDAR)',
-                          gujaratiName: 'વામિકા નર્સિંગ એકેડેમી - ઇડર',
-                          phone: '9265476537',
-                          city: 'ઇડર (Idar)',
-                          address: 'ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા',
-                          description:
-                              'વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.',
-                          experience:
-                              'અધિકૃત શૈક્ષણિક એકેડેમી (Education Services)',
-                        ),
-                      ];
-                    }
-                  }
 
-                  if (effectivePersons.isEmpty) {
-                    return ListView(
-                      children: [
-                        const SizedBox(height: 60),
-                        Center(
-                          child: Column(
-                            children: [
-                              Icon(Icons.person_off, size: 60, color: Colors.grey.shade300),
-                              const SizedBox(height: 12),
-                              const Text(
-                                'No professionals found',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  }
-                  return GridView.builder(
-                    padding: const EdgeInsets.fromLTRB(14, 14, 14, 24),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: 0.75,
+        // 3. Scrollable List of Registered Professionals or Welcoming Empty State
+        Flexible(
+          child: Consumer(
+            builder: (dialogCtx, dialogRef, _) {
+              final specificAsync = dialogRef.watch(samajServicePersonsProvider(service.id));
+              final allAsync = dialogRef.watch(allSamajServicePersonsProvider(''));
+
+              List<dynamic> effectivePersons = [];
+              if (specificAsync.hasValue && specificAsync.value!.isNotEmpty) {
+                effectivePersons = List<dynamic>.from(specificAsync.value!);
+              } else if (allAsync.hasValue && allAsync.value!.isNotEmpty) {
+                final allList = allAsync.value!;
+                effectivePersons = allList.where((p) {
+                  final pTitle = (p.serviceTitle ?? '').toLowerCase();
+                  final pServiceId = p.serviceId;
+                  final sTitle = service.title.toLowerCase();
+                  final sCategory = service.category.toLowerCase();
+                  return (pServiceId.isNotEmpty && pServiceId == service.id) ||
+                      (pTitle.isNotEmpty &&
+                          (pTitle.contains(sTitle) ||
+                              sTitle.contains(pTitle) ||
+                              pTitle.contains(sCategory)));
+                }).toList();
+              }
+
+              if (effectivePersons.isEmpty) {
+                final isEdu = title.toLowerCase().contains('edu') ||
+                    title.toLowerCase().contains('tuition') ||
+                    title.toLowerCase().contains('coaching') ||
+                    title.contains('શિક્ષણ') ||
+                    title.contains('નર્સિંગ') ||
+                    title.toLowerCase().contains('nursing') ||
+                    title.toLowerCase().contains('vamika');
+                if (isEdu) {
+                  effectivePersons = [
+                    SamajServicePerson(
+                      id: 'sp-vamika-01',
+                      serviceId: service.id,
+                      name: 'VAMIKA NURSING ACADEMY (IDAR)',
+                      gujaratiName: 'વામિકા નર્સિંગ એકેડેમી - ઇડર',
+                      phone: '9265476537',
+                      city: 'ઇડર (Idar)',
+                      address: 'ઇડર, ૩૫ ગામ પરગણા, સાબરકાંઠા',
+                      description:
+                          'વામિકા નર્સિંગ એકેડેમી - ઇડર. નર્સિંગ એકેડેમી, સ્ટાફ નર્સ કોચિંગ, સ્પર્ધાત્મક પરીક્ષા માર્ગદર્શન અને ઉચ્ચ શિક્ષણ સેવાઓ.',
+                      experience: 'અધિકૃત શૈક્ષણિક એકેડેમી (Education Services)',
                     ),
-                    itemCount: effectivePersons.length,
-                    itemBuilder: (context, index) {
-                      return _buildProviderGridCard(context, effectivePersons[index], serviceName);
-                    },
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-                error: (err, stack) => Center(child: Text('Error loading providers: $err')),
-              ),
-            ),
+                  ];
+                }
+              }
+
+              // Only show centered spinner if specificAsync is actively loading AND we don't have any cached directory data
+              final isHardLoading = specificAsync.isLoading && !allAsync.hasValue && effectivePersons.isEmpty;
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (specificAsync.isLoading)
+                    const LinearProgressIndicator(
+                      minHeight: 2.5,
+                      color: Color(0xFFA4143D),
+                      backgroundColor: Color(0xFFFAF8F5),
+                    )
+                  else
+                    const Divider(height: 1, thickness: 1, color: Color(0xFFE5D5BA)),
+
+                  Flexible(
+                    child: Scrollbar(
+                      thumbVisibility: true,
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 20),
+                        child: isHardLoading
+                            ? const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 48, horizontal: 20),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SizedBox(
+                                        width: 36,
+                                        height: 36,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 3,
+                                          color: Color(0xFFA4143D),
+                                        ),
+                                      ),
+                                      SizedBox(height: 16),
+                                      Text(
+                                        'સેવા વ્યવસાયકારો લોડ થઈ રહ્યા છે...',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF101B36),
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        'Loading professionals, please wait...',
+                                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : effectivePersons.isEmpty
+                                ? Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 16),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(16),
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: const Color(0xFFFAF8F5),
+                                            border: Border.all(color: const Color(0xFFD6A34A), width: 1.5),
+                                          ),
+                                          child: const Icon(
+                                            Icons.storefront_outlined,
+                                            size: 44,
+                                            color: Color(0xFFA4143D),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 14),
+                                        const Text(
+                                          'આ કેટેગરીમાં હાલ કોઈ વ્યવસાયકાર નોંધાયેલ નથી',
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF101B36),
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 6),
+                                        const Text(
+                                          'તમે અથવા તમારા પરિચિત આ સેવામાં કાર્યરત હોવ, તો તમારી સેવાઓ સમાજના હજારો પરિવારો સુધી પહોંચાડવા માટે આજે જ પ્રોફાઇલમાં વ્યવસાય ઉમેરો.',
+                                          style: TextStyle(
+                                            fontSize: 12.5,
+                                            color: Color(0xFF64748B),
+                                            height: 1.4,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                        const SizedBox(height: 20),
+                                        Wrap(
+                                          alignment: WrapAlignment.center,
+                                          spacing: 10,
+                                          runSpacing: 10,
+                                          children: [
+                                            ElevatedButton.icon(
+                                              onPressed: () {
+                                                Navigator.pop(ctx);
+                                                context.push('/profile/edit');
+                                              },
+                                              icon: const Icon(Icons.add_business_rounded, size: 16),
+                                              label: const Text('+ તમારો વ્યવસાય ઉમેરો (+ Add Business)'),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(0xFFA4143D),
+                                                foregroundColor: Colors.white,
+                                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                                elevation: 2,
+                                              ),
+                                            ),
+                                            OutlinedButton.icon(
+                                              onPressed: () {
+                                                Navigator.pop(ctx);
+                                                setState(() => _selectedTabIndex = 0);
+                                              },
+                                              icon: const Icon(Icons.people_outline, size: 16),
+                                              label: const Text('તમામ વ્યવસાયકારો જુઓ'),
+                                              style: OutlinedButton.styleFrom(
+                                                foregroundColor: const Color(0xFF101B36),
+                                                side: const BorderSide(color: Color(0xFFD6A34A)),
+                                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 12, left: 4),
+                                        child: Text(
+                                          'નોંધાયેલ વ્યવસાયકારો (${effectivePersons.length}) • Registered Professionals',
+                                          style: const TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFFA4143D),
+                                            letterSpacing: 0.2,
+                                          ),
+                                        ),
+                                      ),
+                                      ListView.separated(
+                                        shrinkWrap: true,
+                                        physics: const NeverScrollableScrollPhysics(),
+                                        itemCount: effectivePersons.length,
+                                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                        itemBuilder: (context, index) {
+                                          final p = effectivePersons[index];
+                                          return _buildModalProviderCard(context, p, title);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-        ],
-      ),
+        ),
+
+        // 4. Dialog Footer
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          decoration: const BoxDecoration(
+            color: Color(0xFFFAF8F5),
+            border: Border(top: BorderSide(color: Color(0xFFE5D5BA), width: 1)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              OutlinedButton(
+                onPressed: () => Navigator.pop(ctx),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF475569),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                ),
+                child: const Text('બંધ કરો (Close)', style: TextStyle(fontSize: 12)),
+              ),
+              ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.push('/profile/edit');
+                },
+                icon: const Icon(Icons.add_business_rounded, size: 15),
+                label: const Text('+ વ્યવસાય ઉમેરો', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFA4143D),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildProviderGridCard(BuildContext context, dynamic provider, String serviceName) {
-    return GestureDetector(
-      onTap: () => _showProviderDetail(context, provider, serviceName),
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.35), width: 1.2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            // Photo Box at the top
-            Container(
-              width: double.infinity,
-              height: 115,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF041126), Color(0xFF0A2A5E)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+  Widget _buildModalProviderCard(BuildContext context, dynamic provider, String serviceTitle) {
+    final photoUrl = provider.photoUrl?.toString();
+    final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
+    final name = provider.name?.toString() ?? '';
+    final gujaratiName = provider.gujaratiName?.toString();
+    final city = provider.city?.toString();
+    final phone = provider.phone?.toString() ?? '';
+    final experience = provider.experience?.toString();
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFE5D5BA), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Avatar
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFD6A34A), width: 1.6),
                 ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16),
+                child: ClipOval(
+                  child: hasPhoto
+                      ? Image.network(
+                          photoUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => const Center(
+                            child: Icon(Icons.person, color: Color(0xFFA4143D), size: 26),
+                          ),
+                        )
+                      : const Center(
+                          child: Icon(Icons.person, color: Color(0xFFA4143D), size: 26),
+                        ),
                 ),
               ),
-              child: provider.photoUrl != null
-                  ? ClipRRect(
-                      borderRadius: const BorderRadius.only(
-                        topLeft: Radius.circular(16),
-                        topRight: Radius.circular(16),
-                      ),
-                      child: Image.network(
-                        provider.photoUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => const Center(
-                          child: Icon(Icons.person, size: 52, color: Colors.white38),
-                        ),
-                      ),
-                    )
-                  : const Center(
-                      child: Icon(Icons.person, size: 52, color: Colors.white38),
-                    ),
-            ),
-            // Name and Info
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              const SizedBox(width: 12),
+              Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Column(
-                      children: [
-                        Text(
-                          provider.name,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF041126),
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        if (provider.gujaratiName != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            provider.gujaratiName,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                        if (provider.city != null) ...[
-                          const SizedBox(height: 4),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const Icon(Icons.location_on, size: 11, color: Color(0xFFD4AF37)),
-                              const SizedBox(width: 2),
-                              Flexible(
-                                child: Text(
-                                  provider.city,
-                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ],
-                    ),
-                    // Call Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () => _makePhoneCall(provider.phone),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFD4AF37),
-                          foregroundColor: const Color(0xFF041126),
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.call, size: 14),
-                        label: const Text(
-                          'Call Now',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF101B36),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    if (gujaratiName != null && gujaratiName != name) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        gujaratiName,
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    if (city != null && city.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 12, color: Color(0xFFA4143D)),
+                          const SizedBox(width: 3),
+                          Expanded(
+                            child: Text(
+                              city,
+                              style: const TextStyle(fontSize: 11.5, color: Color(0xFF475569)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    if (experience != null && experience.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        experience,
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF64748B), fontStyle: FontStyle.italic),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: SizedBox(
+                  height: 34,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _makePhoneCall(phone),
+                    icon: const Icon(Icons.call, size: 13),
+                    label: const Text('Call Now', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF101B36),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      side: const BorderSide(color: Color(0xFFD6A34A), width: 1),
+                      elevation: 1,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: SizedBox(
+                  height: 34,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openWhatsApp(phone, name, serviceTitle),
+                    icon: const Icon(Icons.chat, size: 13),
+                    label: const Text('WhatsApp', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 1,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 34,
+                child: OutlinedButton(
+                  onPressed: () => _showProviderDetail(context, provider, serviceTitle),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFA4143D),
+                    side: const BorderSide(color: Color(0xFFE5D5BA)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('વિગત', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -343,517 +633,693 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     final effectiveServiceName = person.serviceTitle ?? 'સમાજ સેવા';
     final effectiveIcon = person.serviceIcon ?? '💼';
 
-    return InkWell(
-      onTap: () => _showProviderDetail(context, person, effectiveServiceName),
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFFD4AF37).withValues(alpha: 0.35),
-            width: 1.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _showProviderDetail(context, person, effectiveServiceName),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFFE5D5BA),
+              width: 1.2,
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Avatar Photo
-                Stack(
-                  children: [
-                    Container(
-                      width: 52,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF041126),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: const Color(0xFFD4AF37),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(11),
-                        child: person.photoUrl != null && person.photoUrl!.isNotEmpty
-                            ? Image.network(
-                                person.photoUrl!,
-                                fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Center(
-                                  child: Icon(Icons.person, color: Color(0xFFD4AF37), size: 28),
-                                ),
-                              )
-                            : const Center(
-                                child: Icon(Icons.person, color: Color(0xFFD4AF37), size: 28),
-                              ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        decoration: const BoxDecoration(
-                          color: Colors.green,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.check, size: 10, color: Colors.white),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                // Name & Info
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF101B36).withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar Photo with gold border and verified check
+                  Stack(
                     children: [
-                      Text(
-                        person.name,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF041126),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      if (person.gujaratiName != null && person.gujaratiName != person.name) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          person.gujaratiName!,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                      const SizedBox(height: 4),
-                      // Service Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        width: 54,
+                        height: 54,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFEFF6FF),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: const Color(0xFFBFDBFE)),
+                          color: const Color(0xFFFAF8F5),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFD6A34A),
+                            width: 1.6,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(effectiveIcon, style: const TextStyle(fontSize: 12)),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                effectiveServiceName,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF1D4ED8),
+                        child: ClipOval(
+                          child: person.photoUrl != null && person.photoUrl!.isNotEmpty
+                              ? Image.network(
+                                  person.photoUrl!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => const Center(
+                                    child: Icon(Icons.person, color: Color(0xFFA4143D), size: 30),
+                                  ),
+                                )
+                              : const Center(
+                                  child: Icon(Icons.person, color: Color(0xFFA4143D), size: 30),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2.5),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF10B981),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.check, size: 9, color: Colors.white),
                         ),
                       ),
                     ],
                   ),
+                  const SizedBox(width: 12),
+                  // Name & Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          person.name,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF101B36),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (person.gujaratiName != null && person.gujaratiName != person.name) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            person.gujaratiName!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Color(0xFF6B7280),
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        const SizedBox(height: 5),
+                        // Service Badge in Velvet Maroon & Gold tint
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFAF8F5),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFE5D5BA), width: 0.9),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(effectiveIcon, style: const TextStyle(fontSize: 12)),
+                              const SizedBox(width: 5),
+                              Flexible(
+                                child: Text(
+                                  effectiveServiceName,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFA4143D),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (person.city != null && person.city!.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.location_on, size: 13, color: Color(0xFFD6A34A)),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        person.address != null && person.address!.isNotEmpty
+                            ? '${person.city}, ${person.address}'
+                            : person.city!,
+                        style: const TextStyle(fontSize: 11.5, color: Color(0xFF4B5563), fontWeight: FontWeight.w500),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
-            ),
-            if (person.city != null && person.city!.isNotEmpty) ...[
-              const SizedBox(height: 8),
+              if (person.description != null && person.description!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FAFB),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFF3F4F6)),
+                  ),
+                  child: Text(
+                    person.description!,
+                    style: const TextStyle(fontSize: 11, color: Color(0xFF4B5563), fontStyle: FontStyle.italic),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+              const Spacer(),
+              // Action Buttons Row (Call, WhatsApp, Details)
               Row(
                 children: [
-                  const Icon(Icons.location_on, size: 14, color: Color(0xFFD4AF37)),
-                  const SizedBox(width: 4),
                   Expanded(
-                    child: Text(
-                      person.address != null && person.address!.isNotEmpty
-                          ? '${person.city}, ${person.address}'
-                          : person.city!,
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade700),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: Container(
+                      height: 34,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF101B36), Color(0xFF1D2D52)],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFD6A34A), width: 0.9),
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _makePhoneCall(person.phone),
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.call, size: 13, color: Color(0xFFFFDF7A)),
+                              SizedBox(width: 4),
+                              Text(
+                                'Call Now',
+                                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Container(
+                      height: 34,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF128C7E), Color(0xFF25D366)],
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF25D366).withValues(alpha: 0.25),
+                            blurRadius: 4,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: () => _openWhatsApp(person.phone, person.name, effectiveServiceName),
+                          borderRadius: BorderRadius.circular(8),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.chat, size: 13, color: Colors.white),
+                              SizedBox(width: 4),
+                              Text(
+                                'WhatsApp',
+                                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  SizedBox(
+                    height: 34,
+                    child: OutlinedButton(
+                      onPressed: () => _showProviderDetail(context, person, effectiveServiceName),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFA4143D),
+                        side: const BorderSide(color: Color(0xFFE5D5BA)),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text('વિગત', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
               ),
             ],
-            if (person.description != null && person.description!.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                person.description!,
-                style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            const SizedBox(height: 10),
-            // Action Buttons Row (Call & WhatsApp)
-            Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _makePhoneCall(person.phone),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD4AF37),
-                      foregroundColor: const Color(0xFF041126),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.call, size: 14),
-                    label: const Text(
-                      'Call Now',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () => _openWhatsApp(person.phone, person.name, effectiveServiceName),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF25D366),
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.chat, size: 14),
-                    label: const Text(
-                      'WhatsApp',
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildAllProfessionalsView(BuildContext context, bool isDesktop) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        ref.invalidate(allSamajServicePersonsProvider(_searchQuery));
-      },
-      child: ref.watch(allSamajServicePersonsProvider(_searchQuery)).when(
-        data: (allPersons) {
-          final filtered = allPersons.where((p) {
-            if (selectedDistrict != null && selectedDistrict!.isNotEmpty) {
-              final d = selectedDistrict!.toLowerCase();
-              final matchesCity = (p.city ?? '').toLowerCase().contains(d);
-              final matchesAddress = (p.address ?? '').toLowerCase().contains(d);
-              if (!matchesCity && !matchesAddress) return false;
-            }
-            if (selectedTaluka != null && selectedTaluka!.isNotEmpty) {
-              final t = selectedTaluka!.toLowerCase();
-              final matchesCity = (p.city ?? '').toLowerCase().contains(t);
-              final matchesAddress = (p.address ?? '').toLowerCase().contains(t);
-              if (!matchesCity && !matchesAddress) return false;
-            }
-            if (_villageController.text.trim().isNotEmpty) {
-              final v = _villageController.text.trim().toLowerCase();
-              final matchesAddress = (p.address ?? '').toLowerCase().contains(v);
-              if (!matchesAddress) return false;
-            }
-            return true;
-          }).toList();
+    return ref.watch(allSamajServicePersonsProvider(_searchQuery)).when(
+      data: (allPersons) {
+        final filtered = allPersons.where((p) {
+          if (selectedDistrict != null && selectedDistrict!.isNotEmpty) {
+            final d = selectedDistrict!.toLowerCase();
+            final matchesCity = (p.city ?? '').toLowerCase().contains(d);
+            final matchesAddress = (p.address ?? '').toLowerCase().contains(d);
+            if (!matchesCity && !matchesAddress) return false;
+          }
+          if (selectedTaluka != null && selectedTaluka!.isNotEmpty) {
+            final t = selectedTaluka!.toLowerCase();
+            final matchesCity = (p.city ?? '').toLowerCase().contains(t);
+            final matchesAddress = (p.address ?? '').toLowerCase().contains(t);
+            if (!matchesCity && !matchesAddress) return false;
+          }
+          if (_villageController.text.trim().isNotEmpty) {
+            final v = _villageController.text.trim().toLowerCase();
+            final matchesAddress = (p.address ?? '').toLowerCase().contains(v);
+            if (!matchesAddress) return false;
+          }
+          return true;
+        }).toList();
 
-          if (filtered.isEmpty) {
-            return ListView(
-              children: [
-                const SizedBox(height: 60),
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.person_off_rounded,
-                          size: 64, color: Colors.grey.shade400),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'કોઈ વ્યવસાયી મળ્યા નથી (No Professionals Found)',
-                        style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'તમારો વ્યવસાય ઉમેરવા માટે ઉપર "+ ઉમેરો" બટન દબાવો',
-                        style: TextStyle(fontSize: 13, color: Colors.grey),
-                      ),
-                    ],
+        if (filtered.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(40),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_off_rounded, size: 54, color: Colors.grey.shade400),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'કોઈ વ્યવસાયી મળ્યા નથી (No Professionals Found)',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
                   ),
-                ),
-              ],
-            );
-          }
-
-          if (isDesktop) {
-            return GridView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.8,
+                  const SizedBox(height: 6),
+                  const Text(
+                    'તમારો વ્યવસાય ઉમેરવા માટે ઉપર "+ વ્યવસાય ઉમેરો" બટન દબાવો',
+                    style: TextStyle(fontSize: 12.5, color: Colors.grey),
+                  ),
+                ],
               ),
-              itemCount: filtered.length,
-              itemBuilder: (context, index) => _buildProfessionalDirectoryCard(context, filtered[index]),
-            );
-          }
+            ),
+          );
+        }
 
-          return ListView.separated(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        if (isDesktop) {
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
+              mainAxisExtent: 215,
+            ),
             itemCount: filtered.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) => _buildProfessionalDirectoryCard(context, filtered[index]),
           );
-        },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
-        ),
-        error: (err, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 12),
-              Text('ડેટા લોડ કરવામાં ક્ષતિ: $err'),
-              const SizedBox(height: 12),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(allSamajServicePersonsProvider(_searchQuery)),
-                child: const Text('ફરી પ્રયાસ કરો (Retry)'),
-              ),
-            ],
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+          itemCount: filtered.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) => SizedBox(
+            height: 215,
+            child: _buildProfessionalDirectoryCard(context, filtered[index]),
           ),
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.all(40),
+        child: Center(
+          child: CircularProgressIndicator(color: Color(0xFFA4143D)),
+        ),
+      ),
+      error: (err, _) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 48, color: Colors.red),
+            const SizedBox(height: 12),
+            Text('ડેટા લોડ કરવામાં ક્ષતિ: $err'),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: () => ref.invalidate(allSamajServicePersonsProvider(_searchQuery)),
+              child: const Text('ફરી પ્રયાસ કરો (Retry)'),
+            ),
+          ],
         ),
       ),
     );
   }
 
   void _showProviderDetail(BuildContext context, dynamic provider, String serviceName) {
-    int currentRating = 0;
-    showModalBottomSheet(
+    showDialog(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setLocalState) {
-          return Container(
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(24),
-                topRight: Radius.circular(24),
+      barrierDismissible: true,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 24,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 580, maxHeight: 720),
+          child: _buildProviderDetailDialog(ctx, provider, serviceName),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProviderDetailDialog(BuildContext ctx, dynamic provider, String serviceName) {
+    int currentRating = 0;
+    final photoUrl = provider.photoUrl?.toString();
+    final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
+    final phone = provider.phone?.toString() ?? '';
+    final name = provider.name?.toString() ?? '';
+    final gujaratiName = provider.gujaratiName?.toString();
+    final city = provider.city?.toString();
+    final address = provider.address?.toString();
+    final description = provider.description?.toString();
+    final experience = provider.experience?.toString();
+
+    return StatefulBuilder(
+      builder: (ctx, setLocalState) {
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // 1. Header Banner
+            Container(
+              padding: const EdgeInsets.fromLTRB(18, 14, 12, 14),
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFF101B36), Color(0xFF1B2C52)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
               ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: Row(
                 children: [
                   Container(
-                    margin: const EdgeInsets.only(top: 4, bottom: 16),
-                    height: 4,
-                    width: 40,
+                    width: 50,
+                    height: 50,
                     decoration: BoxDecoration(
-                      color: Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFD6A34A), width: 1.8),
                     ),
-                  ),
-                  Row(
-                    children: [
-                      Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF041126), Color(0xFF0A2A5E)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: const Color(0xFFD4AF37).withValues(alpha: 0.5),
-                            width: 1.5,
-                          ),
-                        ),
-                        child: provider.photoUrl != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(14),
-                                child: Image.network(
-                                  provider.photoUrl,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => const Icon(
-                                    Icons.person,
-                                    size: 36,
-                                    color: Colors.white38,
-                                  ),
-                                ),
-                              )
-                            : const Center(
-                                child: Icon(Icons.person, size: 36, color: Colors.white38),
+                    child: ClipOval(
+                      child: hasPhoto
+                          ? Image.network(
+                              photoUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Center(
+                                child: Icon(Icons.person, color: Color(0xFFFFDF7A), size: 28),
                               ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              provider.name,
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF041126),
-                              ),
+                            )
+                          : const Center(
+                              child: Icon(Icons.person, color: Color(0xFFFFDF7A), size: 28),
                             ),
-                            if (provider.gujaratiName != null)
-                              Text(
-                                provider.gujaratiName,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            if (provider.city != null)
-                              Row(
-                                children: [
-                                  const Icon(Icons.location_on, size: 13, color: Color(0xFFD4AF37)),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    provider.city,
-                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                                  ),
-                                ],
-                              ),
-                            if (provider.experience != null)
-                              Text(
-                                provider.experience,
-                                style: const TextStyle(color: Colors.grey, fontSize: 12),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (provider.description != null) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.grey.shade200),
-                      ),
-                      child: Text(
-                        provider.description,
-                        style: const TextStyle(fontSize: 13, color: Colors.black87, height: 1.4),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => _makePhoneCall(provider.phone),
-                          icon: const Icon(Icons.call, size: 18),
-                          label: const Text('Call Now'),
-                          style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF041126),
-                            side: const BorderSide(color: Color(0xFFD4AF37)),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _openWhatsApp(provider.phone, provider.name, serviceName),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF25D366),
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                          icon: const Icon(Icons.chat, size: 18),
-                          label: const Text('WhatsApp'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12),
-                    child: Divider(),
-                  ),
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Rate this Professional:',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: List.generate(5, (starIndex) {
-                          return IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            icon: Icon(
-                              starIndex < currentRating ? Icons.star : Icons.star_border,
-                              color: Colors.amber,
-                              size: 30,
-                            ),
-                            onPressed: () => setLocalState(() => currentRating = starIndex + 1),
-                          );
-                        }),
-                      ),
-                      if (currentRating > 0)
-                        TextButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Review submitted!')),
-                            );
-                            setLocalState(() => currentRating = 0);
-                          },
-                          child: const Text(
-                            'Submit',
-                            style: TextStyle(color: Color(0xFFD4AF37), fontWeight: FontWeight.bold),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 16.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (gujaratiName != null && gujaratiName != name) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            gujaratiName,
+                            style: const TextStyle(fontSize: 12, color: Colors.white70),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        const SizedBox(height: 3),
+                        Text(
+                          serviceName,
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFFFDF7A),
                           ),
                         ),
-                    ],
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
+                    tooltip: 'Close',
+                    onPressed: () => Navigator.pop(ctx),
                   ),
                 ],
               ),
             ),
-          );
-        },
-      ),
+
+            // 2. Scrollable Details Body
+            Flexible(
+              child: Scrollbar(
+                thumbVisibility: true,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Location & Address Card
+                      if ((city != null && city.isNotEmpty) || (address != null && address.isNotEmpty))
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFAF8F5),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE5D5BA)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.location_on, size: 18, color: Color(0xFFA4143D)),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    if (city != null && city.isNotEmpty)
+                                      Text(
+                                        city,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: Color(0xFF101B36),
+                                        ),
+                                      ),
+                                    if (address != null && address.isNotEmpty) ...[
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        address,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFF475569),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                      // Description / Bio
+                      if (description != null && description.isNotEmpty) ...[
+                        Container(
+                          width: double.infinity,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFAF8F5),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: const Color(0xFFE5D5BA)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'વિગત / પરિચય (About & Experience):',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFA4143D),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                description,
+                                style: const TextStyle(fontSize: 13, color: Color(0xFF101B36), height: 1.4),
+                              ),
+                              if (experience != null && experience.isNotEmpty) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  'અનુભવ: $experience',
+                                  style: const TextStyle(fontSize: 11.5, color: Color(0xFF64748B), fontStyle: FontStyle.italic),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+
+                      // Direct Action Buttons: Call & WhatsApp
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _makePhoneCall(phone),
+                              icon: const Icon(Icons.call, size: 16),
+                              label: const Text('Call Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF101B36),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () => _openWhatsApp(phone, name, serviceName),
+                              icon: const Icon(Icons.chat, size: 16),
+                              label: const Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF10B981),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 14),
+                        child: Divider(color: Color(0xFFE5D5BA)),
+                      ),
+
+                      // Rating Section
+                      const Text(
+                        'સમાજ રિવ્યુ આપો (Rate this Professional):',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF101B36)),
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: List.generate(5, (starIndex) {
+                              return IconButton(
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                icon: Icon(
+                                  starIndex < currentRating ? Icons.star_rounded : Icons.star_outline_rounded,
+                                  color: const Color(0xFFD6A34A),
+                                  size: 32,
+                                ),
+                                onPressed: () => setLocalState(() => currentRating = starIndex + 1),
+                              );
+                            }),
+                          ),
+                          if (currentRating > 0)
+                            ElevatedButton(
+                              onPressed: () {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('આભાર! તમારો રિવ્યુ સબમિટ થયો છે (Review submitted!)')),
+                                );
+                                setLocalState(() => currentRating = 0);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFA4143D),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                              ),
+                              child: const Text('Submit', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // 3. Footer
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: const BoxDecoration(
+                color: Color(0xFFFAF8F5),
+                border: Border(top: BorderSide(color: Color(0xFFE5D5BA), width: 1)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF475569),
+                      side: const BorderSide(color: Color(0xFFCBD5E1)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    ),
+                    child: const Text('બંધ કરો (Close)', style: TextStyle(fontSize: 12)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -872,881 +1338,1046 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
         : <String>[];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F9FF),
+      appBar: kIsWeb ? const WebHomeHeader(activeRoute: '/samaj-services') : null,
+      backgroundColor: const Color(0xFFFAF8F5),
       body: SafeArea(
+        top: !kIsWeb,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth > 850;
             return Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1000),
-                child: Column(
+                constraints: BoxConstraints(maxWidth: isDesktop ? 1280 : 1000),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(bottom: isDesktop ? 40 : 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 1. Header Banner with True Aspect Ratio (1600 x 592)
+                      _buildHeaderBanner(isDesktop),
+
+                      const SizedBox(height: 12),
+
+                      // 2. Title Capsule Badge
+                      _buildTitleBadge(isDesktop),
+
+                      const SizedBox(height: 14),
+
+                      // 3. Add Business Callout Banner
+                      _buildAddBusinessBanner(isDesktop, context),
+
+                      const SizedBox(height: 14),
+
+                      // 4. Search & Filter Section
+                      _buildSearchSection(isDesktop, districtsList, talukasList),
+
+                      const SizedBox(height: 14),
+
+                      // 5. Tab Selector: Professionals vs Categories
+                      _buildTabSelector(isDesktop),
+
+                      const SizedBox(height: 16),
+
+                      // 6. Content Section
+                      if (_selectedTabIndex == 0)
+                        _buildAllProfessionalsView(context, isDesktop)
+                      else
+                        _buildCategoriesView(context, isDesktop),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderBanner(bool isDesktop) {
+    return Padding(
+      padding: EdgeInsets.only(
+        top: isDesktop ? 12 : 8,
+        left: isDesktop ? 8 : 4,
+        right: isDesktop ? 8 : 4,
+      ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final bannerWidth = constraints.maxWidth;
+          // Native banner aspect ratio is 1600 x 592 (2.7027:1)
+          final bannerHeight = bannerWidth * (592.0 / 1600.0);
+
+          return Container(
+            width: bannerWidth,
+            height: bannerHeight,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(isDesktop ? 14 : 10),
+              border: Border.all(
+                color: const Color(0xFFD6A34A).withValues(alpha: 0.6),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF101B36).withValues(alpha: 0.08),
+                  blurRadius: 14,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Image.asset(
+              'assets/images/govt_section_banner_clean.png',
+              fit: BoxFit.fill,
+              errorBuilder: (context, error, stackTrace) => Image.asset(
+                'assets/images/govt_section_banner_new.png',
+                fit: BoxFit.fill,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTitleBadge(bool isDesktop) {
+    return Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 24 : 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: const Color(0xFFD6A34A), width: 1.6),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFD6A34A).withValues(alpha: 0.18),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: isDesktop ? 36 : 32,
+              height: isDesktop ? 36 : 32,
+              padding: const EdgeInsets.all(1.5),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFDF7A), Color(0xFFD6A34A), Color(0xFF8C6D15)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => CircleAvatar(
+                    backgroundColor: const Color(0xFFA4143D),
+                    radius: isDesktop ? 18 : 16,
+                    child: Icon(Icons.handshake_outlined,
+                        color: Colors.white, size: isDesktop ? 20 : 18),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'વણકર સમાજ સેવાઓ અને વ્યવસાય ડિરેક્ટરી',
+                  style: TextStyle(
+                    fontSize: isDesktop ? 15.5 : 13,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFA4143D),
+                    letterSpacing: 0.2,
+                  ),
+                ),
+                Text(
+                  'Vankar Samaj Services • સમાજ માટે, સમાજ દ્વારા',
+                  style: TextStyle(
+                    fontSize: isDesktop ? 11.5 : 10,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF101B36).withValues(alpha: 0.75),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddBusinessBanner(bool isDesktop, BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 6),
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 20 : 14,
+        vertical: isDesktop ? 14 : 12,
+      ),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF101B36), Color(0xFF1B2C52)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFD6A34A).withValues(alpha: 0.75),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFFFE082), Color(0xFFD6A34A)],
+              ),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.storefront_rounded,
+              color: Color(0xFF101B36),
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'તમારો વ્યવસાય અથવા સેવા અહીં દર્શાવો',
+                  style: TextStyle(
+                    color: const Color(0xFFFFE082),
+                    fontWeight: FontWeight.bold,
+                    fontSize: isDesktop ? 15 : 13.5,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'પ્રોફાઇલમાં બિઝનેસ ઉમેરી સમાજના હજારો પરિવારો સાથે જોડાઓ',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.82),
+                    fontSize: isDesktop ? 12 : 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          ElevatedButton.icon(
+            onPressed: () {
+              context.push('/profile/edit');
+            },
+            icon: const Icon(Icons.add_business_rounded, size: 16),
+            label: Text(
+              isDesktop ? '+ વ્યવસાય ઉમેરો' : '+ ઉમેરો',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFA4143D),
+              foregroundColor: Colors.white,
+              elevation: 3,
+              padding: EdgeInsets.symmetric(
+                horizontal: isDesktop ? 16 : 12,
+                vertical: isDesktop ? 12 : 10,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchSection(
+      bool isDesktop, List<String> districtsList, List<String> talukasList) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 6),
+      padding: EdgeInsets.all(isDesktop ? 18 : 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE5D5BA),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Search Input Field
+          TextField(
+            controller: _searchController,
+            style: const TextStyle(
+              color: Color(0xFF101B36),
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+            textInputAction: TextInputAction.search,
+            onChanged: (val) {
+              setState(() {
+                _searchQuery = val.trim();
+              });
+            },
+            onSubmitted: (_) => _performSearch(),
+            decoration: InputDecoration(
+              hintText: 'Search services, professions (e.g. Grain Trading, IT, Printing)...',
+              hintStyle: TextStyle(
+                color: const Color(0xFF101B36).withValues(alpha: 0.45),
+                fontSize: 13,
+              ),
+              prefixIcon: const Icon(Icons.search_rounded,
+                  color: Color(0xFFA4143D), size: 22),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded,
+                          color: Colors.grey, size: 20),
+                      onPressed: () {
+                        _searchController.clear();
+                        setState(() {
+                          _searchQuery = '';
+                        });
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: const Color(0xFFFAF8F5),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5D5BA)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE5D5BA)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: Color(0xFFA4143D), width: 1.5),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 12),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Location Dropdowns & Village Row
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isSmall = constraints.maxWidth < 650;
+              if (isSmall) {
+                return Column(
                   children: [
-                    // Custom Header
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(
-                          horizontal: isDesktop ? 32 : 16, vertical: 24),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF041126), Color(0xFF0A2A5E)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(32),
-                          bottomRight: Radius.circular(32),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              InkWell(
-                                onTap: () {
-                                  if (context.canPop()) context.pop();
-                                  else context.go('/home');
-                                },
-                                borderRadius: BorderRadius.circular(20),
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.1),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.arrow_back,
-                                      color: Color(0xFFD4AF37), size: 24),
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Vankar Samaj Services',
-                                      style: TextStyle(
-                                        color: const Color(0xFFD4AF37),
-                                        fontSize: isDesktop ? 28 : 22,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const Text(
-                                      'સમાજ માટે - સમાજ દ્વારા',
-                                      style: TextStyle(
-                                        color: Colors.white70,
-                                        fontSize: 14,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(
-                                Icons.handshake,
-                                color: const Color(0xFFD4AF37).withValues(alpha: 0.8),
-                                size: isDesktop ? 48 : 36,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Add Business Callout Banner
-                    Container(
-                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF070C18), Color(0xFF132238)],
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFFD4AF37),
-                          width: 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFD4AF37).withValues(alpha: 0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.storefront, color: Color(0xFFD4AF37), size: 24),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'તમારો વ્યવસાય અહીં દર્શાવો',
-                                  style: TextStyle(
-                                    color: Color(0xFFD4AF37),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                Text(
-                                  'પ્રોફાઇલમાં બિઝનેસ ઉમેરી સમાજ સાથે જોડાઓ',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 11,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              context.push('/profile/edit');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD4AF37),
-                              foregroundColor: const Color(0xFF041126),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                              elevation: 0,
-                            ),
-                            child: const Text(
-                              '+ ઉમેરો',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // --- SEARCH & FILTER SECTION ---
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.08),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                        border: Border.all(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          // Search Bar
-                          TextField(
-                            controller: _searchController,
-                            style: const TextStyle(
-                                color: Colors.black, fontWeight: FontWeight.bold),
-                            textInputAction: TextInputAction.search,
-                            onChanged: (val) {
-                              setState(() {
-                                _searchQuery = val.trim();
-                              });
-                            },
-                            onSubmitted: (_) => _performSearch(),
-                            decoration: InputDecoration(
-                              hintText: 'Search services, professions (e.g. Grain Trading)...',
-                              hintStyle: const TextStyle(color: Colors.black54),
-                              prefixIcon:
-                                  const Icon(Icons.search, color: Color(0xFFD4AF37)),
-                              suffixIcon: _searchController.text.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.clear, color: Colors.grey, size: 20),
-                                      onPressed: () {
-                                        _searchController.clear();
-                                        setState(() {
-                                          _searchQuery = '';
-                                        });
-                                      },
-                                    )
-                                  : null,
-                              filled: true,
-                              fillColor: const Color(0xFFF8FAFC),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFD4AF37)),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide:
-                                    const BorderSide(color: Color(0xFFD4AF37)),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                                borderSide: const BorderSide(
-                                    color: Color(0xFFD4AF37), width: 1.5),
-                              ),
-                              contentPadding:
-                                  const EdgeInsets.symmetric(vertical: 0),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          // Location Dropdowns Row
-                          Row(
-                            children: [
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  dropdownColor: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  elevation: 8,
-                                  menuMaxHeight: 300,
-                                  iconEnabledColor: const Color(0xFFD4AF37),
-                                  iconDisabledColor: Colors.grey,
-                                  style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold),
-                                  hint: const Text('District',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black54,
-                                          fontWeight: FontWeight.bold)),
-                                  disabledHint: const Text('District',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black54,
-                                          fontWeight: FontWeight.bold)),
-                                  decoration: InputDecoration(
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 0),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFD4AF37))),
-                                    focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFD4AF37))),
-                                    disabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey)),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                  ),
-                                  value: selectedDistrict,
-                                  items: districtsList
-                                      .map((d) => DropdownMenuItem(
-                                          value: d,
-                                          child: Text(d,
-                                              style: const TextStyle(
-                                                  fontSize: 12,
-                                                  color: Colors.black,
-                                                  fontWeight: FontWeight.bold),
-                                              overflow:
-                                                  TextOverflow.ellipsis)))
-                                      .toList(),
-                                  onChanged: (val) => setState(() {
-                                    selectedDistrict = val;
-                                    selectedTaluka = null;
-                                  }),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  isExpanded: true,
-                                  dropdownColor: Colors.white,
-                                  borderRadius: BorderRadius.circular(12),
-                                  elevation: 8,
-                                  menuMaxHeight: 300,
-                                  iconEnabledColor: const Color(0xFFD4AF37),
-                                  iconDisabledColor: Colors.grey,
-                                  style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold),
-                                  hint: const Text('Taluka',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black54,
-                                          fontWeight: FontWeight.bold)),
-                                  disabledHint: const Text('Taluka',
-                                      style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black54,
-                                          fontWeight: FontWeight.bold)),
-                                  decoration: InputDecoration(
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 0),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFD4AF37))),
-                                    focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFD4AF37))),
-                                    disabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Colors.grey)),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                  ),
-                                  value: selectedTaluka,
-                                  items: talukasList.isEmpty
-                                      ? null
-                                      : talukasList
-                                          .map((t) => DropdownMenuItem(
-                                              value: t,
-                                              child: Text(t,
-                                                  style: const TextStyle(
-                                                      fontSize: 12,
-                                                      color: Colors.black,
-                                                      fontWeight:
-                                                          FontWeight.bold),
-                                                  overflow:
-                                                      TextOverflow.ellipsis)))
-                                          .toList(),
-                                  onChanged: talukasList.isEmpty
-                                      ? null
-                                      : (val) => setState(
-                                          () => selectedTaluka = val),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TextField(
-                                  controller: _villageController,
-                                  style: const TextStyle(
-                                      color: Colors.black,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12),
-                                  decoration: InputDecoration(
-                                    hintText: 'Village Name',
-                                    hintStyle: const TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.black54,
-                                        fontWeight: FontWeight.bold),
-                                    contentPadding:
-                                        const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 0),
-                                    border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFD4AF37))),
-                                    focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                            color: Color(0xFFD4AF37))),
-                                    filled: true,
-                                    fillColor: const Color(0xFFF8FAFC),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton.icon(
-                                  onPressed: _performSearch,
-                                  icon: const Icon(Icons.search, size: 18),
-                                  label: const Text('Search | શોધો',
-                                      style: TextStyle(fontWeight: FontWeight.bold)),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFD4AF37),
-                                    foregroundColor: const Color(0xFF041126),
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 12),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                    elevation: 0,
-                                  ),
-                                ),
-                              ),
-                              if (_searchQuery.isNotEmpty ||
-                                  selectedDistrict != null ||
-                                  selectedTaluka != null ||
-                                  _villageController.text.isNotEmpty) ...[
-                                const SizedBox(width: 8),
-                                OutlinedButton.icon(
-                                  onPressed: _clearSearch,
-                                  icon: const Icon(Icons.close, size: 16),
-                                  label: const Text('Clear'),
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF041126),
-                                    side: const BorderSide(color: Color(0xFFD4AF37)),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 12),
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8)),
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    // --- END SEARCH & FILTER SECTION ---
-
-                    // Tab Selector: Professionals vs Categories
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              onTap: () => setState(() => _selectedTabIndex = 0),
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: _selectedTabIndex == 0
-                                      ? const Color(0xFF041126)
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.badge_rounded,
-                                      size: 18,
-                                      color: _selectedTabIndex == 0
-                                          ? const Color(0xFFD4AF37)
-                                          : Colors.grey.shade600,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          'વ્યવસાયકારો (Professionals)',
-                                          style: TextStyle(
-                                            color: _selectedTabIndex == 0
-                                                ? Colors.white
-                                                : Colors.grey.shade700,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              onTap: () => setState(() => _selectedTabIndex = 1),
-                              borderRadius: BorderRadius.circular(10),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: _selectedTabIndex == 1
-                                      ? const Color(0xFF041126)
-                                      : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                alignment: Alignment.center,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.grid_view_rounded,
-                                      size: 18,
-                                      color: _selectedTabIndex == 1
-                                          ? const Color(0xFFD4AF37)
-                                          : Colors.grey.shade600,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          'સેવા કેટેગરી (Categories)',
-                                          style: TextStyle(
-                                            color: _selectedTabIndex == 1
-                                                ? Colors.white
-                                                : Colors.grey.shade700,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                    Row(
+                      children: [
+                        Expanded(child: _buildDistrictDropdown(districtsList)),
+                        const SizedBox(width: 8),
+                        Expanded(child: _buildTalukaDropdown(talukasList)),
+                      ],
                     ),
                     const SizedBox(height: 8),
+                    _buildVillageInput(),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(child: _buildDistrictDropdown(districtsList)),
+                  const SizedBox(width: 10),
+                  Expanded(child: _buildTalukaDropdown(talukasList)),
+                  const SizedBox(width: 10),
+                  Expanded(child: _buildVillageInput()),
+                ],
+              );
+            },
+          ),
 
-                    // Content View
-                    Expanded(
-                      child: _selectedTabIndex == 0
-                          ? _buildAllProfessionalsView(context, isDesktop)
-                          : RefreshIndicator(
-                              onRefresh: () async {
-                                ref.invalidate(samajServicesProvider);
-                              },
-                              child: ref.watch(samajServicesProvider).when(
-                          data: (services) {
-                            final query = _searchQuery.toLowerCase();
-                            final filteredServices = services.where((service) {
-                              if (query.isEmpty) return true;
-                              final t = service.title.toLowerCase();
-                              final c = service.category.toLowerCase();
-                              final d = service.description.toLowerCase();
-                              final s = service.slug.toLowerCase();
-                              final isEducationKeyword = (query.contains('vamika') ||
-                                      query.contains('nursing') ||
-                                      query.contains('9265476537') ||
-                                      query.contains('idar') ||
-                                      query.contains('વામિકા') ||
-                                      query.contains('નર્સિંગ')) &&
-                                  (c.contains('edu') ||
-                                      t.contains('શિક્ષણ') ||
-                                      t.contains('coaching') ||
-                                      t.contains('tuition') ||
-                                      d.contains('નર્સિંગ') ||
-                                      t.contains('nursing'));
-                              return t.contains(query) ||
-                                  c.contains(query) ||
-                                  d.contains(query) ||
-                                  s.contains(query) ||
-                                  isEducationKeyword;
-                            }).toList();
+          const SizedBox(height: 14),
 
-                            if (filteredServices.isEmpty) {
-                              return ListView(
-                                children: [
-                                  const SizedBox(height: 60),
-                                  Center(
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(Icons.search_off_rounded,
-                                            size: 64, color: Colors.grey.shade400),
-                                        const SizedBox(height: 16),
-                                        const Text(
-                                          'કોઈ સેવા મળી નથી (No Services Found)',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
-                                            color: Color(0xFF041126),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          '"$_searchQuery" માટે કોઈ મેળ ખાતી સેવા નથી',
-                                          style: const TextStyle(
-                                              fontSize: 13, color: Colors.black54),
-                                        ),
-                                        const SizedBox(height: 16),
-                                        ElevatedButton.icon(
-                                          onPressed: _clearSearch,
-                                          icon: const Icon(Icons.refresh_rounded,
-                                              size: 18),
-                                          label: const Text(
-                                              'તમામ સેવાઓ જુઓ (Show All)'),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFFD4AF37),
-                                            foregroundColor: const Color(0xFF041126),
-                                            shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(10)),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              );
-                            }
+          // Action Buttons: Search & Clear
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _performSearch,
+                  icon: const Icon(Icons.search_rounded,
+                      size: 18, color: Color(0xFFFFDF7A)),
+                  label: const Text(
+                    'Search | ફિલ્ટર લાગુ કરો',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13.5,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFA4143D),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 2,
+                  ),
+                ),
+              ),
+              if (_searchQuery.isNotEmpty ||
+                  selectedDistrict != null ||
+                  selectedTaluka != null ||
+                  _villageController.text.isNotEmpty) ...[
+                const SizedBox(width: 10),
+                OutlinedButton.icon(
+                  onPressed: _clearSearch,
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Clear Filter'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFA4143D),
+                    side: const BorderSide(color: Color(0xFFA4143D)),
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 13, horizontal: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
-                            // Group filtered services by category
-                            final Map<String, List<SamajService>>
-                                groupedServices = {};
-                            for (final service in filteredServices) {
-                              groupedServices
-                                  .putIfAbsent(service.category, () => [])
-                                  .add(service);
-                            }
+  Widget _buildDistrictDropdown(List<String> districtsList) {
+    return DropdownButtonFormField<String>(
+      isExpanded: true,
+      dropdownColor: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      elevation: 6,
+      menuMaxHeight: 300,
+      iconEnabledColor: const Color(0xFFA4143D),
+      iconDisabledColor: Colors.grey,
+      style: const TextStyle(
+        color: Color(0xFF101B36),
+        fontWeight: FontWeight.w600,
+        fontSize: 12.5,
+      ),
+      hint: const Text(
+        'District (જિલ્લો)',
+        style: TextStyle(
+          fontSize: 12,
+          color: Color(0xFF64748B),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      decoration: InputDecoration(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE5D5BA))),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE5D5BA))),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide:
+                const BorderSide(color: Color(0xFFA4143D), width: 1.4)),
+        filled: true,
+        fillColor: const Color(0xFFFAF8F5),
+      ),
+      value: selectedDistrict,
+      items: districtsList
+          .map((d) => DropdownMenuItem(
+                value: d,
+                child: Text(d, overflow: TextOverflow.ellipsis),
+              ))
+          .toList(),
+      onChanged: (val) => setState(() {
+        selectedDistrict = val;
+        selectedTaluka = null;
+      }),
+    );
+  }
 
-                            final categories =
-                                groupedServices.keys.toList()..sort();
+  Widget _buildTalukaDropdown(List<String> talukasList) {
+    return DropdownButtonFormField<String>(
+      isExpanded: true,
+      dropdownColor: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      elevation: 6,
+      menuMaxHeight: 300,
+      iconEnabledColor: const Color(0xFFA4143D),
+      iconDisabledColor: Colors.grey,
+      style: const TextStyle(
+        color: Color(0xFF101B36),
+        fontWeight: FontWeight.w600,
+        fontSize: 12.5,
+      ),
+      hint: const Text(
+        'Taluka (તાલુકો)',
+        style: TextStyle(
+          fontSize: 12,
+          color: Color(0xFF64748B),
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+      decoration: InputDecoration(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE5D5BA))),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE5D5BA))),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide:
+                const BorderSide(color: Color(0xFFA4143D), width: 1.4)),
+        filled: true,
+        fillColor: const Color(0xFFFAF8F5),
+      ),
+      value: selectedTaluka,
+      items: talukasList.isEmpty
+          ? null
+          : talukasList
+              .map((t) => DropdownMenuItem(
+                    value: t,
+                    child: Text(t, overflow: TextOverflow.ellipsis),
+                  ))
+              .toList(),
+      onChanged: talukasList.isEmpty
+          ? null
+          : (val) => setState(() => selectedTaluka = val),
+    );
+  }
 
-                            return Column(
-                              children: [
-                                if (_searchQuery.isNotEmpty)
-                                  Container(
-                                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFFEF3C7),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(color: const Color(0xFFFDE68A)),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'મળેલ પરિણામ: ${filteredServices.length} સેવાઓ',
-                                          style: const TextStyle(
-                                            color: Color(0xFF92400E),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        GestureDetector(
-                                          onTap: _clearSearch,
-                                          child: const Text(
-                                            'સાફ કરો (Clear)',
-                                            style: TextStyle(
-                                              color: Color(0xFF1D4ED8),
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                Expanded(
-                                  child: ListView.builder(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16, horizontal: 8),
-                                    physics: const BouncingScrollPhysics(),
-                                    itemCount: categories.length,
-                                    itemBuilder: (context, index) {
-                                final categoryName = categories[index];
-                                final List<SamajService> items =
-                                    groupedServices[categoryName]!;
-                                final bool isWedding = categoryName.toLowerCase().contains('wedding');
-                                final Color color = isWedding
-                                    ? const Color(0xFFE65100)
-                                    : _categoryColors[index % _categoryColors.length];
-                                final IconData iconData = isWedding
-                                    ? Icons.celebration
-                                    : Icons.category;
-                                final String displayCategoryTitle = isWedding
-                                    ? (categoryName == 'Wedding' ? 'Wedding Services (લગ્ન પ્રસંગ સેવાઓ)' : categoryName)
-                                    : categoryName;
+  Widget _buildVillageInput() {
+    return TextField(
+      controller: _villageController,
+      style: const TextStyle(
+        color: Color(0xFF101B36),
+        fontWeight: FontWeight.w600,
+        fontSize: 12.5,
+      ),
+      decoration: InputDecoration(
+        hintText: 'Village (ગામ)',
+        hintStyle: const TextStyle(
+          fontSize: 12,
+          color: Color(0xFF64748B),
+          fontWeight: FontWeight.w500,
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE5D5BA))),
+        enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(color: Color(0xFFE5D5BA))),
+        focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide:
+                const BorderSide(color: Color(0xFFA4143D), width: 1.4)),
+        filled: true,
+        fillColor: const Color(0xFFFAF8F5),
+      ),
+    );
+  }
 
-                                return Container(
-                                  margin: const EdgeInsets.only(
-                                      bottom: 24, left: 8, right: 8),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      // Category Header
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 12),
-                                        decoration: BoxDecoration(
-                                          color: isWedding
-                                              ? const Color(0xFFFFF7ED)
-                                              : color.withValues(alpha: 0.1),
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                              color: isWedding
-                                                  ? const Color(0xFFFDBA74)
-                                                  : color.withValues(alpha: 0.3)),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Icon(iconData,
-                                                color: color, size: 22),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Text(
-                                                displayCategoryTitle,
-                                                style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: color.withValues(
-                                                      alpha: 0.95),
-                                                ),
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: color.withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                '${items.length} સેવાઓ',
-                                                style: TextStyle(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: color,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16),
+  Widget _buildTabSelector(bool isDesktop) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 6),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFD6A34A).withValues(alpha: 0.5),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _selectedTabIndex = 0),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: _selectedTabIndex == 0
+                        ? const LinearGradient(
+                            colors: [Color(0xFF101B36), Color(0xFF1E2E4F)],
+                          )
+                        : null,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.badge_rounded,
+                        size: 18,
+                        color: _selectedTabIndex == 0
+                            ? const Color(0xFFFFDF7A)
+                            : const Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'વ્યવસાયકારો (Professionals)',
+                        style: TextStyle(
+                          color: _selectedTabIndex == 0
+                              ? Colors.white
+                              : const Color(0xFF334155),
+                          fontWeight: FontWeight.bold,
+                          fontSize: isDesktop ? 13.5 : 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => setState(() => _selectedTabIndex = 1),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  decoration: BoxDecoration(
+                    gradient: _selectedTabIndex == 1
+                        ? const LinearGradient(
+                            colors: [Color(0xFF101B36), Color(0xFF1E2E4F)],
+                          )
+                        : null,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.grid_view_rounded,
+                        size: 18,
+                        color: _selectedTabIndex == 1
+                            ? const Color(0xFFFFDF7A)
+                            : const Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'સેવા કેટેગરી (Categories)',
+                        style: TextStyle(
+                          color: _selectedTabIndex == 1
+                              ? Colors.white
+                              : const Color(0xFF334155),
+                          fontWeight: FontWeight.bold,
+                          fontSize: isDesktop ? 13.5 : 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                                      // Items Grid
-                                      GridView.builder(
-                                        shrinkWrap: true,
-                                        physics:
-                                            const NeverScrollableScrollPhysics(),
-                                        gridDelegate:
-                                            const SliverGridDelegateWithMaxCrossAxisExtent(
-                                          maxCrossAxisExtent: 280,
-                                          mainAxisExtent: 68,
-                                          crossAxisSpacing: 10,
-                                          mainAxisSpacing: 10,
-                                        ),
-                                        itemCount: items.length,
-                                        itemBuilder: (context, itemIndex) {
-                                          final SamajService service =
-                                              items[itemIndex];
-                                          final String emoji = service.icon;
-                                          final String text = service.title;
+  Widget _buildCategoriesView(BuildContext context, bool isDesktop) {
+    return ref.watch(samajServicesProvider).when(
+      data: (services) {
+        final query = _searchQuery.toLowerCase();
+        final filteredServices = services.where((service) {
+          if (query.isEmpty) return true;
+          final t = service.title.toLowerCase();
+          final c = service.category.toLowerCase();
+          final d = service.description.toLowerCase();
+          final s = service.slug.toLowerCase();
+          final isEducationKeyword = (query.contains('vamika') ||
+                  query.contains('nursing') ||
+                  query.contains('9265476537') ||
+                  query.contains('idar') ||
+                  query.contains('વામિકા') ||
+                  query.contains('નર્સિંગ')) &&
+              (c.contains('edu') ||
+                  t.contains('શિક્ષણ') ||
+                  t.contains('coaching') ||
+                  t.contains('tuition') ||
+                  d.contains('નર્સિંગ') ||
+                  t.contains('nursing'));
+          return t.contains(query) ||
+              c.contains(query) ||
+              d.contains(query) ||
+              s.contains(query) ||
+              isEducationKeyword;
+        }).toList();
 
-                                          return InkWell(
-                                            onTap: () {
-                                              _showServiceProviders(context,
-                                                  service.id, text);
-                                            },
-                                            borderRadius:
-                                                BorderRadius.circular(12),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 10,
-                                                      vertical: 8),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                border: Border.all(
-                                                    color: isWedding
-                                                        ? const Color(0xFFFFEDD5)
-                                                        : Colors.grey.shade200),
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: (isWedding ? const Color(0xFFEA580C) : Colors.black)
-                                                        .withValues(alpha: isWedding ? 0.05 : 0.03),
-                                                    blurRadius: 4,
-                                                    offset:
-                                                        const Offset(0, 2),
-                                                  ),
-                                                ],
-                                              ),
-                                              child: Row(
-                                                children: [
-                                                  if (emoji.isNotEmpty) ...[
-                                                    Text(
-                                                      emoji,
-                                                      style: const TextStyle(
-                                                        fontSize: 20,
-                                                        fontFamily: 'Roboto',
-                                                      ),
-                                                    ),
-                                                    const SizedBox(width: 8),
-                                                  ],
-                                                  Expanded(
-                                                    child: Text(
-                                                      text,
-                                                      style: const TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w600,
-                                                        color:
-                                                            Color(0xFF041126),
-                                                        height: 1.2,
-                                                      ),
-                                                      maxLines: 2,
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                  Icon(Icons.chevron_right,
-                                                      color:
-                                                          Colors.grey.shade400,
-                                                      size: 14),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      );
-                          },
-                          loading: () => const Center(
-                              child: CircularProgressIndicator()),
-                          error: (err, stack) =>
-                              Center(child: Text('Error loading services: $err')),
+        if (filteredServices.isEmpty) {
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 40, horizontal: 16),
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5D5BA)),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.search_off_rounded,
+                    size: 64, color: Colors.grey.shade400),
+                const SizedBox(height: 16),
+                const Text(
+                  'કોઈ સેવા મળી નથી (No Services Found)',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF101B36),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '"$_searchQuery" માટે કોઈ મેળ ખાતી સેવા નથી',
+                  style: const TextStyle(fontSize: 13, color: Colors.black54),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  onPressed: _clearSearch,
+                  icon: const Icon(Icons.refresh_rounded, size: 18),
+                  label: const Text('તમામ સેવાઓ જુઓ (Show All)'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFA4143D),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        // Group filtered services by category
+        final Map<String, List<SamajService>> groupedServices = {};
+        for (final service in filteredServices) {
+          groupedServices
+              .putIfAbsent(service.category, () => [])
+              .add(service);
+        }
+
+        final categories = groupedServices.keys.toList()..sort();
+
+        return Column(
+          children: [
+            if (_searchQuery.isNotEmpty)
+              Container(
+                margin: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 8 : 6, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF3C7),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFFDE68A)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'મળેલ પરિણામ: ${filteredServices.length} સેવાઓ',
+                      style: const TextStyle(
+                        color: Color(0xFF92400E),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: _clearSearch,
+                      child: const Text(
+                        'સાફ કરો (Clear)',
+                        style: TextStyle(
+                          color: Color(0xFFA4143D),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            );
-          },
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                vertical: 8,
+                horizontal: isDesktop ? 8 : 4,
+              ),
+              itemCount: categories.length,
+              itemBuilder: (context, index) {
+                final categoryName = categories[index];
+                final List<SamajService> items =
+                    groupedServices[categoryName]!;
+                final bool isWedding =
+                    categoryName.toLowerCase().contains('wedding');
+                final Color themeColor = isWedding
+                    ? const Color(0xFFA4143D)
+                    : const Color(0xFF101B36);
+                final IconData iconData =
+                    isWedding ? Icons.celebration_rounded : Icons.category_rounded;
+                final String displayCategoryTitle = isWedding
+                    ? (categoryName == 'Wedding'
+                        ? 'Wedding Services (લગ્ન પ્રસંગ સેવાઓ)'
+                        : categoryName)
+                    : categoryName;
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFE5D5BA),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF101B36).withValues(alpha: 0.04),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Category Header
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: isWedding
+                              ? const Color(0xFFFFF5F5)
+                              : const Color(0xFFFAF8F5),
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(15),
+                            topRight: Radius.circular(15),
+                          ),
+                          border: const Border(
+                            bottom: BorderSide(
+                              color: Color(0xFFE5D5BA),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: themeColor.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(iconData, color: themeColor, size: 20),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                displayCategoryTitle,
+                                style: TextStyle(
+                                  fontSize: 15.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: themeColor,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFAF8F5),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: const Color(0xFFD6A34A)),
+                              ),
+                              child: Text(
+                                '${items.length} સેવાઓ',
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFA4143D),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Items Grid
+                      Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: LayoutBuilder(
+                          builder: (context, gridConstraints) {
+                            return GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: isDesktop ? 340 : 280,
+                                mainAxisExtent: 64,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                              ),
+                              itemCount: items.length,
+                              itemBuilder: (context, itemIndex) {
+                                final SamajService service = items[itemIndex];
+                                final String emoji = service.icon;
+                                final String text = service.title;
+
+                                return MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      _showServiceProviders(context, service);
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFAF8F5),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: const Color(0xFFE5D5BA),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          if (emoji.isNotEmpty) ...[
+                                            Text(
+                                              emoji,
+                                              style: const TextStyle(
+                                                fontSize: 20,
+                                                fontFamily: 'Roboto',
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                          ],
+                                          Expanded(
+                                            child: Text(
+                                              text,
+                                              style: const TextStyle(
+                                                fontSize: 12.5,
+                                                fontWeight: FontWeight.w600,
+                                                color: Color(0xFF101B36),
+                                                height: 1.25,
+                                              ),
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const Icon(
+                                            Icons.chevron_right_rounded,
+                                            color: Color(0xFFA4143D),
+                                            size: 18,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+      loading: () => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFA4143D)),
+          ),
+        ),
+      ),
+      error: (err, stack) => Padding(
+        padding: const EdgeInsets.all(24),
+        child: Center(
+          child: Text(
+            'Error loading services: $err',
+            style: const TextStyle(color: Colors.red),
+          ),
         ),
       ),
     );

@@ -56,11 +56,11 @@ export declare class LocationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }[]>;
     getAdminStates(): Promise<({
@@ -217,11 +217,11 @@ export declare class LocationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     })[]>;
     createVillage(body: any): Promise<{
@@ -229,11 +229,11 @@ export declare class LocationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }>;
     updateVillage(id: string, body: any): Promise<{
@@ -241,11 +241,11 @@ export declare class LocationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }>;
     deleteVillage(id: string): Promise<{
@@ -253,11 +253,11 @@ export declare class LocationsController {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }>;
 }

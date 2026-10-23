@@ -264,11 +264,11 @@ export declare class LocationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }[]>;
     getAdminVillages(query: {
@@ -291,11 +291,11 @@ export declare class LocationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     })[]>;
     createVillage(data: {
@@ -311,11 +311,11 @@ export declare class LocationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }>;
     updateVillage(id: string, data: Partial<{
@@ -331,11 +331,11 @@ export declare class LocationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }>;
     deleteVillage(id: string): Promise<{
@@ -343,11 +343,11 @@ export declare class LocationsService {
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        pincode: string | null;
         talukaId: string | null;
         parganaId: string | null;
         isActive: boolean;
         code: string | null;
+        pincode: string | null;
         gujaratiName: string | null;
     }>;
 }

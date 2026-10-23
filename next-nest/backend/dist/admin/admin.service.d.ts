@@ -62,7 +62,6 @@ export declare class AdminService {
         profileId: string;
         documentType: string;
         documentUrl: string;
-        documentBackUrl: string | null;
         rejectionReason: string | null;
     } | {
         id: string;
@@ -113,8 +112,8 @@ export declare class AdminService {
                 isVerified: boolean;
                 education: string;
                 occupation: string;
-                phone: string;
-                email: string;
+                phone: any;
+                email: any;
             };
             candidateB: {
                 id: string;
@@ -128,8 +127,8 @@ export declare class AdminService {
                 isVerified: boolean;
                 education: string;
                 occupation: string;
-                phone: string;
-                email: string;
+                phone: any;
+                email: any;
             };
             userA: {
                 profile: {
@@ -171,30 +170,12 @@ export declare class AdminService {
                     designation: string | null;
                     about: string | null;
                     photoUrl: string | null;
-                    photos: string | null;
                     isPhysicallyDisabled: boolean;
                     pwbdCategory: string | null;
                     isAbroad: boolean;
                     abroadCountry: string | null;
                     businessIndustry: string | null;
                     businessService: string | null;
-                    bloodGroup: string | null;
-                    isVankar: boolean;
-                    annualIncome: string | null;
-                    fatherName: string | null;
-                    fatherOccupation: string | null;
-                    fatherContact: string | null;
-                    motherName: string | null;
-                    motherOccupation: string | null;
-                    guardianContact: string | null;
-                    siblings: string | null;
-                    mamasVillage: string | null;
-                    addressLine: string | null;
-                    pincode: string | null;
-                    altPhone: string | null;
-                    contactEmail: string | null;
-                    motherTongue: string | null;
-                    privacySettings: string | null;
                     stateId: string | null;
                     districtId: string | null;
                     talukaId: string | null;
@@ -202,7 +183,6 @@ export declare class AdminService {
                     villageId: string | null;
                     isVerified: boolean;
                     isFeatured: boolean;
-                    showInMatrimony: boolean;
                 };
             };
             userB: {
@@ -245,30 +225,12 @@ export declare class AdminService {
                     designation: string | null;
                     about: string | null;
                     photoUrl: string | null;
-                    photos: string | null;
                     isPhysicallyDisabled: boolean;
                     pwbdCategory: string | null;
                     isAbroad: boolean;
                     abroadCountry: string | null;
                     businessIndustry: string | null;
                     businessService: string | null;
-                    bloodGroup: string | null;
-                    isVankar: boolean;
-                    annualIncome: string | null;
-                    fatherName: string | null;
-                    fatherOccupation: string | null;
-                    fatherContact: string | null;
-                    motherName: string | null;
-                    motherOccupation: string | null;
-                    guardianContact: string | null;
-                    siblings: string | null;
-                    mamasVillage: string | null;
-                    addressLine: string | null;
-                    pincode: string | null;
-                    altPhone: string | null;
-                    contactEmail: string | null;
-                    motherTongue: string | null;
-                    privacySettings: string | null;
                     stateId: string | null;
                     districtId: string | null;
                     talukaId: string | null;
@@ -276,7 +238,6 @@ export declare class AdminService {
                     villageId: string | null;
                     isVerified: boolean;
                     isFeatured: boolean;
-                    showInMatrimony: boolean;
                 };
             };
             compatibility: string;

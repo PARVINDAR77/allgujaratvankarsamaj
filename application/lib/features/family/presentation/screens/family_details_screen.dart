@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../home/presentation/widgets/web_home_header.dart';
+import '../../../home/presentation/widgets/web_home_footer.dart';
 import '../../models/family_model.dart';
 import '../../providers/family_provider.dart';
 
@@ -567,6 +570,924 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
   Widget build(BuildContext context) {
     final familiesAsync = ref.watch(familyDirectoryProvider);
 
+    if (kIsWeb) {
+      return _buildWebScaffold(context, familiesAsync);
+    }
+    return _buildMobileScaffold(context, familiesAsync);
+  }
+
+  // ===========================================================================
+  // ============================ WEB DESKTOP SCAFFOLD ==========================
+  // ===========================================================================
+  Widget _buildWebScaffold(BuildContext context, AsyncValue<List<FamilyModel>> familiesAsync) {
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width >= 992;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFAF8F5),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // 1. Official Web Header
+            const WebHomeHeader(activeRoute: '/family-details'),
+
+            // 2. Breadcrumbs & Royal Hero Banner
+            _buildWebHeroBanner(context, familiesAsync, isDesktop),
+
+            // 3. Main Centered Content (Max width 1240)
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1240),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: width >= 1200 ? 32 : (width >= 768 ? 20 : 14),
+                    vertical: 24,
+                  ),
+                  child: familiesAsync.when(
+                    loading: () => _buildWebLoadingState(),
+                    error: (err, _) => _buildWebErrorState(err),
+                    data: (families) => _buildWebDataContent(context, families, isDesktop),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 40),
+
+            // 4. Official Web Footer
+            const WebHomeFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- WEB HERO BANNER ---
+  Widget _buildWebHeroBanner(
+    BuildContext context,
+    AsyncValue<List<FamilyModel>> familiesAsync,
+    bool isDesktop,
+  ) {
+    final totalCount = familiesAsync.valueOrNull?.length ?? 0;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFFBF0),
+            Color(0xFFF7F2E7),
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFD6A34A).withValues(alpha: 0.7),
+            width: 1.2,
+          ),
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Corner mandala watermarks
+          Positioned(
+            top: 0,
+            left: 0,
+            width: isDesktop ? 180 : 100,
+            height: isDesktop ? 180 : 100,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.35,
+                child: Image.asset(
+                  'assets/images/mandala_watermark_top.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.topLeft,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            width: isDesktop ? 180 : 100,
+            height: isDesktop ? 180 : 100,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.35,
+                child: Image.asset(
+                  'assets/images/mandala_watermark_top.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.topRight,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1240),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isDesktop ? 32 : 16,
+                  vertical: isDesktop ? 30 : 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Breadcrumbs
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      children: [
+                        InkWell(
+                          onTap: () => context.go('/home'),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const [
+                              Icon(Icons.home_outlined, size: 15, color: Color(0xFF8B5A10)),
+                              SizedBox(width: 4),
+                              Text(
+                                'હોમ (Home)',
+                                style: TextStyle(
+                                  color: Color(0xFF8B5A10),
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 14, color: Color(0xFFB48C36)),
+                        const Text(
+                          'ડિરેક્ટરી (Directory)',
+                          style: TextStyle(
+                            color: Color(0xFF64748B),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right, size: 14, color: Color(0xFFB48C36)),
+                        const Text(
+                          'પરિવાર ડિરેક્ટરી (Family Details)',
+                          style: TextStyle(
+                            color: Color(0xFFA4143D),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Pill Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF101B36),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFFD4AF37), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFD4AF37).withValues(alpha: 0.25),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.auto_awesome, size: 14, color: Color(0xFFFFD700)),
+                          SizedBox(width: 6),
+                          Text(
+                            '૧૦૦% વેરિફાઇડ પરિવાર ડિરેક્ટરી (Verified Samaj Family Directory)',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Title & Refresh Row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'સમાજનાં પરિવારોની માહિતી (Family Details Directory)',
+                                style: TextStyle(
+                                  fontSize: isDesktop ? 28 : 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFF101B36),
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'All Gujarat Vankar Samaj - એક સમાજ, એક વિચાર, એક પરિવાર. સમગ્ર ગુજરાત અને દેશ-વિદેશમાં વસતા પરિવારોનું ગૌરવશાળી નેટવર્ક.',
+                                style: TextStyle(
+                                  fontSize: isDesktop ? 14 : 12.5,
+                                  color: const Color(0xFF475569),
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Refresh Button
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFD6A34A).withValues(alpha: 0.5),
+                              width: 1.2,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.05),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            icon: const Icon(Icons.refresh_rounded, color: Color(0xFFA4143D), size: 22),
+                            tooltip: 'રીફ્રેશ કરો (Refresh Directory)',
+                            onPressed: () => ref.refresh(familyDirectoryProvider),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Quick Stats Row
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 10,
+                      children: [
+                        _buildWebHeroChip(
+                          icon: Icons.people_alt_rounded,
+                          label: '$totalCount પરિવારો નોંધાયેલા છે (Families)',
+                          color: const Color(0xFFA4143D),
+                        ),
+                        _buildWebHeroChip(
+                          icon: Icons.location_city_rounded,
+                          label: '${_quickCities.length - 1}+ મુખ્ય શહેરો (Major Cities)',
+                          color: const Color(0xFF0284C7),
+                        ),
+                        _buildWebHeroChip(
+                          icon: Icons.verified_user_rounded,
+                          label: '૧૦૦% વેરિફાઇડ સમુદાય (Verified)',
+                          color: const Color(0xFF059669),
+                        ),
+                        _buildWebHeroChip(
+                          icon: Icons.map_rounded,
+                          label: '૩૩ જિલ્લા અને દેશ-વિદેશ',
+                          color: const Color(0xFFD97706),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWebHeroChip({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: const Color(0xFFD6A34A).withValues(alpha: 0.4),
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1.5),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- WEB LOADING & ERROR STATES ---
+  Widget _buildWebLoadingState() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 80),
+      child: Center(
+        child: Column(
+          children: [
+            CircularProgressIndicator(color: Color(0xFFA4143D), strokeWidth: 3),
+            SizedBox(height: 16),
+            Text(
+              'પરિવાર માહિતી લોડ થઈ રહી છે...\nLoading live family database...',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF475569), fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebErrorState(Object err) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 60),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline_rounded, color: Color(0xFFE11D48), size: 48),
+            const SizedBox(height: 12),
+            Text(
+              'માહિતી લોડ કરવામાં સમસ્યા આવી.\nError: $err',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF1E293B), fontSize: 14, fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => ref.refresh(familyDirectoryProvider),
+              icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
+              label: const Text('ફરી પ્રયાસ કરો (Retry)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA4143D),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- WEB DATA CONTENT & FILTERING ---
+  Widget _buildWebDataContent(BuildContext context, List<FamilyModel> families, bool isDesktop) {
+    final filtered = families.where((f) {
+      // City filter
+      if (_selectedCity != 'All') {
+        final cEng = f.cityEng.toLowerCase();
+        final dEng = (f.district ?? '').toLowerCase();
+        final target = _selectedCity.toLowerCase();
+        if (!cEng.contains(target) && !dEng.contains(target)) {
+          return false;
+        }
+      }
+
+      // Query search
+      if (_searchQuery.trim().isEmpty) return true;
+      final q = _searchQuery.toLowerCase().trim();
+      return f.nameGuj.toLowerCase().contains(q) ||
+          f.nameEng.toLowerCase().contains(q) ||
+          f.surname.toLowerCase().contains(q) ||
+          (f.headName != null && f.headName!.toLowerCase().contains(q)) ||
+          (f.headNameGuj != null && f.headNameGuj!.toLowerCase().contains(q)) ||
+          f.cityGuj.toLowerCase().contains(q) ||
+          f.cityEng.toLowerCase().contains(q) ||
+          (f.mosal != null && f.mosal!.toLowerCase().contains(q)) ||
+          (f.nativePlace != null && f.nativePlace!.toLowerCase().contains(q)) ||
+          (f.fatherName != null && f.fatherName!.toLowerCase().contains(q)) ||
+          (f.district != null && f.district!.toLowerCase().contains(q));
+    }).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // A. Search & Filter Card
+        _buildWebSearchAndFilterCard(families, filtered),
+        const SizedBox(height: 24),
+
+        // B. Grid of Family Cards
+        if (filtered.isEmpty)
+          _buildWebEmptyState()
+        else
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final crossCount = constraints.maxWidth >= 900 ? 2 : 1;
+              final itemWidth = crossCount == 2
+                  ? (constraints.maxWidth - 20) / 2
+                  : constraints.maxWidth;
+              return Wrap(
+                spacing: 20,
+                runSpacing: 20,
+                children: filtered.asMap().entries.map((entry) {
+                  return SizedBox(
+                    width: itemWidth,
+                    child: _buildWebFamilyCard(entry.value, entry.key, context),
+                  );
+                }).toList(),
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  String _getCityNameGuj(String city) {
+    switch (city) {
+      case 'All':
+        return 'તમામ (All)';
+      case 'Ahmedabad':
+        return 'અમદાવાદ (Ahmedabad)';
+      case 'Surat':
+        return 'સુરત (Surat)';
+      case 'Vadodara':
+        return 'વડોદરા (Vadodara)';
+      case 'Rajkot':
+        return 'રાજકોટ (Rajkot)';
+      case 'Patan':
+        return 'પાટણ (Patan)';
+      case 'Himatnagar':
+        return 'હિંમતનગર (Himatnagar)';
+      case 'Mehsana':
+        return 'મહેસાણા (Mehsana)';
+      case 'Bhavnagar':
+        return 'ભાવનગર (Bhavnagar)';
+      default:
+        return city;
+    }
+  }
+
+  // --- WEB SEARCH & FILTER CARD ---
+  Widget _buildWebSearchAndFilterCard(List<FamilyModel> families, List<FamilyModel> filtered) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFD6A34A).withValues(alpha: 0.45),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Search Input Field
+          Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFAF8F5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFD6A34A).withValues(alpha: 0.5), width: 1.2),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.search_rounded, color: Color(0xFFA4143D), size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    style: const TextStyle(color: Color(0xFF101B36), fontSize: 14, fontWeight: FontWeight.w600),
+                    decoration: const InputDecoration(
+                      hintText: 'પરિવારનું નામ, વડીલ, મોસાળ, વતન કે જિલ્લો શોધો... (Search by family, native, mosal)',
+                      hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 13.5),
+                      border: InputBorder.none,
+                      isDense: true,
+                    ),
+                    onChanged: (val) {
+                      setState(() {
+                        _searchQuery = val;
+                      });
+                    },
+                  ),
+                ),
+                if (_searchQuery.isNotEmpty)
+                  IconButton(
+                    icon: const Icon(Icons.clear_rounded, size: 18, color: Color(0xFF64748B)),
+                    onPressed: () {
+                      _searchController.clear();
+                      setState(() {
+                        _searchQuery = '';
+                      });
+                    },
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // City Chips Row
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _quickCities.map((city) {
+              final isSelected = _selectedCity == city;
+              final label = _getCityNameGuj(city);
+              return InkWell(
+                onTap: () {
+                  setState(() {
+                    _selectedCity = city;
+                  });
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFFA4143D) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFFA4143D) : const Color(0xFFD6A34A).withValues(alpha: 0.4),
+                      width: 1.2,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFFA4143D).withValues(alpha: 0.25),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isSelected) ...[
+                        const Icon(Icons.check_circle_rounded, size: 13, color: Colors.white),
+                        const SizedBox(width: 5),
+                      ],
+                      Text(
+                        label,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : const Color(0xFF334155),
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 14),
+
+          // Results summary bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'પરિણામો: ${filtered.length} પરિવારો દર્શાવવામાં આવ્યા છે (Showing ${filtered.length} of ${families.length} families)',
+                style: const TextStyle(
+                  color: Color(0xFF64748B),
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              if (_selectedCity != 'All' || _searchQuery.isNotEmpty)
+                TextButton.icon(
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                      _selectedCity = 'All';
+                    });
+                  },
+                  icon: const Icon(Icons.close_rounded, size: 14, color: Color(0xFFA4143D)),
+                  label: const Text(
+                    'ફિલ્ટર સાફ કરો (Clear)',
+                    style: TextStyle(color: Color(0xFFA4143D), fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- WEB FAMILY CARD ---
+  Widget _buildWebFamilyCard(FamilyModel f, int index, BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFD6A34A).withValues(alpha: 0.4),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showFamilyDetailsModal(f),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Row: Avatar + Title + Badges
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Medallion Avatar
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const RadialGradient(
+                          colors: [Color(0xFFFFF9E6), Color(0xFFF3E2B3)],
+                        ),
+                        border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                        boxShadow: const [
+                          BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2)),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: (f.photoUrl != null && f.photoUrl!.isNotEmpty)
+                            ? Image.network(
+                                f.photoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (ctx, err, st) => Icon(f.icon, color: const Color(0xFF8B5A10), size: 26),
+                              )
+                            : Icon(f.icon, color: const Color(0xFF8B5A10), size: 26),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Family Names and Badges
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  (f.nameGuj.isNotEmpty ? f.nameGuj : 'વણકર પરિવાર') +
+                                      ((f.headName != null && f.headName!.isNotEmpty)
+                                          ? ' (${f.headName})'
+                                          : (f.candidateName != null && f.candidateName!.isNotEmpty)
+                                              ? ' (${f.candidateName})'
+                                              : ''),
+                                  style: const TextStyle(
+                                    color: Color(0xFF101B36),
+                                    fontSize: 15.5,
+                                    fontWeight: FontWeight.w800,
+                                    height: 1.25,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (f.isVerified) ...[
+                                const SizedBox(width: 4),
+                                const Icon(Icons.verified_rounded, color: Color(0xFFD4AF37), size: 18),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+
+                          // Location Pill
+                          Row(
+                            children: [
+                              const Icon(Icons.location_on_rounded, size: 14, color: Color(0xFF0284C7)),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  '${f.cityGuj} (${f.cityEng}) • ${f.nativePlace ?? f.pargana ?? "ગુજરાત"}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF334155),
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+
+                          // Registered Live Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F5E9),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF2E7D32), width: 0.8),
+                            ),
+                            child: const Text(
+                              '● REGISTERED LIVE',
+                              style: TextStyle(
+                                color: Color(0xFF1B5E20),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                const SizedBox(height: 10),
+
+                // Details Rows
+                Row(
+                  children: [
+                    const Icon(Icons.home_work_rounded, size: 14, color: Color(0xFFD97706)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'મોસાળ (Mosal): ${f.mosal ?? "Other (અન્ય)"}',
+                        style: const TextStyle(
+                          color: Color(0xFF475569),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                if (f.fatherName != null && f.fatherName!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.person_outline_rounded, size: 14, color: Color(0xFFA4143D)),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'વડીલ / પિતા: ${f.fatherName}',
+                          style: const TextStyle(
+                            color: Color(0xFF475569),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+                const SizedBox(height: 14),
+
+                // CTA Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showFamilyDetailsModal(f),
+                    icon: const Icon(Icons.visibility_outlined, size: 15, color: Colors.white),
+                    label: const Text(
+                      'સંપૂર્ણ પરિવાર વિગત જુઓ (View Full Details)',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFA4143D),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --- WEB EMPTY STATE ---
+  Widget _buildWebEmptyState() {
+    return Center(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 50, horizontal: 24),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFD6A34A).withValues(alpha: 0.4)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF9E6),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+              ),
+              child: const Icon(Icons.search_off_rounded, size: 40, color: Color(0xFF8B5A10)),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'કોઈ પરિવાર મળ્યો નથી\n(No families found matching your search)',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF101B36),
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'કૃપા કરીને અન્ય શહેર અથવા અટક વડે ફરીથી શોધો.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+            ),
+            const SizedBox(height: 18),
+            OutlinedButton.icon(
+              onPressed: () {
+                _searchController.clear();
+                setState(() {
+                  _searchQuery = '';
+                  _selectedCity = 'All';
+                });
+              },
+              icon: const Icon(Icons.refresh_rounded, size: 16, color: Color(0xFFA4143D)),
+              label: const Text(
+                'બધા પરિવારો જુઓ (Reset Filters)',
+                style: TextStyle(color: Color(0xFFA4143D), fontWeight: FontWeight.bold),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFA4143D), width: 1.5),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // ============================ MOBILE NATIVE SCAFFOLD ========================
+  // ===========================================================================
+  Widget _buildMobileScaffold(BuildContext context, AsyncValue<List<FamilyModel>> familiesAsync) {
     return Scaffold(
       backgroundColor: const Color(0xFF001F18),
       body: Container(

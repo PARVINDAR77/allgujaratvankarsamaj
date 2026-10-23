@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +8,7 @@ import '../providers/view_badge.dart';
 import '../providers/views_provider.dart';
 import '../widgets/notifications_dialog.dart';
 import '../widgets/community_navigation_menu.dart';
+import 'community_web_home_screen.dart';
 class MainPosterScreen extends ConsumerStatefulWidget {
   const MainPosterScreen({super.key});
 
@@ -42,6 +44,10 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return const CommunityWebHomeScreen();
+    }
+
     final unreadNotificationCount = ref.watch(unreadNotificationCountProvider);
     final size = MediaQuery.of(context).size;
     final isMobile = size.width < 600;

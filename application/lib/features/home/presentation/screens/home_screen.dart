@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -10,6 +11,7 @@ import '../providers/views_provider.dart';
 import '../widgets/notifications_dialog.dart';
 import '../widgets/community_navigation_menu.dart';
 import '../../../profile/providers/profile_provider.dart';
+import 'web_matrimony_home_screen.dart';
 
 final homeButtonsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   try {
@@ -159,6 +161,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObse
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return const WebMatrimonyHomeScreen();
+    }
+
     final unreadNotificationCount = ref.watch(unreadNotificationCountProvider);
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),

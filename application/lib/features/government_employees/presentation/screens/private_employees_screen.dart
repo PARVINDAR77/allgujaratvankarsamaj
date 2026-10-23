@@ -1328,509 +1328,71 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F8FF),
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth > 850;
             return Center(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1000),
-                child: Column(
-                  children: [
-                    // Header Banner with True Proportional Aspect Ratio (1600 x 592)
-                    LayoutBuilder(
-                      builder: (context, bannerConstraints) {
-                        final bannerWidth = bannerConstraints.maxWidth;
-                        final bannerHeight = bannerWidth * (592.0 / 1600.0);
+                constraints: BoxConstraints(maxWidth: isDesktop ? 1280 : 1000),
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(bottom: isDesktop ? 36 : 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Header Banner with True Proportional Aspect Ratio (1600 x 592)
+                      Padding(
+                        padding: EdgeInsets.only(
+                          top: isDesktop ? 12 : 8,
+                          left: isDesktop ? 8 : 4,
+                          right: isDesktop ? 8 : 4,
+                        ),
+                        child: LayoutBuilder(
+                          builder: (context, bannerConstraints) {
+                            final bannerWidth = bannerConstraints.maxWidth;
+                            final bannerHeight = bannerWidth * (592.0 / 1600.0);
 
-                        return SizedBox(
-                          width: bannerWidth,
-                          height: bannerHeight,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: Image.asset(
+                            return Container(
+                              width: bannerWidth,
+                              height: bannerHeight,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(isDesktop ? 14 : 10),
+                                border: Border.all(
+                                  color: const Color(0xFFD6A34A).withValues(alpha: 0.6),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF101B36).withValues(alpha: 0.08),
+                                    blurRadius: 14,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              clipBehavior: Clip.antiAlias,
+                              child: Image.asset(
+                                'assets/images/govt_section_banner_clean.png',
+                                fit: BoxFit.fill,
+                                errorBuilder: (context, error, stackTrace) => Image.asset(
                                   'assets/images/govt_section_banner_new.png',
                                   fit: BoxFit.fill,
-                                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                                    'assets/images/vankar_header_banner.png',
-                                    fit: BoxFit.fill,
-                                    errorBuilder: (_, _, _) => Container(
-                                      decoration: const BoxDecoration(
-                                        gradient: LinearGradient(
-                                          colors: [Color(0xFF041126), Color(0xFF0A2540)],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                      ),
-                                      child: const Center(
-                                        child: Text(
-                                          'VANKAR SAMAJ',
-                                          style: TextStyle(color: Color(0xFFD4AF37), fontSize: 18, fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
                                 ),
                               ),
-                              // Transparent touch target aligned with the banner's built-in "← પાછા જાઓ (Back)" button
-                              // Native coordinates: x: 20..480, y: 24..170 (out of 1600 x 592)
-                              Positioned(
-                                left: bannerWidth * (20.0 / 1600.0),
-                                top: bannerHeight * (24.0 / 592.0),
-                                width: bannerWidth * (460.0 / 1600.0),
-                                height: bannerHeight * (146.0 / 592.0),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(28),
-                                    splashColor: const Color(0x59FFFFFF),
-                                    highlightColor: const Color(0x26FFFFFF),
-                                    onTap: () {
-                                      if (context.canPop()) {
-                                        context.pop();
-                                      } else {
-                                        context.go('/home');
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                              // Transparent touch target aligned with the banner's built-in "🔔" notification bell
-                              // Native coordinates: x: 1410..1550, y: 100..240 (out of 1600 x 592)
-                              Positioned(
-                                left: bannerWidth * (1410.0 / 1600.0),
-                                top: bannerHeight * (100.0 / 592.0),
-                                width: bannerWidth * (140.0 / 1600.0),
-                                height: bannerHeight * (140.0 / 592.0),
-                                child: Material(
-                                  color: Colors.transparent,
-                                  child: InkWell(
-                                    customBorder: const CircleBorder(),
-                                    splashColor: const Color(0x59FFFFFF),
-                                    highlightColor: const Color(0x26FFFFFF),
-                                    onTap: () {
-                                      context.push('/notifications');
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 10),
-                    // Title Capsule Badge
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: isDesktop ? 32 : 18, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(color: const Color(0xFFF3C34D), width: 2.2),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x1A000000),
-                            blurRadius: 8,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: const Color(0xFF0056D2),
-                            radius: isDesktop ? 22 : 18,
-                            child: Icon(Icons.business_center, color: Colors.white, size: isDesktop ? 26 : 22),
-                          ),
-                          const SizedBox(width: 10),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Private Job & Business Directory',
-                                style: TextStyle(
-                                  color: const Color(0xFF0056D2),
-                                  fontSize: isDesktop ? 20 : 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.3,
-                                ),
-                              ),
-                              Text(
-                                'ખાનગી નોકરી અને વેપાર ડિરેક્ટરી',
-                                style: TextStyle(
-                                  color: const Color(0xFF0056D2),
-                                  fontSize: isDesktop ? 13 : 11.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Filters Section
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF4F9FF),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.shade100),
-                      ),
-                      child: Column(
-                        children: [
-                          if (isDesktop)
-                            Row(
-                              children: [
-                                Expanded(child: _buildDropdown('Sector (ક્ષેત્ર / વેપાર)', _sector, _sectors, (v) => setState(() => _sector = v!))),
-                                const SizedBox(width: 8),
-                                Expanded(child: _buildDropdown('Role (હોદ્દો / પદ)', _post, _posts, (v) => setState(() => _post = v!))),
-                                const SizedBox(width: 8),
-                                Expanded(child: _buildDropdown('District (જિલ્લો)', _district, _districts, (v) {
-                                  setState(() {
-                                    _district = v!;
-                                    _taluka = 'All';
-                                  });
-                                })),
-                                const SizedBox(width: 8),
-                                Expanded(child: _buildDropdown('Taluka (તાલુકો)', _taluka, _talukas, (v) => setState(() => _taluka = v!))),
-                              ],
-                            )
-                          else
-                            Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildDropdown('Sector (ક્ષેત્ર)', _sector, _sectors, (v) => setState(() => _sector = v!))),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: _buildDropdown('Role (હોદ્દો)', _post, _posts, (v) => setState(() => _post = v!))),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Row(
-                                  children: [
-                                    Expanded(child: _buildDropdown('District (જિલ્લો)', _district, _districts, (v) {
-                                      setState(() {
-                                        _district = v!;
-                                        _taluka = 'All';
-                                      });
-                                    })),
-                                    const SizedBox(width: 8),
-                                    Expanded(child: _buildDropdown('Taluka (તાલુકો)', _taluka, _talukas, (v) => setState(() => _taluka = v!))),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                flex: isDesktop ? 6 : 3,
-                                child: SizedBox(
-                                  height: 40,
-                                  child: TextField(
-                                    controller: _searchController,
-                                    decoration: InputDecoration(
-                                      prefixIcon: const Icon(Icons.search, color: Color(0xFF0056D2), size: 20),
-                                      hintText: 'Search by Name (નામથી શોધો)...',
-                                      hintStyle: const TextStyle(fontSize: 12),
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(color: Colors.grey),
-                                      ),
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(color: Colors.grey.shade300),
-                                      ),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                flex: 2,
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: () {
-                                          setState(() {});
-                                        },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFF00A2FF),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(vertical: 0),
-                                          minimumSize: const Size(0, 40),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        ),
-                                        child: const Text('Search\n(શોધો)', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.1)),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        onPressed: _resetFilters,
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFE91E63),
-                                          foregroundColor: Colors.white,
-                                          padding: const EdgeInsets.symmetric(vertical: 0),
-                                          minimumSize: const Size(0, 40),
-                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                        ),
-                                        child: const Row(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(Icons.refresh, size: 14),
-                                            SizedBox(width: 2),
-                                            Text('Reset\n(રીસેટ)', textAlign: TextAlign.center, style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, height: 1.1)),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Table Section
-                    Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        physics: const BouncingScrollPhysics(),
-                        child: SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          physics: const BouncingScrollPhysics(),
-                          child: Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              border: Border.all(color: Colors.blue.shade100),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Table Header
-                                Row(
-                                  children: [
-                                    _buildHeaderCell('#\n(ક્રમ)', const Color(0xFF00A2FF), 78),
-                                    _buildHeaderCell('Photo\n(ફોટો)', const Color(0xFF0056D2), 65),
-                                    _buildHeaderCell('Name\n(નામ)', const Color(0xFFE91E63), 165),
-                                    _buildHeaderCell('Sector / Industry\n(ક્ષેત્ર / વેપાર)', const Color(0xFF4CAF50), 220),
-                                    _buildHeaderCell('Role / Post\n(હોદ્દો / પદ)', const Color(0xFFFF9800), 175),
-                                    _buildHeaderCell('District\n(જિલ્લો)', const Color(0xFF9C27B0), 130),
-                                    _buildHeaderCell('Action\n(વિગત)', const Color(0xFF0056D2), 85),
-                                  ],
-                                ),
-                                // Table Body
-                                if (ref.watch(profileNotifierProvider).isLoading)
-                                  const Padding(
-                                    padding: EdgeInsets.all(32.0),
-                                    child: Center(child: CircularProgressIndicator(color: Color(0xFF0056D2))),
-                                  )
-                                else if (_filteredData.isEmpty)
-                                  const Padding(
-                                    padding: EdgeInsets.all(32.0),
-                                    child: Center(child: Text('No private employees found matching criteria.', style: TextStyle(fontSize: 14, color: Colors.black54))),
-                                  )
-                                else
-                                  ..._filteredData.map((data) {
-                                    final isEven = _filteredData.indexOf(data) % 2 == 0;
-                                    return Container(
-                                      color: isEven ? Colors.blue.shade50.withValues(alpha: 0.3) : Colors.white,
-                                      child: Row(
-                                        children: [
-                                          _buildDataCell(
-                                            Center(
-                                              child: Container(
-                                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                                                decoration: BoxDecoration(
-                                                  color: Colors.blue.shade50,
-                                                  borderRadius: BorderRadius.circular(6),
-                                                  border: Border.all(color: Colors.blue.shade200, width: 0.8),
-                                                ),
-                                                child: Text(
-                                                  data['id']!,
-                                                  style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF0056D2), fontSize: 12),
-                                                  maxLines: 1,
-                                                  softWrap: false,
-                                                ),
-                                              ),
-                                            ),
-                                            78,
-                                          ),
-                                          _buildDataCell(
-                                            Center(
-                                              child: InkWell(
-                                                onTap: () => _showEmployeeDetails(data),
-                                                child: CircleAvatar(
-                                                  radius: 17,
-                                                  backgroundColor: Colors.blue.shade50,
-                                                  backgroundImage: (data['photoUrl'] != null && data['photoUrl'].toString().isNotEmpty)
-                                                      ? NetworkImage(data['photoUrl'].toString())
-                                                      : null,
-                                                  child: (data['photoUrl'] == null || data['photoUrl'].toString().isEmpty)
-                                                      ? const Icon(Icons.person, color: Color(0xFF0056D2), size: 20)
-                                                      : null,
-                                                ),
-                                              ),
-                                            ),
-                                            65,
-                                          ),
-                                          _buildDataCell(
-                                            InkWell(
-                                              onTap: () => _showEmployeeDetails(data),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    data['name']!,
-                                                    style: const TextStyle(
-                                                      fontWeight: FontWeight.w600,
-                                                      color: Color(0xFF0056D2),
-                                                      fontSize: 13,
-                                                    ),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ),
-                                                  if (data['company'] != null && data['company'].toString().isNotEmpty)
-                                                    Text(
-                                                      data['company'].toString(),
-                                                      style: const TextStyle(fontSize: 10.5, color: Colors.black45),
-                                                      overflow: TextOverflow.ellipsis,
-                                                      maxLines: 1,
-                                                    ),
-                                                ],
-                                              ),
-                                            ),
-                                            165,
-                                          ),
-                                          _buildDataCell(
-                                            Row(
-                                              children: [
-                                                Container(
-                                                  padding: const EdgeInsets.all(5),
-                                                  decoration: BoxDecoration(
-                                                    color: (data['iconColor'] as Color? ?? const Color(0xFF0056D2)).withValues(alpha: 0.1),
-                                                    borderRadius: BorderRadius.circular(6),
-                                                  ),
-                                                  child: Icon(
-                                                    data['icon'] as IconData? ?? Icons.business_center,
-                                                    color: data['iconColor'] as Color? ?? const Color(0xFF0056D2),
-                                                    size: 16,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    mainAxisAlignment: MainAxisAlignment.center,
-                                                    children: [
-                                                      Text(
-                                                        data['dept']!,
-                                                        style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w600),
-                                                        overflow: TextOverflow.ellipsis,
-                                                        maxLines: 1,
-                                                      ),
-                                                      if (_translations.containsKey(data['dept']!))
-                                                        Text(
-                                                          _translations[data['dept']!]!,
-                                                          style: TextStyle(color: Colors.grey.shade600, fontSize: 10.5),
-                                                          overflow: TextOverflow.ellipsis,
-                                                          maxLines: 1,
-                                                        ),
-                                                    ],
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            220,
-                                          ),
-                                          _buildDataCell(
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  data['post']!,
-                                                  style: const TextStyle(color: Color(0xFF0056D2), fontSize: 12, fontWeight: FontWeight.w600),
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                                if (_translations.containsKey(data['post']!))
-                                                  Text(
-                                                    _translations[data['post']!]!,
-                                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 10.5),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ),
-                                              ],
-                                            ),
-                                            175,
-                                          ),
-                                          _buildDataCell(
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  data['district']!,
-                                                  style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w500),
-                                                  overflow: TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                                if (_translations.containsKey(data['district']!))
-                                                  Text(
-                                                    _translations[data['district']!]!,
-                                                    style: TextStyle(color: Colors.grey.shade600, fontSize: 10.5),
-                                                    overflow: TextOverflow.ellipsis,
-                                                    maxLines: 1,
-                                                  ),
-                                              ],
-                                            ),
-                                            130,
-                                          ),
-                                          _buildDataCell(
-                                            Center(
-                                              child: ElevatedButton.icon(
-                                                onPressed: () => _showEmployeeDetails(data),
-                                                icon: const Icon(Icons.remove_red_eye, size: 12),
-                                                label: const Text('View', style: TextStyle(fontSize: 11)),
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: const Color(0xFF4CAF50),
-                                                  foregroundColor: Colors.white,
-                                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-                                                  minimumSize: const Size(64, 28),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                                ),
-                                              ),
-                                            ),
-                                            85,
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                              ],
-                            ),
-                          ),
+                            );
+                          },
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 10),
+                      // Title Capsule Badge
+                      _buildTitleBadge(isDesktop),
+                      // Filters Section
+                      _buildFiltersSection(isDesktop),
+                      // Table Section
+                      _buildTableSection(isDesktop),
+                    ],
+                  ),
                 ),
               ),
             );
@@ -1840,30 +1402,763 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
     );
   }
 
-  Widget _buildHeaderCell(String text, Color color, double width) {
-    return Container(
-      width: width,
-      height: 48,
-      color: color,
-      alignment: Alignment.center,
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11, height: 1.2),
-        textAlign: TextAlign.center,
+  Widget _buildTitleBadge(bool isDesktop) {
+    return Center(
+      child: Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: isDesktop ? 24 : 16, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: const Color(0xFFD6A34A), width: 1.6),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFD6A34A).withValues(alpha: 0.18),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 4,
+              offset: const Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: isDesktop ? 36 : 32,
+              height: isDesktop ? 36 : 32,
+              padding: const EdgeInsets.all(1.5),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFDF7A), Color(0xFFD6A34A), Color(0xFF8C6D15)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
+                    blurRadius: 5,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const CircleAvatar(
+                backgroundColor: Color(0xFFA4143D),
+                child: Icon(Icons.business_center, color: Colors.white, size: 18),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Private Job & Business Directory',
+                  style: TextStyle(
+                    color: const Color(0xFF101B36),
+                    fontSize: isDesktop ? 18 : 15,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 1),
+                Text(
+                  'ખાનગી નોકરી અને વેપાર ડિરેક્ટરી',
+                  style: TextStyle(
+                    color: const Color(0xFFA4143D),
+                    fontSize: isDesktop ? 12 : 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDataCell(Widget child, double width) {
+  Widget _buildFiltersSection(bool isDesktop) {
+    return Container(
+      padding: EdgeInsets.all(isDesktop ? 16 : 12),
+      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 4, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE5D5BA), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          if (isDesktop)
+            Row(
+              children: [
+                Expanded(child: _buildDropdown('Sector (ક્ષેત્ર / વેપાર)', _sector, _sectors, (v) => setState(() => _sector = v!))),
+                const SizedBox(width: 10),
+                Expanded(child: _buildDropdown('Role (હોદ્દો / પદ)', _post, _posts, (v) => setState(() => _post = v!))),
+                const SizedBox(width: 10),
+                Expanded(child: _buildDropdown('District (જિલ્લો)', _district, _districts, (v) {
+                  setState(() {
+                    _district = v!;
+                    _taluka = 'All';
+                  });
+                })),
+                const SizedBox(width: 10),
+                Expanded(child: _buildDropdown('Taluka (તાલુકો)', _taluka, _talukas, (v) => setState(() => _taluka = v!))),
+              ],
+            )
+          else
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: _buildDropdown('Sector (ક્ષેત્ર)', _sector, _sectors, (v) => setState(() => _sector = v!))),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildDropdown('Role (હોદ્દો)', _post, _posts, (v) => setState(() => _post = v!))),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(child: _buildDropdown('District (જિલ્લો)', _district, _districts, (v) {
+                      setState(() {
+                        _district = v!;
+                        _taluka = 'All';
+                      });
+                    })),
+                    const SizedBox(width: 8),
+                    Expanded(child: _buildDropdown('Taluka (તાલુકો)', _taluka, _talukas, (v) => setState(() => _taluka = v!))),
+                  ],
+                ),
+              ],
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: isDesktop ? 6 : 3,
+                child: SizedBox(
+                  height: 42,
+                  child: TextField(
+                    controller: _searchController,
+                    onChanged: (_) => setState(() {}),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(Icons.search, color: Color(0xFFA4143D), size: 20),
+                      hintText: 'Search by Name (નામથી શોધો)...',
+                      hintStyle: const TextStyle(fontSize: 12.5, color: Color(0xFF9CA3AF)),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFFD6A34A)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFFE5D5BA)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.5),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFFAF8F5),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              SizedBox(
+                height: 42,
+                child: Row(
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () => setState(() {}),
+                      icon: const Icon(Icons.search, size: 16),
+                      label: const Text('Search (શોધો)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFA4143D),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        elevation: 1,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    OutlinedButton.icon(
+                      onPressed: _resetFilters,
+                      icon: const Icon(Icons.refresh, size: 15),
+                      label: const Text('Reset (રીસેટ)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF4B5563),
+                        side: const BorderSide(color: Color(0xFFD1D5DB)),
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFAF8F5),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE5D5BA), width: 0.8),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.verified, size: 14, color: Color(0xFFA4143D)),
+                const SizedBox(width: 6),
+                Text(
+                  'Showing ${_filteredData.length} directory listings',
+                  style: const TextStyle(
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF4B5563),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableSection(bool isDesktop) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableWidth = constraints.maxWidth - (isDesktop ? 16 : 8);
+        const double baseIndex = 95.0;
+        const double basePhoto = 70.0;
+        const double baseAction = 100.0;
+        const double fixedTotal = baseIndex + basePhoto + baseAction; // 265.0
+
+        // Minimum flexible widths
+        const double minName = 220.0;
+        const double minDept = 240.0;
+        const double minPost = 210.0;
+        const double minDistrict = 160.0;
+        const double minFlexTotal = minName + minDept + minPost + minDistrict; // 830.0
+        const double minTableWidth = fixedTotal + minFlexTotal; // 1080.0
+
+        final double tableWidth = availableWidth > minTableWidth ? availableWidth : minTableWidth;
+        final double extraWidth = tableWidth - minTableWidth;
+
+        final double nameWidth = minName + (extraWidth * 0.28);
+        final double deptWidth = minDept + (extraWidth * 0.32);
+        final double postWidth = minPost + (extraWidth * 0.22);
+        final double districtWidth = minDistrict + (extraWidth * 0.18);
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Container(
+            width: tableWidth,
+            margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 4, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE5D5BA), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF101B36).withValues(alpha: 0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+                  child: Container(
+                    width: tableWidth,
+                    color: const Color(0xFF101B36),
+                    child: Row(
+                      children: [
+                        _buildHeaderCell('#', 'ક્રમ', baseIndex),
+                        _buildHeaderCell('Photo', 'ફોટો', basePhoto),
+                        _buildHeaderCell('Name', 'નામ', nameWidth),
+                        _buildHeaderCell('Sector / Industry', 'ક્ષેત્ર / વેપાર', deptWidth),
+                        _buildHeaderCell('Role / Post', 'હોદ્દો / પદ', postWidth),
+                        _buildHeaderCell('District', 'જિલ્લો', districtWidth),
+                        _buildHeaderCell('Action', 'વિગત', baseAction, isLast: true),
+                      ],
+                    ),
+                  ),
+                ),
+                if (ref.watch(profileNotifierProvider).isLoading)
+                  Container(
+                    width: tableWidth,
+                    padding: const EdgeInsets.all(40.0),
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFA4143D)),
+                    ),
+                  )
+                else if (_filteredData.isEmpty)
+                  Container(
+                    width: tableWidth,
+                    padding: const EdgeInsets.all(40.0),
+                    child: const Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.search_off, size: 48, color: Colors.grey),
+                          SizedBox(height: 12),
+                          Text('No private employees or business listings found matching criteria.',
+                              style: TextStyle(fontSize: 14, color: Colors.black54)),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  ..._filteredData.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final data = entry.value;
+                    final isEven = idx % 2 == 0;
+                    return _buildTableRow(
+                      data,
+                      isEven,
+                      baseIndex: baseIndex,
+                      basePhoto: basePhoto,
+                      nameWidth: nameWidth,
+                      deptWidth: deptWidth,
+                      postWidth: postWidth,
+                      districtWidth: districtWidth,
+                      baseAction: baseAction,
+                    );
+                  }),
+                Container(
+                  width: tableWidth,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFAF8F5),
+                    borderRadius:
+                        const BorderRadius.vertical(bottom: Radius.circular(11)),
+                    border: Border(
+                      top: BorderSide(
+                        color: const Color(0xFFD6A34A).withValues(alpha: 0.2),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle_outline,
+                          size: 15, color: Color(0xFFD6A34A)),
+                      SizedBox(width: 7),
+                      Text(
+                        'All directory listings loaded (તમામ રેકોર્ડ લોડ થયેલ છે)',
+                        style: TextStyle(
+                          color: Color(0xFF6B7280),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTableRow(
+    Map<String, dynamic> data,
+    bool isEven, {
+    required double baseIndex,
+    required double basePhoto,
+    required double nameWidth,
+    required double deptWidth,
+    required double postWidth,
+    required double districtWidth,
+    required double baseAction,
+  }) {
+    final photoUrl = data['photoUrl']?.toString();
+    final hasPhoto = photoUrl != null && photoUrl.trim().isNotEmpty;
+    final idStr = (data['id'] ?? '').toString();
+
+    final deptStr = data['dept']?.toString() ?? '';
+    final hasGujaratiDept = _translations.containsKey(deptStr) &&
+        _translations[deptStr]!.trim().toLowerCase() != deptStr.trim().toLowerCase();
+
+    final postStr = data['post']?.toString() ?? '';
+    final hasGujaratiPost = _translations.containsKey(postStr) &&
+        _translations[postStr]!.trim().toLowerCase() != postStr.trim().toLowerCase();
+
+    final districtStr = data['district']?.toString() ?? '';
+    final hasGujaratiDistrict = _translations.containsKey(districtStr) &&
+        _translations[districtStr]!.trim().toLowerCase() != districtStr.trim().toLowerCase();
+
+    return Container(
+      color: isEven ? Colors.white : const Color(0xFFFAF8F5),
+      child: Row(
+        children: [
+          // 1. ID / Index Cell
+          _buildDataCell(
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFAF8F5),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: const Color(0xFFD6A34A).withValues(alpha: 0.4),
+                    width: 0.9,
+                  ),
+                ),
+                child: Text(
+                  idStr,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF101B36),
+                    fontSize: 11.5,
+                  ),
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            baseIndex,
+          ),
+
+          // 2. Photo Cell with Error Fallback
+          _buildDataCell(
+            Center(
+              child: InkWell(
+                onTap: () => _showEmployeeDetails(data),
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  padding: const EdgeInsets.all(1.5),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: const Color(0xFFD6A34A),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: CircleAvatar(
+                    radius: 17,
+                    backgroundColor: const Color(0xFFFAF8F5),
+                    child: ClipOval(
+                      child: hasPhoto
+                          ? Image.network(
+                              photoUrl,
+                              width: 34,
+                              height: 34,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(
+                                Icons.person,
+                                color: Color(0xFFA4143D),
+                                size: 20,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.person,
+                              color: Color(0xFFA4143D),
+                              size: 20,
+                            ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            basePhoto,
+          ),
+
+          // 3. Name Cell
+          _buildDataCell(
+            InkWell(
+              onTap: () => _showEmployeeDetails(data),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    data['name']?.toString() ?? '',
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF101B36),
+                      fontSize: 13,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  if (data['company'] != null &&
+                      data['company'].toString().trim().isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      data['company'].toString(),
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: Color(0xFF6B7280),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            nameWidth,
+          ),
+
+          // 4. Sector / Industry Cell with Icon
+          _buildDataCell(
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFA4143D).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: const Color(0xFFD6A34A).withValues(alpha: 0.3),
+                      width: 0.8,
+                    ),
+                  ),
+                  child: Icon(
+                    data['icon'] as IconData? ?? Icons.business_center,
+                    color: const Color(0xFFA4143D),
+                    size: 15,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        deptStr,
+                        style: const TextStyle(
+                          color: Color(0xFF1F2937),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
+                      if (hasGujaratiDept) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          _translations[deptStr]!,
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFF6B7280),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            deptWidth,
+          ),
+
+          // 5. Role / Post Cell
+          _buildDataCell(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  postStr,
+                  style: const TextStyle(
+                    color: Color(0xFFA4143D),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                if (hasGujaratiPost) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    _translations[postStr]!,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF6B7280),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ],
+            ),
+            postWidth,
+          ),
+
+          // 6. District & Taluka Cell
+          _buildDataCell(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  districtStr.isNotEmpty ? districtStr : '—',
+                  style: const TextStyle(
+                    color: Color(0xFF1F2937),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                if (hasGujaratiDistrict) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    _translations[districtStr]!,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      color: Color(0xFF6B7280),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ],
+            ),
+            districtWidth,
+          ),
+
+          // 7. Action Cell
+          _buildDataCell(
+            Center(
+              child: Container(
+                height: 30,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFA4143D), Color(0xFF7E102F)],
+                  ),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: const Color(0xFFD6A34A),
+                    width: 0.9,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFA4143D).withValues(alpha: 0.25),
+                      blurRadius: 4,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _showEmployeeDetails(data),
+                    borderRadius: BorderRadius.circular(15),
+                    child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.visibility_outlined,
+                              size: 13, color: Color(0xFFFFDF7A)),
+                          SizedBox(width: 4),
+                          Text(
+                            'View',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            baseAction,
+            isLast: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderCell(String en, String gu, double width, {bool isLast = false}) {
     return Container(
       width: width,
-      height: 58,
+      height: 52,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFF101B36),
+        border: isLast
+            ? null
+            : Border(
+                right: BorderSide(
+                  color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
+                  width: 1,
+                ),
+              ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            en,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+              fontSize: 11.5,
+              letterSpacing: 0.3,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            '($gu)',
+            style: const TextStyle(
+              color: Color(0xFFFFDF7A),
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataCell(Widget child, double width, {bool isLast = false}) {
+    return Container(
+      width: width,
+      height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 8),
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
         border: Border(
-          right: BorderSide(color: Colors.blue.shade100, width: 0.5),
-          bottom: BorderSide(color: Colors.blue.shade100, width: 0.5),
+          right: isLast
+              ? BorderSide.none
+              : const BorderSide(color: Color(0xFFE5E7EB), width: 0.6),
+          bottom: const BorderSide(color: Color(0xFFE5E7EB), width: 0.6),
         ),
       ),
       child: child,
@@ -1872,16 +2167,16 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
 
   Widget _buildDropdown(String label, String value, List<String> options, ValueChanged<String?> onChanged) {
     return Container(
-      height: 36,
+      height: 42,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE5D5BA)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       child: Row(
         children: [
-          Icon(Icons.business_center, color: Colors.grey.shade500, size: 14),
+          Icon(Icons.business_center_outlined, color: const Color(0xFFA4143D), size: 15),
           const SizedBox(width: 6),
           Expanded(
             child: DropdownButtonHideUnderline(
@@ -1890,21 +2185,29 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                 isExpanded: true,
                 dropdownColor: Colors.white,
                 menuMaxHeight: 350,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(12),
                 elevation: 4,
-                icon: Icon(Icons.keyboard_arrow_down, color: Colors.grey.shade500, size: 16),
-                style: const TextStyle(color: Colors.black87, fontSize: 12),
+                icon: const Icon(Icons.keyboard_arrow_down, color: Color(0xFF6B7280), size: 16),
+                style: const TextStyle(color: Color(0xFF101B36), fontSize: 12.5),
                 selectedItemBuilder: (BuildContext context) {
                   return options.map<Widget>((String val) {
                     final displayVal = val == 'All' ? label : _getTranslatedText(val);
                     return Container(
                       alignment: Alignment.centerLeft,
-                      child: Text(displayVal, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF0056D2))),
+                      child: Text(
+                        displayVal,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF101B36),
+                        ),
+                      ),
                     );
                   }).toList();
                 },
                 items: options.map((String val) {
                   final displayVal = val == 'All' ? label : _getTranslatedText(val);
+                  final isSelected = val == value;
                   return DropdownMenuItem<String>(
                     value: val,
                     child: Container(
@@ -1914,20 +2217,24 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                       ),
                       child: Row(
                         children: [
-                          Icon(val == 'All' ? Icons.filter_list : Icons.business, size: 16, color: val == value ? const Color(0xFFE91E63) : Colors.blue.shade300),
+                          Icon(
+                            val == 'All' ? Icons.filter_list : Icons.business,
+                            size: 15,
+                            color: isSelected ? const Color(0xFFA4143D) : const Color(0xFF9CA3AF),
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               displayVal,
                               style: TextStyle(
-                                fontWeight: val == value ? FontWeight.bold : FontWeight.w500,
-                                color: val == value ? const Color(0xFFE91E63) : Colors.black87,
+                                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                color: isSelected ? const Color(0xFFA4143D) : const Color(0xFF1F2937),
                                 fontSize: 13,
                               ),
                             ),
                           ),
-                          if (val == value)
-                            const Icon(Icons.check_circle, size: 16, color: Color(0xFFE91E63)),
+                          if (isSelected)
+                            const Icon(Icons.check_circle, size: 16, color: Color(0xFFA4143D)),
                         ],
                       ),
                     ),

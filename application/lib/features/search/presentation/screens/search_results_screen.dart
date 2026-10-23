@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../profile/providers/liked_profiles_provider.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../home/presentation/widgets/web_home_header.dart';
+import '../../../home/presentation/widgets/web_home_footer.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
   final String? initialGender;
@@ -149,6 +152,1348 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       return true;
     }).toList();
 
+    if (kIsWeb) {
+      return _buildWebScaffold(context, profileState, profiles);
+    }
+    return _buildMobileScaffold(context, profileState, profiles);
+  }
+
+  // ==========================================
+  // WEB DEDICATED SEARCH & DISCOVERY INTERFACE
+  // ==========================================
+  Widget _buildWebScaffold(BuildContext context, ProfileState profileState, List<ProfileModel> profiles) {
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width >= 990;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFAF8F5),
+      appBar: const WebHomeHeader(activeRoute: '/search'),
+      body: SingleChildScrollView(
+        controller: _scrollController,
+        physics: const ClampingScrollPhysics(),
+        child: Column(
+          children: [
+            // 1. Breadcrumbs & Search Hero Banner
+            _buildWebHeroBanner(context, profiles.length, profileState.isLoading),
+
+            // 2. Main Search Body (Sidebar + Candidates Grid)
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1260),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: width >= 1200 ? 32 : (width >= 768 ? 20 : 14),
+                    vertical: 28,
+                  ),
+                  child: isDesktop
+                      ? _buildWebDesktopLayout(context, profileState, profiles)
+                      : _buildWebMobileTabletLayout(context, profileState, profiles),
+                ),
+              ),
+            ),
+
+            // 3. Official Web Footer
+            const WebHomeFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- WEB HERO & SEARCH BANNER ---
+  Widget _buildWebHeroBanner(BuildContext context, int count, bool isLoading) {
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width >= 990;
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFAF8F5),
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFFFFFF),
+            Color(0xFFFAF8F5),
+            Color(0xFFF7F2E7),
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFD6A34A).withValues(alpha: 0.7),
+            width: 1.2,
+          ),
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Corner mandala watermarks
+          Positioned(
+            top: 0,
+            left: 0,
+            width: isDesktop ? 180 : 100,
+            height: isDesktop ? 180 : 100,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.35,
+                child: Image.asset(
+                  'assets/images/mandala_watermark_top.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.topLeft,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 0,
+            right: 0,
+            width: isDesktop ? 180 : 100,
+            height: isDesktop ? 180 : 100,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.35,
+                child: Image.asset(
+                  'assets/images/mandala_watermark_top.png',
+                  fit: BoxFit.contain,
+                  alignment: Alignment.topRight,
+                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          ),
+
+          // Content
+          Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1260),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isDesktop ? 32 : 16,
+                  vertical: isDesktop ? 26 : 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Breadcrumbs
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 6,
+                      children: [
+                        InkWell(
+                          onTap: () => context.go('/main-poster'),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.home_outlined, size: 14, color: Color(0xFF64748B)),
+                              SizedBox(width: 4),
+                              Text('હોમ (Home)', style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
+                            ],
+                          ),
+                        ),
+                        const Text('›', style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
+                        InkWell(
+                          onTap: () => context.go('/home'),
+                          child: const Text('લગ્ન સાથી (Matrimony)', style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
+                        ),
+                        const Text('›', style: TextStyle(fontSize: 14, color: Color(0xFF94A3B8))),
+                        const Text('ઉમેદવાર શોધ (Search Profiles)', style: TextStyle(fontSize: 12, color: Color(0xFFA4143D), fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Badge + Heading
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4.5),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF101B36), Color(0xFF1F325C)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFFD6A34A), width: 1.0),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.verified_user_rounded, color: Color(0xFFFFDF7A), size: 12),
+                              SizedBox(width: 6),
+                              Text(
+                                '૧૦૦% પ્રમાણિત વણકર સમાજ વૈવાહિક પ્રોફાઇલ્સ',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFFFDF7A),
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+
+                    // Title
+                    Text(
+                      'Search Profiles (ઉમેદવાર શોધ)',
+                      style: TextStyle(
+                        fontSize: isDesktop ? 30 : 22,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF101B36),
+                        letterSpacing: -0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    ShaderMask(
+                      shaderCallback: (bounds) => const LinearGradient(
+                        colors: [Color(0xFFA4143D), Color(0xFFD97706)],
+                      ).createShader(bounds),
+                      child: const Text(
+                        'સંસ્કારી અને શિક્ષિત વણકર સમાજના સુયોગ્ય ઉમેદવારો (Find Verified Matches)',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Quick Search Box & Gender Toggle Tabs Card
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFD6A34A).withValues(alpha: 0.6),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF101B36).withValues(alpha: 0.06),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Search Input Row
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  height: 46,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFAF8F5),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: const Color(0xFFD6A34A).withValues(alpha: 0.4),
+                                      width: 1.0,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.search_rounded, color: Color(0xFFA4143D), size: 20),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _searchController,
+                                          onChanged: _onSearchChanged,
+                                          style: const TextStyle(
+                                            fontSize: 13.5,
+                                            color: Color(0xFF101B36),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          decoration: const InputDecoration(
+                                            hintText: 'નામ, આઈડી, ગામ કે શહેરથી શોધો... (Search by Name, ID, Village, City)',
+                                            hintStyle: TextStyle(
+                                              fontSize: 13,
+                                              color: Color(0xFF94A3B8),
+                                              fontWeight: FontWeight.normal,
+                                            ),
+                                            border: InputBorder.none,
+                                            isDense: true,
+                                            contentPadding: EdgeInsets.zero,
+                                          ),
+                                        ),
+                                      ),
+                                      if (_searchController.text.isNotEmpty)
+                                        IconButton(
+                                          icon: const Icon(Icons.close_rounded, size: 18, color: Color(0xFF64748B)),
+                                          onPressed: () {
+                                            _searchController.clear();
+                                            _applyActiveFilters();
+                                          },
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+
+                          // Gender Toggle Chips & Count Row
+                          Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 10,
+                            runSpacing: 8,
+                            children: [
+                              // Gender chips
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  _buildWebGenderChip(
+                                    label: 'વર (Grooms)',
+                                    icon: Icons.man_rounded,
+                                    genderValue: 'MALE',
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildWebGenderChip(
+                                    label: 'કન્યા (Brides)',
+                                    icon: Icons.woman_rounded,
+                                    genderValue: 'FEMALE',
+                                  ),
+                                  const SizedBox(width: 8),
+                                  _buildWebGenderChip(
+                                    label: 'બધા (All)',
+                                    icon: Icons.people_alt_rounded,
+                                    genderValue: 'ALL',
+                                  ),
+                                ],
+                              ),
+
+                              // Count badge
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFAF8F5),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFFD6A34A).withValues(alpha: 0.5),
+                                    width: 1.0,
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.check_circle_outline_rounded, size: 14, color: Color(0xFF00695C)),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      '$count ઉમેદવારો ઉપલબ્ધ (Profiles Found)',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF101B36),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWebGenderChip({
+    required String label,
+    required IconData icon,
+    required String genderValue,
+  }) {
+    final isSelected = _selectedGender == genderValue;
+    return InkWell(
+      onTap: () => _onGenderTabChanged(genderValue),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFA4143D) : const Color(0xFFFAF8F5),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFA4143D) : const Color(0xFFCBD5E1),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected ? Colors.white : const Color(0xFF101B36),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.white : const Color(0xFF101B36),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- DESKTOP TWO-COLUMN LAYOUT (SIDEBAR + GRID) ---
+  Widget _buildWebDesktopLayout(BuildContext context, ProfileState profileState, List<ProfileModel> profiles) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column: Sticky Filter Sidebar
+        SizedBox(
+          width: 290,
+          child: _buildWebFilterSidebar(context),
+        ),
+
+        const SizedBox(width: 28),
+
+        // Right Column: Active Filters Bar + Candidate Grid
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildWebActiveFiltersBar(context, profiles.length),
+              const SizedBox(height: 18),
+              if (profileState.isLoading && profiles.isEmpty)
+                _buildWebLoadingGrid()
+              else if (profiles.isEmpty)
+                _buildWebEmptyState(context)
+              else
+                _buildWebCandidateGrid(context, profileState, profiles),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- TABLET & MOBILE WEB LAYOUT ---
+  Widget _buildWebMobileTabletLayout(BuildContext context, ProfileState profileState, List<ProfileModel> profiles) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: () => _showFilterBottomSheet(context),
+                icon: const Icon(Icons.tune_rounded, size: 16, color: Color(0xFFA4143D)),
+                label: const Text('શોધ ફિલ્ટર (Filter Profiles)', style: TextStyle(color: Color(0xFFA4143D), fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFD6A34A).withValues(alpha: 0.5)),
+              ),
+              child: Text(
+                '${profiles.length} પ્રોફાઇલ',
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (profileState.isLoading && profiles.isEmpty)
+          _buildWebLoadingGrid()
+        else if (profiles.isEmpty)
+          _buildWebEmptyState(context)
+        else
+          _buildWebCandidateGrid(context, profileState, profiles),
+      ],
+    );
+  }
+
+  // --- WEB FILTER SIDEBAR ---
+  Widget _buildWebFilterSidebar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFD6A34A).withValues(alpha: 0.55),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Row(
+                children: [
+                  Icon(Icons.tune_rounded, color: Color(0xFFA4143D), size: 18),
+                  SizedBox(width: 8),
+                  Text(
+                    'શોધ ફિલ્ટર (Filters)',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF101B36),
+                    ),
+                  ),
+                ],
+              ),
+              TextButton(
+                onPressed: _resetAllFilters,
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(50, 30),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: const Text(
+                  'રીસેટ (Reset)',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFFA4143D),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const Divider(color: Color(0xFFE2E8F0), height: 22),
+
+          // 1. Candidate Type
+          const Text(
+            'ઉમેદવાર (Looking For)',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
+          ),
+          const SizedBox(height: 10),
+          _buildSidebarRadioItem('👨 વર (Grooms)', 'MALE'),
+          const SizedBox(height: 6),
+          _buildSidebarRadioItem('👰 કન્યા (Brides)', 'FEMALE'),
+          const SizedBox(height: 6),
+          _buildSidebarRadioItem('👥 તમામ (All Candidates)', 'ALL'),
+
+          const Divider(color: Color(0xFFE2E8F0), height: 24),
+
+          // 2. Age Range
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'વય મર્યાદા (Age Range)',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
+              ),
+              Text(
+                '${_ageRange.start.round()} - ${_ageRange.end.round()} વર્ષ',
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFA4143D)),
+              ),
+            ],
+          ),
+          RangeSlider(
+            values: _ageRange,
+            min: 18,
+            max: 55,
+            divisions: 37,
+            activeColor: const Color(0xFFA4143D),
+            inactiveColor: const Color(0xFFE2E8F0),
+            onChanged: (values) {
+              setState(() => _ageRange = values);
+              _debounceTimer?.cancel();
+              _debounceTimer = Timer(const Duration(milliseconds: 300), _applyActiveFilters);
+            },
+          ),
+          // Quick Age Chips
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _buildQuickAgeChip('18-25', 18, 25),
+              _buildQuickAgeChip('26-30', 26, 30),
+              _buildQuickAgeChip('31-35', 31, 35),
+              _buildQuickAgeChip('36+', 36, 55),
+            ],
+          ),
+
+          const Divider(color: Color(0xFFE2E8F0), height: 24),
+
+          // 3. Marital Status
+          const Text(
+            'વૈવાહિક સ્થિતિ (Marital Status)',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _buildSidebarMaritalChip('બધા (All)', 'ALL'),
+              _buildSidebarMaritalChip('અપરિણીત (Never Married)', 'NEVER_MARRIED'),
+              _buildSidebarMaritalChip('છૂટાછેડા (Divorced)', 'DIVORCED'),
+              _buildSidebarMaritalChip('વિધુર / વિધવા (Widowed)', 'WIDOWED'),
+            ],
+          ),
+
+          const Divider(color: Color(0xFFE2E8F0), height: 24),
+
+          // 4. Detailed Advanced Search Link
+          InkWell(
+            onTap: () {
+              final lookingFor = _selectedGender == 'MALE' ? 'Groom' : (_selectedGender == 'FEMALE' ? 'Bride' : 'Groom');
+              context.push('/advanced-search?lookingFor=$lookingFor');
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFAF8F5),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: const Color(0xFFD6A34A).withValues(alpha: 0.6)),
+              ),
+              child: const Row(
+                children: [
+                  Icon(Icons.filter_alt_rounded, size: 16, color: Color(0xFFA4143D)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'વિસ્તૃત શોધ (Advanced Search)',
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF101B36),
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.arrow_forward_ios_rounded, size: 12, color: Color(0xFFA4143D)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Trust Badge inside sidebar
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: const Row(
+              children: [
+                Icon(Icons.lock_rounded, size: 14, color: Color(0xFF00695C)),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '૧૦૦% સુરક્ષિત અને ચકાસાયેલ પારિવારિક માહિતી.',
+                    style: TextStyle(fontSize: 10.5, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebarRadioItem(String label, String genderVal) {
+    final isSelected = _selectedGender == genderVal;
+    return InkWell(
+      onTap: () => _onGenderTabChanged(genderVal),
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFF1F2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFA4143D) : Colors.transparent,
+            width: 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              isSelected ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+              size: 16,
+              color: isSelected ? const Color(0xFFA4143D) : const Color(0xFF94A3B8),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? const Color(0xFFA4143D) : const Color(0xFF334155),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickAgeChip(String label, double min, double max) {
+    final isSelected = _ageRange.start == min && _ageRange.end == max;
+    return InkWell(
+      onTap: () {
+        setState(() => _ageRange = RangeValues(min, max));
+        _applyActiveFilters();
+      },
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFA4143D) : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(6),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+            color: isSelected ? Colors.white : const Color(0xFF475569),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSidebarMaritalChip(String label, String status) {
+    final isSelected = _selectedMaritalStatus == status;
+    return InkWell(
+      onTap: () {
+        setState(() => _selectedMaritalStatus = status);
+        _applyActiveFilters();
+      },
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFA4143D) : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFA4143D) : const Color(0xFFCBD5E1),
+            width: 1.0,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? Colors.white : const Color(0xFF334155),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebActiveFiltersBar(BuildContext context, int count) {
+    final hasSearch = _searchController.text.trim().isNotEmpty;
+    final hasGender = _selectedGender != 'ALL';
+    final hasMarital = _selectedMaritalStatus != 'ALL';
+    final hasAge = _ageRange.start > 18 || _ageRange.end < 55;
+    final hasFilters = hasSearch || hasGender || hasMarital || hasAge;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          Text(
+            'દર્શાવેલ ઉમેદવારો: $count',
+            style: const TextStyle(
+              fontSize: 13.5,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF101B36),
+            ),
+          ),
+          const SizedBox(width: 12),
+          if (hasFilters) ...[
+            const Text('•', style: TextStyle(color: Color(0xFF94A3B8))),
+            const SizedBox(width: 12),
+            Expanded(
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    if (hasGender)
+                      _buildActiveFilterTag(
+                        _selectedGender == 'MALE' ? 'વર (Groom)' : 'કન્યા (Bride)',
+                        () => _onGenderTabChanged('ALL'),
+                      ),
+                    if (hasMarital)
+                      _buildActiveFilterTag(
+                        _selectedMaritalStatus,
+                        () {
+                          setState(() => _selectedMaritalStatus = 'ALL');
+                          _applyActiveFilters();
+                        },
+                      ),
+                    if (hasAge)
+                      _buildActiveFilterTag(
+                        '${_ageRange.start.round()}-${_ageRange.end.round()} વર્ષ',
+                        () {
+                          setState(() => _ageRange = const RangeValues(18, 55));
+                          _applyActiveFilters();
+                        },
+                      ),
+                    if (hasSearch)
+                      _buildActiveFilterTag(
+                        '"${_searchController.text.trim()}"',
+                        () {
+                          _searchController.clear();
+                          _applyActiveFilters();
+                        },
+                      ),
+                    TextButton(
+                      onPressed: _resetAllFilters,
+                      child: const Text('બધા દૂર કરો (Clear All)', style: TextStyle(fontSize: 11.5, color: Color(0xFFA4143D), fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ] else ...[
+            const Spacer(),
+            const Text(
+              'તમામ વણકર સમાજ પ્રોફાઇલ્સ',
+              style: TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.w500),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActiveFilterTag(String label, VoidCallback onRemove) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF1F2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFECDD3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFFA4143D), fontWeight: FontWeight.bold)),
+          const SizedBox(width: 4),
+          InkWell(
+            onTap: onRemove,
+            child: const Icon(Icons.close_rounded, size: 13, color: Color(0xFFA4143D)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- CANDIDATE CARDS GRID FOR WEB ---
+  Widget _buildWebCandidateGrid(BuildContext context, ProfileState profileState, List<ProfileModel> profiles) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth >= 820 ? 2 : 1;
+        final rowCount = (profiles.length + crossAxisCount - 1) ~/ crossAxisCount;
+
+        return Column(
+          children: [
+            for (int r = 0; r < rowCount; r++) ...[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (int c = 0; c < crossAxisCount; c++) ...[
+                    if (c > 0) const SizedBox(width: 18),
+                    Expanded(
+                      child: (r * crossAxisCount + c < profiles.length)
+                          ? _buildWebCandidateCard(
+                              context,
+                              profiles[r * crossAxisCount + c],
+                              r * crossAxisCount + c,
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 18),
+            ],
+            if (profileState.isLoadingNextPage)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: CircularProgressIndicator(color: Color(0xFFA4143D)),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  // --- PRECISE, MODERN WEB CANDIDATE CARD ---
+  Widget _buildWebCandidateCard(BuildContext context, ProfileModel profile, int index) {
+    final isGirl = profile.isFemale;
+    final hasPhoto = profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty;
+    final cleanId = profile.cleanDisplayId;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFD6A34A).withValues(alpha: 0.55),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top Row: Avatar + Name + ID + Gender Badge
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar with Gold Frame & Verified Badge
+                  Stack(
+                    children: [
+                      Container(
+                        width: 66,
+                        height: 66,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFD6A34A),
+                            width: 2.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD6A34A).withValues(alpha: 0.25),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: hasPhoto
+                              ? Image.network(
+                                  profile.fullPhotoUrl!,
+                                  fit: BoxFit.cover,
+                                  width: 66,
+                                  height: 66,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      _buildAvatarFallback(isGirl, profile.fullName),
+                                )
+                              : _buildAvatarFallback(isGirl, profile.fullName),
+                        ),
+                      ),
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(2.5),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF00695C),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 13,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 14),
+
+                  // Name + Gender + ID
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                profile.fullName.isNotEmpty ? profile.fullName : 'Samaj Member',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  color: Color(0xFF101B36),
+                                  height: 1.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                              decoration: BoxDecoration(
+                                color: isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE0F2F1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: isGirl ? const Color(0xFFF48FB1) : const Color(0xFF80CBC4),
+                                  width: 1.0,
+                                ),
+                              ),
+                              child: Text(
+                                isGirl ? '👰 કન્યા (Bride)' : '👨 વર (Groom)',
+                                style: TextStyle(
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: isGirl ? const Color(0xFFA4143D) : const Color(0xFF00695C),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+
+                        // ID Capsule with Copy Action
+                        Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                Clipboard.setData(ClipboardData(text: cleanId));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('ID કોપી થયો: $cleanId'),
+                                    backgroundColor: const Color(0xFFA4143D),
+                                    duration: const Duration(seconds: 2),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              },
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE1F0FF),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF90CAF9), width: 1.0),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'ID: $cleanId',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF1976D2),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.copy_rounded, size: 11, color: Color(0xFF1976D2)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            if (profile.age != null) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFF7ED),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFFFED7AA), width: 1.0),
+                                ),
+                                child: Text(
+                                  '🎂 ${profile.age} વર્ષ',
+                                  style: const TextStyle(
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFC2410C),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 12),
+              // Subtle Divider
+              Container(
+                height: 1,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.transparent, Color(0xFFE2D6C0), Colors.transparent],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Details Rows
+              _buildWebCardInfoRow(
+                Icons.work_outline_rounded,
+                profile.displayProfession,
+              ),
+              const SizedBox(height: 6),
+
+              _buildWebCardInfoRow(
+                Icons.school_outlined,
+                profile.education.isNotEmpty ? profile.education : 'શિક્ષણ વિગતવાર ઉપલબ્ધ',
+              ),
+              const SizedBox(height: 6),
+
+              _buildWebCardInfoRow(
+                Icons.location_on_outlined,
+                profile.displayLocation,
+              ),
+
+              const SizedBox(height: 14),
+
+              // Action Buttons Row: View Profile CTA + Like Heart
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.push('/candidate-profile-details', extra: profile);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFA4143D),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        side: const BorderSide(color: Color(0xFFFFDF7A), width: 1.0),
+                        elevation: 2,
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'View Profile (વિગતવાર જુઓ)',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Icon(Icons.arrow_forward_rounded, size: 14),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _buildWebLikeButton(profile),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebCardInfoRow(IconData icon, String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(icon, size: 15, color: const Color(0xFFA4143D)),
+        const SizedBox(width: 7),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF334155),
+              height: 1.25,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWebLikeButton(ProfileModel profile) {
+    return Consumer(
+      builder: (context, ref, _) {
+        final isLiked = ref.watch(isProfileLikedProvider(profile.id));
+        return Tooltip(
+          message: isLiked ? 'પસંદ કરેલ (Shortlisted)' : 'પસંદ કરો (Shortlist)',
+          child: InkWell(
+            onTap: () {
+              ref.read(likedProfilesProvider.notifier).toggleLike(profile, context: context);
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: isLiked ? const Color(0xFFFCE4EC) : const Color(0xFFFAF8F5),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isLiked ? const Color(0xFFA4143D) : const Color(0xFFCBD5E1),
+                  width: 1.2,
+                ),
+              ),
+              child: Center(
+                child: Icon(
+                  isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                  color: isLiked ? const Color(0xFFA4143D) : const Color(0xFF64748B),
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildWebLoadingGrid() {
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.all(48.0),
+        child: Column(
+          children: [
+            CircularProgressIndicator(color: Color(0xFFA4143D)),
+            SizedBox(height: 16),
+            Text(
+              'પ્રોફાઇલ્સ લોડ થઈ રહી છે... (Loading Candidates)',
+              style: TextStyle(color: Color(0xFF101B36), fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebEmptyState(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(48),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFD6A34A).withValues(alpha: 0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF101B36).withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Column(
+          children: [
+            Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF1F2),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFECDD3), width: 1.5),
+              ),
+              child: const Icon(Icons.person_search_rounded, size: 36, color: Color(0xFFA4143D)),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'કોઈ ઉમેદવાર મળ્યા નથી (No Profiles Found)',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF101B36)),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'તમારી શોધ મુજબ પ્રોફાઇલ ઉપલબ્ધ નથી. કૃપા કરીને ફિલ્ટર્સ બદલો અથવા તમામ ઉમેદવારો જુઓ.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.4),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: _resetAllFilters,
+              icon: const Icon(Icons.refresh_rounded, size: 16),
+              label: const Text('તમામ ઉમેદવારો જુઓ (View All Candidates)', style: TextStyle(fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFA4143D),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _resetAllFilters() {
+    setState(() {
+      _selectedGender = 'ALL';
+      _selectedMaritalStatus = 'ALL';
+      _ageRange = const RangeValues(18, 55);
+      _searchController.clear();
+    });
+    _applyActiveFilters();
+  }
+
+  // ==========================================
+  // NATIVE MOBILE LAYOUT (100% PRESERVED)
+  // ==========================================
+  Widget _buildMobileScaffold(BuildContext context, ProfileState profileState, List<ProfileModel> profiles) {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -1071,7 +2416,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                       // Row 2: Sky Blue ID Capsule with Copy Action
                       InkWell(
                         onTap: () {
-                          final idToCopy = profile.id.isNotEmpty ? profile.id : profile.displayId;
+                          final idToCopy = profile.cleanDisplayId;
                           if (idToCopy.isNotEmpty) {
                             Clipboard.setData(ClipboardData(text: idToCopy));
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -1093,7 +2438,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             border: Border.all(color: const Color(0xFF90CAF9), width: 1.0),
                           ),
                           child: Text(
-                            'ID: ${profile.id.isNotEmpty ? profile.id : (profile.displayId.isNotEmpty ? profile.displayId : "d651408e-a133-4989-ae72-3a5efdaba695")}',
+                            'ID: ${profile.cleanDisplayId}',
                             style: const TextStyle(
                               fontSize: 10.2,
                               fontWeight: FontWeight.bold,

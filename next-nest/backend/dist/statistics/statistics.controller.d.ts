@@ -95,30 +95,12 @@ export declare class StatisticsController {
         designation: string | null;
         about: string | null;
         photoUrl: string | null;
-        photos: string | null;
         isPhysicallyDisabled: boolean;
         pwbdCategory: string | null;
         isAbroad: boolean;
         abroadCountry: string | null;
         businessIndustry: string | null;
         businessService: string | null;
-        bloodGroup: string | null;
-        isVankar: boolean;
-        annualIncome: string | null;
-        fatherName: string | null;
-        fatherOccupation: string | null;
-        fatherContact: string | null;
-        motherName: string | null;
-        motherOccupation: string | null;
-        guardianContact: string | null;
-        siblings: string | null;
-        mamasVillage: string | null;
-        addressLine: string | null;
-        pincode: string | null;
-        altPhone: string | null;
-        contactEmail: string | null;
-        motherTongue: string | null;
-        privacySettings: string | null;
         stateId: string | null;
         districtId: string | null;
         talukaId: string | null;
@@ -126,7 +108,6 @@ export declare class StatisticsController {
         villageId: string | null;
         isVerified: boolean;
         isFeatured: boolean;
-        showInMatrimony: boolean;
     }[]>;
     getSectionViews(): Promise<{
         id: string;

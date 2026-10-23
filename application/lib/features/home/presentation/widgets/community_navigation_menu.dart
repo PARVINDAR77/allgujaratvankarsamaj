@@ -103,18 +103,18 @@ class CommunityNavigationMenu extends ConsumerWidget {
                           ],
                         ),
                         child: CircleAvatar(
-                          radius: 22,
-                          backgroundColor: const Color(0xFF041126),
+                          radius: 24,
+                          backgroundColor: Colors.white,
                           child: ClipOval(
                             child: Image.asset(
-                              'assets/images/logo.png',
+                              'assets/images/vankar_samaj_official_emblem.png',
                               fit: BoxFit.cover,
-                              width: 40,
-                              height: 40,
+                              width: 48,
+                              height: 48,
                               errorBuilder: (_, __, ___) => const Icon(
                                 Icons.temple_hindu,
                                 color: Color(0xFFD4AF37),
-                                size: 24,
+                                size: 26,
                               ),
                             ),
                           ),
