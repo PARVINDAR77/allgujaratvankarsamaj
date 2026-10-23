@@ -736,6 +736,8 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                   onTap: () {
                     if (item.photoUrl != null && item.photoUrl!.isNotEmpty) {
                       _openPhotoLightbox(context, item);
+                    } else {
+                      _showWebMentorDetailModal(context, item);
                     }
                   },
                   borderRadius: BorderRadius.circular(60),
@@ -766,7 +768,7 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                     child: Container(
                       decoration: const BoxDecoration(
                         shape: BoxShape.circle,
-                        color: Color(0xFF041126),
+                        color: Color(0xFFFFFBEB),
                       ),
                       child: ClipOval(
                         child: _buildMentorPhoto(item),
@@ -939,8 +941,9 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
   Widget _buildMentorAssetFallback(PavanPrernadata item) {
     if (item.id == 'mentor_buddha' || item.name.toLowerCase().contains('buddha')) {
       return Image.asset(
-        'assets/images/buddha_golden_statue_transparent.png',
-        fit: BoxFit.contain,
+        'assets/images/buddha_meditation_sacred.jpg',
+        fit: BoxFit.cover,
+        alignment: Alignment.center,
         errorBuilder: (context, error, stackTrace) => const Center(
           child: Icon(Icons.self_improvement_rounded, size: 50, color: Color(0xFFFFD700)),
         ),
@@ -1026,6 +1029,27 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   children: [
+                    Center(
+                      child: Container(
+                        width: 90,
+                        height: 90,
+                        margin: const EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFD4AF37), width: 2.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFD4AF37).withValues(alpha: 0.35),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: _buildMentorPhoto(item),
+                        ),
+                      ),
+                    ),
                     if (item.designation != null && item.designation!.isNotEmpty) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
@@ -1381,10 +1405,10 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                                               width: 180,
                                               height: 180,
                                               errorBuilder: (context, error, stackTrace) =>
-                                                  _buildPlaceholderAvatar(),
+                                                  _buildPlaceholderAvatar(item),
                                             ),
                                           )
-                                        : _buildPlaceholderAvatar(),
+                                        : _buildPlaceholderAvatar(item),
                                   ),
                                 ),
                               ),
@@ -1627,7 +1651,10 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
     );
   }
 
-  Widget _buildPlaceholderAvatar() {
+  Widget _buildPlaceholderAvatar([PavanPrernadata? item]) {
+    if (item != null) {
+      return _buildMentorAssetFallback(item);
+    }
     return Container(
       color: const Color(0xFF061A36),
       child: const Center(
