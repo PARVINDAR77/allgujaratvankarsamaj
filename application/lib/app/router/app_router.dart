@@ -64,34 +64,47 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authNotifierProvider);
       final location = state.uri.toString();
       final isLoggingIn = location == '/login' || location == '/register';
-      final isWebMatrimonyHome = kIsWeb && (location == '/home' || location.startsWith('/home'));
-      final isCommunityPublicRoute = location.startsWith('/main-poster') ||
+
+      // Public routes for unauthenticated visitors (Legal, Auth, Public Community Home & Portals)
+      final isPublicRoute = isLoggingIn ||
+          location == '/privacy-policy' ||
+          location == '/delete-account' ||
+          location == '/privacy-contact' ||
+          location.startsWith('/main-poster') ||
           location.startsWith('/main_poster') ||
-          isWebMatrimonyHome ||
-          location.startsWith('/match') ||
-          location.startsWith('/search') ||
-          location.startsWith('/search-results') ||
-          location.startsWith('/candidate-profile-details') ||
-          location.startsWith('/profile-details') ||
+          location.startsWith('/statistics') ||
           location.startsWith('/pavan-prernadata') ||
-          location.startsWith('/family-details') ||
+          location.startsWith('/samaj-super-stars') ||
+          location.startsWith('/samaj-super-stars-poster') ||
+          location.startsWith('/samaj-ratna') ||
+          location.startsWith('/education') ||
+          location.startsWith('/advertisement') ||
+          location.startsWith('/birthdays');
+
+      // Community routes accessible by logged-in users who do not yet have a verified matrimony profile
+      final isCommunityModuleRoute = location.startsWith('/main-poster') ||
+          location.startsWith('/main_poster') ||
           location.startsWith('/samaj-services') ||
           location.startsWith('/samaj-super-stars') ||
           location.startsWith('/education') ||
           location.startsWith('/government-employees') ||
           location.startsWith('/private-employees') ||
-          location.startsWith('/statistics');
-
-      final isPublicRoute = isLoggingIn ||
-          location == '/privacy-policy' ||
-          location == '/delete-account' ||
-          location == '/privacy-contact' ||
-          isCommunityPublicRoute;
+          location.startsWith('/family-details') ||
+          location.startsWith('/pavan-prernadata') ||
+          location.startsWith('/statistics') ||
+          location.startsWith('/birthdays') ||
+          location.startsWith('/pargana-overview') ||
+          location.startsWith('/advertisement') ||
+          location.startsWith('/success-stories') ||
+          location.startsWith('/samaj-ratna') ||
+          location.startsWith('/family-directory-poster') ||
+          location.startsWith('/samaj-super-stars-poster');
 
       if (authState.status == AuthStatus.initial) {
         return null;
       }
 
+      // Mandatory guard: Unauthenticated users MUST be redirected to login
       if (!authState.isAuthenticated && !isPublicRoute) {
         return '/login';
       }
@@ -107,7 +120,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               location == '/privacy-policy' ||
               location == '/delete-account' ||
               location == '/privacy-contact' ||
-              isCommunityPublicRoute;
+              isCommunityModuleRoute;
 
           if (!isAllowedNoProfileRoute) {
             return '/profile/create';
@@ -124,7 +137,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               location == '/privacy-policy' ||
               location == '/delete-account' ||
               location == '/privacy-contact' ||
-              isCommunityPublicRoute;
+              isCommunityModuleRoute;
 
           if (!isAllowedUnverifiedRoute) {
             return '/profile-under-review';
@@ -141,6 +154,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      GoRoute(
+        path: '/',
+        redirect: (context, state) {
+          final authState = ref.read(authNotifierProvider);
+          if (authState.isAuthenticated) {
+            return '/main-poster';
+          }
+          return '/login';
+        },
+      ),
       GoRoute(
         path: '/login',
         name: 'login',

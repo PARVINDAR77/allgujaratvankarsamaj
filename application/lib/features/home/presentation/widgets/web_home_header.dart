@@ -147,31 +147,37 @@ class WebHomeHeader extends ConsumerWidget implements PreferredSizeWidget {
             const SizedBox(width: 12),
 
             // Typography
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'All Gujarat Vankar Samaj',
-                  style: TextStyle(
-                    color: Color(0xFF101B36),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.3,
-                    height: 1.15,
+            const Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'All Gujarat Vankar Samaj',
+                    style: TextStyle(
+                      color: Color(0xFF101B36),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.3,
+                      height: 1.15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'એક સમાજ, એક વિચાર, એક પરિવાર',
-                  style: TextStyle(
-                    color: Color(0xFFA4143D),
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
+                  SizedBox(height: 2),
+                  Text(
+                    'એક સમાજ, એક વિચાર, એક પરિવાર',
+                    style: TextStyle(
+                      color: Color(0xFFA4143D),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),

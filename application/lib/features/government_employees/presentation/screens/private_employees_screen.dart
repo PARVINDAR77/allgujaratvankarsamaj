@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../../shared/constants/app_data.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../home/presentation/widgets/web_home_header.dart';
 
 class PrivateEmployeesScreen extends ConsumerStatefulWidget {
   const PrivateEmployeesScreen({super.key});
@@ -1328,8 +1330,10 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: kIsWeb ? const WebHomeHeader(activeRoute: '/private-employees') : null,
       backgroundColor: Colors.white,
       body: SafeArea(
+        top: !kIsWeb,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final isDesktop = constraints.maxWidth > 850;
@@ -1541,11 +1545,76 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
               ],
             ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                flex: isDesktop ? 6 : 3,
-                child: SizedBox(
+          if (isDesktop)
+            Row(
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: SizedBox(
+                    height: 42,
+                    child: TextField(
+                      controller: _searchController,
+                      onChanged: (_) => setState(() {}),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search, color: Color(0xFFA4143D), size: 20),
+                        hintText: 'Search by Name (નામથી શોધો)...',
+                        hintStyle: const TextStyle(fontSize: 12.5, color: Color(0xFF9CA3AF)),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFFD6A34A)),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFFE5D5BA)),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Color(0xFFA4143D), width: 1.5),
+                        ),
+                        filled: true,
+                        fillColor: const Color(0xFFFAF8F5),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                SizedBox(
+                  height: 42,
+                  child: ElevatedButton.icon(
+                    onPressed: () => setState(() {}),
+                    icon: const Icon(Icons.search, size: 16),
+                    label: const Text('Search (શોધો)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFA4143D),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 42,
+                  child: OutlinedButton.icon(
+                    onPressed: _resetFilters,
+                    icon: const Icon(Icons.refresh, size: 15),
+                    label: const Text('Reset (રીસેટ)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF4B5563),
+                      side: const BorderSide(color: Color(0xFFD1D5DB)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Column(
+              children: [
+                SizedBox(
                   height: 42,
                   child: TextField(
                     controller: _searchController,
@@ -1572,41 +1641,47 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 10),
-              SizedBox(
-                height: 42,
-                child: Row(
+                const SizedBox(height: 8),
+                Row(
                   children: [
-                    ElevatedButton.icon(
-                      onPressed: () => setState(() {}),
-                      icon: const Icon(Icons.search, size: 16),
-                      label: const Text('Search (શોધો)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFA4143D),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        elevation: 1,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    Expanded(
+                      child: SizedBox(
+                        height: 42,
+                        child: ElevatedButton.icon(
+                          onPressed: () => setState(() {}),
+                          icon: const Icon(Icons.search, size: 16),
+                          label: const Text('Search (શોધો)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFA4143D),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            elevation: 1,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
-                    OutlinedButton.icon(
-                      onPressed: _resetFilters,
-                      icon: const Icon(Icons.refresh, size: 15),
-                      label: const Text('Reset (રીસેટ)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF4B5563),
-                        side: const BorderSide(color: Color(0xFFD1D5DB)),
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    Expanded(
+                      child: SizedBox(
+                        height: 42,
+                        child: OutlinedButton.icon(
+                          onPressed: _resetFilters,
+                          icon: const Icon(Icons.refresh, size: 15),
+                          label: const Text('Reset (રીસેટ)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF4B5563),
+                            side: const BorderSide(color: Color(0xFFD1D5DB)),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

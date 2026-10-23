@@ -51,6 +51,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       String decoded = utf8.decode(base64Url.decode(normalized));
       
       final data = jsonDecode(decoded);
+      if (data is! Map<String, dynamic>) return null;
+
+      // Check token expiration if 'exp' is present
+      if (data['exp'] != null) {
+        final expSeconds = data['exp'] is int ? data['exp'] as int : int.tryParse(data['exp'].toString());
+        if (expSeconds != null) {
+          final expDate = DateTime.fromMillisecondsSinceEpoch(expSeconds * 1000);
+          if (DateTime.now().isAfter(expDate)) {
+            print('JWT Token expired at $expDate');
+            return null;
+          }
+        }
+      }
+
       return UserModel(
         id: data['sub']?.toString() ?? '',
         email: data['email']?.toString() ?? '',
@@ -66,8 +80,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> _checkAuth() async {
-    // Make login mandatory every time by clearing any existing session on startup
-    await _storage.deleteToken();
+    try {
+      final token = await _storage.getToken();
+      if (token != null && token.trim().isNotEmpty) {
+        final user = _decodeToken(token);
+        if (user != null) {
+          state = AuthState.authenticated(user);
+          return;
+        } else {
+          // Token is invalid or expired, clean up
+          await _storage.deleteToken();
+        }
+      }
+    } catch (e) {
+      print('JWT auth check error: $e');
+    }
     state = AuthState.unauthenticated();
   }
 

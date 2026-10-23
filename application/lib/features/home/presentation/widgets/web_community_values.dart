@@ -158,25 +158,32 @@ class WebCommunityValues extends ConsumerWidget {
             ),
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.wb_sunny_rounded, color: Color(0xFFD6A34A), size: 16),
-              const SizedBox(width: 8),
-              const Text(
-                'Join Our Community  •  Build A Better Tomorrow',
-                style: TextStyle(
-                  color: Color(0xFF101B36),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
+        Flexible(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: const [
+                Icon(Icons.wb_sunny_rounded, color: Color(0xFFD6A34A), size: 15),
+                SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'Join Our Community  •  Build A Better Tomorrow',
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: Color(0xFF101B36),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Icon(Icons.wb_sunny_rounded, color: Color(0xFFD6A34A), size: 16),
-            ],
+                SizedBox(width: 6),
+                Icon(Icons.wb_sunny_rounded, color: Color(0xFFD6A34A), size: 15),
+              ],
+            ),
           ),
         ),
         Expanded(

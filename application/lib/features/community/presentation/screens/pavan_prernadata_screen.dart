@@ -1,10 +1,14 @@
 import 'dart:math' as math;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/pavan_prernadata_provider.dart';
 import '../../../home/presentation/providers/view_badge.dart';
 import '../../../home/presentation/providers/views_provider.dart';
+import '../../../home/presentation/widgets/web_home_header.dart';
+import '../../../home/presentation/widgets/web_home_footer.dart';
 
 class PavanPrernadataScreen extends ConsumerStatefulWidget {
   const PavanPrernadataScreen({super.key});
@@ -196,6 +200,13 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
   Widget build(BuildContext context) {
     final asyncData = ref.watch(pavanPrernadataProvider);
 
+    if (kIsWeb) {
+      return _buildWebScaffold(context, asyncData);
+    }
+    return _buildMobileScaffold(context, asyncData);
+  }
+
+  Widget _buildMobileScaffold(BuildContext context, AsyncValue<List<PavanPrernadata>> asyncData) {
     return Scaffold(
       backgroundColor: const Color(0xFF020914),
       body: Stack(
@@ -270,6 +281,849 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
             child: _buildTopHeader(asyncData.valueOrNull?.length ?? 0),
           ),
         ],
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // ============================ WEB DESKTOP SCAFFOLD ==========================
+  // ===========================================================================
+  Widget _buildWebScaffold(BuildContext context, AsyncValue<List<PavanPrernadata>> asyncData) {
+    final width = MediaQuery.of(context).size.width;
+    final isDesktop = width >= 1050;
+    final isTablet = width >= 700 && width < 1050;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFAF8F5),
+      appBar: const WebHomeHeader(activeRoute: '/pavan-prernadata'),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // 1. Prestigious Hero Banner with Breadcrumbs & Title
+            _buildWebHeroBanner(context, isDesktop),
+
+            // 2. Centered Content Container
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1240),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isDesktop ? 32 : (isTablet ? 20 : 16),
+                    vertical: 36,
+                  ),
+                  child: asyncData.when(
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(60.0),
+                        child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                      ),
+                    ),
+                    error: (err, _) => _buildWebErrorCard(err),
+                    data: (items) {
+                      final enrichedItems = _getEnrichedMentors(items);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _buildWebSectionIntro(),
+                          const SizedBox(height: 32),
+                          _buildWebMentorGrid(context, enrichedItems, isDesktop, isTablet),
+                          const SizedBox(height: 48),
+                          _buildWebInspirationBanner(context),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // 3. Official Web Home Footer
+            const WebHomeFooter(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebHeroBanner(BuildContext context, bool isDesktop) {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF020F1F),
+            Color(0xFF092042),
+            Color(0xFF041126),
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
+            width: 1.5,
+          ),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1240),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 32 : 20,
+              vertical: isDesktop ? 32 : 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top Row: Breadcrumbs & Badges
+                Wrap(
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 10,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () => context.go('/main-poster'),
+                          borderRadius: BorderRadius.circular(4),
+                          child: const Text(
+                            'Home',
+                            style: TextStyle(
+                              color: Color(0xFFD4AF37),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFF94A3B8)),
+                        ),
+                        Flexible(
+                          child: Text(
+                            isDesktop ? 'Pavan Prernadata (પાવન પ્રેરણાદાતા)' : 'પાવન પ્રેરણાદાતા',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Color(0xFFE2E8F0),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          onTap: () => ref.refresh(pavanPrernadataProvider),
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFFD4AF37).withValues(alpha: 0.4),
+                                width: 1.0,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.refresh_rounded, size: 15, color: Color(0xFFFFD700)),
+                                SizedBox(width: 5),
+                                Text(
+                                  'Refresh',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        const ViewBadge(sectionName: 'PAVAN_PRERNADATA', isLight: true),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+
+                // Main Title & Subtitle with Sacred Emblem Icon
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFFFFEA88),
+                            Color(0xFFD4AF37),
+                            Color(0xFF8B5A10),
+                            Color(0xFFFFD700),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(2.5),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF041126),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.flare_rounded,
+                            color: Color(0xFFFFD700),
+                            size: 30,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 18),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            'પાવન પ્રેરણાદાતા - સમાજ ગૌરવ અને પ્રેરણા',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Honoring the Visionary Mentors, Guides, and Spiritual Pioneers Who Illuminate Our Samaj',
+                            style: TextStyle(
+                              color: Color(0xFFE2C981),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebSectionIntro() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Container(
+                  height: 1.5,
+                  color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
+                ),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10),
+                child: Text(
+                  '✦ આદરણીય માર્ગદર્શકો અને પાવન મહાનુભાવો ✦',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF8C5D00),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  height: 1.5,
+                  color: const Color(0xFFD4AF37).withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'સમાજના પ્રત્યેક પરિવાર અને યુવા પેઢી માટે આદર્શ અને પ્રેરણારૂપ આધ્યાત્મિક જ્યોતિર્ધરો',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Color(0xFF475569),
+            fontSize: 14.5,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  List<PavanPrernadata> _getEnrichedMentors(List<PavanPrernadata> apiItems) {
+    final List<PavanPrernadata> result = [];
+    
+    // Add official default spiritual icons if not already present from database
+    final hasBuddha = apiItems.any((e) => e.name.toLowerCase().contains('buddha') || (e.gujaratiName ?? '').contains('બુદ્ધ'));
+    if (!hasBuddha) {
+      result.add(
+        PavanPrernadata(
+          id: 'mentor_buddha',
+          name: 'Bhagwan Gautama Buddha',
+          gujaratiName: 'ભગવાન ગૌતમ બુદ્ધ',
+          designation: 'કરુણા અને પ્રજ્ઞાના શાશ્વત પ્રેરક',
+          year: 'શાશ્વત માર્ગદર્શક',
+          description: 'માનવતા, સમાનતા, કરુણા અને આત્મ દીપો ભવ (પોતાના દીપક પોતે બનો) નો શાશ્વત સંદેશ આપનાર પરમ પ્રેરણાદાતા. સમગ્ર વિશ્વને કરુણા, અહિંસા અને સદાચારનો પાવન માર્ગ દર્શાવ્યો.',
+          photoUrl: '',
+        ),
+      );
+    }
+
+    final hasAmbedkar = apiItems.any((e) => e.name.toLowerCase().contains('ambedkar') || (e.gujaratiName ?? '').contains('આંબેડકર'));
+    if (!hasAmbedkar) {
+      result.add(
+        PavanPrernadata(
+          id: 'mentor_ambedkar',
+          name: 'Dr. B. R. Ambedkar',
+          gujaratiName: 'બોધિસત્વ ડૉ. બાબાસાહેબ આંબેડકર',
+          designation: 'બંધારણના શિલ્પી અને સામાજિક ક્રાંતિના પ્રણેતા',
+          year: 'ભારતરત્ન',
+          description: 'શિક્ષિત બનો, સંગઠિત બનો, સંઘર્ષ કરો. સામાજિક સમાનતા, બંધારણીય અધિકારો અને માનવ ગૌરવના અમર પ્રણેતા જેમણે સમાજના પ્રત્યેક વર્ગના ઉત્થાન માટે આજીવન સેવા આપી.',
+          photoUrl: '',
+        ),
+      );
+    }
+
+    // Add API items
+    result.addAll(apiItems);
+
+    // If still under 4 items, add Sant Kabir and Sant Ravidas
+    if (result.length < 4) {
+      result.add(
+        PavanPrernadata(
+          id: 'mentor_kabir',
+          name: 'Sant Shiromani Kabir Saheb',
+          gujaratiName: 'સંત શિરોમણી કબીર સાહેબ',
+          designation: 'સામાજિક સમરસતા અને એકતાના પ્રેરક',
+          year: 'અધ્યાત્મિક જ્યોતિર્ધર',
+          description: 'કર્મ, સત્ય, સાદગી અને માનવ માત્ર એક સમાન - વણકર પરંપરાના ગૌરવશાળી સંત જેમણે દોહાઓ અને સાધના દ્વારા સમગ્ર માનવજાતને ભાઈચારો અને સમાનતાનો પાવન ઉપદેશ આપ્યો.',
+          photoUrl: '',
+        ),
+      );
+      result.add(
+        PavanPrernadata(
+          id: 'mentor_ravidas',
+          name: 'Sant Shiromani Ravidas Maharaj',
+          gujaratiName: 'સંત શિરોમણી રોહિદાસ મહારાજ',
+          designation: 'સમતાવાદી સમાજના પરમ ચિંતક',
+          year: 'શાશ્વત પ્રેરક',
+          description: 'મન ચંગા તો કઠોતી મેં ગંગા. શ્રમ, સદાચાર અને માનવીય મૂલ્યોનું ગૌરવ પ્રસ્થાપિત કરનાર આધ્યાત્મિક ગુરુ જેમણે ભેદભાવ વિના સૌને સમાન પ્રેમ આપવાનો સંદેશ આપ્યો.',
+          photoUrl: '',
+        ),
+      );
+    }
+
+    return result;
+  }
+
+  Widget _buildWebMentorGrid(
+    BuildContext context,
+    List<PavanPrernadata> items,
+    bool isDesktop,
+    bool isTablet,
+  ) {
+    final int crossAxisCount = isDesktop ? 3 : (isTablet ? 2 : 1);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final totalSpacing = 24.0 * (crossAxisCount - 1);
+        final itemWidth = (constraints.maxWidth - totalSpacing) / crossAxisCount;
+
+        return Wrap(
+          spacing: 24,
+          runSpacing: 24,
+          children: items.map((item) {
+            return SizedBox(
+              width: itemWidth,
+              child: _buildWebMentorCard(context, item),
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
+
+  Widget _buildWebMentorCard(BuildContext context, PavanPrernadata item) {
+    final tributeCount = _tributeCounts[item.id] ?? 0;
+    final displayName = item.gujaratiName?.isNotEmpty == true ? item.gujaratiName! : item.name;
+    final subName = item.name.isNotEmpty && item.name != displayName ? item.name : '';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFD4AF37).withValues(alpha: 0.35),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Card Header Band with floral aura
+          Container(
+            height: 10,
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFD4AF37),
+                  Color(0xFFFFF2C2),
+                  Color(0xFFB8860B),
+                  Color(0xFFD4AF37),
+                ],
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(22.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Circular Portrait Frame
+                InkWell(
+                  onTap: () {
+                    if (item.photoUrl != null && item.photoUrl!.isNotEmpty) {
+                      _openPhotoLightbox(context, item);
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(60),
+                  child: Container(
+                    width: 116,
+                    height: 116,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFFFEA88),
+                          Color(0xFFD4AF37),
+                          Color(0xFF8B5A10),
+                          Color(0xFFFFD700),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    padding: const EdgeInsets.all(3.5),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF041126),
+                      ),
+                      child: ClipOval(
+                        child: _buildMentorPhoto(item),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Name (Gujarati in Bold, English in Subtitle)
+                Text(
+                  displayName,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFF041126),
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.2,
+                  ),
+                ),
+                if (subName.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  Text(
+                    subName,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFFA4143D),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+                const SizedBox(height: 12),
+
+                // Designation / Title Badge
+                if (item.designation != null && item.designation!.isNotEmpty)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFBEB),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: const Color(0xFFFCD34D),
+                        width: 1.0,
+                      ),
+                    ),
+                    child: Text(
+                      item.designation!,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Color(0xFF92400E),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                const SizedBox(height: 14),
+
+                // Description Quote (3 lines max)
+                if (item.description != null && item.description!.isNotEmpty)
+                  Text(
+                    item.description!,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Color(0xFF475569),
+                      fontSize: 13,
+                      height: 1.45,
+                    ),
+                  ),
+                const SizedBox(height: 20),
+
+                const Divider(height: 1, color: Color(0xFFE2E8F0)),
+                const SizedBox(height: 16),
+
+                // Action Buttons: View Bio & Sneh Vandan
+                Row(
+                  children: [
+                    // Read Bio Modal Button
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => _showWebMentorDetailModal(context, item),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        ),
+                        child: const Text(
+                          'પરિચય જુઓ',
+                          style: TextStyle(
+                            color: Color(0xFF0F172A),
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+
+                    // Sneh Vandan Tribute Button
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => _sendSnehVandan(item),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA4143D),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          elevation: 1,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🙏', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 5),
+                            const Text(
+                              'સ્નેહ વંદન',
+                              style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                            ),
+                            if (tributeCount > 0) ...[
+                              const SizedBox(width: 5),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFD4AF37),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '+$tributeCount',
+                                  style: const TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMentorPhoto(PavanPrernadata item) {
+    if (item.photoUrl != null && item.photoUrl!.isNotEmpty) {
+      return Image.network(
+        item.photoUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _buildMentorAssetFallback(item),
+      );
+    }
+    return _buildMentorAssetFallback(item);
+  }
+
+  Widget _buildMentorAssetFallback(PavanPrernadata item) {
+    if (item.id == 'mentor_buddha' || item.name.toLowerCase().contains('buddha')) {
+      return Image.asset(
+        'assets/images/buddha_golden_statue_transparent.png',
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) => const Center(
+          child: Icon(Icons.self_improvement_rounded, size: 50, color: Color(0xFFFFD700)),
+        ),
+      );
+    }
+    if (item.id == 'mentor_ambedkar' || item.name.toLowerCase().contains('ambedkar')) {
+      return Image.asset(
+        'assets/images/babasaheb_ambedkar_poster.jpg',
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Center(
+          child: Icon(Icons.school_rounded, size: 50, color: Color(0xFFFFD700)),
+        ),
+      );
+    }
+    return Container(
+      color: const Color(0xFF041126),
+      child: Center(
+        child: Text(
+          (item.gujaratiName?.isNotEmpty == true ? item.gujaratiName![0] : (item.name.isNotEmpty ? item.name[0] : 'પ')),
+          style: const TextStyle(
+            color: Color(0xFFFFD700),
+            fontSize: 42,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showWebMentorDetailModal(BuildContext context, PavanPrernadata item) {
+    final displayName = item.gujaratiName?.isNotEmpty == true ? item.gujaratiName! : item.name;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+        child: Container(
+          width: 560,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFD4AF37), width: 1.5),
+            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 20)],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Modal Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF020F1F), Color(0xFF092042)],
+                  ),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.menu_book_rounded, color: Color(0xFFFFD700), size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        displayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 22),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Modal Content
+              Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    if (item.designation != null && item.designation!.isNotEmpty) ...[
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFBEB),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFFCD34D)),
+                        ),
+                        child: Text(
+                          item.designation!,
+                          style: const TextStyle(color: Color(0xFF92400E), fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    Text(
+                      item.description ?? 'સમાજના આદર્શ અને પ્રેરણાદાતા.',
+                      style: const TextStyle(
+                        color: Color(0xFF334155),
+                        fontSize: 14.5,
+                        height: 1.6,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(ctx).pop();
+                          _sendSnehVandan(item);
+                        },
+                        icon: const Text('🙏', style: TextStyle(fontSize: 18)),
+                        label: const Text('આદરપૂર્વક સ્નેહ વંદન પાઠવો'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA4143D),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWebInspirationBanner(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF7E102F), Color(0xFFA4143D), Color(0xFF5D0B22)],
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFD4AF37), width: 1.4),
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
+      ),
+      child: Column(
+        children: const [
+          Text('✨ આત્મ દીપો ભવ • સમાનતા અને કરુણા ✨', style: TextStyle(color: Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.w800)),
+          SizedBox(height: 8),
+          Text(
+            'સમાજના પ્રત્યેક યુવાન અને દીકરી શિક્ષણ, સંસ્કાર અને સમરસતાના પંથે આગળ વધી સમાજનું ગૌરવ વધારે એ જ આપણા પાવન પ્રેરણાદાતાઓનો સાચો ઉપદેશ છે.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontSize: 14, height: 1.6),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWebErrorCard(Object err) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: const Color(0xFFD4AF37)),
+        ),
+        child: Column(
+          children: [
+            const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 48),
+            const SizedBox(height: 12),
+            const Text('પાવન પ્રેરણાદાતા માહિતી લોડ થઈ શકી નથી', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => ref.refresh(pavanPrernadataProvider),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF041126), foregroundColor: Colors.white),
+              child: const Text('ફરી પ્રયાસ કરો (Retry)'),
+            ),
+          ],
+        ),
       ),
     );
   }

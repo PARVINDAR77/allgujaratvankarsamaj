@@ -757,18 +757,21 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                           ),
                         ],
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
-                        children: [
+                        children: const [
                           Icon(Icons.auto_awesome, size: 14, color: Color(0xFFFFD700)),
                           SizedBox(width: 6),
-                          Text(
-                            '૧૦૦% વેરિફાઇડ પરિવાર ડિરેક્ટરી (Verified Samaj Family Directory)',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
+                          Flexible(
+                            child: Text(
+                              '૧૦૦% વેરિફાઇડ પરિવાર ડિરેક્ટરી (Verified Samaj Family Directory)',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                         ],
