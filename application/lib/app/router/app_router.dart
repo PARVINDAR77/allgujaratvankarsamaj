@@ -57,7 +57,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = ref.watch(authRouterListenableProvider);
 
   return GoRouter(
-    initialLocation: kIsWeb ? '/main-poster' : '/login',
+    initialLocation: '/login',
     refreshListenable: authListenable,
     redirect: (context, state) {
       final authState = ref.read(authNotifierProvider);
@@ -170,7 +170,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           if (authState.isAuthenticated) {
             return '/main-poster';
           }
-          return kIsWeb ? '/main-poster' : '/login';
+          return '/login';
         },
       ),
       GoRoute(
