@@ -1001,18 +1001,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Left Promotional Panel: Full heritage poster, zero cropping at top or bottom!
+          // Left Promotional Panel: Full sacred Buddha poster, zero cropping at top or bottom!
           Container(
             width: leftWidth,
             height: availableHeight,
-            color: const Color(0xFFF7EFE6),
+            color: const Color(0xFFFAF8F5),
             alignment: Alignment.center,
             child: Image.asset(
-              'assets/images/heritage_login_poster.png',
+              'assets/images/buddha_sacred_login_poster.png',
               width: leftWidth,
               height: leftHeight,
               fit: BoxFit.contain,
-              errorBuilder: (ctx, err, _) => Container(color: const Color(0xFFF7EFE6)),
+              errorBuilder: (ctx, err, _) => Image.asset(
+                'assets/images/heritage_login_poster.png',
+                width: leftWidth,
+                height: leftHeight,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
 
