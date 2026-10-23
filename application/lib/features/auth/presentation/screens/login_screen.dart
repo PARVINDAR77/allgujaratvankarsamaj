@@ -963,6 +963,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           // Centered Form Content
           LayoutBuilder(
             builder: (context, constraints) {
+              final hPad = constraints.maxWidth < 460 ? 20.0 : 40.0;
               return SingleChildScrollView(
                 child: ConstrainedBox(
                   constraints: BoxConstraints(
@@ -970,7 +971,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   ),
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                      padding: EdgeInsets.symmetric(horizontal: hPad, vertical: 20),
                       child: formContent,
                     ),
                   ),
@@ -986,12 +987,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _buildBuddhaWebSplitLoginView(Size size, double availableHeight) {
     const double posterRatio = 975.0 / 865.0; // 1.12716763 exact image ratio
 
-    // Ensure the right login panel always gets at least 460px of breathing room
-    final double maxLeftWidth = size.width - 460.0;
+    // Ensure the right login panel always gets at least 380px of breathing room
+    final double maxLeftWidth = size.width - 380.0;
     final double exactHeightWidth = availableHeight * posterRatio;
 
     // Maintain the exact aspect ratio of the poster so top logo and bottom ribbon are NEVER cut
-    final double leftWidth = exactHeightWidth > maxLeftWidth ? maxLeftWidth : exactHeightWidth;
+    final double leftWidth = (exactHeightWidth > maxLeftWidth ? maxLeftWidth : exactHeightWidth).clamp(280.0, size.width * 0.55);
     final double leftHeight = leftWidth / posterRatio;
 
     return SizedBox(
@@ -1027,24 +1028,77 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _buildBuddhaWebMobileLoginView(Size size, double availableHeight) {
     return Container(
       color: Colors.white,
-      child: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Top Compact Heritage Temple Banner
-            AspectRatio(
-              aspectRatio: 975.0 / 620.0,
-              child: Image.asset(
-                'assets/images/heritage_login_poster.png',
-                fit: BoxFit.cover,
-                alignment: Alignment.topCenter,
-              ),
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Top Compact Brand Header
+                Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 58,
+                        height: 58,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFFFF9F5),
+                          border: Border.all(color: const Color(0xFFF0D5C1), width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFA4143D).withValues(alpha: 0.12),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Image.asset(
+                              'assets/images/matrimony_couple_logo.png',
+                              fit: BoxFit.contain,
+                              errorBuilder: (ctx, err, _) => Image.asset(
+                                'assets/images/vankar_samaj_official_emblem.png',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'All Gujarat Vankar Samaj',
+                        style: TextStyle(
+                          color: Color(0xFF101B36),
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'M A T R I M O N Y',
+                        style: TextStyle(
+                          color: Color(0xFFA4143D),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 2.2,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 18),
+                // Login Card Form
+                _buildRightLoginPanel(context, isScrollable: false),
+              ],
             ),
-            // Login Card Form
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              child: _buildRightLoginPanel(context, isScrollable: false),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1057,7 +1111,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final availableHeight = size.height - padding.top - padding.bottom;
 
     if (kIsWeb) {
-      if (size.width >= 960) {
+      if (size.width >= 800 && size.height >= 550) {
         return Scaffold(
           backgroundColor: Colors.white,
           body: _buildBuddhaWebSplitLoginView(size, availableHeight),
