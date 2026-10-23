@@ -10,10 +10,12 @@ class AuthRepository {
 
   Future<Map<String, dynamic>> login(String email, String password) async {
     try {
+      final identifier = email.trim();
+      final isEmail = identifier.contains('@');
       final response = await _dio.post(
         '/auth/login',
         data: {
-          'email': email,
+          if (isEmail) 'email': identifier else 'phone': identifier,
           'password': password,
         },
       );

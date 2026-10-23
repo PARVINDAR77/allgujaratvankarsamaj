@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/auth_models.dart';
-import '../data/auth_repository.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/network/api_failure.dart';
@@ -101,10 +100,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<bool> login(String email, String password) async {
     state = AuthState.loading();
     try {
-      final response = await _dio.post('/auth/login', data: {
-        'email': email,
+      final identifier = email.trim();
+      final isEmail = identifier.contains('@');
+      final payload = <String, dynamic>{
+        if (isEmail) 'email': identifier else 'phone': identifier,
         'password': password,
-      });
+      };
+
+      final response = await _dio.post('/auth/login', data: payload);
 
       final token = response.data['accessToken'];
       if (token != null) {

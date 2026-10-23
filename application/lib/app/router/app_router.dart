@@ -8,7 +8,6 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/community/presentation/screens/pavan_prernadata_screen.dart';
 import '../../features/community/presentation/screens/samaj_services_screen.dart';
-import '../../features/community/presentation/screens/samaj_super_stars_screen.dart';
 import '../../features/community/presentation/screens/samaj_super_stars_poster_screen.dart';
 import '../../features/family/presentation/screens/family_details_screen.dart';
 import '../../features/family/presentation/screens/family_directory_poster_screen.dart';
@@ -58,7 +57,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   final authListenable = ref.watch(authRouterListenableProvider);
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: kIsWeb ? '/main-poster' : '/login',
     refreshListenable: authListenable,
     redirect: (context, state) {
       final authState = ref.read(authNotifierProvider);
@@ -67,23 +66,33 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // Public routes for unauthenticated visitors (Legal, Auth, Public Community Home & Portals)
       final isPublicRoute = isLoggingIn ||
+          location == '/' ||
           location == '/privacy-policy' ||
           location == '/delete-account' ||
           location == '/privacy-contact' ||
           location.startsWith('/main-poster') ||
           location.startsWith('/main_poster') ||
+          location.startsWith('/home') ||
+          location.startsWith('/samaj-services') ||
+          location.startsWith('/government-employees') ||
+          location.startsWith('/private-employees') ||
+          location.startsWith('/family-details') ||
+          location.startsWith('/family-directory-poster') ||
           location.startsWith('/statistics') ||
           location.startsWith('/pavan-prernadata') ||
           location.startsWith('/samaj-super-stars') ||
           location.startsWith('/samaj-super-stars-poster') ||
           location.startsWith('/samaj-ratna') ||
           location.startsWith('/education') ||
+          location.startsWith('/pargana-overview') ||
+          location.startsWith('/success-stories') ||
           location.startsWith('/advertisement') ||
           location.startsWith('/birthdays');
 
       // Community routes accessible by logged-in users who do not yet have a verified matrimony profile
       final isCommunityModuleRoute = location.startsWith('/main-poster') ||
           location.startsWith('/main_poster') ||
+          location.startsWith('/home') ||
           location.startsWith('/samaj-services') ||
           location.startsWith('/samaj-super-stars') ||
           location.startsWith('/education') ||
@@ -161,7 +170,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           if (authState.isAuthenticated) {
             return '/main-poster';
           }
-          return '/login';
+          return kIsWeb ? '/main-poster' : '/login';
         },
       ),
       GoRoute(
