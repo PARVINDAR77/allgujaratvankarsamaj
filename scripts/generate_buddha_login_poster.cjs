@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function generateBuddhaLoginPoster() {
-  console.log('Generating perfected 2-line ribbon Buddha Sacred Login Poster...');
+  console.log('Generating full edge-to-edge Buddha Sacred Login Poster...');
   const browser = await puppeteer.launch({
     headless: 'new',
     args: ['--no-sandbox', '--disable-setuid-sandbox']
@@ -41,46 +41,36 @@ async function generateBuddhaLoginPoster() {
       overflow: hidden;
       font-family: 'Plus Jakarta Sans', sans-serif;
       position: relative;
-      background-color: #FAF8F5;
     }
     
-    /* Background Buddha Image: 100% height, full sacred canvas */
+    /* 100% Full edge-to-edge background - continuous sacred painting */
     .bg-image {
       position: absolute;
       top: 0;
-      left: 70px;
-      width: 1251px;
-      height: 865px;
-      object-fit: fill;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 62% center; /* Gives Lord Buddha optimal breathing room while keeping full painting */
       z-index: 1;
     }
 
-    /* Left solid backdrop for crystal-clear readability */
-    .left-solid-bg {
+    /* Soft natural ambient luminous wash on left so forest foliage shows through while text remains 100% readable */
+    .ambient-soft-wash {
       position: absolute;
       top: 0;
       left: 0;
-      width: 375px;
-      height: 100%;
-      background: #FFFFFF;
-      z-index: 2;
-    }
-
-    /* Feathered smooth gradient blending into the sacred greenery */
-    .blend-gradient {
-      position: absolute;
-      top: 0;
-      left: 320px;
-      width: 230px;
+      width: 100%;
       height: 100%;
       background: linear-gradient(90deg, 
-        rgba(255, 255, 255, 1.0) 0%, 
-        rgba(255, 255, 255, 0.90) 25%, 
-        rgba(255, 255, 255, 0.45) 60%, 
-        rgba(255, 255, 255, 0.10) 85%, 
-        rgba(255, 255, 255, 0.0) 100%
+        rgba(255, 255, 255, 0.90) 0%, 
+        rgba(255, 255, 255, 0.82) 26%, 
+        rgba(255, 255, 255, 0.52) 44%, 
+        rgba(255, 255, 255, 0.15) 58%, 
+        rgba(255, 255, 255, 0.0) 72%
       );
       z-index: 2;
+      pointer-events: none;
     }
 
     /* Content Container */
@@ -91,7 +81,7 @@ async function generateBuddhaLoginPoster() {
       width: 100%;
       height: 100%;
       z-index: 4;
-      padding: 42px 48px;
+      padding: 40px 48px;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
@@ -101,26 +91,26 @@ async function generateBuddhaLoginPoster() {
     .brand-header {
       display: flex;
       align-items: center;
-      gap: 16px;
-      margin-bottom: 50px;
+      gap: 15px;
+      margin-bottom: 46px;
     }
 
     .brand-logo-wrapper {
-      width: 68px;
-      height: 68px;
+      width: 66px;
+      height: 66px;
       border-radius: 50%;
       overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
       background: #FFFFFF;
-      box-shadow: 0 4px 12px rgba(160, 20, 50, 0.14);
+      box-shadow: 0 4px 14px rgba(132, 22, 43, 0.25);
       flex-shrink: 0;
     }
 
     .brand-logo {
-      width: 68px;
-      height: 68px;
+      width: 66px;
+      height: 66px;
       object-fit: cover;
     }
 
@@ -133,16 +123,17 @@ async function generateBuddhaLoginPoster() {
       font-family: 'Playfair Display', Georgia, serif;
       font-size: 26px;
       font-weight: 700;
-      color: #84162B; /* Sacred deep maroon */
+      color: #7E1128;
       letter-spacing: -0.2px;
       line-height: 1.15;
+      text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
     }
 
     .brand-matrimony {
       font-size: 13px;
       font-weight: 700;
       letter-spacing: 4.8px;
-      color: #84162B;
+      color: #8E1530;
       margin-top: 3px;
       text-transform: uppercase;
       text-align: center;
@@ -150,8 +141,8 @@ async function generateBuddhaLoginPoster() {
 
     .brand-slogan {
       font-size: 11px;
-      font-weight: 500;
-      color: #555555;
+      font-weight: 600;
+      color: #3E3E3E;
       margin-top: 5px;
       letter-spacing: 0.8px;
       text-align: center;
@@ -159,7 +150,7 @@ async function generateBuddhaLoginPoster() {
 
     /* Hero Headline */
     .headline-section {
-      margin-bottom: 38px;
+      margin-bottom: 36px;
       max-width: 440px;
     }
 
@@ -167,8 +158,9 @@ async function generateBuddhaLoginPoster() {
       font-size: 38px;
       font-weight: 800;
       line-height: 1.12;
-      color: #23272A;
+      color: #1A1E21;
       letter-spacing: -0.6px;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
     }
 
     .headline-accent {
@@ -179,12 +171,13 @@ async function generateBuddhaLoginPoster() {
     }
 
     .headline-desc {
-      margin-top: 15px;
+      margin-top: 14px;
       font-size: 14.5px;
-      line-height: 1.52;
-      color: #4A4A4A;
-      font-weight: 500;
-      max-width: 350px;
+      line-height: 1.5;
+      color: #2D3134;
+      font-weight: 600;
+      max-width: 360px;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
     }
 
     /* Trust Badges */
@@ -192,24 +185,24 @@ async function generateBuddhaLoginPoster() {
       display: flex;
       flex-direction: column;
       gap: 18px;
-      max-width: 350px;
+      max-width: 360px;
     }
 
     .badge-item {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 14px;
     }
 
     .badge-icon-box {
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: #84162B;
+      background: #7E1128;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 10px rgba(132, 22, 43, 0.28);
+      box-shadow: 0 4px 12px rgba(126, 17, 40, 0.35);
       flex-shrink: 0;
     }
 
@@ -227,23 +220,25 @@ async function generateBuddhaLoginPoster() {
     .badge-title {
       font-size: 14.5px;
       font-weight: 700;
-      color: #222629;
+      color: #1A1E21;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
     }
 
     .badge-sub {
       font-size: 12.5px;
-      font-weight: 500;
-      color: #555555;
+      font-weight: 600;
+      color: #3E4347;
       margin-top: 1px;
+      text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
     }
 
-    /* Bottom-Left Maroon Diagonal Ribbon matching original 2-line layout */
+    /* Bottom-Left Maroon Diagonal Ribbon */
     .diagonal-ribbon {
       position: absolute;
       bottom: 0;
       left: 0;
-      width: 450px;
-      height: 250px;
+      width: 440px;
+      height: 240px;
       z-index: 5;
       pointer-events: none;
     }
@@ -254,13 +249,13 @@ async function generateBuddhaLoginPoster() {
       position: absolute;
       bottom: 0;
       left: 0;
-      filter: drop-shadow(4px -4px 14px rgba(70, 8, 20, 0.42));
+      filter: drop-shadow(4px -4px 14px rgba(60, 8, 18, 0.45));
     }
 
     .ribbon-text-wrapper {
       position: absolute;
-      bottom: 24px;
-      left: 22px;
+      bottom: 22px;
+      left: 20px;
       z-index: 6;
       transform: rotate(-18deg);
       transform-origin: left bottom;
@@ -275,7 +270,7 @@ async function generateBuddhaLoginPoster() {
       font-weight: 400;
       letter-spacing: 0.5px;
       line-height: 1.1;
-      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
     }
 
     .ribbon-line-2 {
@@ -286,7 +281,7 @@ async function generateBuddhaLoginPoster() {
       letter-spacing: 0.5px;
       line-height: 1.05;
       margin-left: 24px;
-      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
     }
 
     .ribbon-flourish {
@@ -311,12 +306,11 @@ async function generateBuddhaLoginPoster() {
   </style>
 </head>
 <body>
-  <!-- Sacred Buddha Image with exact scaling -->
-  <img class="bg-image" src="data:image/jpeg;base64,${buddhaB64}" alt="Lord Buddha Meditation" />
+  <!-- Full Edge-to-Edge Sacred Buddha Meditation Painting -->
+  <img class="bg-image" src="data:image/jpeg;base64,${buddhaB64}" alt="Lord Buddha Meditation Sacred Background" />
 
-  <!-- Clean left backdrop and feather blend -->
-  <div class="left-solid-bg"></div>
-  <div class="blend-gradient"></div>
+  <!-- Soft natural ambient wash on left for crystal text readability without any split screen -->
+  <div class="ambient-soft-wash"></div>
 
   <!-- Content Layer -->
   <div class="content-container">
@@ -388,7 +382,7 @@ async function generateBuddhaLoginPoster() {
 
   <!-- Bottom Diagonal Maroon Ribbon -->
   <div class="diagonal-ribbon">
-    <svg class="ribbon-svg" viewBox="0 0 450 250" preserveAspectRatio="none">
+    <svg class="ribbon-svg" viewBox="0 0 440 240" preserveAspectRatio="none">
       <defs>
         <linearGradient id="maroonGrad" x1="0%" y1="100%" x2="100%" y2="0%">
           <stop offset="0%" stop-color="#550A19" />
@@ -401,11 +395,11 @@ async function generateBuddhaLoginPoster() {
         </linearGradient>
       </defs>
       <!-- Base fold -->
-      <polygon points="0,250 0,68 405,250" fill="url(#foldGrad)" />
+      <polygon points="0,240 0,76 395,240" fill="url(#foldGrad)" />
       <!-- Top layer Ribbon Polygon -->
-      <polygon points="0,250 0,82 390,250" fill="url(#maroonGrad)" />
+      <polygon points="0,240 0,88 380,240" fill="url(#maroonGrad)" />
       <!-- Golden Accent Edge line -->
-      <line x1="0" y1="82" x2="390" y2="250" stroke="rgba(255, 215, 0, 0.5)" stroke-width="2.2" />
+      <line x1="0" y1="88" x2="380" y2="240" stroke="rgba(255, 215, 0, 0.5)" stroke-width="2.2" />
     </svg>
     <div class="ribbon-text-wrapper">
       <div class="ribbon-line-1">Rishte Ka</div>
@@ -421,6 +415,7 @@ async function generateBuddhaLoginPoster() {
   await page.evaluateHandle('document.fonts.ready');
 
   const outputPath = path.resolve(__dirname, '../application/assets/images/buddha_sacred_login_poster.png');
+  const heritagePath = path.resolve(__dirname, '../application/assets/images/heritage_login_poster.png');
   const artifactPath = path.resolve('C:/Users/SEO STZK/.gemini/antigravity-ide/brain/9fbfa128-2d42-4417-b66d-47228f05386b/buddha_sacred_login_poster_preview.png');
 
   const screenshotBuffer = await page.screenshot({
@@ -429,9 +424,11 @@ async function generateBuddhaLoginPoster() {
   });
 
   fs.writeFileSync(outputPath, screenshotBuffer);
+  fs.writeFileSync(heritagePath, screenshotBuffer);
   fs.writeFileSync(artifactPath, screenshotBuffer);
 
-  console.log('Saved perfected 2-line composited poster to:', outputPath);
+  console.log('Saved edge-to-edge Buddha poster to:', outputPath);
+  console.log('Synchronized to heritage poster at:', heritagePath);
   console.log('Saved preview to artifact directory:', artifactPath);
 
   await browser.close();
