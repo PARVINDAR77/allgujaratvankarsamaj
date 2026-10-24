@@ -56,14 +56,14 @@ class _CommunityWebHomeScreenState extends ConsumerState<CommunityWebHomeScreen>
             // Section B: Hero Section with Sacred Lord Buddha and Dr. Babasaheb Ambedkar
             WebHomeHero(),
 
+            // Section F: Three Featured Community Portals (Pavan Prernadata, Super Stars, Samaj Ratna)
+            WebFeaturedContent(),
+
             // Section C: Five Main Community Services (Medallions: Govt, Matrimony, Jobs, Services, Ratna)
             WebServiceCards(),
 
             // Section E: Gujarat and Community Development Section
             WebDevelopmentSection(),
-
-            // Section F: Three Featured Community Portals (Pavan Prernadata, Super Stars, Samaj Ratna)
-            WebFeaturedContent(),
 
             // Section G: Five Community Values with Live Counters
             WebCommunityValues(),
