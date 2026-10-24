@@ -98,13 +98,18 @@ class _WebHomeHeroState extends State<WebHomeHero> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // 1. Left Pillar: Sacred Lord Buddha Statue (Pavan Prernadata)
-        _buildBuddhaStatue(height: 320),
+        // 1. Left Pillar: Sacred Lord Buddha Artwork Card (Pavan Prernadata)
+        Expanded(
+          flex: 8,
+          child: Center(
+            child: _buildBuddhaArtworkCard(maxWidth: 340),
+          ),
+        ),
         const SizedBox(width: 32),
 
         // 2. Center Pillar: Regal Typography, Gujarati Identity, Supporting Text & CTAs
         Expanded(
-          flex: 11,
+          flex: 12,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -248,7 +253,7 @@ class _WebHomeHeroState extends State<WebHomeHero> {
           ),
         ),
 
-        const SizedBox(width: 36),
+        const SizedBox(width: 32),
 
         // 3. Right Pillar: Sacred Dr. Babasaheb Ambedkar Artwork Centerpiece
         Expanded(
@@ -266,9 +271,9 @@ class _WebHomeHeroState extends State<WebHomeHero> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Sacred Lord Buddha Statue for Mobile & Tablet
-        _buildBuddhaStatue(height: 180),
-        const SizedBox(height: 18),
+        // Sacred Lord Buddha Artwork Card for Mobile & Tablet
+        _buildBuddhaArtworkCard(maxWidth: 240),
+        const SizedBox(height: 24),
 
         // Badge
         Container(
@@ -504,93 +509,130 @@ class _WebHomeHeroState extends State<WebHomeHero> {
     );
   }
 
-  Widget _buildBuddhaStatue({required double height}) {
-    final width = height * (851.0 / 1024.0);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            // Soft radiant golden aura
-            Container(
-              width: width * 0.95,
-              height: width * 0.95,
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    Color(0x80FFDF7A),
-                    Color(0x38D6A34A),
-                    Colors.transparent,
-                  ],
-                  stops: [0.0, 0.5, 1.0],
+  Widget _buildBuddhaArtworkCard({required double maxWidth}) {
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              // Soft warm golden backlight aura behind poster to blend seamlessly into hero canvas
+              Container(
+                width: maxWidth * 0.95,
+                height: maxWidth * (1024.0 / 854.0) * 0.95,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.all(Radius.circular(28)),
+                  gradient: RadialGradient(
+                    colors: [
+                      Color(0x55FFDF7A),
+                      Color(0x22D6A34A),
+                      Colors.transparent,
+                    ],
+                    stops: [0.0, 0.65, 1.0],
+                  ),
                 ),
               ),
-            ),
 
-            // Soft contact shadow under carved lotus pedestal
-            Positioned(
-              bottom: 4,
-              child: Container(
-                width: width * 0.8,
-                height: 16,
+              // Royal Golden Beveled Heritage Frame (symmetrical to Dr. Ambedkar's card)
+              Container(
+                padding: const EdgeInsets.all(3.0),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.elliptical(width * 0.8, 16)),
+                  gradient: const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFFFFDF7A),
+                      Color(0xFFD6A34A),
+                      Color(0xFF9E6D1C),
+                      Color(0xFFD6A34A),
+                      Color(0xFFFFDF7A),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(22),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF101B36).withValues(alpha: 0.28),
-                      blurRadius: 18,
+                      color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
+                      blurRadius: 26,
                       spreadRadius: 2,
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF101B36).withValues(alpha: 0.18),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-              ),
-            ),
-
-            // Lord Buddha transparent carved statue
-            Image.asset(
-              'assets/images/buddha_golden_statue_transparent.png',
-              height: height,
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFFFAF8F5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFD6A34A).withValues(alpha: 0.6), width: 1.0),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF101B36).withValues(alpha: 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
-          ),
-          child: const Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.auto_awesome_rounded, color: Color(0xFFA4143D), size: 12),
-              SizedBox(width: 6),
-              Text(
-                'પાવન પ્રેરણાદાતા • ભગવાન બુદ્ધ',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFFA4143D),
-                  letterSpacing: 0.4,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F1B38),
+                    borderRadius: BorderRadius.circular(19),
+                    border: Border.all(
+                      color: const Color(0xFF101B36),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(17.5),
+                    child: AspectRatio(
+                      aspectRatio: 854.0 / 1024.0,
+                      child: Image.asset(
+                        'assets/images/buddha_meditation_sacred.jpg',
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/images/buddha_login_poster.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ],
+
+          const SizedBox(height: 8),
+
+          // Symmetrical Reverence Badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFAF8F5),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: const Color(0xFFD6A34A).withValues(alpha: 0.6),
+                width: 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF101B36).withValues(alpha: 0.04),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
+                ),
+              ],
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.auto_awesome_rounded, color: Color(0xFFA4143D), size: 12),
+                SizedBox(width: 6),
+                Text(
+                  'પાવન પ્રેરણાદાતા • ભગવાન ગૌતમ બુદ્ધ',
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFA4143D),
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
