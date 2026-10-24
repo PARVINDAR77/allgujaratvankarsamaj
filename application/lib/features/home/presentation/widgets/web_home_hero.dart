@@ -102,7 +102,7 @@ class _WebHomeHeroState extends State<WebHomeHero> {
         Expanded(
           flex: 8,
           child: Center(
-            child: _buildBuddhaArtworkCard(maxWidth: 340),
+            child: _buildBuddhaArtworkCard(maxWidth: 270),
           ),
         ),
         const SizedBox(width: 32),
