@@ -320,13 +320,15 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
                     ),
                     error: (err, _) => _buildWebErrorCard(err),
                     data: (items) {
-                      final enrichedItems = _getEnrichedMentors(items);
+                      if (items.isEmpty) {
+                        return _buildWebEmptyState();
+                      }
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           _buildWebSectionIntro(),
                           const SizedBox(height: 32),
-                          _buildWebMentorGrid(context, enrichedItems, isDesktop, isTablet),
+                          _buildWebMentorGrid(context, items, isDesktop, isTablet),
                           const SizedBox(height: 48),
                           _buildWebInspirationBanner(context),
                         ],
@@ -593,70 +595,68 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
     );
   }
 
-  List<PavanPrernadata> _getEnrichedMentors(List<PavanPrernadata> apiItems) {
-    final List<PavanPrernadata> result = [];
-    
-    // Add official default spiritual icons if not already present from database
-    final hasBuddha = apiItems.any((e) => e.name.toLowerCase().contains('buddha') || (e.gujaratiName ?? '').contains('બુદ્ધ'));
-    if (!hasBuddha) {
-      result.add(
-        PavanPrernadata(
-          id: 'mentor_buddha',
-          name: 'Bhagwan Gautama Buddha',
-          gujaratiName: 'ભગવાન ગૌતમ બુદ્ધ',
-          designation: 'કરુણા અને પ્રજ્ઞાના શાશ્વત પ્રેરક',
-          year: 'શાશ્વત માર્ગદર્શક',
-          description: 'માનવતા, સમાનતા, કરુણા અને આત્મ દીપો ભવ (પોતાના દીપક પોતે બનો) નો શાશ્વત સંદેશ આપનાર પરમ પ્રેરણાદાતા. સમગ્ર વિશ્વને કરુણા, અહિંસા અને સદાચારનો પાવન માર્ગ દર્શાવ્યો.',
-          photoUrl: '',
+  Widget _buildWebEmptyState() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 40),
+        padding: const EdgeInsets.all(36),
+        constraints: const BoxConstraints(maxWidth: 520),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.5), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
-      );
-    }
-
-    final hasAmbedkar = apiItems.any((e) => e.name.toLowerCase().contains('ambedkar') || (e.gujaratiName ?? '').contains('આંબેડકર'));
-    if (!hasAmbedkar) {
-      result.add(
-        PavanPrernadata(
-          id: 'mentor_ambedkar',
-          name: 'Dr. B. R. Ambedkar',
-          gujaratiName: 'બોધિસત્વ ડૉ. બાબાસાહેબ આંબેડકર',
-          designation: 'બંધારણના શિલ્પી અને સામાજિક ક્રાંતિના પ્રણેતા',
-          year: 'ભારતરત્ન',
-          description: 'શિક્ષિત બનો, સંગઠિત બનો, સંઘર્ષ કરો. સામાજિક સમાનતા, બંધારણીય અધિકારો અને માનવ ગૌરવના અમર પ્રણેતા જેમણે સમાજના પ્રત્યેક વર્ગના ઉત્થાન માટે આજીવન સેવા આપી.',
-          photoUrl: '',
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFFFBEB),
+                border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+              ),
+              child: const Icon(Icons.lightbulb_outline, size: 40, color: Color(0xFFD4AF37)),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'પાવન પ્રેરણાદાતા વિભાગ',
+              style: TextStyle(
+                color: Color(0xFF041126),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'હાલમાં એડમિન દ્વારા નવી માહિતી ઉમેરવાની પ્રક્રિયામાં છે. ટૂંક સમયમાં અહીં દર્શન થશે.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Color(0xFF64748B), fontSize: 14, height: 1.5),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => ref.refresh(pavanPrernadataProvider),
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('રીફ્રેશ કરો (Refresh)'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF041126),
+                foregroundColor: const Color(0xFFFFD700),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
         ),
-      );
-    }
-
-    // Add API items
-    result.addAll(apiItems);
-
-    // If still under 4 items, add Sant Kabir and Sant Ravidas
-    if (result.length < 4) {
-      result.add(
-        PavanPrernadata(
-          id: 'mentor_kabir',
-          name: 'Sant Shiromani Kabir Saheb',
-          gujaratiName: 'સંત શિરોમણી કબીર સાહેબ',
-          designation: 'સામાજિક સમરસતા અને એકતાના પ્રેરક',
-          year: 'અધ્યાત્મિક જ્યોતિર્ધર',
-          description: 'કર્મ, સત્ય, સાદગી અને માનવ માત્ર એક સમાન - વણકર પરંપરાના ગૌરવશાળી સંત જેમણે દોહાઓ અને સાધના દ્વારા સમગ્ર માનવજાતને ભાઈચારો અને સમાનતાનો પાવન ઉપદેશ આપ્યો.',
-          photoUrl: '',
-        ),
-      );
-      result.add(
-        PavanPrernadata(
-          id: 'mentor_ravidas',
-          name: 'Sant Shiromani Ravidas Maharaj',
-          gujaratiName: 'સંત શિરોમણી રોહિદાસ મહારાજ',
-          designation: 'સમતાવાદી સમાજના પરમ ચિંતક',
-          year: 'શાશ્વત પ્રેરક',
-          description: 'મન ચંગા તો કઠોતી મેં ગંગા. શ્રમ, સદાચાર અને માનવીય મૂલ્યોનું ગૌરવ પ્રસ્થાપિત કરનાર આધ્યાત્મિક ગુરુ જેમણે ભેદભાવ વિના સૌને સમાન પ્રેમ આપવાનો સંદેશ આપ્યો.',
-          photoUrl: '',
-        ),
-      );
-    }
-
-    return result;
+      ),
+    );
   }
 
   Widget _buildWebMentorGrid(
@@ -928,41 +928,25 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
   }
 
   Widget _buildMentorPhoto(PavanPrernadata item) {
-    if (item.photoUrl != null && item.photoUrl!.isNotEmpty) {
+    if (item.photoUrl != null && item.photoUrl!.trim().isNotEmpty) {
       return Image.network(
         item.photoUrl!,
         fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => _buildMentorAssetFallback(item),
+        errorBuilder: (context, error, stackTrace) => _buildMentorAvatarFallback(item),
       );
     }
-    return _buildMentorAssetFallback(item);
+    return _buildMentorAvatarFallback(item);
   }
 
-  Widget _buildMentorAssetFallback(PavanPrernadata item) {
-    if (item.id == 'mentor_buddha' || item.name.toLowerCase().contains('buddha')) {
-      return Image.asset(
-        'assets/images/buddha_meditation_sacred.jpg',
-        fit: BoxFit.cover,
-        alignment: Alignment.center,
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(Icons.self_improvement_rounded, size: 50, color: Color(0xFFFFD700)),
-        ),
-      );
-    }
-    if (item.id == 'mentor_ambedkar' || item.name.toLowerCase().contains('ambedkar')) {
-      return Image.asset(
-        'assets/images/babasaheb_ambedkar_poster.jpg',
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => const Center(
-          child: Icon(Icons.school_rounded, size: 50, color: Color(0xFFFFD700)),
-        ),
-      );
-    }
+  Widget _buildMentorAvatarFallback(PavanPrernadata item) {
+    final letter = (item.gujaratiName?.trim().isNotEmpty == true)
+        ? item.gujaratiName!.trim()[0]
+        : (item.name.trim().isNotEmpty ? item.name.trim()[0] : 'પ');
     return Container(
       color: const Color(0xFF041126),
       child: Center(
         child: Text(
-          (item.gujaratiName?.isNotEmpty == true ? item.gujaratiName![0] : (item.name.isNotEmpty ? item.name[0] : 'પ')),
+          letter,
           style: const TextStyle(
             color: Color(0xFFFFD700),
             fontSize: 42,
@@ -1653,7 +1637,7 @@ class _PavanPrernadataScreenState extends ConsumerState<PavanPrernadataScreen>
 
   Widget _buildPlaceholderAvatar([PavanPrernadata? item]) {
     if (item != null) {
-      return _buildMentorAssetFallback(item);
+      return _buildMentorAvatarFallback(item);
     }
     return Container(
       color: const Color(0xFF061A36),
