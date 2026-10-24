@@ -51,8 +51,18 @@ export declare class UsersService {
         occupation: string;
         photoUrl: string;
         photos: string[];
-        verification: any;
-        user: any;
+        verification: {
+            status: import(".prisma/client").$Enums.VerificationStatus;
+            id: string;
+            createdAt: Date;
+            documentType: string;
+            documentUrl: string;
+            documentBackUrl: string;
+        };
+        user: {
+            email: string;
+            phone: string;
+        };
         status: import(".prisma/client").$Enums.ProfileStatus;
         isVerified: boolean;
         isFeatured: boolean;

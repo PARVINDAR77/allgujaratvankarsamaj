@@ -11,6 +11,7 @@ export declare class VerificationsService {
         profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
     }>;
     updateVerificationStatus(requestId: string, adminId: string, dto: UpdateVerificationStatusDto, ipAddress?: string): Promise<{
@@ -21,6 +22,7 @@ export declare class VerificationsService {
         profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
     }>;
     getPendingVerifications(): Promise<any[]>;

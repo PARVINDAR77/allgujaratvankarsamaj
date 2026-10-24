@@ -4,14 +4,55 @@ export declare class NotificationsService {
     private readonly prisma;
     private readonly logger;
     constructor(prisma: PrismaService);
-    findAllPublic(): Promise<any>;
-    findAllAdmin(): Promise<any>;
-    create(dto: CreateNotificationDto): Promise<any>;
-    remove(id: string): Promise<any>;
-    getUserNotifications(userId: string): Promise<any>;
-    markAsRead(userId: string, notificationId: string): Promise<any>;
-    markAllAsRead(userId: string): Promise<any>;
+    findAllPublic(): Promise<{
+        id: string;
+        createdAt: Date;
+        message: string;
+        title: string;
+        route: string | null;
+        target: string;
+    }[]>;
+    findAllAdmin(): Promise<{
+        id: string;
+        createdAt: Date;
+        message: string;
+        title: string;
+        route: string | null;
+        target: string;
+    }[]>;
+    create(dto: CreateNotificationDto): Promise<{
+        id: string;
+        createdAt: Date;
+        message: string;
+        title: string;
+        route: string | null;
+        target: string;
+    }>;
+    remove(id: string): Promise<{
+        id: string;
+        createdAt: Date;
+        message: string;
+        title: string;
+        route: string | null;
+        target: string;
+    }>;
+    getUserNotifications(userId: string): Promise<{
+        type: string;
+        id: string;
+        createdAt: Date;
+        userId: string;
+        message: string;
+        title: string;
+        metadata: string | null;
+        isRead: boolean;
+    }[]>;
+    markAsRead(userId: string, notificationId: string): Promise<import(".prisma/client").Prisma.BatchPayload | {
+        success: boolean;
+    }>;
+    markAllAsRead(userId: string): Promise<import(".prisma/client").Prisma.BatchPayload | {
+        success: boolean;
+    }>;
     getUnreadCount(userId: string): Promise<{
-        unreadCount: any;
+        unreadCount: number;
     }>;
 }

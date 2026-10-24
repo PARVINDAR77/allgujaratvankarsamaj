@@ -14,6 +14,12 @@ export default function AdminDashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const adminToken = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+    if (!adminToken) {
+      setLoading(false);
+      return;
+    }
+
     adminApi
       .getDashboardStats()
       .then((data) => {

@@ -133,7 +133,14 @@ class FamilyModel {
       candidateAge: json['candidateAge'] is int ? json['candidateAge'] as int : int.tryParse(json['candidateAge']?.toString() ?? ''),
       candidateEducation: json['candidateEducation']?.toString(),
       candidateOccupation: json['candidateOccupation']?.toString(),
-      candidateId: json['candidateId']?.toString() ?? json['id']?.toString(),
+      candidateId: () {
+        final rawMarital = (json['maritalStatus'] ?? json['marital_status'] ?? '').toString().toUpperCase();
+        final isMarried = rawMarital == 'MARRIED' || rawMarital.contains('PARINIT') || rawMarital.contains('પરિણીત');
+        if (isMarried) return null;
+        final cId = json['candidateId']?.toString();
+        if (cId != null && cId.isNotEmpty) return cId;
+        return null;
+      }(),
       photoUrl: AppConfig.resolveMediaUrl(json['photoUrl']?.toString()),
       isVerified: json['isVerified'] == true,
       isLiveMember: true,
@@ -202,7 +209,7 @@ class FamilyModel {
       candidateAge: p.age,
       candidateEducation: p.education,
       candidateOccupation: p.designation.isNotEmpty ? p.designation : p.employmentType,
-      candidateId: p.id,
+      candidateId: (p.maritalStatus.toUpperCase() != 'MARRIED' && !p.maritalStatus.contains('પરિણીત')) ? p.id : null,
       photoUrl: AppConfig.resolveMediaUrl(p.photoUrl),
       isVerified: p.isVerified ?? false,
       isLiveMember: true,

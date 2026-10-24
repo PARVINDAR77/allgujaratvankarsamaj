@@ -441,9 +441,11 @@ export class ProfilesService {
         contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
         motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
         privacySettings: resolvedPrivacySettings,
-        showInMatrimony: dto.showInMatrimony !== undefined
-          ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
-          : true,
+        showInMatrimony: maritalStatus === MaritalStatus.MARRIED
+          ? false
+          : (dto.showInMatrimony !== undefined
+            ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
+            : true),
       };
 
       if (existingProfile) {
@@ -1072,7 +1074,10 @@ export class ProfilesService {
         updateData.privacySettings = JSON.stringify(currentPrivacy);
       }
 
-      if (dto.showInMatrimony !== undefined) {
+      const resolvedMarital = updateData.maritalStatus || existingProfile.maritalStatus;
+      if (resolvedMarital === MaritalStatus.MARRIED) {
+        updateData.showInMatrimony = false;
+      } else if (dto.showInMatrimony !== undefined) {
         updateData.showInMatrimony =
           dto.showInMatrimony === true ||
           dto.showInMatrimony === 'true' ||
@@ -1504,9 +1509,20 @@ export class ProfilesService {
     }
 
     if (query.maritalStatus) {
+      if (query.maritalStatus === MaritalStatus.MARRIED || (query.maritalStatus as string) === "MARRIED") {
+        return {
+          items: [],
+          meta: {
+            page,
+            limit,
+            total: 0,
+            totalPages: 0,
+          },
+        };
+      }
       where.maritalStatus = query.maritalStatus;
-    } else if (!(query as any).includeMarried) {
-      // By default in matrimonial candidate listings, only show eligible matrimonial candidates
+    } else {
+      // By default in matrimonial candidate listings, strictly only show eligible matrimonial candidates
       where.maritalStatus = {
         in: [
           MaritalStatus.NEVER_MARRIED,
@@ -1517,17 +1533,21 @@ export class ProfilesService {
       };
     }
 
-    if ((query as any).showInMatrimony !== undefined) {
-      where.showInMatrimony =
-        (query as any).showInMatrimony === true ||
-        (query as any).showInMatrimony === "true" ||
-        (query as any).showInMatrimony === 1 ||
-        (query as any).showInMatrimony === "1";
-    } else if (!(query as any).includeAllProfiles) {
-      // By default in matrimonial candidate listings, exclude candidates who opted out of matrimony
+    if ((query as any).includeAllProfiles) {
+      if ((query as any).showInMatrimony !== undefined) {
+        where.showInMatrimony =
+          (query as any).showInMatrimony === true ||
+          (query as any).showInMatrimony === "true" ||
+          (query as any).showInMatrimony === 1 ||
+          (query as any).showInMatrimony === "1";
+      }
+    } else {
+      // Public matrimonial candidates MUST strictly have showInMatrimony = true and exclude MARRIED
+      where.showInMatrimony = true;
       where.NOT = [
         ...(((where as any).NOT as any[]) || []),
         { showInMatrimony: false },
+        { maritalStatus: MaritalStatus.MARRIED },
       ];
     }
 
@@ -2373,6 +2393,7 @@ export class ProfilesService {
             : 25,
           candidateEducation: p.education || "",
           candidateOccupation: p.occupation || p.designation || "",
+          candidateId: (p.maritalStatus !== MaritalStatus.MARRIED && p.showInMatrimony) ? p.id : "",
           maritalStatus: p.maritalStatus || "MARRIED",
           photoUrl: p.photoUrl || "",
           isVerified: p.isVerified || false,

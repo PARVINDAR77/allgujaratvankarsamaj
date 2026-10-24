@@ -5,9 +5,32 @@ export declare class ChatService {
     private readonly logger;
     constructor(prisma: PrismaService);
     private getMyProfile;
-    getUserConversations(userId: string): Promise<any>;
+    getUserConversations(userId: string): Promise<{
+        id: string;
+        partnerProfileId: string;
+        partnerProfile: {
+            state: string;
+            district: {
+                name: string;
+                gujaratiName: string;
+            };
+            id: string;
+            gender: import(".prisma/client").$Enums.Gender;
+            firstName: string;
+            lastName: string;
+            city: string;
+            occupation: string;
+            designation: string;
+            photoUrl: string;
+            photos: string;
+        };
+        lastMessage: string;
+        lastMessageAt: Date;
+        unreadCount: number;
+        createdAt: Date;
+    }[]>;
     getConversationMessages(userId: string, conversationId: string): Promise<{
-        conversationId: any;
+        conversationId: string;
         myProfileId: string;
         partnerProfile: {
             district: {
@@ -23,10 +46,18 @@ export declare class ChatService {
             designation: string;
             photoUrl: string;
         };
-        messages: any;
+        messages: {
+            content: string;
+            id: string;
+            createdAt: Date;
+            receiverId: string;
+            senderId: string;
+            conversationId: string;
+            isRead: boolean;
+        }[];
     }>;
     getOrCreateConversationWithPartner(userId: string, partnerProfileId: string): Promise<{
-        conversationId: any;
+        conversationId: string;
         myProfileId: string;
         partnerProfile: {
             district: {
@@ -42,8 +73,24 @@ export declare class ChatService {
             designation: string;
             photoUrl: string;
         };
-        messages: any;
+        messages: {
+            content: string;
+            id: string;
+            createdAt: Date;
+            receiverId: string;
+            senderId: string;
+            conversationId: string;
+            isRead: boolean;
+        }[];
     }>;
-    sendMessage(userId: string, dto: SendMessageDto): Promise<any>;
-    markAsRead(userId: string, conversationId: string): Promise<any>;
+    sendMessage(userId: string, dto: SendMessageDto): Promise<{
+        content: string;
+        id: string;
+        createdAt: Date;
+        receiverId: string;
+        senderId: string;
+        conversationId: string;
+        isRead: boolean;
+    }>;
+    markAsRead(userId: string, conversationId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
 }

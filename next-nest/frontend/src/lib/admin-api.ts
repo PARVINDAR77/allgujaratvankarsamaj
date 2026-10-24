@@ -2,7 +2,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
 
 function getAuthHeaders(): Record<string, string> {
   const token = typeof window !== "undefined"
-    ? (localStorage.getItem("adminToken") || localStorage.getItem("token") || localStorage.getItem("accessToken"))
+    ? localStorage.getItem("adminToken")
     : null;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -22,7 +22,12 @@ async function adminFetch(url: string, options: RequestInit = {}): Promise<Respo
       ...(options.headers || {}),
     }
   };
-  return fetch(url, finalOptions);
+  const res = await fetch(url, finalOptions);
+  if (res.status === 401 && typeof window !== "undefined") {
+    localStorage.removeItem("adminToken");
+    window.location.replace("/admin/login");
+  }
+  return res;
 }
 
 export interface DashboardStats {

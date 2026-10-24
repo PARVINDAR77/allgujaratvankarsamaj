@@ -152,6 +152,7 @@ ALTER TABLE matrimonial_profiles MODIFY COLUMN marital_status ENUM('NEVER_MARRIE
 ALTER TABLE matrimonial_profiles ADD COLUMN id_proof_number VARCHAR(191) NULL;
 ALTER TABLE verification_requests ADD COLUMN document_number VARCHAR(191) NULL;
 UPDATE \`pavan_prernadata\` SET \`name\` = 'Pavan Prernadata', \`gujarati_name\` = 'પાવન પ્રેરણાદાતા' WHERE LOWER(\`name\`) LIKE '%prendata%' OR LOWER(\`name\`) LIKE '%prandata%';
+UPDATE matrimonial_profiles SET show_in_matrimony = 0 WHERE marital_status = 'MARRIED';
 " || true
 
 echo "Purging private, business, and non-government profiles from government_employments in Database..."

@@ -6,7 +6,7 @@ import {
   ConflictException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
-import { User, Role, Status, Gender, ProfileStatus, VerificationStatus } from "@prisma/client";
+import { User, Role, Status, Gender, ProfileStatus, VerificationStatus, MaritalStatus } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 import { normalizeGender } from "../profiles/dto/normalize-profile.helper";
@@ -235,12 +235,14 @@ export class UsersService {
           });
         }
       } else if (status === Status.ACTIVE) {
-        // Activate profile and restore to matrimonial listings
+        // Activate profile and restore to matrimonial listings only if candidate is eligible (not MARRIED)
+        const userProfile = await tx.matrimonialProfile.findUnique({ where: { userId } });
+        const canShowInMatrimony = Boolean(userProfile && userProfile.maritalStatus !== MaritalStatus.MARRIED);
         await tx.matrimonialProfile.updateMany({
           where: { userId },
           data: {
             status: ProfileStatus.APPROVED,
-            showInMatrimony: true,
+            showInMatrimony: canShowInMatrimony,
             isVerified: true,
           },
         });
@@ -415,7 +417,8 @@ export class UsersService {
       if (status === "APPROVED" || status === "ACTIVE") {
         profileStatus = ProfileStatus.APPROVED;
         isVerified = true;
-        showInMatrimony = true;
+        // Strictly exclude married individuals from matrimonial listings
+        showInMatrimony = profile.maritalStatus !== MaritalStatus.MARRIED && (profile as any).marital_status !== "MARRIED";
         userStatus = Status.ACTIVE;
       } else if (status === "SUSPENDED" || status === "INACTIVE") {
         profileStatus = ProfileStatus.SUSPENDED;

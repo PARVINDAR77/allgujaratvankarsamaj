@@ -7,7 +7,12 @@ export default function AdminPage() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace("/admin/dashboard");
+    const adminToken = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+    if (!adminToken) {
+      router.replace("/admin/login");
+    } else {
+      router.replace("/admin/dashboard");
+    }
   }, [router]);
 
   return (

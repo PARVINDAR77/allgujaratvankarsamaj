@@ -15,6 +15,7 @@ export declare class VerificationsController {
         profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
     }>;
     getMyVerificationStatus(req: any): Promise<{
@@ -66,6 +67,7 @@ export declare class AdminVerificationsController {
         profileId: string;
         documentType: string;
         documentUrl: string;
+        documentBackUrl: string | null;
         rejectionReason: string | null;
     }>;
 }

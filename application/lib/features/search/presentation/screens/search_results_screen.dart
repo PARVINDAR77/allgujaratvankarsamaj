@@ -143,11 +143,12 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       if (_selectedGender == 'MALE' && !p.isMale) return false;
       if (_selectedGender == 'FEMALE' && !p.isFemale) return false;
       final norm = ProfileModel.normalizeMaritalStatusToApi(p.maritalStatus);
-      if (_selectedMaritalStatus != 'ALL') {
-        if (norm != _selectedMaritalStatus) return false;
-      } else {
-        // Matrimonial candidate listings should only show eligible candidates (not MARRIED)
-        if (norm == 'MARRIED') return false;
+      // Matrimonial candidate listings MUST NEVER show married profiles
+      if (norm == 'MARRIED' || p.maritalStatus.toUpperCase() == 'MARRIED' || p.maritalStatus.contains('પરિણીત')) {
+        return false;
+      }
+      if (_selectedMaritalStatus != 'ALL' && norm != _selectedMaritalStatus) {
+        return false;
       }
       return true;
     }).toList();

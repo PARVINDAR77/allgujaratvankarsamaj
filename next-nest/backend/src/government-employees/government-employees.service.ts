@@ -1285,7 +1285,7 @@ export class GovernmentEmployeesService {
 
     return {
       id: emp.id,
-      profileId: p.id,
+      profileId: (p.maritalStatus !== "MARRIED" && p.showInMatrimony) ? p.id : "",
       fullName:
         `${p.firstName || ""} ${p.lastName || ""}`.trim() || "Vankar Member",
       gender: p.gender || "MALE",

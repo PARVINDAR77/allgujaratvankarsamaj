@@ -329,9 +329,11 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 contactEmail: dto.contactEmail ? dto.contactEmail.trim() : null,
                 motherTongue: dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)",
                 privacySettings: resolvedPrivacySettings,
-                showInMatrimony: dto.showInMatrimony !== undefined
-                    ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
-                    : true,
+                showInMatrimony: maritalStatus === client_1.MaritalStatus.MARRIED
+                    ? false
+                    : (dto.showInMatrimony !== undefined
+                        ? (dto.showInMatrimony === true || dto.showInMatrimony === 'true' || dto.showInMatrimony === 1 || dto.showInMatrimony === '1')
+                        : true),
             };
             if (existingProfile) {
                 profile = await this.prisma.matrimonialProfile.update({
@@ -902,7 +904,11 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     currentPrivacy.shareClassGroup = dto.shareClassGroup === true || dto.shareClassGroup === 'true';
                 updateData.privacySettings = JSON.stringify(currentPrivacy);
             }
-            if (dto.showInMatrimony !== undefined) {
+            const resolvedMarital = updateData.maritalStatus || existingProfile.maritalStatus;
+            if (resolvedMarital === client_1.MaritalStatus.MARRIED) {
+                updateData.showInMatrimony = false;
+            }
+            else if (dto.showInMatrimony !== undefined) {
                 updateData.showInMatrimony =
                     dto.showInMatrimony === true ||
                         dto.showInMatrimony === 'true' ||
@@ -1274,9 +1280,20 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             }
         }
         if (query.maritalStatus) {
+            if (query.maritalStatus === client_1.MaritalStatus.MARRIED || query.maritalStatus === "MARRIED") {
+                return {
+                    items: [],
+                    meta: {
+                        page,
+                        limit,
+                        total: 0,
+                        totalPages: 0,
+                    },
+                };
+            }
             where.maritalStatus = query.maritalStatus;
         }
-        else if (!query.includeMarried) {
+        else {
             where.maritalStatus = {
                 in: [
                     client_1.MaritalStatus.NEVER_MARRIED,
@@ -1286,17 +1303,21 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 ],
             };
         }
-        if (query.showInMatrimony !== undefined) {
-            where.showInMatrimony =
-                query.showInMatrimony === true ||
-                    query.showInMatrimony === "true" ||
-                    query.showInMatrimony === 1 ||
-                    query.showInMatrimony === "1";
+        if (query.includeAllProfiles) {
+            if (query.showInMatrimony !== undefined) {
+                where.showInMatrimony =
+                    query.showInMatrimony === true ||
+                        query.showInMatrimony === "true" ||
+                        query.showInMatrimony === 1 ||
+                        query.showInMatrimony === "1";
+            }
         }
-        else if (!query.includeAllProfiles) {
+        else {
+            where.showInMatrimony = true;
             where.NOT = [
                 ...(where.NOT || []),
                 { showInMatrimony: false },
+                { maritalStatus: client_1.MaritalStatus.MARRIED },
             ];
         }
         const minAge = query.ageMin ?? query.ageFrom;
@@ -2027,6 +2048,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         : 25,
                     candidateEducation: p.education || "",
                     candidateOccupation: p.occupation || p.designation || "",
+                    candidateId: (p.maritalStatus !== client_1.MaritalStatus.MARRIED && p.showInMatrimony) ? p.id : "",
                     maritalStatus: p.maritalStatus || "MARRIED",
                     photoUrl: p.photoUrl || "",
                     isVerified: p.isVerified || false,

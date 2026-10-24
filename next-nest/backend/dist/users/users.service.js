@@ -200,11 +200,13 @@ let UsersService = UsersService_1 = class UsersService {
                 }
             }
             else if (status === client_1.Status.ACTIVE) {
+                const userProfile = await tx.matrimonialProfile.findUnique({ where: { userId } });
+                const canShowInMatrimony = Boolean(userProfile && userProfile.maritalStatus !== client_1.MaritalStatus.MARRIED);
                 await tx.matrimonialProfile.updateMany({
                     where: { userId },
                     data: {
                         status: client_1.ProfileStatus.APPROVED,
-                        showInMatrimony: true,
+                        showInMatrimony: canShowInMatrimony,
                         isVerified: true,
                     },
                 });
@@ -360,7 +362,7 @@ let UsersService = UsersService_1 = class UsersService {
             if (status === "APPROVED" || status === "ACTIVE") {
                 profileStatus = client_1.ProfileStatus.APPROVED;
                 isVerified = true;
-                showInMatrimony = true;
+                showInMatrimony = profile.maritalStatus !== client_1.MaritalStatus.MARRIED && profile.marital_status !== "MARRIED";
                 userStatus = client_1.Status.ACTIVE;
             }
             else if (status === "SUSPENDED" || status === "INACTIVE") {

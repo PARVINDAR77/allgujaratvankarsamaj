@@ -1470,6 +1470,16 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                           if (emp.age != null) ...[
                             _buildDetailRow(Icons.cake, 'Age (ઉંમર)', '${emp.age} Years (વર્ષ)'),
                           ],
+                          if (emp.maritalStatus.isNotEmpty) ...[
+                            const Divider(height: 16),
+                            _buildDetailRow(
+                              Icons.family_restroom,
+                              'Marital Status (વૈવાહિક સ્થિતિ)',
+                              emp.maritalStatus == 'MARRIED'
+                                  ? 'Married (પરિણીત)'
+                                  : 'Unmarried (અપરિણીત)',
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -1497,7 +1507,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                         child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                       ),
                       const Spacer(),
-                      if (emp.profileId.isNotEmpty)
+                      if (emp.profileId.isNotEmpty && emp.maritalStatus != 'MARRIED') ...[
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
@@ -1528,6 +1538,27 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           ),
                         ),
+                      ] else if (emp.maritalStatus == 'MARRIED') ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: const Color(0xFFCBD5E1)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check_circle_outline, size: 14, color: Color(0xFF475569)),
+                              SizedBox(width: 5),
+                              Text(
+                                'પરિણીત સભ્ય (Married Member)',
+                                style: TextStyle(fontSize: 11.5, color: Color(0xFF475569), fontWeight: FontWeight.w600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ),

@@ -1009,7 +1009,7 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
         const desigGujarati = emp.designation?.gujaratiName || p.designation || "સરકારી કર્મચારી";
         return {
             id: emp.id,
-            profileId: p.id,
+            profileId: (p.maritalStatus !== "MARRIED" && p.showInMatrimony) ? p.id : "",
             fullName: `${p.firstName || ""} ${p.lastName || ""}`.trim() || "Vankar Member",
             gender: p.gender || "MALE",
             age: calculatedAge,

@@ -515,46 +515,71 @@ class _CandidateProfileDetailScreenState
           ),
           const SizedBox(height: 6),
 
-          // Full ID Tag with Tap to Copy
-          InkWell(
-            onTap: () {
-              if (profile.cleanDisplayId.isNotEmpty) {
-                Clipboard.setData(ClipboardData(text: profile.cleanDisplayId));
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('ID કોપી થયો: ${profile.cleanDisplayId} (Copied Matrimonial ID)'),
-                    backgroundColor: const Color(0xFF0056D2),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-              }
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: Container(
+          // ID Tag (Only for unmarried candidate, else Married badge)
+          if (profile.maritalStatus.toUpperCase() != 'MARRIED' && !profile.maritalStatus.contains('પરિણીત'))
+            InkWell(
+              onTap: () {
+                if (profile.cleanDisplayId.isNotEmpty) {
+                  Clipboard.setData(ClipboardData(text: profile.cleanDisplayId));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('ID કોપી થયો: ${profile.cleanDisplayId} (Copied Matrimonial ID)'),
+                      backgroundColor: const Color(0xFF0056D2),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                }
+              },
+              borderRadius: BorderRadius.circular(16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 1),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'ID: ${profile.cleanDisplayId.isNotEmpty ? profile.cleanDisplayId : "CANDIDATE"}',
+                      style: const TextStyle(
+                        color: Color(0xFFFFD700),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    const Icon(Icons.copy_rounded, size: 14, color: Color(0xFFFFD700)),
+                  ],
+                ),
+              ),
+            )
+          else
+            Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.12),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 1),
+                border: Border.all(color: Colors.amber.shade300, width: 1),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  Icon(Icons.family_restroom, size: 14, color: Color(0xFFFFD700)),
+                  SizedBox(width: 6),
                   Text(
-                    'ID: ${profile.cleanDisplayId.isNotEmpty ? profile.cleanDisplayId : "CANDIDATE"}',
-                    style: const TextStyle(
+                    'પરિણીત સભ્ય (Married Member)',
+                    style: TextStyle(
                       color: Color(0xFFFFD700),
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 1,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.copy_rounded, size: 14, color: Color(0xFFFFD700)),
                 ],
               ),
             ),
-          ),
           const SizedBox(height: 10),
 
           // Badges Row
@@ -1052,6 +1077,23 @@ class _CandidateProfileDetailScreenState
   }
 
   Widget _buildBottomActionBar(BuildContext context, ProfileModel profile) {
+    final isMarried = profile.maritalStatus.toUpperCase() == 'MARRIED' || profile.maritalStatus.contains('પરિણીત');
+    if (isMarried) {
+      return Container(
+        color: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: SafeArea(
+          top: false,
+          child: Center(
+            child: Text(
+              'પરિણીત સભ્ય - વૈવાહિક પ્રસ્તાવ અક્ષમ છે (Married Member - Proposals Disabled)',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
+            ),
+          ),
+        ),
+      );
+    }
+
     final authState = ref.watch(authNotifierProvider);
     final myProfile = ref.watch(myProfileProvider).valueOrNull;
     final isOwner = (authState.user?.id != null && authState.user!.id == profile.id) ||
@@ -1409,14 +1451,21 @@ class _CandidateProfileDetailScreenState
   }
 
   void _shareProfile(ProfileModel profile) {
-    final text = 'સમસ્ત ગુજરાત વણકર સમાજ મેટ્રિમોનિયલ પ્રોફાઇલ:\n'
-        'નામ: ${profile.fullName}\n'
-        'જાતિ: ${profile.displayGender}\n'
-        'ઉંમર: ${profile.displayDob}\n'
-        'શિક્ષણ: ${profile.education}\n'
-        'વ્યવસાય: ${profile.displayProfession}\n'
-        'સ્થળ: ${profile.displayLocation}\n'
-        'આઈડી: ${profile.cleanDisplayId}';
+    final isMarried = profile.maritalStatus.toUpperCase() == 'MARRIED' || profile.maritalStatus.contains('પરિણીત');
+    final text = isMarried
+        ? 'સમસ્ત ગુજરાત વણકર સમાજ ડિરેક્ટરી:\n'
+          'નામ: ${profile.fullName}\n'
+          'શિક્ષણ: ${profile.education}\n'
+          'વ્યવસાય: ${profile.displayProfession}\n'
+          'સ્થળ: ${profile.displayLocation}'
+        : 'સમસ્ત ગુજરાત વણકર સમાજ મેટ્રિમોનિયલ પ્રોફાઇલ:\n'
+          'નામ: ${profile.fullName}\n'
+          'જાતિ: ${profile.displayGender}\n'
+          'ઉંમર: ${profile.displayDob}\n'
+          'શિક્ષણ: ${profile.education}\n'
+          'વ્યવસાય: ${profile.displayProfession}\n'
+          'સ્થળ: ${profile.displayLocation}\n'
+          'આઈડી: ${profile.cleanDisplayId}';
 
     Clipboard.setData(ClipboardData(text: text));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -1716,20 +1765,52 @@ class _CandidateProfileDetailScreenState
                 ),
                 const SizedBox(height: 8),
 
-                // Clean Matrimonial ID Tag with tap-to-copy
-                InkWell(
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: profile.cleanDisplayId));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('ID કોપી થયો: ${profile.cleanDisplayId} (Copied Matrimonial ID)'),
-                        backgroundColor: const Color(0xFF0056D2),
-                        duration: const Duration(seconds: 2),
+                // Clean Matrimonial ID Tag with tap-to-copy (Only for unmarried candidates)
+                if (profile.maritalStatus.toUpperCase() != 'MARRIED' && !profile.maritalStatus.contains('પરિણીત'))
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: profile.cleanDisplayId));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('ID કોપી થયો: ${profile.cleanDisplayId} (Copied Matrimonial ID)'),
+                          backgroundColor: const Color(0xFF0056D2),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                          width: 1,
+                        ),
                       ),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.badge_outlined, size: 14, color: Color(0xFFFFD700)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'ID: ${profile.cleanDisplayId.isNotEmpty ? profile.cleanDisplayId : "CANDIDATE"}',
+                            style: const TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.copy_rounded, size: 13, color: Color(0xFFFFD700)),
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.12),
@@ -1739,26 +1820,22 @@ class _CandidateProfileDetailScreenState
                         width: 1,
                       ),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.badge_outlined, size: 14, color: Color(0xFFFFD700)),
-                        const SizedBox(width: 6),
+                        Icon(Icons.family_restroom, size: 14, color: Color(0xFFFFD700)),
+                        SizedBox(width: 6),
                         Text(
-                          'ID: ${profile.cleanDisplayId.isNotEmpty ? profile.cleanDisplayId : "CANDIDATE"}',
-                          style: const TextStyle(
+                          'પરિણીત સભ્ય (Married Member)',
+                          style: TextStyle(
                             color: Color(0xFFFFD700),
                             fontSize: 12.5,
                             fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
                           ),
                         ),
-                        const SizedBox(width: 6),
-                        const Icon(Icons.copy_rounded, size: 13, color: Color(0xFFFFD700)),
                       ],
                     ),
                   ),
-                ),
                 const SizedBox(height: 12),
 
                 // Status Badges
@@ -1959,6 +2036,24 @@ class _CandidateProfileDetailScreenState
   }
 
   Widget _buildWebConnectionBlock(BuildContext context, ProfileModel profile, bool isOwner) {
+    final isMarried = profile.maritalStatus.toUpperCase() == 'MARRIED' || profile.maritalStatus.contains('પરિણીત');
+    if (isMarried) {
+      return Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0xFFFEF3C7),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF59E0B)),
+        ),
+        child: const Text(
+          'પરિણીત સભ્ય - વૈવાહિક પ્રસ્તાવ અક્ષમ છે\n(Married Member - Proposals Disabled)',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF92400E)),
+        ),
+      );
+    }
+
     if (isOwner) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 12),

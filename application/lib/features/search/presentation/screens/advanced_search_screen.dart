@@ -339,7 +339,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                                       child: _buildDropdown(
                                         'વૈવાહિક સ્થિતિ (Marital Status)',
                                         _maritalStatus,
-                                        ['Never Married', 'Married', 'Widowed', 'Divorced'],
+                                        ['Never Married', 'Divorced', 'Widowed'],
                                         Icons.favorite_rounded,
                                         const Color(0xFFC2185B),
                                         (v) => setState(() => _maritalStatus = v!),

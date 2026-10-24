@@ -12,7 +12,7 @@ export declare class InterestsService {
     } | {
         status: string;
         interestId: string;
-        conversationId: any;
+        conversationId: string;
     } | {
         status: string;
         interestId: string;
@@ -28,7 +28,7 @@ export declare class InterestsService {
             receiverProfileId: string;
             senderProfileId: string;
         };
-        conversationId: any;
+        conversationId: string;
     } | {
         message: string;
         status: string;
@@ -50,7 +50,7 @@ export declare class InterestsService {
             receiverProfileId: string;
             senderProfileId: string;
         };
-        conversationId: any;
+        conversationId: string;
     }>;
     declineInterest(userId: string, interestId: string): Promise<{
         status: import(".prisma/client").$Enums.InterestStatus;
@@ -122,11 +122,11 @@ export declare class InterestsService {
                 id: string;
                 createdAt: Date;
                 updatedAt: Date;
+                pincode: string | null;
                 talukaId: string | null;
                 parganaId: string | null;
                 isActive: boolean;
                 code: string | null;
-                pincode: string | null;
                 gujaratiName: string | null;
             };
             governmentEmployment: {
@@ -200,12 +200,30 @@ export declare class InterestsService {
             designation: string | null;
             about: string | null;
             photoUrl: string | null;
+            photos: string | null;
             isPhysicallyDisabled: boolean;
             pwbdCategory: string | null;
             isAbroad: boolean;
             abroadCountry: string | null;
             businessIndustry: string | null;
             businessService: string | null;
+            bloodGroup: string | null;
+            isVankar: boolean;
+            annualIncome: string | null;
+            fatherName: string | null;
+            fatherOccupation: string | null;
+            fatherContact: string | null;
+            motherName: string | null;
+            motherOccupation: string | null;
+            guardianContact: string | null;
+            siblings: string | null;
+            mamasVillage: string | null;
+            addressLine: string | null;
+            pincode: string | null;
+            altPhone: string | null;
+            contactEmail: string | null;
+            motherTongue: string | null;
+            privacySettings: string | null;
             stateId: string | null;
             districtId: string | null;
             talukaId: string | null;
@@ -213,8 +231,9 @@ export declare class InterestsService {
             villageId: string | null;
             isVerified: boolean;
             isFeatured: boolean;
+            showInMatrimony: boolean;
         };
-        conversationId: any;
+        conversationId: string;
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
