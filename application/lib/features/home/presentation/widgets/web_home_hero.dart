@@ -259,7 +259,7 @@ class _WebHomeHeroState extends State<WebHomeHero> {
         Expanded(
           flex: 8,
           child: Center(
-            child: _buildArtworkCard(maxWidth: 340),
+            child: _buildArtworkCard(maxWidth: 270),
           ),
         ),
       ],
@@ -376,7 +376,7 @@ class _WebHomeHeroState extends State<WebHomeHero> {
         const SizedBox(height: 28),
 
         // Dr. Babasaheb Ambedkar Artwork Centerpiece
-        _buildArtworkCard(maxWidth: 300),
+        _buildArtworkCard(maxWidth: 240),
       ],
     );
   }
