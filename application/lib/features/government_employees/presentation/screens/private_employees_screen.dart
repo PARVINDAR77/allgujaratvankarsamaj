@@ -1286,7 +1286,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                 const SizedBox(width: 8),
               ],
               // View Profile button - only for unmarried candidates
-              if (profile.maritalStatus.toUpperCase() != 'MARRIED' && !profile.maritalStatus.contains('પરિણીત'))
+              if (!profile.isMarried)
                 Expanded(
                   flex: isCompact ? 4 : 3,
                   child: ElevatedButton.icon(

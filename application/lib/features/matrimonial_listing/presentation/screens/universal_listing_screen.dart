@@ -155,6 +155,7 @@ class _UniversalListingScreenState extends ConsumerState<UniversalListingScreen>
   Widget _buildContent(UniversalListingState state) {
     final targetGender = ProfileModel.normalizeGenderToApi(state.query.gender);
     final displayedProfiles = state.profiles.where((p) {
+      if (p.isMarried) return false;
       if (targetGender == 'MALE') return p.isMale;
       if (targetGender == 'FEMALE') return p.isFemale;
       return true;

@@ -516,7 +516,7 @@ class _CandidateProfileDetailScreenState
           const SizedBox(height: 6),
 
           // ID Tag (Only for unmarried candidate, else Married badge)
-          if (profile.maritalStatus.toUpperCase() != 'MARRIED' && !profile.maritalStatus.contains('પરિણીત'))
+          if (!profile.isMarried)
             InkWell(
               onTap: () {
                 if (profile.cleanDisplayId.isNotEmpty) {
@@ -1077,7 +1077,7 @@ class _CandidateProfileDetailScreenState
   }
 
   Widget _buildBottomActionBar(BuildContext context, ProfileModel profile) {
-    final isMarried = profile.maritalStatus.toUpperCase() == 'MARRIED' || profile.maritalStatus.contains('પરિણીત');
+    final isMarried = profile.isMarried;
     if (isMarried) {
       return Container(
         color: Colors.white,
@@ -1451,7 +1451,7 @@ class _CandidateProfileDetailScreenState
   }
 
   void _shareProfile(ProfileModel profile) {
-    final isMarried = profile.maritalStatus.toUpperCase() == 'MARRIED' || profile.maritalStatus.contains('પરિણીત');
+    final isMarried = profile.isMarried;
     final text = isMarried
         ? 'સમસ્ત ગુજરાત વણકર સમાજ ડિરેક્ટરી:\n'
           'નામ: ${profile.fullName}\n'
@@ -1766,7 +1766,7 @@ class _CandidateProfileDetailScreenState
                 const SizedBox(height: 8),
 
                 // Clean Matrimonial ID Tag with tap-to-copy (Only for unmarried candidates)
-                if (profile.maritalStatus.toUpperCase() != 'MARRIED' && !profile.maritalStatus.contains('પરિણીત'))
+                if (!profile.isMarried)
                   InkWell(
                     onTap: () {
                       Clipboard.setData(ClipboardData(text: profile.cleanDisplayId));
@@ -2036,7 +2036,7 @@ class _CandidateProfileDetailScreenState
   }
 
   Widget _buildWebConnectionBlock(BuildContext context, ProfileModel profile, bool isOwner) {
-    final isMarried = profile.maritalStatus.toUpperCase() == 'MARRIED' || profile.maritalStatus.contains('પરિણીત');
+    final isMarried = profile.isMarried;
     if (isMarried) {
       return Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),

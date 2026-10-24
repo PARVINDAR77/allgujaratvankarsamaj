@@ -8,6 +8,7 @@ import '../../providers/govt_employees_provider.dart';
 import '../../../../core/network/api_failure.dart';
 import '../../../profile/providers/master_data_provider.dart';
 import '../../../../shared/constants/app_data.dart';
+import '../../../../shared/models/profile_model.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
@@ -1475,7 +1476,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                             _buildDetailRow(
                               Icons.family_restroom,
                               'Marital Status (વૈવાહિક સ્થિતિ)',
-                              emp.maritalStatus == 'MARRIED'
+                              ProfileModel.checkIsMarried(emp.maritalStatus)
                                   ? 'Married (પરિણીત)'
                                   : 'Unmarried (અપરિણીત)',
                             ),
@@ -1507,7 +1508,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                         child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                       ),
                       const Spacer(),
-                      if (emp.profileId.isNotEmpty && emp.maritalStatus != 'MARRIED') ...[
+                      if (emp.profileId.isNotEmpty && !ProfileModel.checkIsMarried(emp.maritalStatus)) ...[
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
@@ -1538,7 +1539,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           ),
                         ),
-                      ] else if (emp.maritalStatus == 'MARRIED') ...[
+                      ] else if (ProfileModel.checkIsMarried(emp.maritalStatus)) ...[
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(

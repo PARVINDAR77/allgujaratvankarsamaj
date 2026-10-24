@@ -291,22 +291,31 @@ class ProfileModel {
 
   String get displayMaritalStatus => normalizeMaritalStatusToDisplay(maritalStatus);
 
+  bool get isMarried => checkIsMarried(maritalStatus);
+
+  static bool checkIsMarried(dynamic val) {
+    if (val == null) return false;
+    final s = val.toString().trim();
+    if (s.isEmpty) return false;
+    return normalizeMaritalStatusToApi(s) == 'MARRIED';
+  }
+
   static String normalizeMaritalStatusToDisplay(dynamic val) {
     if (val == null) return 'Never Married (અપરિણીત)';
     final s = val.toString().trim();
+    final u = s.toUpperCase();
     if (s.isEmpty) return 'Never Married (અપરિણીત)';
 
-    if (s.contains('DIVORCED') || (s.contains('Divorced') && !s.contains('Awaiting')) || (s.contains('છૂટાછેડા') && !s.contains('રાહમાં'))) {
+    if (u.contains('DIVORCED') || (s.contains('છૂટાછેડા') && !s.contains('રાહમાં'))) {
       return 'Divorced (છૂટાછેડા લીધેલ)';
     }
-    if (s.contains('WIDOW') || s.contains('Widow') || s.contains('વિધવા') || s.contains('વિધુર')) {
+    if (u.contains('WIDOW') || s.contains('વિધવા') || s.contains('વિધુર')) {
       return 'Widowed (વિધવા / વિધુર)';
     }
-    if (s.contains('SEPARATED') || s.contains('Awaiting') || s.contains('રાહમાં')) {
+    if (u.contains('SEPARATED') || u.contains('AWAITING') || s.contains('રાહમાં')) {
       return 'Awaiting Divorce (છૂટાછેડાની રાહમાં)';
     }
-    if ((s.contains('MARRIED') && !s.contains('NEVER')) ||
-        (s.contains('Married') && !s.contains('Never')) ||
+    if ((u.contains('MARRIED') && !u.contains('NEVER') && !u.contains('UNMARRIED')) ||
         (s.contains('પરિણીત') && !s.contains('અપરિણીત')) ||
         (s.contains('વિવાહિત') && !s.contains('અવિવાહિત'))) {
       return 'Married (પરિણીત)';
@@ -317,19 +326,19 @@ class ProfileModel {
   static String normalizeMaritalStatusToApi(dynamic val) {
     if (val == null) return 'NEVER_MARRIED';
     final s = val.toString().trim();
+    final u = s.toUpperCase();
     if (s.isEmpty) return 'NEVER_MARRIED';
 
-    if (s.contains('DIVORCED') || (s.contains('Divorced') && !s.contains('Awaiting')) || (s.contains('છૂટાછેડા') && !s.contains('રાહમાં'))) {
+    if (u.contains('DIVORCED') || (s.contains('છૂટાછેડા') && !s.contains('રાહમાં'))) {
       return 'DIVORCED';
     }
-    if (s.contains('WIDOW') || s.contains('Widow') || s.contains('વિધવા') || s.contains('વિધુર')) {
+    if (u.contains('WIDOW') || s.contains('વિધવા') || s.contains('વિધુર')) {
       return 'WIDOWED';
     }
-    if (s.contains('SEPARATED') || s.contains('Awaiting') || s.contains('રાહમાં')) {
+    if (u.contains('SEPARATED') || u.contains('AWAITING') || s.contains('રાહમાં')) {
       return 'SEPARATED';
     }
-    if ((s.contains('MARRIED') && !s.contains('NEVER')) ||
-        (s.contains('Married') && !s.contains('Never')) ||
+    if ((u.contains('MARRIED') && !u.contains('NEVER') && !u.contains('UNMARRIED')) ||
         (s.contains('પરિણીત') && !s.contains('અપરિણીત')) ||
         (s.contains('વિવાહિત') && !s.contains('અવિવાહિત'))) {
       return 'MARRIED';
