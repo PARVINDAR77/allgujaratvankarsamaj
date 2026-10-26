@@ -5,6 +5,7 @@ import '../../../auth/providers/auth_provider.dart';
 import '../providers/notifications_provider.dart';
 import 'community_navigation_menu.dart';
 import 'notifications_dialog.dart';
+import '../../../profile/presentation/widgets/update_password_dialog.dart';
 
 class WebHomeHeader extends ConsumerWidget implements PreferredSizeWidget {
   final String activeRoute;
@@ -81,7 +82,13 @@ class WebHomeHeader extends ConsumerWidget implements PreferredSizeWidget {
                   _buildRegisterButton(context),
                 ] else ...[
                   _buildProfileButton(context),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    icon: const Icon(Icons.lock_reset_rounded, color: Color(0xFFA4143D), size: 24),
+                    tooltip: 'પાસવર્ડ બદલો (Update Password)',
+                    onPressed: () => showUpdatePasswordDialog(context, ref),
+                  ),
+                  const SizedBox(width: 6),
                   _buildLogoutButton(context, ref),
                 ],
               ],

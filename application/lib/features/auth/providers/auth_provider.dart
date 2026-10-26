@@ -432,7 +432,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
     final statusCode = e.response?.statusCode;
     if (statusCode != null) {
-      final data = e.response?.data;
+      dynamic data = e.response?.data;
+      if (data is String) {
+        try {
+          data = jsonDecode(data);
+        } catch (_) {}
+      }
       final serverMessage = (data is Map<String, dynamic>) ? data['message'] : null;
       final messageString = serverMessage is List ? serverMessage.first : serverMessage?.toString();
       return ApiFailure.fromStatusCode(statusCode, messageString);

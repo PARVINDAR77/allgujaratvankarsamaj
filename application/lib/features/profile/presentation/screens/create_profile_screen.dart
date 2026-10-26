@@ -18,6 +18,7 @@ import '../../../community/providers/samaj_services_provider.dart';
 import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/widgets/samaj_service_picker_sheet.dart';
 import '../../../../shared/constants/pargana_constants.dart';
+import '../widgets/update_password_dialog.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
@@ -735,6 +736,14 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         ),
         iconTheme: const IconThemeData(color: Colors.black87),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.lock_reset_rounded, color: Color(0xFFA4143D)),
+            tooltip: 'પાસવર્ડ બદલો (Update Password)',
+            onPressed: () => showUpdatePasswordDialog(context, ref),
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(

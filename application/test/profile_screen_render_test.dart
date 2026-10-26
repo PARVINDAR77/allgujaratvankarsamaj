@@ -63,4 +63,37 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(ProfileScreen), findsOneWidget);
   });
+
+  testWidgets('Clicking Update Password opens dialog with password fields', (tester) async {
+    tester.binding.window.physicalSizeTestValue = const Size(1920, 1080);
+    tester.binding.window.devicePixelRatioTestValue = 1.0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          myProfileProvider.overrideWith((ref) async {
+            throw Exception('Profile not found');
+          }),
+        ],
+        child: const MaterialApp(
+          home: ProfileScreen(),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    
+    // Find any widget containing 'પાસવર્ડ બદલો'
+    final passwordBtn = find.textContaining('પાસવર્ડ બદલો');
+    expect(passwordBtn, findsWidgets);
+
+    // Tap the first one
+    await tester.tap(passwordBtn.first);
+    await tester.pumpAndSettle();
+
+    // Verify dialog opened
+    expect(find.textContaining('Update Password'), findsWidgets);
+    expect(find.textContaining('Current Password'), findsOneWidget);
+    expect(find.textContaining('New Password'), findsWidgets);
+  });
 }

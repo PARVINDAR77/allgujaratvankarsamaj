@@ -8,6 +8,7 @@ import '../../../auth/providers/auth_provider.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 import '../../../home/presentation/widgets/web_home_footer.dart';
 import '../../providers/profile_provider.dart';
+import '../widgets/update_password_dialog.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -67,7 +68,7 @@ class ProfileScreen extends ConsumerWidget {
           child: Column(
             children: [
               // 1. Prestigious Hero Banner (Web & Mobile)
-              _buildPageHeader(context, isDesktopWeb, myProfileAsync.valueOrNull != null),
+              _buildPageHeader(context, ref, isDesktopWeb, myProfileAsync.valueOrNull != null),
 
               // 2. Main Content Container (Max width 1240 for Desktop)
               Center(
@@ -126,7 +127,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   // Top Page Hero Banner
-  Widget _buildPageHeader(BuildContext context, bool isDesktop, bool hasExistingProfile) {
+  Widget _buildPageHeader(BuildContext context, WidgetRef ref, bool isDesktop, bool hasExistingProfile) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -191,6 +192,44 @@ class ProfileScreen extends ConsumerWidget {
                         fontWeight: FontWeight.w400,
                       ),
                     ),
+                    if (!isDesktop) ...[
+                      const SizedBox(height: 12),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () => context.go(hasExistingProfile ? '/profile/edit' : '/profile/create'),
+                            icon: Icon(hasExistingProfile ? Icons.edit_note_rounded : Icons.add_circle_outline_rounded, size: 16),
+                            label: Text(
+                              hasExistingProfile ? 'પ્રોફાઈલ સુધારો' : 'સંપૂર્ણ પ્રોફાઈલ બનાવો',
+                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFA4143D),
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Color(0xFFD6A34A), width: 1),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                          OutlinedButton.icon(
+                            onPressed: () => showUpdatePasswordDialog(context, ref),
+                            icon: const Icon(Icons.lock_reset_rounded, size: 16, color: Color(0xFFFFDF7A)),
+                            label: const Text(
+                              'પાસવર્ડ બદલો (Password)',
+                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFD6A34A), width: 1),
+                              backgroundColor: Colors.white.withValues(alpha: 0.12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -210,6 +249,21 @@ class ProfileScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                     elevation: 3,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: () => showUpdatePasswordDialog(context, ref),
+                  icon: const Icon(Icons.lock_reset_rounded, size: 18, color: Color(0xFFFFDF7A)),
+                  label: const Text(
+                    'પાસવર્ડ બદલો (Password)',
+                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
+                    backgroundColor: Colors.white.withValues(alpha: 0.12),
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                 ),
               ],
@@ -1106,7 +1160,165 @@ class ProfileScreen extends ConsumerWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
+              ElevatedButton.icon(
+                onPressed: () => showUpdatePasswordDialog(context, ref),
+                icon: const Icon(Icons.lock_reset_rounded, size: 18),
+                label: const Text(
+                  'પાસવર્ડ બદલો (Update Password)',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF101B36),
+                  foregroundColor: const Color(0xFFFFDF7A),
+                  side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 2,
+                ),
+              ),
             ],
+          ),
+          const SizedBox(height: 36),
+          const Divider(color: Color(0xFFE2D6C0), thickness: 1),
+          const SizedBox(height: 20),
+          // Account Settings & Security Section
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFD6A34A), width: 1),
+                  ),
+                  child: const Icon(Icons.security_rounded, color: Color(0xFFB45309), size: 20),
+                ),
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'એકાઉન્ટ સુરક્ષા & સેટિંગ્સ (Account Security)',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
+                    ),
+                    Text(
+                      'તમારો પાસવર્ડ અને એકાઉન્ટ વિગતો સંચાલિત કરો',
+                      style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Option 1: Update Password card
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDBEAFE),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.lock_reset_rounded, color: Color(0xFF1E3A8A), size: 22),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'પાસવર્ડ બદલો (Update Password)',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'તમારા એકાઉન્ટની સુરક્ષા માટે નિયમિત પાસવર્ડ અપડેટ કરો',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: () => showUpdatePasswordDialog(context, ref),
+                  icon: const Icon(Icons.lock_outline_rounded, size: 16),
+                  label: const Text('બદલો (Change)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E2D52),
+                    foregroundColor: const Color(0xFFFFDF7A),
+                    side: const BorderSide(color: Color(0xFFD6A34A), width: 1),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Option 2: Logout
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(Icons.logout_rounded, color: Color(0xFFB45309), size: 22),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'લૉગ આઉટ (Sign Out)',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'આ ઉપકરણમાંથી સુરક્ષિત રીતે બહાર નીકળો',
+                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: () async {
+                    await ref.read(authNotifierProvider.notifier).logout();
+                    if (context.mounted) {
+                      context.go('/main-poster');
+                    }
+                  },
+                  icon: const Icon(Icons.logout_rounded, size: 16),
+                  label: const Text('લૉગ આઉટ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFFB45309),
+                    side: const BorderSide(color: Color(0xFFFDE68A)),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -1239,294 +1451,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   void _showUpdatePasswordDialog(BuildContext context, WidgetRef ref) {
-    final currentPasswordController = TextEditingController();
-    final newPasswordController = TextEditingController();
-    final confirmPasswordController = TextEditingController();
-    bool obscureCurrent = true;
-    bool obscureNew = true;
-    bool obscureConfirm = true;
-    bool isSubmitting = false;
-    String? errorMessage;
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return Theme(
-              data: ThemeData.light().copyWith(
-                colorScheme: const ColorScheme.light(
-                  primary: Color(0xFFD4AF37),
-                  secondary: Color(0xFFD4AF37),
-                ),
-              ),
-              child: AlertDialog(
-                backgroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  side: BorderSide(color: Colors.grey.shade300, width: 1.5),
-                ),
-                title: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFEF3C7),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFFDE68A)),
-                      ),
-                      child: const Icon(Icons.lock_reset, color: Color(0xFFB45309), size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Text(
-                        'Update Password\n(પાસવર્ડ બદલો)',
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          height: 1.25,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                content: SizedBox(
-                  width: 400,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (errorMessage != null) ...[
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            margin: const EdgeInsets.only(bottom: 14),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red.shade300),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.error_outline, color: Colors.red.shade700, size: 18),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    errorMessage!,
-                                    style: TextStyle(color: Colors.red.shade800, fontSize: 12, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                        const Text(
-                          'Current Password (હાલનો પાસવર્ડ) *',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: currentPasswordController,
-                          obscureText: obscureCurrent,
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          cursorColor: Colors.black87,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
-                            hintText: 'Enter current password',
-                            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.normal),
-                            prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFB45309), size: 20),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.grey.shade400, width: 1.5),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 2),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                obscureCurrent ? Icons.visibility_off : Icons.visibility,
-                                size: 20,
-                                color: Colors.grey.shade800,
-                              ),
-                              onPressed: () => setDialogState(() => obscureCurrent = !obscureCurrent),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        const Text(
-                          'New Password (નવો પાસવર્ડ) *',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: newPasswordController,
-                          obscureText: obscureNew,
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          cursorColor: Colors.black87,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
-                            hintText: 'Minimum 6 characters',
-                            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.normal),
-                            prefixIcon: const Icon(Icons.key_outlined, color: Color(0xFFB45309), size: 20),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.grey.shade400, width: 1.5),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 2),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                obscureNew ? Icons.visibility_off : Icons.visibility,
-                                size: 20,
-                                color: Colors.grey.shade800,
-                              ),
-                              onPressed: () => setDialogState(() => obscureNew = !obscureNew),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        const Text(
-                          'Confirm New Password (નવો પાસવર્ડ ફરીથી લખો) *',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
-                        ),
-                        const SizedBox(height: 6),
-                        TextField(
-                          controller: confirmPasswordController,
-                          obscureText: obscureConfirm,
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          cursorColor: Colors.black87,
-                          decoration: InputDecoration(
-                            filled: true,
-                            fillColor: const Color(0xFFF8FAFC),
-                            hintText: 'Re-enter new password',
-                            hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 13, fontWeight: FontWeight.normal),
-                            prefixIcon: const Icon(Icons.check_circle_outline, color: Color(0xFFB45309), size: 20),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(color: Colors.grey.shade400, width: 1.5),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: const BorderSide(color: Color(0xFFD4AF37), width: 2),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                obscureConfirm ? Icons.visibility_off : Icons.visibility,
-                                size: 20,
-                                color: Colors.grey.shade800,
-                              ),
-                              onPressed: () => setDialogState(() => obscureConfirm = !obscureConfirm),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                actions: [
-                  OutlinedButton(
-                    onPressed: isSubmitting ? null : () => Navigator.of(dialogContext).pop(),
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.grey.shade400),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    ),
-                    child: const Text('Cancel (રદ કરો)', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w600)),
-                  ),
-                  ElevatedButton(
-                    onPressed: isSubmitting
-                        ? null
-                        : () async {
-                            final cur = currentPasswordController.text.trim();
-                            final nP = newPasswordController.text.trim();
-                            final cP = confirmPasswordController.text.trim();
-
-                            if (cur.isEmpty) {
-                              setDialogState(() => errorMessage = 'કૃપા કરીને હાલનો પાસવર્ડ દાખલ કરો (Please enter current password)');
-                              return;
-                            }
-                            if (nP.length < 6) {
-                              setDialogState(() => errorMessage = 'નવો પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (New password must be at least 6 characters)');
-                              return;
-                            }
-                            if (nP != cP) {
-                              setDialogState(() => errorMessage = 'નવો પાસવર્ડ અને કન્ફર્મ પાસવર્ડ સરખા નથી (New and Confirm passwords do not match)');
-                              return;
-                            }
-
-                            setDialogState(() {
-                              isSubmitting = true;
-                              errorMessage = null;
-                            });
-
-                            final res = await ref.read(authNotifierProvider.notifier).updatePassword(
-                                  currentPassword: cur,
-                                  newPassword: nP,
-                                );
-
-                            if (res['success'] == true) {
-                              if (dialogContext.mounted) {
-                                Navigator.of(dialogContext).pop();
-                              }
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(res['message'] ?? 'પાસવર્ડ સફળતાપૂર્વક અપડેટ થયો છે'),
-                                    backgroundColor: Colors.green.shade700,
-                                  ),
-                                );
-                              }
-                            } else {
-                              setDialogState(() {
-                                isSubmitting = false;
-                                errorMessage = res['message'] ?? 'પાસવર્ડ અપડેટ કરવામાં નિષ્ફળ';
-                              });
-                            }
-                          },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD4AF37),
-                      foregroundColor: Colors.black,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    ),
-                    child: isSubmitting
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black87),
-                          )
-                        : const Text('Save (સેવ કરો)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.black)),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
+    showUpdatePasswordDialog(context, ref);
   }
 }
 

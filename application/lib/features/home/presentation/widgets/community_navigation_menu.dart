@@ -5,6 +5,7 @@ import '../../../auth/providers/auth_provider.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../providers/notifications_provider.dart';
 import 'notifications_dialog.dart';
+import '../../../profile/presentation/widgets/update_password_dialog.dart';
 
 void showCommunityNavigationMenu(BuildContext context, WidgetRef ref) {
   showModalBottomSheet(
@@ -409,9 +410,11 @@ class CommunityNavigationMenu extends ConsumerWidget {
 
                         const SizedBox(height: 18),
 
-                        // 4. Executive Logout / Action Bar
-                        if (authState.isAuthenticated)
+                        // 4. Executive Password & Logout / Action Bar
+                        if (authState.isAuthenticated) ...[
+                          _buildChangePasswordTile(context, ref),
                           _buildLogoutTile(context, ref),
+                        ],
 
                         // 5. Community Footer Branding
                         Center(
@@ -1212,6 +1215,79 @@ class CommunityNavigationMenu extends ConsumerWidget {
                   Icons.arrow_forward_ios_rounded,
                   size: 13,
                   color: const Color(0xFFFF8FA3).withOpacity(0.5),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChangePasswordTile(BuildContext context, WidgetRef ref) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E2D52).withOpacity(0.55),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: const Color(0xFFD4AF37).withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.pop(context);
+            showUpdatePasswordDialog(context, ref);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: const Color(0xFFD4AF37).withOpacity(0.18),
+                    border: Border.all(
+                      color: const Color(0xFFD4AF37).withOpacity(0.4),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.lock_reset_rounded, color: Color(0xFFFFDF7A), size: 19),
+                  ),
+                ),
+                const SizedBox(width: 13),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'પાસવર્ડ બદલો (Update Password)',
+                        style: TextStyle(
+                          color: Color(0xFFFFDF7A),
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      SizedBox(height: 1.5),
+                      Text(
+                        'તમારા એકાઉન્ટ માટે નવો પાસવર્ડ સેટ કરો',
+                        style: TextStyle(color: Colors.white54, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 13,
+                  color: const Color(0xFFFFDF7A).withOpacity(0.6),
                 ),
               ],
             ),
