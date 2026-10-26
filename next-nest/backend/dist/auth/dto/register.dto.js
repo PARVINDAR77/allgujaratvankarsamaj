@@ -70,4 +70,12 @@ __decorate([
     (0, class_validator_1.MinLength)(8, { message: "Password must be at least 8 characters long" }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "password", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "Verified registration token received from dual OTP verification",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], RegisterDto.prototype, "registrationToken", void 0);
 //# sourceMappingURL=register.dto.js.map

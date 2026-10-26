@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -57,27 +58,365 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
-    final success = await ref.read(authNotifierProvider.notifier).register(
-          _emailController.text.trim(),
-          _passwordController.text,
-          phone: _mobileController.text.trim(),
-          name: _fullNameController.text.trim(),
+    final name = _fullNameController.text.trim();
+    final phone = _mobileController.text.trim();
+    final email = _emailController.text.trim();
+
+    final res = await ref.read(authNotifierProvider.notifier).sendRegistrationOtp(
+          name: name,
+          phone: phone,
+          email: email,
         );
 
     if (mounted) {
       setState(() => _isLoading = false);
-      if (success) {
-        _showMandatoryProfileDialog();
+      if (res['success'] == true) {
+        _showDualVerificationDialog(res);
       } else {
-        final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'નોંધણી નિષ્ફળ. ફરી પ્રયાસ કરો.';
+        final errorMsg = res['message'] ?? 'ચકાસણી કોડ મોકલવામાં નિષ્ફળતા';
+        final isLocked = res['isLocked'] == true;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(errorMsg),
-            backgroundColor: Colors.red,
+            content: Text(
+              isLocked
+                  ? '⚠️ સુરક્ષા લૉકઆઉટ: વધુ પડતા પ્રયાસોને લીધે એકાઉન્ટ 10 મિનિટ માટે લૉક છે. થોડા સમય પછી ફરી પ્રયાસ કરો.'
+                  : errorMsg,
+            ),
+            backgroundColor: Colors.redAccent,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
     }
+  }
+
+  void _showDualVerificationDialog(Map<String, dynamic> initialData) {
+    final phoneOtpCtrl = TextEditingController();
+    final emailOtpCtrl = TextEditingController();
+    final maskedPhone = initialData['maskedPhone'] ?? _mobileController.text.trim();
+    final maskedEmail = initialData['maskedEmail'] ?? _emailController.text.trim();
+
+    bool isVerifying = false;
+    bool isResending = false;
+    String statusMsg = '';
+    bool isLocked = false;
+    Timer? resendTimer;
+    int cooldown = initialData['resendCooldownSeconds'] ?? 60;
+
+    void cleanup() {
+      resendTimer?.cancel();
+      phoneOtpCtrl.dispose();
+      emailOtpCtrl.dispose();
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (_, setDialogState) {
+          void startCooldownTimer([int seconds = 60]) {
+            resendTimer?.cancel();
+            cooldown = seconds;
+            resendTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+              if (cooldown <= 1) {
+                t.cancel();
+                setDialogState(() => cooldown = 0);
+              } else {
+                setDialogState(() => cooldown--);
+              }
+            });
+          }
+
+          if (resendTimer == null && cooldown > 0) {
+            startCooldownTimer(cooldown);
+          }
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF041126),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+            ),
+            title: const Row(
+              children: [
+                Icon(Icons.verified_user_rounded, color: Color(0xFFD4AF37), size: 26),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'ચકાસણી (Dual Verification)',
+                    style: TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'નોંધણી પૂર્ણ કરવા માટે તમારા મોબાઇલ અને ઈમેલ બંને પર મોકલેલા 6-અંકના OTP દાખલ કરો:\n(Enter 6-digit OTP codes sent to your mobile & email)',
+                    style: TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Phone OTP Field
+                  TextField(
+                    controller: phoneOtpCtrl,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      prefixIcon: const Icon(Icons.sms_outlined, color: Color(0xFFD4AF37), size: 20),
+                      labelText: 'Mobile SMS OTP ($maskedPhone) *',
+                      labelStyle: const TextStyle(color: Colors.white70, fontSize: 12.5, letterSpacing: 0),
+                      hintText: '123456',
+                      hintStyle: const TextStyle(color: Colors.white30, fontSize: 13, letterSpacing: 4),
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Email OTP Field
+                  TextField(
+                    controller: emailOtpCtrl,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      letterSpacing: 4,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                    decoration: InputDecoration(
+                      counterText: '',
+                      prefixIcon: const Icon(Icons.mark_email_read_outlined, color: Color(0xFFD4AF37), size: 20),
+                      labelText: 'Email OTP ($maskedEmail) *',
+                      labelStyle: const TextStyle(color: Colors.white70, fontSize: 12.5, letterSpacing: 0),
+                      hintText: '123456',
+                      hintStyle: const TextStyle(color: Colors.white30, fontSize: 13, letterSpacing: 4),
+                      enabledBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Resend Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        onPressed: (cooldown > 0 || isResending)
+                            ? null
+                            : () async {
+                                setDialogState(() {
+                                  isResending = true;
+                                  statusMsg = '';
+                                });
+                                final res = await ref.read(authNotifierProvider.notifier).sendRegistrationOtp(
+                                      name: _fullNameController.text.trim(),
+                                      phone: _mobileController.text.trim(),
+                                      email: _emailController.text.trim(),
+                                    );
+                                setDialogState(() {
+                                  isResending = false;
+                                  if (res['success'] == true) {
+                                    statusMsg = 'નવા ચકાસણી કોડ સફળતાપૂર્વક મોકલવામાં આવ્યા છે.';
+                                    startCooldownTimer(res['resendCooldownSeconds'] ?? 60);
+                                  } else {
+                                    isLocked = res['isLocked'] == true;
+                                    statusMsg = res['message'] ?? 'કોડ ફરી મોકલવામાં નિષ્ફળતા';
+                                  }
+                                });
+                              },
+                        icon: isResending
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4AF37)),
+                              )
+                            : const Icon(Icons.refresh, size: 16, color: Color(0xFFD4AF37)),
+                        label: Text(
+                          cooldown > 0
+                              ? 'Resend in ${cooldown}s (ફરી ${cooldown}s)'
+                              : 'Resend Codes (નવા કોડ મોકલો)',
+                          style: TextStyle(
+                            color: (cooldown > 0 || isResending) ? Colors.white38 : const Color(0xFFD4AF37),
+                            fontSize: 12,
+                          ),
+                        ),
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      const Text(
+                        'મહત્તમ 4 પ્રયાસો',
+                        style: TextStyle(color: Colors.white38, fontSize: 11),
+                      ),
+                    ],
+                  ),
+
+                  // Error / Status container
+                  if (statusMsg.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: isLocked ? Colors.red.withOpacity(0.18) : Colors.orange.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            isLocked ? Icons.lock_clock : Icons.info_outline,
+                            color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              statusMsg,
+                              style: TextStyle(
+                                color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                                fontSize: 12,
+                                height: 1.3,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isVerifying
+                    ? null
+                    : () {
+                        cleanup();
+                        Navigator.pop(dialogCtx);
+                      },
+                child: const Text('Cancel (રદ કરો)', style: TextStyle(color: Colors.white60)),
+              ),
+              ElevatedButton(
+                onPressed: (isVerifying || isLocked)
+                    ? null
+                    : () async {
+                        final pOtp = phoneOtpCtrl.text.trim();
+                        final eOtp = emailOtpCtrl.text.trim();
+
+                        if (pOtp.length != 6 || eOtp.length != 6) {
+                          setDialogState(() {
+                            statusMsg = 'કૃપા કરીને બંને 6-અંકના OTP કોડ દાખલ કરો (Please enter both 6-digit OTP codes)';
+                          });
+                          return;
+                        }
+
+                        setDialogState(() {
+                          isVerifying = true;
+                          statusMsg = '';
+                          isLocked = false;
+                        });
+
+                        final phone = _mobileController.text.trim();
+                        final email = _emailController.text.trim();
+
+                        final verifyRes = await ref.read(authNotifierProvider.notifier).verifyRegistrationOtp(
+                              phone: phone,
+                              email: email,
+                              phoneOtp: pOtp,
+                              emailOtp: eOtp,
+                            );
+
+                        if (verifyRes['success'] == true && verifyRes['registrationToken'] != null) {
+                          final regToken = verifyRes['registrationToken'] as String;
+                          cleanup();
+                          if (dialogCtx.mounted) {
+                            Navigator.pop(dialogCtx);
+                          }
+
+                          // Finalize account creation with registrationToken
+                          setState(() => _isLoading = true);
+                          final regSuccess = await ref.read(authNotifierProvider.notifier).register(
+                                email,
+                                _passwordController.text,
+                                phone: phone,
+                                name: _fullNameController.text.trim(),
+                                registrationToken: regToken,
+                              );
+
+                          if (mounted) {
+                            setState(() => _isLoading = false);
+                            if (regSuccess) {
+                              _showMandatoryProfileDialog();
+                            } else {
+                              final err = ref.read(authNotifierProvider).errorMessage ?? 'નોંધણી નિષ્ફળ થઈ';
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(err),
+                                  backgroundColor: Colors.redAccent,
+                                ),
+                              );
+                            }
+                          }
+                        } else {
+                          setDialogState(() {
+                            isVerifying = false;
+                            isLocked = verifyRes['isLocked'] == true;
+                            statusMsg = verifyRes['message'] ?? 'OTP ચકાસણી નિષ્ફળ થઈ';
+                          });
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD4AF37),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: isVerifying
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                      )
+                    : const Text(
+                        'Verify & Register (ચકાસો)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
   }
 
   void _showMandatoryProfileDialog() {

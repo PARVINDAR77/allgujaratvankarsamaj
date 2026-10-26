@@ -50,6 +50,7 @@ const menuSections = [
       { name: "Advertisements", href: "/admin/advertisements", icon: "📢" },
       { name: "Notifications", href: "/admin/notifications", icon: "🔔" },
       { name: "Reports", href: "/admin/reports", icon: "📈" },
+      { name: "OTP & SMS Analytics", href: "/admin/otp-analytics", icon: "💬" },
       { name: "Settings", href: "/admin/settings", icon: "⚙️" },
     ],
   },

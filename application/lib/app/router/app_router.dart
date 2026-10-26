@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -125,7 +124,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
         // If candidate has not yet created their profile:
         if (!hasProfile) {
-          final isAllowedNoProfileRoute = location == '/profile/create' ||
+          final isAllowedNoProfileRoute = location == '/profile' ||
+              location.startsWith('/profile') ||
+              location == '/profile/create' ||
               location == '/privacy-policy' ||
               location == '/delete-account' ||
               location == '/privacy-contact' ||
@@ -139,7 +140,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
         // If candidate created profile but is not yet approved by admin:
         if (!isVerified) {
-          final isAllowedUnverifiedRoute = location == '/verified-profile' ||
+          final isAllowedUnverifiedRoute = location == '/profile' ||
+              location.startsWith('/profile') ||
+              location == '/verified-profile' ||
               location == '/profile-under-review' ||
               location == '/profile/create' ||
               location == '/profile/edit' ||
@@ -240,6 +243,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile/create',
         name: 'profile-create',
         builder: (context, state) => const CreateProfileScreen(),
+      ),
+      GoRoute(
+        path: '/profile/edit',
+        name: 'profile-edit-root',
+        builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
         path: '/profile-under-review',

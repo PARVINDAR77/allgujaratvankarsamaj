@@ -110,6 +110,51 @@ let PrismaService = PrismaService_1 = class PrismaService extends client_1.Prism
             await this.$executeRawUnsafe(`
         ALTER TABLE \`advertisements\` MODIFY COLUMN \`placement\` ENUM('HOME_BANNER', 'DIRECTORY_BANNER', 'POPUP', 'BUTTON_1', 'BUTTON_2', 'BUTTON_3', 'BUTTON_4', 'BUTTON_5', 'PAVAN_PRERNADATA', 'SAMAJ_SUPER_STARS', 'SAMAJ_RATNA') NOT NULL DEFAULT 'HOME_BANNER';
       `);
+            await this.$executeRawUnsafe(`
+        ALTER TABLE \`users\` ADD COLUMN IF NOT EXISTS \`is_email_verified\` BOOLEAN NOT NULL DEFAULT false;
+      `);
+            await this.$executeRawUnsafe(`
+        ALTER TABLE \`users\` ADD COLUMN IF NOT EXISTS \`is_phone_verified\` BOOLEAN NOT NULL DEFAULT false;
+      `);
+            await this.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS \`otp_sessions\` (
+          \`id\` varchar(191) NOT NULL,
+          \`target\` varchar(191) NOT NULL,
+          \`channel\` enum('SMS','EMAIL') NOT NULL,
+          \`purpose\` enum('REGISTRATION','FORGOT_PASSWORD') NOT NULL,
+          \`code\` varchar(191) NOT NULL,
+          \`attempts\` int NOT NULL DEFAULT 0,
+          \`max_attempts\` int NOT NULL DEFAULT 4,
+          \`is_verified\` tinyint(1) NOT NULL DEFAULT 0,
+          \`verified_at\` datetime(3) DEFAULT NULL,
+          \`expires_at\` datetime(3) NOT NULL,
+          \`locked_until\` datetime(3) DEFAULT NULL,
+          \`token\` varchar(191) DEFAULT NULL,
+          \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+          \`updated_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+          PRIMARY KEY (\`id\`),
+          UNIQUE KEY \`otp_sessions_token_key\` (\`token\`),
+          KEY \`otp_sessions_target_purpose_idx\` (\`target\`,\`purpose\`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
+            await this.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS \`otp_logs\` (
+          \`id\` varchar(191) NOT NULL,
+          \`channel\` enum('SMS','EMAIL') NOT NULL,
+          \`purpose\` enum('REGISTRATION','FORGOT_PASSWORD') NOT NULL,
+          \`recipient\` varchar(191) NOT NULL,
+          \`ip_address\` varchar(191) DEFAULT NULL,
+          \`status\` enum('SENT','DELIVERED','FAILED') NOT NULL DEFAULT 'SENT',
+          \`gateway_id\` varchar(191) DEFAULT NULL,
+          \`gateway_response\` text DEFAULT NULL,
+          \`created_at\` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+          PRIMARY KEY (\`id\`),
+          KEY \`otp_logs_created_at_idx\` (\`created_at\`),
+          KEY \`otp_logs_recipient_idx\` (\`recipient\`),
+          KEY \`otp_logs_channel_idx\` (\`channel\`),
+          KEY \`otp_logs_purpose_idx\` (\`purpose\`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+      `);
             await this.syncGovernmentEmployeesFromProfiles();
             this.logger.log("Schema auto-migration check completed successfully");
         }

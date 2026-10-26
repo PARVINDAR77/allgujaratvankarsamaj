@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -267,280 +268,473 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
     int step = 1;
     bool isSubmitting = false;
+    bool isResending = false;
     String statusInfo = '';
     String maskedTarget = '';
+    String channelName = '';
     bool obscureNew = true;
     bool obscureConfirm = true;
+    bool isLocked = false;
+    Timer? cooldownTimer;
+    int resendCooldown = 0;
+
+    void cleanup() {
+      cooldownTimer?.cancel();
+      identifierCtrl.dispose();
+      otpCtrl.dispose();
+      newPassCtrl.dispose();
+      confirmPassCtrl.dispose();
+    }
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (resetCtx) => StatefulBuilder(
-        builder: (context, setResetState) => AlertDialog(
-          backgroundColor: const Color(0xFF041126),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-          ),
-          title: Row(
-            children: [
-              const Icon(Icons.lock_reset, color: Color(0xFFD4AF37), size: 24),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  step == 1
-                      ? 'Forgot Password (પાસવર્ડ રીસેટ)'
-                      : 'Set New Password (નવો પાસવર્ડ)',
-                  style: const TextStyle(
-                    color: Color(0xFFD4AF37),
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
+        builder: (_, setResetState) {
+          void startCooldown([int seconds = 60]) {
+            cooldownTimer?.cancel();
+            resendCooldown = seconds;
+            cooldownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+              if (resendCooldown <= 1) {
+                t.cancel();
+                setResetState(() {
+                  resendCooldown = 0;
+                });
+              } else {
+                setResetState(() {
+                  resendCooldown--;
+                });
+              }
+            });
+          }
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF041126),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+            ),
+            title: Row(
+              children: [
+                const Icon(Icons.lock_reset, color: Color(0xFFD4AF37), size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    step == 1
+                        ? 'Forgot Password (પાસવર્ડ રીસેટ)'
+                        : 'Set New Password (નવો પાસવર્ડ)',
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (step == 1) ...[
-                  const Text(
-                    'તમારો રજિસ્ટર્ડ ઈમેલ અથવા 10 અંકનો મોબાઈલ નંબર દાખલ કરો:\n(Enter your registered Email or Mobile number)',
-                    style: TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: identifierCtrl,
-                    style: const TextStyle(color: Colors.white),
-                    keyboardType: TextInputType.text,
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.person_search_outlined, color: Color(0xFFD4AF37), size: 20),
-                      labelText: 'Email or Mobile (ઈમેલ અથવા મોબાઈલ)',
-                      hintText: 'user@email.com / 9876543210',
-                      labelStyle: TextStyle(color: Colors.white70, fontSize: 13),
-                      hintStyle: TextStyle(color: Colors.white30, fontSize: 12),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-                      ),
-                    ),
-                  ),
-                  if (statusInfo.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      statusInfo,
-                      style: const TextStyle(color: Colors.orangeAccent, fontSize: 12),
-                    ),
-                  ],
-                ] else ...[
-                  Text(
-                    'ચકાસણી કોડ $maskedTarget પર મોકલવામાં આવ્યો છે:\n(Enter 6-digit OTP code & new password)',
-                    style: const TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: otpCtrl,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(color: Colors.white, letterSpacing: 3, fontWeight: FontWeight.bold, fontSize: 16),
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.pin, color: Color(0xFFD4AF37), size: 20),
-                      labelText: 'Verification Code (OTP કોડ)',
-                      labelStyle: TextStyle(color: Colors.white70, fontSize: 13, letterSpacing: 0),
-                      hintText: '123456',
-                      hintStyle: TextStyle(color: Colors.white30, fontSize: 13, letterSpacing: 3),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: newPassCtrl,
-                    obscureText: obscureNew,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFD4AF37), size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureNew ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white60,
-                          size: 18,
-                        ),
-                        onPressed: () => setResetState(() => obscureNew = !obscureNew),
-                      ),
-                      labelText: 'New Password (નવો પાસવર્ડ)',
-                      hintText: 'ન્યૂનતમ 6 અક્ષરો (Min 6 chars)',
-                      labelStyle: const TextStyle(color: Colors.white70, fontSize: 13),
-                      hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
-                      enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                      ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  TextField(
-                    controller: confirmPassCtrl,
-                    obscureText: obscureConfirm,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFD4AF37), size: 20),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscureConfirm ? Icons.visibility_off : Icons.visibility,
-                          color: Colors.white60,
-                          size: 18,
-                        ),
-                        onPressed: () => setResetState(() => obscureConfirm = !obscureConfirm),
-                      ),
-                      labelText: 'Confirm Password (ખાતરી કરો)',
-                      hintText: 'ફરીથી પાસવર્ડ લખો',
-                      labelStyle: const TextStyle(color: Colors.white70, fontSize: 13),
-                      hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
-                      enabledBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                      ),
-                      focusedBorder: const UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-                      ),
-                    ),
-                  ),
-                  if (statusInfo.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      statusInfo,
-                      style: const TextStyle(color: Colors.orangeAccent, fontSize: 12),
-                    ),
-                  ],
-                ],
               ],
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () {
-                      if (step == 2) {
-                        setResetState(() {
-                          step = 1;
-                          statusInfo = '';
-                        });
-                      } else {
-                        Navigator.pop(resetCtx);
-                      }
-                    },
-              child: Text(
-                step == 2 ? 'Back (પાછા)' : 'Cancel (રદ કરો)',
-                style: const TextStyle(color: Colors.white60),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (step == 1) ...[
+                    const Text(
+                      'તમારો રજિસ્ટર્ડ ઈમેલ અથવા 10 અંકનો મોબાઈલ નંબર દાખલ કરો:\n(Enter your registered Email or Mobile number)',
+                      style: TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: identifierCtrl,
+                      style: const TextStyle(color: Colors.white),
+                      keyboardType: TextInputType.text,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.person_search_outlined, color: Color(0xFFD4AF37), size: 20),
+                        labelText: 'Email or Mobile (ઈમેલ અથવા મોબાઈલ)',
+                        hintText: 'user@email.com / 9876543210',
+                        labelStyle: TextStyle(color: Colors.white70, fontSize: 13),
+                        hintStyle: TextStyle(color: Colors.white30, fontSize: 12),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.blueGrey.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white24, width: 0.8),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.shield_outlined, color: Color(0xFFD4AF37), size: 16),
+                          SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'સુરક્ષા મર્યાદા: વધુમાં વધુ 4 પ્રયાસો. નિષ્ફળતા પર 10 મિનિટ લોકઆઉટ લાગુ થશે.',
+                              style: TextStyle(color: Colors.white60, fontSize: 11),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (statusInfo.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isLocked ? Colors.red.withOpacity(0.18) : Colors.orange.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              isLocked ? Icons.lock_clock : Icons.warning_amber_rounded,
+                              color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                statusInfo,
+                                style: TextStyle(
+                                  color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                                  fontSize: 12,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A1F3A),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFD4AF37).withOpacity(0.5), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            channelName == 'SMS' ? Icons.sms_outlined : Icons.mark_email_read_outlined,
+                            color: const Color(0xFFD4AF37),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'ચકાસણી કોડ $maskedTarget પર મોકલવામાં આવ્યો છે ($channelName OTP).',
+                              style: const TextStyle(color: Colors.white, fontSize: 12, height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    TextField(
+                      controller: otpCtrl,
+                      keyboardType: TextInputType.number,
+                      maxLength: 6,
+                      style: const TextStyle(color: Colors.white, letterSpacing: 4, fontWeight: FontWeight.bold, fontSize: 16),
+                      decoration: const InputDecoration(
+                        counterText: '',
+                        prefixIcon: Icon(Icons.pin, color: Color(0xFFD4AF37), size: 20),
+                        labelText: 'Verification Code (6 અંકનો OTP કોડ)',
+                        labelStyle: TextStyle(color: Colors.white70, fontSize: 13, letterSpacing: 0),
+                        hintText: '123456',
+                        hintStyle: TextStyle(color: Colors.white30, fontSize: 13, letterSpacing: 4),
+                        enabledBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                        ),
+                        focusedBorder: UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: newPassCtrl,
+                      obscureText: obscureNew,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFD4AF37), size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureNew ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.white60,
+                            size: 18,
+                          ),
+                          onPressed: () => setResetState(() => obscureNew = !obscureNew),
+                        ),
+                        labelText: 'New Password (નવો પાસવર્ડ)',
+                        hintText: 'ન્યૂનતમ 6 અક્ષરો (Min 6 chars)',
+                        labelStyle: const TextStyle(color: Colors.white70, fontSize: 13),
+                        hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                        ),
+                        focusedBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: confirmPassCtrl,
+                      obscureText: obscureConfirm,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFD4AF37), size: 20),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                            color: Colors.white60,
+                            size: 18,
+                          ),
+                          onPressed: () => setResetState(() => obscureConfirm = !obscureConfirm),
+                        ),
+                        labelText: 'Confirm Password (પાસવર્ડ ખાતરી કરો)',
+                        hintText: 'ફરીથી પાસવર્ડ લખો',
+                        labelStyle: const TextStyle(color: Colors.white70, fontSize: 13),
+                        hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
+                        enabledBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                        ),
+                        focusedBorder: const UnderlineInputBorder(
+                          borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        TextButton.icon(
+                          onPressed: (resendCooldown > 0 || isResending)
+                              ? null
+                              : () async {
+                                  setResetState(() {
+                                    isResending = true;
+                                    statusInfo = '';
+                                  });
+                                  final idText = identifierCtrl.text.trim();
+                                  final res = await ref.read(authNotifierProvider.notifier).requestPasswordReset(idText);
+                                  setResetState(() {
+                                    isResending = false;
+                                    if (res['success'] == true) {
+                                      statusInfo = 'નવો ચકાસણી કોડ સફળતાપૂર્વક મોકલાયો છે.';
+                                      startCooldown(res['resendCooldownSeconds'] ?? 60);
+                                    } else {
+                                      isLocked = res['isLocked'] == true;
+                                      statusInfo = res['message'] ?? 'કોડ ફરી મોકલવામાં નિષ્ફળતા';
+                                    }
+                                  });
+                                },
+                          icon: isResending
+                              ? const SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4AF37)),
+                                )
+                              : const Icon(Icons.refresh, size: 16, color: Color(0xFFD4AF37)),
+                          label: Text(
+                            resendCooldown > 0
+                                ? 'Resend in ${resendCooldown}s (ફરી ${resendCooldown}s)'
+                                : 'Resend Code (ફરી કોડ મોકલો)',
+                            style: TextStyle(
+                              color: (resendCooldown > 0 || isResending) ? Colors.white38 : const Color(0xFFD4AF37),
+                              fontSize: 12,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                        const Text(
+                          'મહત્તમ 4 પ્રયાસો',
+                          style: TextStyle(color: Colors.white38, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                    if (statusInfo.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: isLocked ? Colors.red.withOpacity(0.18) : Colors.orange.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              isLocked ? Icons.lock_clock : Icons.info_outline,
+                              color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                statusInfo,
+                                style: TextStyle(
+                                  color: isLocked ? Colors.redAccent : Colors.orangeAccent,
+                                  fontSize: 11.5,
+                                  height: 1.3,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
+                ],
               ),
             ),
-            ElevatedButton(
-              onPressed: isSubmitting
-                  ? null
-                  : () async {
-                      if (step == 1) {
-                        final idText = identifierCtrl.text.trim();
-                        if (idText.isEmpty) {
-                          setResetState(() => statusInfo = 'કૃપા કરીને ઈમેલ અથવા ફોન નંબર દાખલ કરો');
-                          return;
-                        }
-                        setResetState(() {
-                          isSubmitting = true;
-                          statusInfo = '';
-                        });
-
-                        final res = await ref.read(authNotifierProvider.notifier).requestPasswordReset(idText);
-                        if (res['success'] == true) {
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () {
+                        if (step == 2) {
                           setResetState(() {
-                            isSubmitting = false;
-                            step = 2;
-                            maskedTarget = res['maskedContact'] ?? idText;
-                            if (res['code'] != null) {
-                              otpCtrl.text = res['code'].toString();
-                            }
+                            step = 1;
                             statusInfo = '';
+                            isLocked = false;
+                            cooldownTimer?.cancel();
+                            resendCooldown = 0;
                           });
                         } else {
-                          setResetState(() {
-                            isSubmitting = false;
-                            statusInfo = res['message'] ?? 'એકાઉન્ટ મળ્યું નથી';
-                          });
-                        }
-                      } else {
-                        final otp = otpCtrl.text.trim();
-                        final newPass = newPassCtrl.text;
-                        final confirmPass = confirmPassCtrl.text;
-
-                        if (otp.length != 6) {
-                          setResetState(() => statusInfo = 'કૃપા કરીને 6 અંકનો કોડ દાખલ કરો');
-                          return;
-                        }
-                        if (newPass.length < 6) {
-                          setResetState(() => statusInfo = 'પાસવર્ડ ઓછામાં ઓછો 6 અક્ષરનો હોવો જોઈએ');
-                          return;
-                        }
-                        if (newPass != confirmPass) {
-                          setResetState(() => statusInfo = 'બંને પાસવર્ડ સરખા હોવા જોઈએ');
-                          return;
-                        }
-
-                        setResetState(() {
-                          isSubmitting = true;
-                          statusInfo = '';
-                        });
-
-                        final idText = identifierCtrl.text.trim();
-                        final res = await ref.read(authNotifierProvider.notifier).resetPassword(
-                              identifier: idText,
-                              code: otp,
-                              newPassword: newPass,
-                            );
-
-                        if (res['success'] == true) {
+                          cleanup();
                           Navigator.pop(resetCtx);
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે! હવે લોગિન થઈ રહ્યું છે...'),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 3),
-                              ),
-                            );
-                            _performLogin(idText, newPass);
+                        }
+                      },
+                child: Text(
+                  step == 2 ? 'Back (પાછા)' : 'Cancel (રદ કરો)',
+                  style: const TextStyle(color: Colors.white60),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: (isSubmitting || isLocked)
+                    ? null
+                    : () async {
+                        if (step == 1) {
+                          final idText = identifierCtrl.text.trim();
+                          if (idText.isEmpty) {
+                            setResetState(() => statusInfo = 'કૃપા કરીને ઈમેલ અથવા ફોન નંબર દાખલ કરો');
+                            return;
+                          }
+                          setResetState(() {
+                            isSubmitting = true;
+                            statusInfo = '';
+                            isLocked = false;
+                          });
+
+                          final res = await ref.read(authNotifierProvider.notifier).requestPasswordReset(idText);
+                          if (res['success'] == true) {
+                            setResetState(() {
+                              isSubmitting = false;
+                              step = 2;
+                              maskedTarget = res['maskedContact'] ?? idText;
+                              channelName = res['channel'] ?? (idText.contains('@') ? 'EMAIL' : 'SMS');
+                              statusInfo = '';
+                              otpCtrl.clear();
+                              startCooldown(res['resendCooldownSeconds'] ?? 60);
+                            });
+                          } else {
+                            setResetState(() {
+                              isSubmitting = false;
+                              isLocked = res['isLocked'] == true;
+                              statusInfo = res['message'] ?? 'એકાઉન્ટ મળ્યું નથી અથવા લોકઆઉટ સક્રિય છે';
+                            });
                           }
                         } else {
+                          final otp = otpCtrl.text.trim();
+                          final newPass = newPassCtrl.text;
+                          final confirmPass = confirmPassCtrl.text;
+
+                          if (otp.length != 6) {
+                            setResetState(() => statusInfo = 'કૃપા કરીને 6 અંકનો કોડ દાખલ કરો');
+                            return;
+                          }
+                          if (newPass.length < 6) {
+                            setResetState(() => statusInfo = 'પાસવર્ડ ઓછામાં ઓછો 6 અક્ષરનો હોવો જોઈએ');
+                            return;
+                          }
+                          if (newPass != confirmPass) {
+                            setResetState(() => statusInfo = 'બંને પાસવર્ડ સરખા હોવા જોઈએ');
+                            return;
+                          }
+
                           setResetState(() {
-                            isSubmitting = false;
-                            statusInfo = res['message'] ?? 'કોડ ખોટો છે અથવા સમય પૂરો થઈ ગયો છે';
+                            isSubmitting = true;
+                            statusInfo = '';
                           });
+
+                          final idText = identifierCtrl.text.trim();
+                          final res = await ref.read(authNotifierProvider.notifier).resetPassword(
+                                identifier: idText,
+                                code: otp,
+                                newPassword: newPass,
+                              );
+
+                          if (res['success'] == true) {
+                            cleanup();
+                            if (resetCtx.mounted) {
+                              Navigator.pop(resetCtx);
+                            }
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે! હવે લોગિન થઈ રહ્યું છે...'),
+                                  backgroundColor: Colors.green,
+                                  duration: Duration(seconds: 3),
+                                ),
+                              );
+                              _performLogin(idText, newPass);
+                            }
+                          } else {
+                            setResetState(() {
+                              isSubmitting = false;
+                              statusInfo = res['message'] ?? 'કોડ ખોટો છે અથવા સમય પૂરો થઈ ગયો છે';
+                            });
+                          }
                         }
-                      }
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1565C0),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF1565C0),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: isSubmitting
+                    ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(
+                        step == 1 ? 'Get Code (કોડ મેળવો)' : 'Reset & Login (સેવ કરો)',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
               ),
-              child: isSubmitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                  : Text(
-                      step == 1 ? 'Get Code (કોડ મેળવો)' : 'Reset & Login (સેવ કરો)',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-            ),
-          ],
-        ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -1,7 +1,10 @@
 import { AdminService } from "./admin.service";
+import { OtpService } from "../otp/otp.service";
+import { AdminOtpQueryDto } from "../otp/dto/otp.dto";
 export declare class AdminController {
     private readonly adminService;
-    constructor(adminService: AdminService);
+    private readonly otpService;
+    constructor(adminService: AdminService, otpService: OtpService);
     getStats(): Promise<{
         totalUsers: number;
         totalProfiles: number;
@@ -51,6 +54,56 @@ export declare class AdminController {
             status: string;
             date: string;
         }[];
+    }>;
+    getOtpSummary(): Promise<{
+        success: boolean;
+        today: {
+            total: number;
+            smsCount: number;
+            emailCount: number;
+            registrationCount: number;
+            forgotPasswordCount: number;
+            deliveredCount: number;
+            failedCount: number;
+        };
+        yesterday: {
+            total: number;
+            smsCount: number;
+            emailCount: number;
+        };
+        activeLockouts: number;
+        totalAllTime: number;
+    }>;
+    getOtpTrends(days?: string): Promise<{
+        success: boolean;
+        days: number;
+        trends: {
+            date: string;
+            sms: number;
+            email: number;
+            total: number;
+            failed: number;
+        }[];
+    }>;
+    getOtpLogs(query: AdminOtpQueryDto): Promise<{
+        success: boolean;
+        data: {
+            status: import(".prisma/client").$Enums.OtpStatus;
+            id: string;
+            createdAt: Date;
+            ipAddress: string | null;
+            channel: import(".prisma/client").$Enums.OtpChannel;
+            purpose: import(".prisma/client").$Enums.OtpPurpose;
+            recipient: string;
+            gatewayId: string | null;
+            gatewayResp: string | null;
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+        };
     }>;
     getReports(): Promise<{
         status: import(".prisma/client").$Enums.ReportStatus;

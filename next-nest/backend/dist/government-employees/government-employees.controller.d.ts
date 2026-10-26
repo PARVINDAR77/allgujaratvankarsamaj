@@ -287,6 +287,8 @@ export declare class GovernmentEmployeesController {
                     gender: import(".prisma/client").$Enums.Gender | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
+                    isEmailVerified: boolean;
+                    isPhoneVerified: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };
@@ -427,6 +429,8 @@ export declare class GovernmentEmployeesController {
                     gender: import(".prisma/client").$Enums.Gender | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
+                    isEmailVerified: boolean;
+                    isPhoneVerified: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                 };

@@ -40,6 +40,8 @@ model User {
   passwordHash String              @map("password_hash")
   role         Role                @default(USER)
   status       Status              @default(ACTIVE)
+  isEmailVerified Boolean          @default(false) @map("is_email_verified")
+  isPhoneVerified Boolean          @default(false) @map("is_phone_verified")
   createdAt    DateTime            @default(now()) @map("created_at")
   updatedAt    DateTime            @updatedAt @map("updated_at")
   profile      MatrimonialProfile?
@@ -678,4 +680,60 @@ model ChatMessage {
   @@index([receiverId])
   @@map("chat_messages")
 }
+
+enum OtpChannel {
+  SMS
+  EMAIL
+}
+
+enum OtpPurpose {
+  REGISTRATION
+  FORGOT_PASSWORD
+}
+
+enum OtpStatus {
+  SENT
+  DELIVERED
+  FAILED
+}
+
+model OtpSession {
+  id          String      @id @default(uuid())
+  target      String      // phone or email
+  channel     OtpChannel
+  purpose     OtpPurpose
+  code        String
+  attempts    Int         @default(0)
+  maxAttempts Int         @default(4) @map("max_attempts")
+  isVerified  Boolean     @default(false) @map("is_verified")
+  verifiedAt  DateTime?   @map("verified_at")
+  expiresAt   DateTime    @map("expires_at")
+  lockedUntil DateTime?   @map("locked_until")
+  token       String?     @unique
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@index([target, purpose])
+  @@index([token])
+  @@map("otp_sessions")
+}
+
+model OtpLog {
+  id          String      @id @default(uuid())
+  channel     OtpChannel
+  purpose     OtpPurpose
+  recipient   String
+  ipAddress   String?     @map("ip_address")
+  status      OtpStatus   @default(SENT)
+  gatewayId   String?     @map("gateway_id")
+  gatewayResp String?     @db.Text @map("gateway_response")
+  createdAt   DateTime    @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([recipient])
+  @@index([channel])
+  @@index([purpose])
+  @@map("otp_logs")
+}
+
 

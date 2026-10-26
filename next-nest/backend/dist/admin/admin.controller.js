@@ -16,12 +16,25 @@ exports.AdminController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const admin_service_1 = require("./admin.service");
+const otp_service_1 = require("../otp/otp.service");
+const otp_dto_1 = require("../otp/dto/otp.dto");
 let AdminController = class AdminController {
-    constructor(adminService) {
+    constructor(adminService, otpService) {
         this.adminService = adminService;
+        this.otpService = otpService;
     }
     async getStats() {
         return this.adminService.getDashboardStats();
+    }
+    async getOtpSummary() {
+        return this.otpService.getDailySummary();
+    }
+    async getOtpTrends(days) {
+        const parsedDays = days ? parseInt(days, 10) : 7;
+        return this.otpService.getDailyTrends(parsedDays);
+    }
+    async getOtpLogs(query) {
+        return this.otpService.getLogs(query);
     }
     async getReports() {
         return this.adminService.getReports();
@@ -53,6 +66,29 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AdminController.prototype, "getStats", null);
+__decorate([
+    (0, common_1.Get)("otp-analytics/summary"),
+    (0, swagger_1.ApiOperation)({ summary: "Get daily OTP usage metrics and summary for Super Admin" }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "getOtpSummary", null);
+__decorate([
+    (0, common_1.Get)("otp-analytics/daily-trends"),
+    (0, swagger_1.ApiOperation)({ summary: "Get daily trends for OTP activity over last N days" }),
+    __param(0, (0, common_1.Query)("days")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "getOtpTrends", null);
+__decorate([
+    (0, common_1.Get)("otp-analytics/logs"),
+    (0, swagger_1.ApiOperation)({ summary: "Get filterable paginated audit logs of all OTP dispatches" }),
+    __param(0, (0, common_1.Query)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [otp_dto_1.AdminOtpQueryDto]),
+    __metadata("design:returntype", Promise)
+], AdminController.prototype, "getOtpLogs", null);
 __decorate([
     (0, common_1.Get)("reports"),
     (0, swagger_1.ApiOperation)({ summary: "Get user reports for moderation" }),
@@ -110,6 +146,7 @@ __decorate([
 exports.AdminController = AdminController = __decorate([
     (0, swagger_1.ApiTags)("Admin"),
     (0, common_1.Controller)("admin"),
-    __metadata("design:paramtypes", [admin_service_1.AdminService])
+    __metadata("design:paramtypes", [admin_service_1.AdminService,
+        otp_service_1.OtpService])
 ], AdminController);
 //# sourceMappingURL=admin.controller.js.map

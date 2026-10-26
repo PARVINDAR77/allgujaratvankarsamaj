@@ -2,6 +2,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../prisma/prisma.service";
 import { UsersService } from "../users/users.service";
+import { OtpService } from "../otp/otp.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { ForgotPasswordDto, VerifyResetCodeDto, ResetPasswordDto, UpdatePasswordDto } from "./dto/password-reset.dto";
@@ -10,9 +11,9 @@ export declare class AuthService {
     private readonly jwtService;
     private readonly configService;
     private readonly prisma;
+    private readonly otpService;
     private readonly logger;
-    private resetCodes;
-    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService);
+    constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, otpService: OtpService);
     register(dto: RegisterDto): Promise<{
         isVerified: boolean;
         hasProfile: boolean;
@@ -24,6 +25,8 @@ export declare class AuthService {
         phone: string | null;
         gender: import(".prisma/client").$Enums.Gender | null;
         role: import(".prisma/client").$Enums.Role;
+        isEmailVerified: boolean;
+        isPhoneVerified: boolean;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -40,22 +43,29 @@ export declare class AuthService {
             phone: string | null;
             gender: import(".prisma/client").$Enums.Gender | null;
             role: import(".prisma/client").$Enums.Role;
+            isEmailVerified: boolean;
+            isPhoneVerified: boolean;
             createdAt: Date;
             updatedAt: Date;
         };
         tokenType: string;
         expiresIn: string;
     }>;
-    forgotPassword(dto: ForgotPasswordDto): Promise<{
+    forgotPassword(dto: ForgotPasswordDto, ipAddress?: string): Promise<{
         success: boolean;
         message: string;
-        identifier: string;
+        target: string;
         maskedContact: string;
-        code: string;
+        channel: import(".prisma/client").$Enums.OtpChannel;
+        expiresInSeconds: number;
+        resendCooldownSeconds: number;
+        maxAttempts: number;
     }>;
     verifyResetCode(dto: VerifyResetCodeDto): Promise<{
         success: boolean;
+        verified: boolean;
         message: string;
+        resetToken: string;
     }>;
     resetPassword(dto: ResetPasswordDto): Promise<{
         success: boolean;

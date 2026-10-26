@@ -101,6 +101,8 @@ export class UsersService {
     passwordHash: string;
     role?: Role;
     status?: Status;
+    isEmailVerified?: boolean;
+    isPhoneVerified?: boolean;
   }): Promise<User> {
     const normalizedEmail =
       data.email?.toLowerCase().trim() || `${uuidv4()}@vankar.org`;
@@ -115,6 +117,8 @@ export class UsersService {
           passwordHash: data.passwordHash,
           role: data.role || Role.USER,
           status: data.status || Status.ACTIVE,
+          isEmailVerified: data.isEmailVerified ?? false,
+          isPhoneVerified: data.isPhoneVerified ?? false,
         },
       });
       return user;

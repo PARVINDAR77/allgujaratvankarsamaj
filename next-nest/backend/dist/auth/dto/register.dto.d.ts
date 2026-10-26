@@ -9,4 +9,5 @@ export declare class RegisterDto {
     email?: string;
     gender?: GenderDto;
     password: string;
+    registrationToken?: string;
 }

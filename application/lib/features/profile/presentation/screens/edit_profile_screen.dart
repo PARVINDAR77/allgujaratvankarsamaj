@@ -299,6 +299,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/profile');
+            }
+          },
+        ),
         title: const Text(
           'Edit Profile (પ્રોફાઈલ સુધારો)',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
@@ -309,9 +319,43 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       body: SafeArea(
         child: myProfileAsync.when(
           loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-          error: (err, stack) => Center(child: Text('Failed to load profile details: $err')),
+          error: (err, stack) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.account_circle_outlined, size: 64, color: Color(0xFFD4AF37)),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'તમારું પ્રોફાઈલ મળ્યું નથી (Profile not found)',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'કૃપા કરીને પહેલાં તમારું પ્રોફાઈલ બનાવો.\n(Please create your matrimonial profile first.)',
+                    style: TextStyle(fontSize: 14, color: Colors.black54),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton.icon(
+                    onPressed: () => context.go('/profile/create'),
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('નવું પ્રોફાઈલ બનાવો (Create Profile)'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD4AF37),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           data: (profile) {
-            if (!_isInitialized && profile.id != 'NEW') {
+            if (!_isInitialized) {
               _isInitialized = true;
               _gender = profile.displayGender;
               _maritalStatus = ProfileModel.normalizeMaritalStatusToDisplay(profile.maritalStatus);
@@ -960,15 +1004,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_aboutMe != null) updateData['about'] = _aboutMe;
 
                     final totalPhotos = _existingPhotoUrls.length + _newGalleryPhotosBytes.length;
-                    if (totalPhotos < 2) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('કૃપા કરીને ઓછામાં ઓછા ૨ ઉમેદવારના ફોટા રાખો (Please maintain at least 2 candidate photos, maximum 5)'),
-                          backgroundColor: Colors.red,
-                        ),
-                      );
-                      return;
-                    }
                     if (totalPhotos > 5) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
@@ -979,44 +1014,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       return;
                     }
 
-                    if (profile.isVerified != true) {
-                      if (_idProofNumber == null || _idProofNumber!.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('કૃપા કરીને $_idProofType નો નંબર દાખલ કરો (Please enter $_idProofType number)'),
-                            backgroundColor: Colors.red.shade700,
-                            duration: const Duration(seconds: 4),
-                          ),
-                        );
-                        return;
-                      }
-
+                    // ID Proof validation (only check if user explicitly uploaded new ID proof files)
+                    final hasNewIdFiles = _idFrontBytes != null || _idBackBytes != null;
+                    if (hasNewIdFiles) {
                       final hasFront = _idFrontBytes != null || (_existingIdFrontUrl != null && _existingIdFrontUrl!.isNotEmpty);
                       final hasBack = _idBackBytes != null || (_existingIdBackUrl != null && _existingIdBackUrl!.isNotEmpty);
-                      if (!hasFront && !hasBack) {
+                      if (!hasFront || !hasBack) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('કૃપા કરીને $_idProofType ના આગળ અને પાછળ બંને ફોટા અપલોડ કરો (Both Front and Back photos required)'),
-                            backgroundColor: Colors.red.shade700,
-                            duration: const Duration(seconds: 4),
-                          ),
-                        );
-                        return;
-                      }
-                      if (!hasFront) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('કૃપા કરીને $_idProofType નો આગળનો ફોટો (Front Side) અપલોડ કરો (Front photo of $_idProofType is required)'),
-                            backgroundColor: Colors.red.shade700,
-                            duration: const Duration(seconds: 4),
-                          ),
-                        );
-                        return;
-                      }
-                      if (!hasBack) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('કૃપા કરીને $_idProofType નો પાછળનો ફોટો (Back Side) અપલોડ કરો (Back photo of $_idProofType is required)'),
                             backgroundColor: Colors.red.shade700,
                             duration: const Duration(seconds: 4),
                           ),

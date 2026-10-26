@@ -94,6 +94,8 @@ let UsersService = UsersService_1 = class UsersService {
                     passwordHash: data.passwordHash,
                     role: data.role || client_1.Role.USER,
                     status: data.status || client_1.Status.ACTIVE,
+                    isEmailVerified: data.isEmailVerified ?? false,
+                    isPhoneVerified: data.isPhoneVerified ?? false,
                 },
             });
             return user;

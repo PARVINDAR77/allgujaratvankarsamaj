@@ -297,17 +297,21 @@ class WebHomeHeader extends ConsumerWidget implements PreferredSizeWidget {
   }
 
   Widget _buildProfileButton(BuildContext context) {
+    final isCurrent = activeRoute == '/profile';
     return ElevatedButton.icon(
-      onPressed: () => context.push('/verified-profile'),
+      onPressed: () => context.go('/profile'),
       icon: const Icon(Icons.person_rounded, size: 16, color: Color(0xFFFFD700)),
       label: const Text(
         'My Profile',
         style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
       ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFA4143D),
+        backgroundColor: isCurrent ? const Color(0xFF7E102F) : const Color(0xFFA4143D),
         foregroundColor: Colors.white,
-        side: const BorderSide(color: Color(0xFFD6A34A), width: 1.1),
+        side: BorderSide(
+          color: isCurrent ? Colors.white : const Color(0xFFD6A34A),
+          width: isCurrent ? 1.6 : 1.1,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),

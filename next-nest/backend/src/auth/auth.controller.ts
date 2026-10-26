@@ -18,6 +18,8 @@ import {
 } from "@nestjs/swagger";
 import { AuthService } from "./auth.service";
 import { UsersService } from "../users/users.service";
+import { OtpService } from "../otp/otp.service";
+import { SendRegistrationOtpDto, VerifyRegistrationOtpDto } from "../otp/dto/otp.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import {
@@ -36,7 +38,52 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly otpService: OtpService,
   ) {}
+
+  @Post("register/send-otp")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Send OTP to mobile (DLT SMS) and email for registration" })
+  @ApiResponse({ status: 200, description: "Verification codes dispatched" })
+  @ApiResponse({ status: 409, description: "Phone or email already registered" })
+  @ApiResponse({ status: 429, description: "Too many attempts or lockout active" })
+  async sendRegistrationOtp(
+    @Request() req: any,
+    @Body() dto: SendRegistrationOtpDto,
+  ) {
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    return this.otpService.sendRegistrationOtp(
+      dto,
+      Array.isArray(ip) ? ip[0] : ip,
+    );
+  }
+
+  @Post("register/send-codes")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Alias for send-otp" })
+  async sendRegistrationCodes(
+    @Request() req: any,
+    @Body() dto: SendRegistrationOtpDto,
+  ) {
+    return this.sendRegistrationOtp(req, dto);
+  }
+
+  @Post("register/verify-otp")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Verify mobile OTP and email OTP, return registrationToken" })
+  @ApiResponse({ status: 200, description: "Verification successful, token returned" })
+  @ApiResponse({ status: 400, description: "Invalid code or expired" })
+  @ApiResponse({ status: 429, description: "Exceeded 4 attempts, locked out" })
+  async verifyRegistrationOtp(@Body() dto: VerifyRegistrationOtpDto) {
+    return this.otpService.verifyRegistrationOtp(dto);
+  }
+
+  @Post("register/verify-codes")
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Alias for verify-otp" })
+  async verifyRegistrationCodes(@Body() dto: VerifyRegistrationOtpDto) {
+    return this.verifyRegistrationOtp(dto);
+  }
 
   @Post("register")
   @ApiOperation({ summary: "Register a new user" })
@@ -131,8 +178,13 @@ export class AuthController {
   })
   @ApiResponse({ status: 200, description: "Verification code sent" })
   @ApiResponse({ status: 404, description: "No account found" })
-  async forgotPassword(@Body() dto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(dto);
+  @ApiResponse({ status: 429, description: "Too many attempts or lockout active" })
+  async forgotPassword(@Request() req: any, @Body() dto: ForgotPasswordDto) {
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    return this.authService.forgotPassword(
+      dto,
+      Array.isArray(ip) ? ip[0] : ip,
+    );
   }
 
   @Post("verify-reset-code")

@@ -9,7 +9,7 @@ export default function MatrimonyPage() {
     { title: "વર શોધો (Find Groom / Boy)", href: "/search?lookingFor=Groom", icon: "👨", desc: "ચકાસાયેલ વર ઉમેદવારો" },
     { title: "કન્યા શોધો (Find Bride / Girl)", href: "/search?lookingFor=Bride", icon: "👰", desc: "ચકાસાયેલ કન્યા ઉમેદવારો" },
     { title: "યોગ્ય પસંદગી (Find Match)", href: "/search", icon: "💍", desc: "મનપસંદ ફિલ્ટર્સ વડે શોધો" },
-    { title: "પ્રોફાઇલ બનાવો (Create Profile)", href: "/profile", icon: "📝", desc: "તમારી માહિતી ઉમેરો" },
+    { title: "પ્રોફાઇલ બનાવો / સુધારો (Edit Profile)", href: "/profile", icon: "✏️", desc: "વિગતો, ફોટો અને માહિતી અપડેટ કરો" },
     { title: "પરગણા વાઇઝ શોધો (Pargana Search)", href: "/pargana", icon: "📍", desc: "૩૫, ૨૭, ૧૬, ૧૪ પરગણા" },
     { title: "વેરિફાઇડ પ્રોફાઇલ્સ (Verified Profiles)", href: "/verified-profile", icon: "✅", desc: "મંડળ માન્ય પ્રોફાઇલ્સ" },
   ];

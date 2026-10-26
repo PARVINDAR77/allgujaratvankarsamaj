@@ -161,16 +161,18 @@ class _WebMatrimonyActionsState extends ConsumerState<WebMatrimonyActions> {
                     ),
                     _MatrimonyCardData(
                       index: 3,
-                      badgeText: 'FREE REGISTRATION',
-                      title: 'પ્રોફાઈલ બનાવો',
-                      englishTitle: 'Create Profile',
-                      subtitle: 'સમાજ સાથે જોડાઓ',
-                      description: 'તમારી અથવા પરિવારના સભ્યની સંપૂર્ણ માહિતી સાથે પ્રોફાઈલ નોંધાવો.',
+                      badgeText: 'PROFILE & REGISTER',
+                      title: 'પ્રોફાઈલ મેનેજ કરો',
+                      englishTitle: 'Manage Profile',
+                      subtitle: 'માહિતી અપડેટ કરો & નવી બનાવો',
+                      description: 'તમારી અથવા પરિવારના સભ્યની પ્રોફાઈલ વિગત, ફોટા અપડેટ કરો અથવા નવી પ્રોફાઈલ બનાવો.',
                       icon: Icons.assignment_ind_rounded,
                       headerGradient: const [Color(0xFF92400E), Color(0xFFD97706)],
                       accentColor: const Color(0xFFD6A34A),
-                      ctaText: 'પ્રોફાઈલ બનાવો • Register',
-                      onTap: () => context.push('/profile/create'),
+                      ctaText: 'પ્રોફાઈલ સુધારો • Edit',
+                      onTap: () => context.push('/profile/edit'),
+                      secondaryCtaText: 'નવી બનાવો • Register',
+                      onSecondaryTap: () => context.push('/profile/create'),
                     ),
                   ];
 
@@ -256,6 +258,21 @@ class _WebMatrimonyActionsState extends ConsumerState<WebMatrimonyActions> {
                       onTap: () => context.push('/verified-profile'),
                     ),
                     ElevatedButton.icon(
+                      onPressed: () => context.push('/profile/edit'),
+                      icon: const Icon(Icons.edit_note_rounded, size: 17),
+                      label: const Text(
+                        'પ્રોફાઈલ સુધારો (Edit Profile)',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD97706),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        elevation: 2,
+                      ),
+                    ),
+                    ElevatedButton.icon(
                       onPressed: () => context.push('/profile/create'),
                       icon: const Icon(Icons.group_add_rounded, size: 16),
                       label: const Text(
@@ -265,7 +282,7 @@ class _WebMatrimonyActionsState extends ConsumerState<WebMatrimonyActions> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFA4143D),
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         elevation: 2,
                       ),
@@ -403,33 +420,93 @@ class _WebMatrimonyActionsState extends ConsumerState<WebMatrimonyActions> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 18),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 38,
-                      child: ElevatedButton(
-                        onPressed: data.onTap,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: data.headerGradient.first,
-                          foregroundColor: Colors.white,
-                          elevation: isHovered ? 3 : 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(9),
-                            side: const BorderSide(color: Color(0xFFD6A34A), width: 1.0),
+                    if (data.secondaryCtaText != null) ...[
+                      Row(
+                        children: [
+                          Expanded(
+                            child: SizedBox(
+                              height: 38,
+                              child: ElevatedButton(
+                                onPressed: data.onTap,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: data.headerGradient.first,
+                                  foregroundColor: Colors.white,
+                                  elevation: isHovered ? 3 : 1,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(9),
+                                    side: const BorderSide(color: Color(0xFFD6A34A), width: 1.0),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                ),
+                                child: Text(
+                                  data.ctaText,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
                           ),
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                        ),
-                        child: Text(
-                          data.ctaText,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.2,
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: SizedBox(
+                              height: 38,
+                              child: OutlinedButton(
+                                onPressed: data.onSecondaryTap,
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: data.headerGradient.first,
+                                  side: BorderSide(color: data.headerGradient.first, width: 1.2),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(9),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                                ),
+                                child: Text(
+                                  data.secondaryCtaText!,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        ],
+                      ),
+                    ] else ...[
+                      SizedBox(
+                        width: double.infinity,
+                        height: 38,
+                        child: ElevatedButton(
+                          onPressed: data.onTap,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: data.headerGradient.first,
+                            foregroundColor: Colors.white,
+                            elevation: isHovered ? 3 : 1,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(9),
+                              side: const BorderSide(color: Color(0xFFD6A34A), width: 1.0),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                          ),
+                          child: Text(
+                            data.ctaText,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.2,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
               ),
@@ -484,6 +561,8 @@ class _MatrimonyCardData {
   final Color accentColor;
   final String ctaText;
   final VoidCallback onTap;
+  final String? secondaryCtaText;
+  final VoidCallback? onSecondaryTap;
 
   const _MatrimonyCardData({
     required this.index,
@@ -497,5 +576,7 @@ class _MatrimonyCardData {
     required this.accentColor,
     required this.ctaText,
     required this.onTap,
+    this.secondaryCtaText,
+    this.onSecondaryTap,
   });
 }

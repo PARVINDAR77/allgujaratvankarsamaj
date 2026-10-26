@@ -17,14 +17,30 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("./auth.service");
 const users_service_1 = require("../users/users.service");
+const otp_service_1 = require("../otp/otp.service");
+const otp_dto_1 = require("../otp/dto/otp.dto");
 const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
 const password_reset_dto_1 = require("./dto/password-reset.dto");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
 let AuthController = class AuthController {
-    constructor(authService, usersService) {
+    constructor(authService, usersService, otpService) {
         this.authService = authService;
         this.usersService = usersService;
+        this.otpService = otpService;
+    }
+    async sendRegistrationOtp(req, dto) {
+        const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+        return this.otpService.sendRegistrationOtp(dto, Array.isArray(ip) ? ip[0] : ip);
+    }
+    async sendRegistrationCodes(req, dto) {
+        return this.sendRegistrationOtp(req, dto);
+    }
+    async verifyRegistrationOtp(dto) {
+        return this.otpService.verifyRegistrationOtp(dto);
+    }
+    async verifyRegistrationCodes(dto) {
+        return this.verifyRegistrationOtp(dto);
     }
     async register(dto) {
         return this.authService.register(dto);
@@ -52,8 +68,9 @@ let AuthController = class AuthController {
     async getProfile(req) {
         return req.user;
     }
-    async forgotPassword(dto) {
-        return this.authService.forgotPassword(dto);
+    async forgotPassword(req, dto) {
+        const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+        return this.authService.forgotPassword(dto, Array.isArray(ip) ? ip[0] : ip);
     }
     async verifyResetCode(dto) {
         return this.authService.verifyResetCode(dto);
@@ -72,6 +89,50 @@ let AuthController = class AuthController {
     }
 };
 exports.AuthController = AuthController;
+__decorate([
+    (0, common_1.Post)("register/send-otp"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: "Send OTP to mobile (DLT SMS) and email for registration" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Verification codes dispatched" }),
+    (0, swagger_1.ApiResponse)({ status: 409, description: "Phone or email already registered" }),
+    (0, swagger_1.ApiResponse)({ status: 429, description: "Too many attempts or lockout active" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, otp_dto_1.SendRegistrationOtpDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "sendRegistrationOtp", null);
+__decorate([
+    (0, common_1.Post)("register/send-codes"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: "Alias for send-otp" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, otp_dto_1.SendRegistrationOtpDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "sendRegistrationCodes", null);
+__decorate([
+    (0, common_1.Post)("register/verify-otp"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: "Verify mobile OTP and email OTP, return registrationToken" }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: "Verification successful, token returned" }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: "Invalid code or expired" }),
+    (0, swagger_1.ApiResponse)({ status: 429, description: "Exceeded 4 attempts, locked out" }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [otp_dto_1.VerifyRegistrationOtpDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "verifyRegistrationOtp", null);
+__decorate([
+    (0, common_1.Post)("register/verify-codes"),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
+    (0, swagger_1.ApiOperation)({ summary: "Alias for verify-otp" }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [otp_dto_1.VerifyRegistrationOtpDto]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "verifyRegistrationCodes", null);
 __decorate([
     (0, common_1.Post)("register"),
     (0, swagger_1.ApiOperation)({ summary: "Register a new user" }),
@@ -155,9 +216,11 @@ __decorate([
     }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "Verification code sent" }),
     (0, swagger_1.ApiResponse)({ status: 404, description: "No account found" }),
-    __param(0, (0, common_1.Body)()),
+    (0, swagger_1.ApiResponse)({ status: 429, description: "Too many attempts or lockout active" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [password_reset_dto_1.ForgotPasswordDto]),
+    __metadata("design:paramtypes", [Object, password_reset_dto_1.ForgotPasswordDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "forgotPassword", null);
 __decorate([
@@ -239,6 +302,7 @@ exports.AuthController = AuthController = __decorate([
     (0, swagger_1.ApiTags)("Authentication"),
     (0, common_1.Controller)("auth"),
     __metadata("design:paramtypes", [auth_service_1.AuthService,
-        users_service_1.UsersService])
+        users_service_1.UsersService,
+        otp_service_1.OtpService])
 ], AuthController);
 //# sourceMappingURL=auth.controller.js.map

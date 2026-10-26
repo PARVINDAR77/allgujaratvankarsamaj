@@ -37,6 +37,7 @@ const samaj_super_stars_module_1 = require("./samaj-super-stars/samaj-super-star
 const notifications_module_1 = require("./notifications/notifications.module");
 const education_module_1 = require("./education/education.module");
 const chat_module_1 = require("./chat/chat.module");
+const otp_module_1 = require("./otp/otp.module");
 let AppModule = class AppModule {
     configure(consumer) {
         consumer.apply(request_id_middleware_1.RequestIdMiddleware).forRoutes("*");
@@ -54,6 +55,7 @@ exports.AppModule = AppModule = __decorate([
             health_module_1.HealthModule,
             users_module_1.UsersModule,
             auth_module_1.AuthModule,
+            otp_module_1.OtpModule,
             profiles_module_1.ProfilesModule,
             admin_module_1.AdminModule,
             settings_module_1.SettingsModule,

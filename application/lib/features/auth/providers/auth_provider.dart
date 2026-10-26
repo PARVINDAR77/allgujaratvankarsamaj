@@ -144,19 +144,91 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> register(String email, String password, {String? phone, String? name, String? gender}) async {
+  Future<Map<String, dynamic>> sendRegistrationOtp({
+    required String name,
+    required String phone,
+    required String email,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/register/send-otp', data: {
+        'name': name.trim(),
+        'phone': phone.trim(),
+        'email': email.trim(),
+      });
+      return {
+        'success': true,
+        'message': res.data['message'] ?? 'ચકાસણી કોડ મોકલવામાં આવ્યા છે',
+        'maskedPhone': res.data['maskedPhone'] ?? phone,
+        'maskedEmail': res.data['maskedEmail'] ?? email,
+        'expiresInSeconds': res.data['expiresInSeconds'] ?? 600,
+        'resendCooldownSeconds': res.data['resendCooldownSeconds'] ?? 60,
+        'maxAttempts': res.data['maxAttempts'] ?? 4,
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {
+        'success': false,
+        'message': failure.message,
+        'isLocked': e.response?.statusCode == 429,
+        'remainingSeconds': e.response?.data is Map ? e.response?.data['remainingSeconds'] : null,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyRegistrationOtp({
+    required String phone,
+    required String email,
+    required String phoneOtp,
+    required String emailOtp,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/register/verify-otp', data: {
+        'phone': phone.trim(),
+        'email': email.trim(),
+        'phoneOtp': phoneOtp.trim(),
+        'emailOtp': emailOtp.trim(),
+      });
+      return {
+        'success': true,
+        'verified': true,
+        'registrationToken': res.data['registrationToken'],
+        'message': res.data['message'] ?? 'ચકાસણી સફળ થઈ છે',
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {
+        'success': false,
+        'message': failure.message,
+        'isLocked': e.response?.statusCode == 429,
+        'remainingSeconds': e.response?.data is Map ? e.response?.data['remainingSeconds'] : null,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
+  Future<bool> register(
+    String email,
+    String password, {
+    String? phone,
+    String? name,
+    String? gender,
+    String? registrationToken,
+  }) async {
     state = AuthState.loading();
     try {
-      // Backend expects email, phone, name, gender, password
       await _dio.post('/auth/register', data: {
         'email': email,
         'password': password,
         if (phone != null) 'phone': phone,
         if (name != null) 'name': name,
         if (gender != null) 'gender': gender,
+        if (registrationToken != null) 'registrationToken': registrationToken,
       });
       // Immediately log in after successful registration
-      return await login(email, password);
+      return await login(phone ?? email, password);
     } on DioException catch (e) {
       final failure = _mapDioException(e);
       state = AuthState.error(failure.message);
@@ -214,12 +286,47 @@ class AuthNotifier extends StateNotifier<AuthState> {
       return {
         'success': true,
         'message': res.data['message'] ?? 'ચકાસણી કોડ મોકલવામાં આવ્યો છે',
-        'code': res.data['code'],
         'maskedContact': res.data['maskedContact'],
+        'channel': res.data['channel'],
+        'resendCooldownSeconds': res.data['resendCooldownSeconds'] ?? 60,
+        'maxAttempts': res.data['maxAttempts'] ?? 4,
       };
     } on DioException catch (e) {
       final failure = _mapDioException(e);
-      return {'success': false, 'message': failure.message};
+      return {
+        'success': false,
+        'message': failure.message,
+        'isLocked': e.response?.statusCode == 429,
+        'remainingSeconds': e.response?.data is Map ? e.response?.data['remainingSeconds'] : null,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyResetCode({
+    required String identifier,
+    required String code,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/verify-reset-code', data: {
+        'identifier': identifier.trim(),
+        'code': code.trim(),
+      });
+      return {
+        'success': true,
+        'verified': true,
+        'resetToken': res.data['resetToken'],
+        'message': res.data['message'] ?? 'ચકાસણી સફળ',
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {
+        'success': false,
+        'message': failure.message,
+        'isLocked': e.response?.statusCode == 429,
+        'remainingSeconds': e.response?.data is Map ? e.response?.data['remainingSeconds'] : null,
+      };
     } catch (e) {
       return {'success': false, 'message': 'ભૂલ: $e'};
     }

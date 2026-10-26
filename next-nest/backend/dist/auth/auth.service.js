@@ -18,16 +18,27 @@ const bcrypt = require("bcrypt");
 const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
 const users_service_1 = require("../users/users.service");
+const otp_service_1 = require("../otp/otp.service");
 let AuthService = AuthService_1 = class AuthService {
-    constructor(usersService, jwtService, configService, prisma) {
+    constructor(usersService, jwtService, configService, prisma, otpService) {
         this.usersService = usersService;
         this.jwtService = jwtService;
         this.configService = configService;
         this.prisma = prisma;
+        this.otpService = otpService;
         this.logger = new common_1.Logger(AuthService_1.name);
-        this.resetCodes = new Map();
     }
     async register(dto) {
+        let isEmailVerified = false;
+        let isPhoneVerified = false;
+        if (dto.registrationToken) {
+            const isValid = await this.otpService.consumeRegistrationToken(dto.registrationToken, dto.phone || "", dto.email || "");
+            if (!isValid) {
+                throw new common_1.BadRequestException("અમાન્ય અથવા સમાપ્ત થયેલ ચકાસણી ટોકન. કૃપા કરીને ફરીથી ચકાસણી કરો (Invalid or expired verification token. Please verify again.)");
+            }
+            isEmailVerified = true;
+            isPhoneVerified = true;
+        }
         if (dto.email) {
             const cleanEmail = dto.email.trim().toLowerCase();
             const existingByEmail = await this.usersService.findByEmail(cleanEmail);
@@ -56,6 +67,8 @@ let AuthService = AuthService_1 = class AuthService {
             name: dto.name,
             gender: dto.gender,
             passwordHash,
+            isEmailVerified,
+            isPhoneVerified,
         });
         const { passwordHash: _, ...safeUser } = user;
         return {
@@ -117,109 +130,44 @@ let AuthService = AuthService_1 = class AuthService {
             expiresIn,
         };
     }
-    async forgotPassword(dto) {
-        const rawIdentifier = dto.identifier.trim();
-        if (!rawIdentifier) {
-            throw new common_1.BadRequestException("ઈમેઈલ અથવા મોબાઇલ નંબર દાખલ કરો (Please enter email or mobile number)");
+    async forgotPassword(dto, ipAddress) {
+        return this.otpService.sendForgotPasswordOtp({ identifier: dto.identifier }, ipAddress);
+    }
+    async verifyResetCode(dto) {
+        return this.otpService.verifyResetOtp({
+            identifier: dto.identifier,
+            code: dto.code,
+        });
+    }
+    async resetPassword(dto) {
+        if (!dto.newPassword || dto.newPassword.length < 6) {
+            throw new common_1.BadRequestException("પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)");
         }
+        const rawIdentifier = dto.identifier.trim();
         let user = await this.usersService.findByPhone(rawIdentifier);
         if (!user) {
-            user = await this.usersService.findByEmail(rawIdentifier);
+            user = await this.usersService.findByEmail(rawIdentifier.toLowerCase());
         }
         if (!user) {
             throw new common_1.NotFoundException("આ ઈમેઈલ અથવા મોબાઇલ નંબર સાથે કોઈ એકાઉન્ટ મળ્યું નથી (No account found with this email or mobile number)");
         }
-        const code = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = Date.now() + 15 * 60 * 1000;
-        const normKey = user.email?.toLowerCase().trim() ||
-            user.phone?.trim() ||
-            rawIdentifier.toLowerCase();
-        this.resetCodes.set(normKey, {
-            code,
-            userId: user.id,
-            expiresAt,
-            attempts: 0,
-        });
-        this.resetCodes.set(rawIdentifier.toLowerCase(), {
-            code,
-            userId: user.id,
-            expiresAt,
-            attempts: 0,
-        });
-        if (user.phone) {
-            this.resetCodes.set(user.phone.trim(), {
-                code,
-                userId: user.id,
-                expiresAt,
-                attempts: 0,
+        const isTokenConsumed = await this.otpService.consumeResetToken(rawIdentifier, dto.code);
+        if (!isTokenConsumed) {
+            const verifyRes = await this.otpService.verifyResetOtp({
+                identifier: rawIdentifier,
+                code: dto.code,
             });
-        }
-        this.logger.log(`Password reset code for user ${user.id} (${user.email || user.phone}): ${code}`);
-        let masked = "";
-        if (user.phone && user.phone.length >= 10) {
-            masked = `${user.phone.slice(0, 2)}******${user.phone.slice(-2)}`;
-        }
-        else if (user.email && user.email.includes("@")) {
-            const [local, dom] = user.email.split("@");
-            masked = `${local.slice(0, 2)}***@${dom}`;
-        }
-        else {
-            masked = "તમારો નોંધાયેલ સંપર્ક";
-        }
-        return {
-            success: true,
-            message: `પાસવર્ડ રીસેટ કોડ મોકલવામાં આવ્યો છે (${masked})`,
-            identifier: rawIdentifier,
-            maskedContact: masked,
-            code,
-        };
-    }
-    async verifyResetCode(dto) {
-        const rawIdentifier = dto.identifier.trim().toLowerCase();
-        const entry = this.resetCodes.get(rawIdentifier);
-        if (!entry) {
-            throw new common_1.BadRequestException("કોઈ સક્રિય રીસેટ વિનંતી મળી નથી. કૃપા કરીને ફરીથી પ્રયાસ કરો (No active reset request found. Please request again.)");
-        }
-        if (Date.now() > entry.expiresAt) {
-            this.resetCodes.delete(rawIdentifier);
-            throw new common_1.BadRequestException("ચકાસણી કોડની સમયસીમા સમાપ્ત થઈ ગઈ છે (Verification code has expired. Please request a new one.)");
-        }
-        if (entry.code !== dto.code.trim()) {
-            entry.attempts += 1;
-            if (entry.attempts >= 5) {
-                this.resetCodes.delete(rawIdentifier);
-                throw new common_1.BadRequestException("ખૂબ ખોટા પ્રયાસો. કૃપા કરીને નવો કોડ મેળવો (Too many invalid attempts. Please request a new code.)");
+            if (!verifyRes?.success) {
+                throw new common_1.BadRequestException("અમાન્ય અથવા સમાપ્ત થયેલ ચકાસણી કોડ (Invalid or expired verification code)");
             }
-            throw new common_1.BadRequestException("અમાન્ય ચકાસણી કોડ (Invalid verification code)");
-        }
-        return {
-            success: true,
-            message: "ચકાસણી સફળ (Verification successful)",
-        };
-    }
-    async resetPassword(dto) {
-        const rawIdentifier = dto.identifier.trim().toLowerCase();
-        const entry = this.resetCodes.get(rawIdentifier);
-        if (!entry) {
-            throw new common_1.BadRequestException("કોઈ સક્રિય રીસેટ વિનંતી મળી નથી. કૃપા કરીને ફરીથી પ્રયાસ કરો (No active reset request found. Please request again.)");
-        }
-        if (Date.now() > entry.expiresAt) {
-            this.resetCodes.delete(rawIdentifier);
-            throw new common_1.BadRequestException("ચકાસણી કોડની સમયસીમા સમાપ્ત થઈ ગઈ છે (Verification code has expired)");
-        }
-        if (entry.code !== dto.code.trim()) {
-            throw new common_1.BadRequestException("અમાન્ય ચકાસણી કોડ (Invalid verification code)");
-        }
-        if (!dto.newPassword || dto.newPassword.length < 6) {
-            throw new common_1.BadRequestException("પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)");
+            await this.otpService.consumeResetToken(rawIdentifier, verifyRes.resetToken);
         }
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(dto.newPassword, saltRounds);
         await this.prisma.user.update({
-            where: { id: entry.userId },
+            where: { id: user.id },
             data: { passwordHash },
         });
-        this.resetCodes.delete(rawIdentifier);
         return {
             success: true,
             message: "તમારો પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો છે. હવે તમે નવા પાસવર્ડથી લોગિન કરી શકો છો (Password has been reset successfully. You can now login.)",
@@ -257,6 +205,7 @@ exports.AuthService = AuthService = AuthService_1 = __decorate([
     __metadata("design:paramtypes", [users_service_1.UsersService,
         jwt_1.JwtService,
         config_1.ConfigService,
-        prisma_service_1.PrismaService])
+        prisma_service_1.PrismaService,
+        otp_service_1.OtpService])
 ], AuthService);
 //# sourceMappingURL=auth.service.js.map

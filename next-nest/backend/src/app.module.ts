@@ -28,6 +28,7 @@ import { SamajSuperStarsModule } from './samaj-super-stars/samaj-super-stars.mod
 import { NotificationsModule } from './notifications/notifications.module';
 import { EducationModule } from './education/education.module';
 import { ChatModule } from './chat/chat.module';
+import { OtpModule } from './otp/otp.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { ChatModule } from './chat/chat.module';
     HealthModule,
     UsersModule,
     AuthModule,
+    OtpModule,
     ProfilesModule,
     AdminModule,
     SettingsModule,

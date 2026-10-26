@@ -467,6 +467,21 @@ class _WebMatrimonyHeroState extends State<WebMatrimonyHero> {
             runSpacing: 10,
             children: [
               OutlinedButton.icon(
+                onPressed: () => context.push('/profile/edit'),
+                icon: const Icon(Icons.edit_note_rounded, size: 17, color: Color(0xFFB45309)),
+                label: const Text(
+                  'પ્રોફાઈલ સુધારો (Edit Profile)',
+                  style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF101B36),
+                  backgroundColor: const Color(0xFFFAF8F5),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
+                ),
+              ),
+              OutlinedButton.icon(
                 onPressed: () => context.push('/profile/create'),
                 icon: const Icon(Icons.person_add_alt_1_rounded, size: 16),
                 label: const Text(

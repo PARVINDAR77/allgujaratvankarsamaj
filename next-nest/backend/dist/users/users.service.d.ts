@@ -20,6 +20,8 @@ export declare class UsersService {
         passwordHash: string;
         role?: Role;
         status?: Status;
+        isEmailVerified?: boolean;
+        isPhoneVerified?: boolean;
     }): Promise<User>;
     getAllUsersForAdmin(): Promise<{
         id: string;

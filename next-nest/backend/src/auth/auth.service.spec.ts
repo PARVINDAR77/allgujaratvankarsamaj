@@ -7,6 +7,7 @@ import { Role, Status, ProfileStatus } from "@prisma/client";
 import { AuthService } from "./auth.service";
 import { UsersService } from "../users/users.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { OtpService } from "../otp/otp.service";
 
 describe("AuthService Security & Regression Tests", () => {
   let authService: AuthService;
@@ -47,6 +48,28 @@ describe("AuthService Security & Regression Tests", () => {
       },
     };
 
+    const otpService = {
+      sendRegistrationOtp: jest.fn(),
+      verifyRegistrationOtp: jest.fn(),
+      consumeRegistrationToken: jest.fn().mockResolvedValue(true),
+      sendForgotPasswordOtp: jest.fn().mockResolvedValue({
+        success: true,
+        message: "Code sent",
+        target: "9104082237",
+        maskedContact: "91******37",
+        channel: "SMS",
+        expiresInSeconds: 600,
+        resendCooldownSeconds: 60,
+        maxAttempts: 4,
+      }),
+      verifyResetOtp: jest.fn().mockResolvedValue({
+        success: true,
+        verified: true,
+        resetToken: "rst_mock_token_123",
+      }),
+      consumeResetToken: jest.fn().mockResolvedValue(true),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -54,6 +77,7 @@ describe("AuthService Security & Regression Tests", () => {
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: configService },
         { provide: PrismaService, useValue: prismaService },
+        { provide: OtpService, useValue: otpService },
       ],
     }).compile();
 
@@ -286,8 +310,7 @@ describe("AuthService Security & Regression Tests", () => {
       });
 
       expect(res.success).toBe(true);
-      expect(res.code).toBeDefined();
-      expect(res.code.length).toBe(6);
+      expect(res.maskedContact).toBeDefined();
     });
 
     it("MUST verify valid OTP code and reset password", async () => {
@@ -301,17 +324,17 @@ describe("AuthService Security & Regression Tests", () => {
       const forgotRes = await authService.forgotPassword({
         identifier: "9104082237",
       });
-      const otp = forgotRes.code;
+      expect(forgotRes.success).toBe(true);
 
       const verifyRes = await authService.verifyResetCode({
         identifier: "9104082237",
-        code: otp,
+        code: "123456",
       });
       expect(verifyRes.success).toBe(true);
 
       const resetRes = await authService.resetPassword({
         identifier: "9104082237",
-        code: otp,
+        code: "rst_mock_token_123",
         newPassword: "BrandNewSecurePassword123!",
       });
       expect(resetRes.success).toBe(true);
