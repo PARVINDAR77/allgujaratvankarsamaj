@@ -580,7 +580,7 @@ class ProfileScreen extends ConsumerWidget {
         _buildSectionCard(
           title: 'શિક્ષણ અને કારકિર્દી વિગતો (Education & Profession)',
           icon: Icons.work_rounded,
-          onEdit: () => context.push('/profile/edit'),
+          onEdit: () => context.go('/profile/edit'),
           child: Column(
             children: [
               _buildDetailRow([
@@ -607,7 +607,7 @@ class ProfileScreen extends ConsumerWidget {
         _buildSectionCard(
           title: 'વ્યક્તિગત અને શારીરિક માહિતી (Personal Information)',
           icon: Icons.person_rounded,
-          onEdit: () => context.push('/profile/edit'),
+          onEdit: () => context.go('/profile/edit'),
           child: Column(
             children: [
               _buildDetailRow([
@@ -634,7 +634,7 @@ class ProfileScreen extends ConsumerWidget {
         _buildSectionCard(
           title: 'પારિવારિક પૃષ્ઠભૂમિ & વતન (Family & Native Details)',
           icon: Icons.family_restroom_rounded,
-          onEdit: () => context.push('/profile/edit'),
+          onEdit: () => context.go('/profile/edit'),
           child: Column(
             children: [
               _buildDetailRow([
@@ -666,7 +666,7 @@ class ProfileScreen extends ConsumerWidget {
         _buildSectionCard(
           title: 'ઉમેદવાર ફોટો ગેલેરી (Candidate Photos)',
           icon: Icons.photo_library_rounded,
-          onEdit: () => context.push('/profile/edit'),
+          onEdit: () => context.go('/profile/edit'),
           child: photoUrls.isNotEmpty
               ? Wrap(
                   spacing: 14,
@@ -701,7 +701,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     ),
                     InkWell(
-                      onTap: () => context.push('/profile/edit'),
+                      onTap: () => context.go('/profile/edit'),
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
                         width: 130,
@@ -753,7 +753,7 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 14),
                       ElevatedButton.icon(
-                        onPressed: () => context.push('/profile/edit'),
+                        onPressed: () => context.go('/profile/edit'),
                         icon: const Icon(Icons.upload_rounded, size: 16),
                         label: const Text('ફોટો અપલોડ કરો (Upload Photos)'),
                         style: ElevatedButton.styleFrom(
@@ -773,7 +773,7 @@ class ProfileScreen extends ConsumerWidget {
           _buildSectionCard(
             title: 'મારા વિશે / પરિચય (About Candidate)',
             icon: Icons.format_quote_rounded,
-            onEdit: () => context.push('/profile/edit'),
+            onEdit: () => context.go('/profile/edit'),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16),

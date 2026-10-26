@@ -240,6 +240,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const VerifiedProfileScreen(),
       ),
       GoRoute(
+        path: '/profile',
+        name: 'profile',
+        builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
         path: '/profile/create',
         name: 'profile-create',
         builder: (context, state) => const CreateProfileScreen(),
@@ -467,15 +472,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/messages',
                 name: 'messages',
                 builder: (context, state) => const ConversationsListScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: '/profile',
-                name: 'profile',
-                builder: (context, state) => const ProfileScreen(),
               ),
             ],
           ),

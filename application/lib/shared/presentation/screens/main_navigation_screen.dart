@@ -35,8 +35,13 @@ class MainNavigationScreen extends ConsumerWidget {
                   border: Border(top: BorderSide(color: AppColors.secondary, width: 1)),
                 ),
                 child: BottomNavigationBar(
-          currentIndex: navigationShell.currentIndex,
+          currentIndex: navigationShell.currentIndex.clamp(0, 3),
           onTap: (index) {
+            if (index == 4) {
+              context.go('/profile');
+              return;
+            }
+
             if (index == 1) {
               // Reset all search and gender locks in profile provider for universal discovery
               ref.read(profileNotifierProvider.notifier).updateFilters(
