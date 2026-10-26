@@ -67,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
           child: Column(
             children: [
               // 1. Prestigious Hero Banner (Web & Mobile)
-              _buildPageHeader(context, isDesktopWeb, myProfileAsync.value != null),
+              _buildPageHeader(context, isDesktopWeb, myProfileAsync.valueOrNull != null),
 
               // 2. Main Content Container (Max width 1240 for Desktop)
               Center(

@@ -292,7 +292,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final myProfileAsync = ref.watch(myProfileProvider);
     final masterData = ref.watch(masterDataProvider);
     final samajServicesAsync = ref.watch(samajServicesProvider);
-    final samajServicesList = samajServicesAsync.value ?? [];
+    final samajServicesList = samajServicesAsync.valueOrNull ?? [];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Light Background

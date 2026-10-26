@@ -711,7 +711,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   Widget build(BuildContext context) {
     final masterData = ref.watch(masterDataProvider);
     final samajServicesAsync = ref.watch(samajServicesProvider);
-    final samajServicesList = samajServicesAsync.value ?? [];
+    final samajServicesList = samajServicesAsync.valueOrNull ?? [];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Soft Light Grey Background
