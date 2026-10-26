@@ -319,41 +319,42 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       body: SafeArea(
         child: myProfileAsync.when(
           loading: () => const Center(child: CircularProgressIndicator(color: Color(0xFFD4AF37))),
-          error: (err, stack) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.account_circle_outlined, size: 64, color: Color(0xFFD4AF37)),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'તમારું પ્રોફાઈલ મળ્યું નથી (Profile not found)',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'કૃપા કરીને પહેલાં તમારું પ્રોફાઈલ બનાવો.\n(Please create your matrimonial profile first.)',
-                    style: TextStyle(fontSize: 14, color: Colors.black54),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: () => context.go('/profile/create'),
-                    icon: const Icon(Icons.add_circle_outline),
-                    label: const Text('નવું પ્રોફાઈલ બનાવો (Create Profile)'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFD4AF37),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          error: (err, stack) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                context.go('/profile/create');
+              }
+            });
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'પ્રોફાઈલ ફોર્મ ખુલી રહ્યું છે...\n(Opening Profile Creation Form...)',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    ElevatedButton.icon(
+                      onPressed: () => context.go('/profile/create'),
+                      icon: const Icon(Icons.add_circle_outline),
+                      label: const Text('સંપૂર્ણ પ્રોફાઈલ બનાવો (Create Profile)'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFD4AF37),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
           data: (profile) {
             if (!_isInitialized) {
               _isInitialized = true;

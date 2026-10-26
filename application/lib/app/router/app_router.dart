@@ -246,7 +246,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/profile/edit',
-        name: 'profile-edit-root',
+        name: 'profile-edit',
         builder: (context, state) => const EditProfileScreen(),
       ),
       GoRoute(
@@ -476,23 +476,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/profile',
                 name: 'profile',
                 builder: (context, state) => const ProfileScreen(),
-                routes: [
-                  GoRoute(
-                    path: 'create',
-                    name: 'profile-create-nested',
-                    builder: (context, state) => const CreateProfileScreen(),
-                  ),
-                  GoRoute(
-                    path: 'edit',
-                    name: 'profile-edit',
-                    builder: (context, state) => const EditProfileScreen(),
-                  ),
-                  GoRoute(
-                    path: 'under-review',
-                    name: 'profile-under-review-nested',
-                    builder: (context, state) => const ProfileUnderReviewScreen(),
-                  ),
-                ],
               ),
             ],
           ),

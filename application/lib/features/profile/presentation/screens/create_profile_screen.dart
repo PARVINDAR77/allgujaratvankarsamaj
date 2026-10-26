@@ -718,9 +718,20 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          tooltip: 'Back (પાછા જાઓ)',
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              context.pop();
+            } else {
+              context.go('/profile');
+            }
+          },
+        ),
         title: const Text(
-          'Create Profile',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          'સંપૂર્ણ પ્રોફાઈલ બનાવો (Create Profile)',
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 18),
         ),
         iconTheme: const IconThemeData(color: Colors.black87),
         centerTitle: true,

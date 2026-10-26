@@ -67,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
           child: Column(
             children: [
               // 1. Prestigious Hero Banner (Web & Mobile)
-              _buildPageHeader(context, isDesktopWeb),
+              _buildPageHeader(context, isDesktopWeb, myProfileAsync.value != null),
 
               // 2. Main Content Container (Max width 1240 for Desktop)
               Center(
@@ -126,7 +126,7 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   // Top Page Hero Banner
-  Widget _buildPageHeader(BuildContext context, bool isDesktop) {
+  Widget _buildPageHeader(BuildContext context, bool isDesktop, bool hasExistingProfile) {
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -197,11 +197,11 @@ class ProfileScreen extends ConsumerWidget {
               if (isDesktop) ...[
                 const SizedBox(width: 20),
                 ElevatedButton.icon(
-                  onPressed: () => context.push('/profile/edit'),
-                  icon: const Icon(Icons.edit_note_rounded, size: 20),
-                  label: const Text(
-                    'પ્રોફાઈલ સુધારો (Edit Profile)',
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                  onPressed: () => context.go(hasExistingProfile ? '/profile/edit' : '/profile/create'),
+                  icon: Icon(hasExistingProfile ? Icons.edit_note_rounded : Icons.add_circle_outline_rounded, size: 20),
+                  label: Text(
+                    hasExistingProfile ? 'પ્રોફાઈલ સુધારો (Edit Profile)' : 'સંપૂર્ણ પ્રોફાઈલ બનાવો (Complete Profile)',
+                    style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFA4143D),
@@ -390,7 +390,7 @@ class ProfileScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: () => context.push('/profile/edit'),
+                  onPressed: () => context.go('/profile/edit'),
                   icon: const Icon(Icons.edit_note_rounded, size: 18),
                   label: const Text(
                     'પ્રોફાઈલ સુધારો (Edit Profile)',
@@ -412,7 +412,7 @@ class ProfileScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => context.push('/verified-profile'),
+                  onPressed: () => context.go('/verified-profile'),
                   icon: const Icon(Icons.workspace_premium_rounded, size: 16),
                   label: const Text(
                     'વેરિફિકેશન પ્રમાણપત્ર (Details)',
@@ -1071,20 +1071,42 @@ class ProfileScreen extends ConsumerWidget {
             style: TextStyle(fontSize: 14, color: Color(0xFF475569)),
           ),
           const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => context.push('/profile/create'),
-            icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-            label: const Text(
-              'સંપૂર્ણ પ્રોફાઈલ બનાવો (Complete Profile)',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFA4143D),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 3,
-            ),
+          Wrap(
+            spacing: 14,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => context.go('/profile/create'),
+                icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
+                label: const Text(
+                  'સંપૂર્ણ પ્રોફાઈલ બનાવો (Complete Profile)',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFA4143D),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  elevation: 3,
+                ),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => context.go('/profile/create'),
+                icon: const Icon(Icons.edit_note_rounded, size: 18),
+                label: const Text(
+                  'પ્રોફાઈલ સુધારો (Edit Profile)',
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF101B36),
+                  backgroundColor: const Color(0xFFFAF8F5),
+                  side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
