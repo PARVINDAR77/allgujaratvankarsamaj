@@ -121,9 +121,17 @@ $results = [
 
 if ($action === 'deploy') {
     if (function_exists('shell_exec')) {
-        $deployLog = shell_exec("cd " . escapeshellarg($project_dir) . " && git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1 && git pull origin main 2>&1 && cp -r application/build/web/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1 && cp -r next-nest/backend/dist/* " . escapeshellarg($backend_dir . "/dist/") . " 2>&1 && mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/admin && cp -r next-nest/frontend/out/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/admin/ 2>&1 && pkill -f 'dist/main.js' 2>&1");
+        $cmd = "cd " . escapeshellarg($project_dir) . " 2>&1; " .
+               "git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1; " .
+               "git pull origin main 2>&1; " .
+               "cp -rf next-nest/frontend/out/_next /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/admin /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf application/build/web/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "pkill -9 -f 'dist/main.js' 2>&1; " .
+               "echo 'DEPLOY_COMPLETE'";
+        $deployLog = shell_exec($cmd);
         $results['deploy_log'] = $deployLog;
-        $results['actions_taken'][] = 'Pulled origin main and deployed web + admin + backend dist';
+        $results['actions_taken'][] = 'Pulled origin main, copied _next and admin static assets, and restarted backend';
     }
     @touch($trigger_file);
 }
