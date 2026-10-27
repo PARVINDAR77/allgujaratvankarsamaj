@@ -155,7 +155,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                                       child: _buildLeftColumn(context, ref, authState, profile),
                                     ),
                                     const SizedBox(width: 24),
-                                    // Right Column: Personal, Education, Family, References, Gallery (Expanded)
+                                    // Right Column: Personal Details, Education, Family Details, Photo Gallery (Expanded)
                                     Expanded(
                                       child: _buildRightColumn(context, ref, profile),
                                     ),
@@ -687,7 +687,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // RIGHT COLUMN: Personal Details, Education, Family, References, Gallery
+  // RIGHT COLUMN: Personal Details, Education, Family Details, Photo Gallery
   // ---------------------------------------------------------------------------
   Widget _buildRightColumn(
     BuildContext context,
@@ -1072,132 +1072,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ),
 
-        const SizedBox(height: 24),
-
         // ---------------------------------------------------------------------
-        // Card 4: 👥 References (Subcast + 2 Reference Person Cards)
-        // ---------------------------------------------------------------------
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(26),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 16,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Row: Title + "Approved" Pill Badge
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.groups_rounded, color: Color(0xFF1E3A5F), size: 21),
-                      SizedBox(width: 10),
-                      Text(
-                        'References',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDCFCE7),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF16A34A)),
-                        SizedBox(width: 5),
-                        Text(
-                          'Approved',
-                          style: TextStyle(
-                            color: Color(0xFF15803D),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // SUBCAST (ઉપજાતિ / પરગણું)
-              _buildGridField(
-                label: 'SUBCAST / PARGANA (ઉપજાતિ / પરગણું)',
-                value: profile.subcaste != null && profile.subcaste!.isNotEmpty
-                    ? profile.subcaste!
-                    : (profile.pargana.isNotEmpty ? profile.pargana : 'All Gujarat Vankar Samaj'),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Sub-header: Reference Persons
-              const Text(
-                'Reference Persons',
-                style: TextStyle(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF334155),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // 2 Side-by-Side Reference Person Cards
-              Row(
-                children: [
-                  // Reference Person 1: Guardian Reference
-                  Expanded(
-                    child: _buildReferencePersonCard(
-                      title: 'GUARDIAN / FAMILY REFERENCE',
-                      name: profile.fatherName != null && profile.fatherName!.isNotEmpty
-                          ? profile.fatherName!
-                          : (profile.motherName != null && profile.motherName!.isNotEmpty
-                              ? profile.motherName!
-                              : 'Family Guardian'),
-                      mobile: profile.guardianContact != null && profile.guardianContact!.isNotEmpty
-                          ? profile.guardianContact!
-                          : (profile.fatherContact != null && profile.fatherContact!.isNotEmpty
-                              ? profile.fatherContact!
-                              : 'Available via Profile'),
-                      relation: 'Father / Guardian (વાલી)',
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  // Reference Person 2: Samaj Verification
-                  Expanded(
-                    child: _buildReferencePersonCard(
-                      title: 'SAMAJ VERIFICATION STATUS',
-                      name: 'All Gujarat Vankar Samaj',
-                      mobile: profile.isVerified == true ? 'Verified Member ID' : 'Pending Verification',
-                      relation: profile.isVerified == true ? 'Verified Profile (ચકાસાયેલ)' : 'Under Verification',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        // ---------------------------------------------------------------------
-        // Card 5: Photo Gallery (Preserved so candidate photos remain accessible)
+        // Card 4: Photo Gallery (Preserved so candidate photos remain accessible)
         // ---------------------------------------------------------------------
         if (photoUrls.isNotEmpty) ...[
           const SizedBox(height: 24),
@@ -1364,66 +1240,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
         ],
       ),
-    );
-  }
-
-  // Reference Person Card
-  Widget _buildReferencePersonCard({
-    required String title,
-    required String name,
-    required String mobile,
-    required String relation,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1E3A5F),
-              letterSpacing: 0.3,
-            ),
-          ),
-          const SizedBox(height: 10),
-          _buildRefField('Name:', name),
-          const SizedBox(height: 6),
-          _buildRefField('Mobile:', mobile),
-          const SizedBox(height: 6),
-          _buildRefField('Relation:', relation),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRefField(String label, String value) {
-    return Row(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
-        ),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(
-            value,
-            style: const TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1E293B),
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
     );
   }
 
