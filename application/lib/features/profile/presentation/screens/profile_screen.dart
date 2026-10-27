@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/widgets/whatsapp_icon.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 import '../../../home/presentation/widgets/web_home_footer.dart';
@@ -113,7 +114,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         tooltip: 'WhatsApp Help & Support',
         elevation: 4,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: const Icon(Icons.chat_bubble_rounded, size: 28),
+        child: const WhatsAppIcon(size: 32, color: Colors.white),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

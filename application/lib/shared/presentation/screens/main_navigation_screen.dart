@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../features/match/providers/match_provider.dart';
 import '../../../features/profile/providers/profile_provider.dart';
+import '../../widgets/whatsapp_icon.dart';
 
 class MainNavigationScreen extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -96,7 +97,11 @@ class MainNavigationScreen extends ConsumerWidget {
               ),
               label: 'મેળ',
             ),
-            const BottomNavigationBarItem(icon: Icon(Icons.message), label: 'મેસેજ'),
+            const BottomNavigationBarItem(
+              icon: WhatsAppIcon(size: 24, color: Colors.white60),
+              activeIcon: WhatsAppIcon(size: 24, color: AppColors.secondary),
+              label: 'મેસેજ',
+            ),
             const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'પ્રોફાઈલ'),
           ],
         ),

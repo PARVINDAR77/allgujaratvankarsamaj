@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../shared/widgets/whatsapp_icon.dart';
 
 class WebHomeFooter extends StatelessWidget {
   const WebHomeFooter({super.key});
@@ -535,6 +537,7 @@ class WebHomeFooter extends StatelessWidget {
               _buildFooterLink(context, 'New Registration', '/register'),
               _buildFooterLink(context, 'Privacy Policy', '/privacy-policy'),
               _buildFooterLink(context, 'Contact & Support', '/privacy-contact'),
+              _buildWhatsAppFooterLink(context),
               _buildFooterLink(context, 'Delete Account Request', '/delete-account'),
             ],
           ),
@@ -657,6 +660,7 @@ class WebHomeFooter extends StatelessWidget {
                   _buildFooterLink(context, 'Register', '/register'),
                   _buildFooterLink(context, 'Privacy Policy', '/privacy-policy'),
                   _buildFooterLink(context, 'Contact & Support', '/privacy-contact'),
+                  _buildWhatsAppFooterLink(context),
                 ],
               ),
             ),
@@ -698,6 +702,42 @@ class WebHomeFooter extends StatelessWidget {
             color: Color(0xFF374151),
             fontSize: 12.5,
           ),
+        ),
+      ),
+    );
+  }
+
+  void _openWhatsAppHelp() async {
+    const phone = '919426543166';
+    const text = 'નમસ્તે, મને અખિલ ગુજરાત વણકર સમાજ પોર્ટલ વિશે સહાયની જરૂર છે.';
+    final url = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(text)}');
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      }
+    } catch (_) {}
+  }
+
+  Widget _buildWhatsAppFooterLink(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.5),
+      child: InkWell(
+        onTap: _openWhatsAppHelp,
+        borderRadius: BorderRadius.circular(4),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            WhatsAppIcon(size: 15, color: Color(0xFF25D366)),
+            SizedBox(width: 6),
+            Text(
+              'WhatsApp Support',
+              style: TextStyle(
+                color: Color(0xFF16A34A),
+                fontSize: 12.5,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );

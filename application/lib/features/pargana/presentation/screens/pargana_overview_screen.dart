@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/widgets/whatsapp_icon.dart';
 import '../../providers/pargana_provider.dart';
 
 class ParganaOverviewScreen extends ConsumerStatefulWidget {
@@ -305,7 +306,7 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
                                       const SizedBox(width: 6),
                                       IconButton.filled(
                                         style: IconButton.styleFrom(backgroundColor: const Color(0xFF25D366)),
-                                        icon: const Icon(Icons.chat, size: 18, color: Colors.white),
+                                        icon: const WhatsAppIcon(size: 18, color: Colors.white),
                                         onPressed: () => _openWhatsApp(pargana.contactPhone!),
                                       ),
                                     ],

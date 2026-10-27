@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/models/samaj_service_person.dart';
+import '../../../../shared/widgets/whatsapp_icon.dart';
 
 import '../../providers/samaj_services_provider.dart';
 import '../../../profile/providers/master_data_provider.dart';
@@ -596,7 +597,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                   height: 34,
                   child: ElevatedButton.icon(
                     onPressed: () => _openWhatsApp(phone, name, serviceTitle),
-                    icon: const Icon(Icons.chat, size: 13),
+                    icon: const WhatsAppIcon(size: 14, color: Colors.white),
                     label: const Text('WhatsApp', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF10B981),
@@ -862,7 +863,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                           child: const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.chat, size: 13, color: Colors.white),
+                              WhatsAppIcon(size: 14, color: Colors.white),
                               SizedBox(width: 4),
                               Text(
                                 'WhatsApp',
@@ -1229,7 +1230,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                           Expanded(
                             child: ElevatedButton.icon(
                               onPressed: () => _openWhatsApp(phone, name, serviceName),
-                              icon: const Icon(Icons.chat, size: 16),
+                              icon: const WhatsAppIcon(size: 16, color: Colors.white),
                               label: const Text('WhatsApp', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF10B981),
