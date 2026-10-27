@@ -26,4 +26,5 @@ export declare class SmsService {
         purpose: OtpPurpose;
         ipAddress?: string;
     }): Promise<SendSmsResult>;
+    private executeHttpRequest;
 }

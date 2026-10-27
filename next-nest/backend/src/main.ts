@@ -155,6 +155,15 @@ async function bootstrap() {
     await app.listen(port, '127.0.0.1');
     logger.log(`Application is running on: http://127.0.0.1:${port}/api/v1`);
   }
+
+  process.on("unhandledRejection", (reason: any) => {
+    logger.error("Unhandled Rejection in background process:", reason?.stack || reason);
+  });
+
+  process.on("uncaughtException", (error: any) => {
+    logger.error("Uncaught Exception in process:", error?.stack || error);
+  });
+
   logger.log(
     `Swagger documentation available at: /api/docs`,
   );

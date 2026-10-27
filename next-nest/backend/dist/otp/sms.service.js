@@ -14,6 +14,9 @@ exports.SmsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
+const https = require("https");
+const http = require("http");
+const url_1 = require("url");
 let SmsService = SmsService_1 = class SmsService {
     constructor(prisma) {
         this.prisma = prisma;
@@ -63,15 +66,13 @@ let SmsService = SmsService_1 = class SmsService {
         let gatewayId;
         let rawResponseText = "";
         let isSuccess = false;
+        const postBody = postParams.toString();
         try {
-            const response = await fetch(this.gatewayUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: postParams.toString(),
+            const response = await this.executeHttpRequest(this.gatewayUrl, postBody, {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "Content-Length": Buffer.byteLength(postBody).toString(),
             });
-            rawResponseText = await response.text();
+            rawResponseText = response.text;
             this.logger.log(`DLT Gateway HTTP ${response.status} Response: ${rawResponseText}`);
             let parsed;
             try {
@@ -140,6 +141,49 @@ let SmsService = SmsService_1 = class SmsService {
                 error: error.message,
             };
         }
+    }
+    executeHttpRequest(urlStr, body, headers) {
+        return new Promise((resolve, reject) => {
+            try {
+                const parsedUrl = new url_1.URL(urlStr);
+                const isHttps = parsedUrl.protocol === "https:";
+                const client = isHttps ? https : http;
+                const req = client.request({
+                    protocol: parsedUrl.protocol,
+                    hostname: parsedUrl.hostname,
+                    port: parsedUrl.port || (isHttps ? 443 : 80),
+                    path: `${parsedUrl.pathname}${parsedUrl.search}`,
+                    method: "POST",
+                    headers,
+                    timeout: 10000,
+                }, (res) => {
+                    let data = "";
+                    res.setEncoding("utf8");
+                    res.on("data", (chunk) => {
+                        data += chunk;
+                    });
+                    res.on("end", () => {
+                        const status = res.statusCode || 200;
+                        resolve({
+                            status,
+                            text: data,
+                            ok: status >= 200 && status < 300,
+                        });
+                    });
+                });
+                req.on("timeout", () => {
+                    req.destroy(new Error("SMS gateway request timed out after 10000ms"));
+                });
+                req.on("error", (err) => {
+                    reject(err);
+                });
+                req.write(body);
+                req.end();
+            }
+            catch (err) {
+                reject(err);
+            }
+        });
     }
 };
 exports.SmsService = SmsService;
