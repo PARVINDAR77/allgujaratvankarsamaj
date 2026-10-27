@@ -196,11 +196,24 @@ if (file_exists($socket_file)) {
     $results['socket_perms'] = substr(sprintf('%o', fileperms($socket_file)), -4);
 }
 
+if ($action === 'tail_log') {
+    header('Content-Type: text/plain');
+    if (file_exists($log_file)) {
+        $lines = @file($log_file);
+        $num = isset($_GET['lines']) ? min(500, max(25, intval($_GET['lines']))) : 150;
+        echo implode('', array_slice($lines, -$num));
+    } else {
+        echo "Log file not found at " . $log_file;
+    }
+    exit;
+}
+
 // Last log lines
 if (file_exists($log_file)) {
     $lines = @file($log_file);
     if ($lines) {
-        $results['recent_logs'] = array_slice($lines, -25);
+        $num = isset($_GET['lines']) ? min(500, max(25, intval($_GET['lines']))) : 100;
+        $results['recent_logs'] = array_slice($lines, -$num);
     }
 }
 
