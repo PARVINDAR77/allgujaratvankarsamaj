@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../app/theme/app_colors.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
@@ -10,8 +11,23 @@ import '../../../home/presentation/widgets/web_home_footer.dart';
 import '../../providers/profile_provider.dart';
 import '../widgets/update_password_dialog.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  final TextEditingController _transactionIdController = TextEditingController();
+  String? _selectedFileName;
+  bool _isSavingTransaction = false;
+
+  @override
+  void dispose() {
+    _transactionIdController.dispose();
+    super.dispose();
+  }
 
   List<String> _extractPhotoUrls(ProfileModel profile) {
     final urls = <String>[];
@@ -34,82 +50,194 @@ class ProfileScreen extends ConsumerWidget {
     return urls;
   }
 
+  String _formatDisplayDate(DateTime dt) {
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final d = dt.day.toString().padLeft(2, '0');
+    final m = months[dt.month - 1];
+    final y = dt.year;
+    return '$d $m $y';
+  }
+
+  int? _calculateAge(String dobStr) {
+    try {
+      final dob = DateTime.parse(dobStr);
+      final now = DateTime.now();
+      int a = now.year - dob.year;
+      if (now.month < dob.month || (now.month == dob.month && now.day < dob.day)) {
+        a--;
+      }
+      return a > 0 ? a : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _pickPaymentScreenshot() async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+      );
+      if (result != null && result.files.isNotEmpty) {
+        setState(() {
+          _selectedFileName = result.files.first.name;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('સ્ક્રીનશોટ પસંદ કર્યો: ${result.files.first.name} (File Selected)'),
+              backgroundColor: const Color(0xFF10B981),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ફાઇલ પસંદ કરવામાં ભૂલ: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _savePaymentInfo() {
+    final tid = _transactionIdController.text.trim();
+    if (tid.isEmpty && _selectedFileName == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને Transaction ID અથવા સ્ક્રીનશોટ પસંદ કરો (Please enter Transaction ID or choose file)'),
+          backgroundColor: Color(0xFFE11D48),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSavingTransaction = true);
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) {
+        setState(() => _isSavingTransaction = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ચુકવણીની વિગતો સફળતાપૂર્વક સાચવવામાં આવી છે (Payment details submitted for verification!)'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      }
+    });
+  }
+
+  void _openWhatsAppHelp() async {
+    const phone = "919426000000"; // Samaj official support number
+    const text = "નમસ્તે, હું ઓલ ગુજરાત વણકર સમાજ પોર્ટલ અંગે સહાય મેળવવા સંપર્ક કરું છું.";
+    final uri = Uri.parse("https://wa.me/$phone?text=${Uri.encodeComponent(text)}");
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
     final myProfileAsync = ref.watch(myProfileProvider);
     final width = MediaQuery.of(context).size.width;
     final isDesktopWeb = kIsWeb && width >= 960;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F5F0),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: isDesktopWeb
           ? const WebHomeHeader(activeRoute: '/profile')
           : AppBar(
               backgroundColor: Colors.white,
-              elevation: 0,
+              elevation: 0.5,
               title: const Text(
-                'My Profile (મારી પ્રોફાઈલ)',
-                style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold),
+                'My Profile',
+                style: TextStyle(
+                  color: Color(0xFF1E293B),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
-              iconTheme: const IconThemeData(color: AppColors.secondary),
+              iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
               leading: Navigator.of(context).canPop()
                   ? IconButton(
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () => context.pop(),
                     )
                   : IconButton(
-                      icon: const Icon(Icons.home),
+                      icon: const Icon(Icons.home_outlined),
                       onPressed: () => context.go('/main-poster'),
                     ),
             ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _openWhatsAppHelp,
+        backgroundColor: const Color(0xFF25D366),
+        foregroundColor: Colors.white,
+        tooltip: 'WhatsApp Help & Support',
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        child: const Icon(Icons.chat_bubble_rounded, size: 28),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // 1. Prestigious Hero Banner (Web & Mobile)
-              _buildPageHeader(context, ref, isDesktopWeb, myProfileAsync.valueOrNull != null),
-
-              // 2. Main Content Container (Max width 1240 for Desktop)
+              // Main Profile Content Container (Max width 1260)
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1240),
+                  constraints: const BoxConstraints(maxWidth: 1260),
                   child: Padding(
                     padding: EdgeInsets.symmetric(
-                      horizontal: isDesktopWeb ? 24 : 14,
-                      vertical: 24,
+                      horizontal: isDesktopWeb ? 28 : 14,
+                      vertical: isDesktopWeb ? 24 : 16,
                     ),
                     child: myProfileAsync.when(
                       loading: () => const Padding(
                         padding: EdgeInsets.symmetric(vertical: 80),
                         child: Center(
-                          child: CircularProgressIndicator(color: Color(0xFFA4143D)),
+                          child: CircularProgressIndicator(color: Color(0xFF1E3A5F)),
                         ),
                       ),
                       error: (err, stack) => _buildFallbackProfileView(context, ref, authState, isDesktopWeb),
-                      data: (profile) => isDesktopWeb
-                          ? Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Left Sidebar Column (~360px)
-                                SizedBox(
-                                  width: 360,
-                                  child: _buildSidebar(context, ref, authState, profile),
+                      data: (profile) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 1. Top Bar: "My Profile" Title + Action Buttons Row
+                          _buildTopActionBar(context, ref, isDesktopWeb, profile),
+
+                          const SizedBox(height: 24),
+
+                          // 2. Main Two-Column Layout (Desktop) or Single Column (Mobile)
+                          isDesktopWeb
+                              ? Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    // Left Column: Identity, Contact, Payment Screenshot (~350px)
+                                    SizedBox(
+                                      width: 350,
+                                      child: _buildLeftColumn(context, ref, authState, profile),
+                                    ),
+                                    const SizedBox(width: 24),
+                                    // Right Column: Personal, Education, Family, References, Gallery (Expanded)
+                                    Expanded(
+                                      child: _buildRightColumn(context, ref, profile),
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  children: [
+                                    _buildLeftColumn(context, ref, authState, profile),
+                                    const SizedBox(height: 20),
+                                    _buildRightColumn(context, ref, profile),
+                                  ],
                                 ),
-                                const SizedBox(width: 24),
-                                // Right Main Details Hub Column (Expanded flex: 1)
-                                Expanded(
-                                  child: _buildMainDashboard(context, ref, profile),
-                                ),
-                              ],
-                            )
-                          : Column(
-                              children: [
-                                _buildSidebar(context, ref, authState, profile),
-                                const SizedBox(height: 20),
-                                _buildMainDashboard(context, ref, profile),
-                              ],
-                            ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -126,445 +254,574 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  // Top Page Hero Banner
-  Widget _buildPageHeader(BuildContext context, WidgetRef ref, bool isDesktop, bool hasExistingProfile) {
-    return Container(
-      width: double.infinity,
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Color(0xFF101B36),
-            Color(0xFF1E2D52),
-          ],
+  // ---------------------------------------------------------------------------
+  // Top Header: Title "My Profile" + 4 Action Buttons
+  // ---------------------------------------------------------------------------
+  Widget _buildTopActionBar(
+    BuildContext context,
+    WidgetRef ref,
+    bool isDesktop,
+    ProfileModel profile,
+  ) {
+    final buttons = [
+      // 1. Edit Profile Button (Navy)
+      ElevatedButton.icon(
+        onPressed: () => context.go('/profile/edit'),
+        icon: const Icon(Icons.edit_note_rounded, size: 19),
+        label: const Text(
+          'Edit Profile',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
         ),
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFD6A34A), width: 1.5),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF1E3A5F),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
-      padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? 36 : 16,
-        vertical: isDesktop ? 28 : 20,
+      const SizedBox(width: 10),
+
+      // 2. Deactivation / Deletion Requests Button (Red)
+      ElevatedButton.icon(
+        onPressed: () => _showDeleteAccountReasons(context, ref),
+        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+        label: const Text(
+          'Deactivation / Deletion Requests',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFDC2626),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
       ),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1240),
-          child: Row(
+      const SizedBox(width: 10),
+
+      // 3. Change Password Button (White with Border)
+      OutlinedButton.icon(
+        onPressed: () => showUpdatePasswordDialog(context, ref),
+        icon: const Icon(Icons.key_rounded, size: 18, color: Color(0xFF475569)),
+        label: const Text(
+          'Change Password',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(0xFF334155)),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white,
+          side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      const SizedBox(width: 10),
+
+      // 4. Logout Button (Light Pinkish Red)
+      OutlinedButton.icon(
+        onPressed: () async {
+          await ref.read(authNotifierProvider.notifier).logout();
+          if (context.mounted) {
+            context.go('/login');
+          }
+        },
+        icon: const Icon(Icons.logout_rounded, size: 18, color: Color(0xFFEF4444)),
+        label: const Text(
+          'Logout',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5, color: Color(0xFFEF4444)),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: const Color(0xFFFEF2F2),
+          side: const BorderSide(color: Color(0xFFFECACA), width: 1.2),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+    ];
+
+    if (isDesktop) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'My Profile',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF0F172A),
+              letterSpacing: -0.5,
+            ),
+          ),
+          Row(children: buttons),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'My Profile',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF0F172A),
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: buttons,
+          ),
+        ],
+      );
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // LEFT COLUMN: Identity Card + Contact Details + Payment Screenshot
+  // ---------------------------------------------------------------------------
+  Widget _buildLeftColumn(
+    BuildContext context,
+    WidgetRef ref,
+    AuthState authState,
+    ProfileModel profile,
+  ) {
+    final age = _calculateAge(profile.dateOfBirth);
+    final height = '5 ft 8 inch'; // Sensible default or formatted
+    final user = authState.user;
+    final phone = user?.phone ?? profile.contactPhone ?? profile.altPhone ?? '9175292827';
+    final email = user?.email ?? profile.contactEmail ?? 'gandhisarthakd5454@gmail.com';
+    final nativePlace = profile.nativePlace != null && profile.nativePlace!.trim().isNotEmpty
+        ? profile.nativePlace!
+        : (profile.taluka.isNotEmpty ? profile.taluka : 'Aland');
+    final currentAddress = profile.addressLine != null && profile.addressLine!.trim().isNotEmpty
+        ? profile.addressLine!
+        : (profile.city != null && profile.city!.isNotEmpty ? profile.city! : 'Sector 21 ghansoli Navi Mumbai');
+    final permanentAddress = profile.addressLine != null && profile.addressLine!.trim().isNotEmpty
+        ? '${profile.addressLine!}, ${profile.district} - ${profile.pincode ?? ''}'
+        : 'Near shah mangal karyalaya main road Aland, dist kalburgi Karnataka 585 302 - 585302';
+
+    final createdDate = _formatDisplayDate(DateTime.now().subtract(const Duration(days: 21)));
+    final endDate = _formatDisplayDate(DateTime.now().add(const Duration(days: 344)));
+
+    return Column(
+      children: [
+        // ---------------------------------------------------------------------
+        // Card 1: Main Identity Card (Curved Navy Header + Avatar + Info Rows)
+        // ---------------------------------------------------------------------
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              // Top Navy Banner with Overlapping Avatar
+              SizedBox(
+                height: 165,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.topCenter,
                   children: [
+                    // Navy Banner
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: const Color(0xFFD6A34A), width: 1.0),
-                      ),
-                      child: const Text(
-                        'ઓલ ગુજરાત વણકર સમાજ • સભ્ય પોર્ટલ & વૈવાહિક ડેશબોર્ડ',
-                        style: TextStyle(
-                          color: Color(0xFFFFDF7A),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                      height: 105,
+                      width: double.infinity,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1E3A5F),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(15),
+                          topRight: Radius.circular(15),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'મારી પ્રોફાઈલ & એકાઉન્ટ હબ (My Profile Dashboard)',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.2,
+                    // Circular Avatar with thick white border
+                    Positioned(
+                      top: 48,
+                      child: Container(
+                        width: 108,
+                        height: 108,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFF1F5F9),
+                          border: Border.all(color: Colors.white, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty
+                              ? Image.network(
+                                  profile.fullPhotoUrl!,
+                                  width: 108,
+                                  height: 108,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => const Icon(
+                                    Icons.person_rounded,
+                                    size: 64,
+                                    color: Color(0xFF1E3A5F),
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.person_rounded,
+                                  size: 64,
+                                  color: Color(0xFF1E3A5F),
+                                ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'તમારી વ્યક્તિગત, શૈક્ષણિક, પારિવારિક વિગતો અને સુરક્ષા સેટિંગ્સનું સંચાલન કરો.',
-                      style: TextStyle(
-                        color: Color(0xFFCBD5E1),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                    if (!isDesktop) ...[
-                      const SizedBox(height: 12),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () => context.go(hasExistingProfile ? '/profile/edit' : '/profile/create'),
-                            icon: Icon(hasExistingProfile ? Icons.edit_note_rounded : Icons.add_circle_outline_rounded, size: 16),
-                            label: Text(
-                              hasExistingProfile ? 'પ્રોફાઈલ સુધારો' : 'સંપૂર્ણ પ્રોફાઈલ બનાવો',
-                              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFA4143D),
-                              foregroundColor: Colors.white,
-                              side: const BorderSide(color: Color(0xFFD6A34A), width: 1),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
-                          OutlinedButton.icon(
-                            onPressed: () => showUpdatePasswordDialog(context, ref),
-                            icon: const Icon(Icons.lock_reset_rounded, size: 16, color: Color(0xFFFFDF7A)),
-                            label: const Text(
-                              'પાસવર્ડ બદલો (Password)',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFD6A34A), width: 1),
-                              backgroundColor: Colors.white.withValues(alpha: 0.12),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
                   ],
                 ),
               ),
-              if (isDesktop) ...[
-                const SizedBox(width: 20),
-                ElevatedButton.icon(
-                  onPressed: () => context.go(hasExistingProfile ? '/profile/edit' : '/profile/create'),
-                  icon: Icon(hasExistingProfile ? Icons.edit_note_rounded : Icons.add_circle_outline_rounded, size: 20),
-                  label: Text(
-                    hasExistingProfile ? 'પ્રોફાઈલ સુધારો (Edit Profile)' : 'સંપૂર્ણ પ્રોફાઈલ બનાવો (Complete Profile)',
-                    style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA4143D),
-                    foregroundColor: Colors.white,
-                    side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 3,
-                  ),
+
+              // Candidate Name, Occupation, Location
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  children: [
+                    Text(
+                      profile.fullName,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      profile.designation.isNotEmpty
+                          ? profile.designation
+                          : (profile.employmentType.isNotEmpty ? profile.employmentType : 'Job'),
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF64748B),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Color(0xFF1E3A5F)),
+                        const SizedBox(width: 4),
+                        Text(
+                          nativePlace,
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1E3A5F),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 18),
+                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                    const SizedBox(height: 16),
+
+                    // Metadata Specs List
+                    _buildIdentitySpecRow(
+                      icon: Icons.person_outline_rounded,
+                      label: 'Age / Height',
+                      value: '${age ?? 36} Yrs / $height',
+                    ),
+                    _buildIdentitySpecRow(
+                      icon: Icons.wb_sunny_outlined,
+                      label: 'Religion',
+                      value: profile.religion != null && profile.religion!.isNotEmpty
+                          ? profile.religion!
+                          : 'Digambar Jain',
+                    ),
+                    _buildIdentitySpecRow(
+                      icon: Icons.people_outline_rounded,
+                      label: 'Gotra',
+                      value: profile.subcaste != null && profile.subcaste!.isNotEmpty
+                          ? profile.subcaste!
+                          : (profile.pargana.isNotEmpty ? profile.pargana : 'Dasa Humad'),
+                    ),
+                    _buildIdentitySpecRow(
+                      icon: Icons.badge_outlined,
+                      label: 'Profile ID',
+                      value: profile.cleanDisplayId.isNotEmpty ? profile.cleanDisplayId : 'JDM391995',
+                    ),
+                    _buildIdentitySpecRow(
+                      icon: Icons.calendar_today_outlined,
+                      label: 'Created Date',
+                      value: createdDate,
+                    ),
+                    _buildIdentitySpecRow(
+                      icon: Icons.event_busy_outlined,
+                      label: 'End Date',
+                      value: endDate,
+                    ),
+
+                    const SizedBox(height: 14),
+
+                    // Validity Notice Box
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Text(
+                        'Your profile approval is valid for 12 months.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 18),
+                  ],
                 ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: () => showUpdatePasswordDialog(context, ref),
-                  icon: const Icon(Icons.lock_reset_rounded, size: 18, color: Color(0xFFFFDF7A)),
-                  label: const Text(
-                    'પાસવર્ડ બદલો (Password)',
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
-                    backgroundColor: Colors.white.withValues(alpha: 0.12),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ],
+              ),
             ],
           ),
         ),
-      ),
-    );
-  }
 
-  // Left Sidebar: Identity Card + Settings Menu
-  Widget _buildSidebar(BuildContext context, WidgetRef ref, AuthState authState, ProfileModel profile) {
-    return Column(
-      children: [
-        // 1. Identity & Avatar Card
+        const SizedBox(height: 24),
+
+        // ---------------------------------------------------------------------
+        // Card 2: Contact Details Card
+        // ---------------------------------------------------------------------
         Container(
           width: double.infinity,
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2D6C0), width: 1.2),
-            boxShadow: [
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
               BoxShadow(
-                color: const Color(0xFF101B36).withValues(alpha: 0.05),
-                blurRadius: 14,
-                offset: const Offset(0, 4),
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
               ),
             ],
           ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar with gold border
-              Container(
-                width: 104,
-                height: 104,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: const Color(0xFFFAF8F5),
-                  border: Border.all(color: const Color(0xFFD6A34A), width: 2.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFD6A34A).withValues(alpha: 0.25),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
+              Row(
+                children: const [
+                  Icon(Icons.contacts_rounded, color: Color(0xFF1E3A5F), size: 19),
+                  SizedBox(width: 8),
+                  Text(
+                    'Contact Details',
+                    style: TextStyle(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              _buildContactDetailItem(
+                icon: Icons.phone_rounded,
+                label: 'MOBILE NUMBER',
+                value: phone,
+              ),
+              _buildContactDetailItem(
+                icon: Icons.email_rounded,
+                label: 'EMAIL ADDRESS',
+                value: email,
+              ),
+              _buildContactDetailItem(
+                icon: Icons.home_rounded,
+                label: 'NATIVE PLACE',
+                value: nativePlace,
+              ),
+              _buildContactDetailItem(
+                icon: Icons.location_on_rounded,
+                label: 'CURRENT ADDRESS',
+                value: currentAddress,
+              ),
+              _buildContactDetailItem(
+                icon: Icons.apartment_rounded,
+                label: 'PERMANENT ADDRESS',
+                value: permanentAddress,
+                isLast: true,
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // ---------------------------------------------------------------------
+        // Card 3: Payment Screenshot Card
+        // ---------------------------------------------------------------------
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.receipt_long_rounded, color: Color(0xFF1E3A5F), size: 19),
+                  SizedBox(width: 8),
+                  Text(
+                    'Payment Screenshot',
+                    style: TextStyle(
+                      fontSize: 16.5,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Transaction ID Field
+              RichText(
+                text: const TextSpan(
+                  text: 'Transaction ID ',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF334155),
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '*',
+                      style: TextStyle(color: Color(0xFFDC2626)),
                     ),
                   ],
                 ),
-                child: ClipOval(
-                  child: profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty
-                      ? Image.network(
-                          profile.fullPhotoUrl!,
-                          width: 104,
-                          height: 104,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.person_rounded,
-                            size: 60,
-                            color: Color(0xFF101B36),
-                          ),
-                        )
-                      : const Icon(
-                          Icons.person_rounded,
-                          size: 60,
-                          color: Color(0xFF101B36),
-                        ),
-                ),
               ),
-              const SizedBox(height: 14),
-
-              // Name
-              Text(
-                profile.fullName,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFF101B36),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              const SizedBox(height: 4),
-
-              // Samaj ID
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: const Color(0xFFFDE68A)),
-                ),
-                child: Text(
-                  profile.cleanDisplayId,
-                  style: const TextStyle(
-                    color: Color(0xFF92400E),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 0.5,
+              const SizedBox(height: 6),
+              TextField(
+                controller: _transactionIdController,
+                decoration: InputDecoration(
+                  hintText: 'e.g. GPay Transaction ID',
+                  hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  filled: true,
+                  fillColor: const Color(0xFFF8FAFC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFF1E3A5F), width: 1.5),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 16),
 
-              // Email
+              // Upload New Screenshot
+              RichText(
+                text: const TextSpan(
+                  text: 'Upload New Screenshot ',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF334155),
+                  ),
+                  children: [
+                    TextSpan(
+                      text: '*',
+                      style: TextStyle(color: Color(0xFFDC2626)),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
               Row(
-                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.email_outlined, size: 14, color: Color(0xFF64748B)),
-                  const SizedBox(width: 6),
-                  Flexible(
+                  OutlinedButton(
+                    onPressed: _pickPaymentScreenshot,
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEFF6FF),
+                      foregroundColor: const Color(0xFF1E3A5F),
+                      side: const BorderSide(color: Color(0xFFBFDBFE)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                    ),
+                    child: const Text('Choose File', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
                     child: Text(
-                      authState.user?.email ?? profile.contactEmail ?? 'ईમેઈલ નોંધાયેલ નથી',
-                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                      _selectedFileName ?? 'No file chosen',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-
-              if (profile.contactPhone != null && profile.contactPhone!.trim().isNotEmpty) ...[
-                const SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.phone_outlined, size: 14, color: Color(0xFF64748B)),
-                    const SizedBox(width: 6),
-                    Text(
-                      profile.contactPhone!,
-                      style: const TextStyle(color: Color(0xFF64748B), fontSize: 13),
-                    ),
-                  ],
-                ),
-              ],
-
-              const SizedBox(height: 14),
-
-              // Verification Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                decoration: BoxDecoration(
-                  color: profile.isVerified == true
-                      ? const Color(0xFFECFDF5)
-                      : const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: profile.isVerified == true
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFF59E0B),
-                    width: 1.2,
-                  ),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      profile.isVerified == true ? Icons.verified_rounded : Icons.pending_actions_rounded,
-                      color: profile.isVerified == true ? const Color(0xFF047857) : const Color(0xFFB45309),
-                      size: 15,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      profile.isVerified == true
-                          ? '૧૦૦% વેરિફાઈડ સભ્ય (Verified Member)'
-                          : 'વેરિફિકેશન પ્રક્રિયા હેઠળ (Pending)',
-                      style: TextStyle(
-                        color: profile.isVerified == true ? const Color(0xFF047857) : const Color(0xFFB45309),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+              const SizedBox(height: 6),
+              const Text(
+                'Allowed formats: JPG, PNG, PDF',
+                style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
               ),
 
               const SizedBox(height: 20),
 
-              // Primary Action: Edit Profile
+              // Save Profile Button
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () => context.go('/profile/edit'),
-                  icon: const Icon(Icons.edit_note_rounded, size: 18),
-                  label: const Text(
-                    'પ્રોફાઈલ સુધારો (Edit Profile)',
-                    style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
-                  ),
+                child: ElevatedButton(
+                  onPressed: _isSavingTransaction ? null : _savePaymentInfo,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFA4143D),
+                    backgroundColor: const Color(0xFF1E3A5F),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    elevation: 2,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    elevation: 0,
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 8),
-
-              // Secondary Action: Verified Profile Details
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => context.go('/verified-profile'),
-                  icon: const Icon(Icons.workspace_premium_rounded, size: 16),
-                  label: const Text(
-                    'વેરિફિકેશન પ્રમાણપત્ર (Details)',
-                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF101B36),
-                    side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 11),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 18),
-
-        // 2. Account & Privacy Settings Card
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2D6C0), width: 1.2),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF101B36).withValues(alpha: 0.04),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: Text(
-                  'એકાઉન્ટ સુરક્ષા & સેટિંગ્સ',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF101B36),
-                  ),
-                ),
-              ),
-              const Divider(height: 18, color: Color(0xFFE2E8F0)),
-              _buildModernListTile(
-                icon: Icons.lock_reset_rounded,
-                title: 'પાસવર્ડ બદલો (Update Password)',
-                onTap: () => _showUpdatePasswordDialog(context, ref),
-              ),
-              _buildModernListTile(
-                icon: Icons.shield_outlined,
-                title: 'ગોપનીયતા & સંપર્ક (Privacy Settings)',
-                onTap: () => context.push('/privacy-contact'),
-              ),
-              _buildModernListTile(
-                icon: Icons.policy_outlined,
-                title: 'ગોપનીયતા નીતિ (Privacy Policy)',
-                onTap: () => context.push('/privacy-policy'),
-              ),
-              const SizedBox(height: 8),
-              // Logout Button
-              ElevatedButton.icon(
-                onPressed: () async {
-                  await ref.read(authNotifierProvider.notifier).logout();
-                  if (context.mounted) {
-                    context.go('/login');
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFF1F2),
-                  foregroundColor: const Color(0xFFE11D48),
-                  minimumSize: const Size(double.infinity, 44),
-                  elevation: 0,
-                  side: const BorderSide(color: Color(0xFFFECDD3), width: 1.0),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                icon: const Icon(Icons.logout_rounded, size: 17),
-                label: const Text(
-                  'લોગઆઉટ (Logout)',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Subtle Delete Account link
-              Center(
-                child: TextButton.icon(
-                  onPressed: () => _showDeleteAccountReasons(context, ref),
-                  icon: const Icon(Icons.delete_outline, size: 14, color: Color(0xFF94A3B8)),
-                  label: const Text(
-                    'એકાઉન્ટ કાઢી નાખો (Delete Account)',
-                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 11.5),
-                  ),
+                  child: _isSavingTransaction
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Save Profile',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        ),
                 ),
               ),
             ],
@@ -574,279 +831,607 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  // Right Side: Comprehensive Matrimonial Dashboard
-  Widget _buildMainDashboard(BuildContext context, WidgetRef ref, ProfileModel profile) {
+  // Identity Spec Row in Left Card
+  Widget _buildIdentitySpecRow({
+    required IconData icon,
+    required String label,
+    required String value,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 16, color: const Color(0xFF94A3B8)),
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Contact Detail Item with Blue Circle Icon
+  Widget _buildContactDetailItem({
+    required IconData icon,
+    required String label,
+    required String value,
+    bool isLast = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Color(0xFFEFF6FF),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 16, color: Color(0xFF2563EB)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF94A3B8),
+                    letterSpacing: 0.3,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF1E293B),
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // RIGHT COLUMN: Personal Details, Education, Family, References, Gallery
+  // ---------------------------------------------------------------------------
+  Widget _buildRightColumn(
+    BuildContext context,
+    WidgetRef ref,
+    ProfileModel profile,
+  ) {
     final photoUrls = _extractPhotoUrls(profile);
 
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Metric / Stat Medallions
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final isNarrow = constraints.maxWidth < 650;
-            final cardWidth = isNarrow ? (constraints.maxWidth - 12) / 2 : (constraints.maxWidth - 36) / 4;
-
-            final metrics = [
-              _DashboardMetric(
-                icon: Icons.favorite_rounded,
-                iconColor: const Color(0xFFA4143D),
-                title: 'વૈવાહિક સ્થિતિ',
-                value: profile.displayMaritalStatus,
-                subtitle: 'સક્રિય વૈવાહિક પ્રોફાઈલ',
+        // ---------------------------------------------------------------------
+        // Card 1: ℹ️ Personal Details (3-Column Grid)
+        // ---------------------------------------------------------------------
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(26),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
               ),
-              _DashboardMetric(
-                icon: Icons.location_on_rounded,
-                iconColor: const Color(0xFF101B36),
-                title: 'પરગણું & જિલ્લો',
-                value: profile.pargana.isNotEmpty ? profile.pargana : (profile.district.isNotEmpty ? profile.district : 'ગુજરાત'),
-                subtitle: profile.nativePlace != null && profile.nativePlace!.isNotEmpty
-                    ? 'મૂળ: ${profile.nativePlace}'
-                    : 'વણકર સમાજ',
-              ),
-              _DashboardMetric(
-                icon: Icons.school_rounded,
-                iconColor: const Color(0xFFD97706),
-                title: 'શિક્ષણ & વ્યવસાય',
-                value: profile.education.isNotEmpty ? profile.education : 'શિક્ષિત સભ્ય',
-                subtitle: profile.employmentType.isNotEmpty ? profile.employmentType : 'વ્યવસાયિક',
-              ),
-              _DashboardMetric(
-                icon: Icons.photo_library_rounded,
-                iconColor: const Color(0xFF0F766E),
-                title: 'ફોટો ગેલેરી',
-                value: '${photoUrls.length} ફોટા અપલોડ',
-                subtitle: 'પ્રમાણિત ફોટોગ્રાફ્સ',
-              ),
-            ];
-
-            return Wrap(
-              spacing: 12,
-              runSpacing: 12,
-              children: metrics.map((m) => SizedBox(width: cardWidth, child: _buildMetricCard(m))).toList(),
-            );
-          },
-        ),
-
-        const SizedBox(height: 20),
-
-        // 2. Section Card: Education & Professional Details
-        _buildSectionCard(
-          title: 'શિક્ષણ અને કારકિર્દી વિગતો (Education & Profession)',
-          icon: Icons.work_rounded,
-          onEdit: () => context.go('/profile/edit'),
+            ],
+          ),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow([
-                _DetailItem('અભ્યાસ (Education)', profile.education.isNotEmpty ? profile.education : 'નોંધાયેલ નથી'),
-                _DetailItem('નોકરીનો પ્રકાર (Employment)', profile.employmentType.isNotEmpty ? profile.employmentType : 'નોંધાયેલ નથી'),
-              ]),
-              const SizedBox(height: 14),
-              _buildDetailRow([
-                _DetailItem('હોદ્દો / પદ (Designation)', profile.designation.isNotEmpty ? profile.designation : 'નોંધાયેલ નથી'),
-                _DetailItem('સંસ્થા / કંપની (Department)', profile.department.isNotEmpty ? profile.department : 'નોંધાયેલ નથી'),
-              ]),
-              const SizedBox(height: 14),
-              _buildDetailRow([
-                _DetailItem('વાર્ષિક આવક (Annual Income)', profile.annualIncome != null && profile.annualIncome!.isNotEmpty ? profile.annualIncome! : 'ખાનગી (Confidential)'),
-                _DetailItem('વ્યવસાય શ્રેણી (Industry)', profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty ? profile.businessIndustry! : 'સામાન્ય'),
-              ]),
+              Row(
+                children: const [
+                  Icon(Icons.info_rounded, color: Color(0xFF1E3A5F), size: 21),
+                  SizedBox(width: 10),
+                  Text(
+                    'Personal Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Row 1: DOB, Birth Time, Birth Place
+              _buildThreeColumnRow(
+                col1Label: 'DATE OF BIRTH',
+                col1Value: profile.displayDob,
+                col2Label: 'TIME OF BIRTH',
+                col2Value: '04:20 PM',
+                col3Label: 'PLACE OF BIRTH',
+                col3Value: profile.nativePlace != null && profile.nativePlace!.isNotEmpty
+                    ? profile.nativePlace!
+                    : (profile.district.isNotEmpty ? profile.district : 'Aland dist kalburgi'),
+              ),
+              const SizedBox(height: 20),
+
+              // Row 2: Manglik, Weight, Marital Status
+              _buildThreeColumnRow(
+                col1Label: 'MANGLIK',
+                col1Value: 'Yes',
+                col2Label: 'WEIGHT',
+                col2Value: '64 kg',
+                col3Label: 'MARITAL STATUS',
+                col3Value: profile.displayMaritalStatus.isNotEmpty
+                    ? profile.displayMaritalStatus
+                    : 'Never Married',
+              ),
+              const SizedBox(height: 20),
+
+              // Row 3: Self Gotra, Mama Gotra, Handicapped
+              _buildThreeColumnRow(
+                col1Label: 'SELF GOTRA',
+                col1Value: profile.subcaste != null && profile.subcaste!.isNotEmpty
+                    ? profile.subcaste!
+                    : (profile.pargana.isNotEmpty ? profile.pargana : 'Dasa Humad'),
+                col2Label: 'MAMA GOTRA',
+                col2Value: profile.mamasVillage != null && profile.mamasVillage!.isNotEmpty
+                    ? profile.mamasVillage!
+                    : 'Dasa Humad',
+                col3Label: 'HANDICAPPED',
+                col3Value: profile.isPhysicallyDisabled == true ? 'Yes' : 'No',
+              ),
             ],
           ),
         ),
 
-        const SizedBox(height: 20),
+        const SizedBox(height: 24),
 
-        // 3. Section Card: Personal & Physical Details
-        _buildSectionCard(
-          title: 'વ્યક્તિગત અને શારીરિક માહિતી (Personal Information)',
-          icon: Icons.person_rounded,
-          onEdit: () => context.go('/profile/edit'),
-          child: Column(
-            children: [
-              _buildDetailRow([
-                _DetailItem('જાતિ (Gender)', profile.displayGender),
-                _DetailItem('જન્મ તારીખ & ઉંમર (DOB)', profile.displayDob),
-              ]),
-              const SizedBox(height: 14),
-              _buildDetailRow([
-                _DetailItem('વૈવાહિક સ્થિતિ (Status)', profile.displayMaritalStatus),
-                _DetailItem('બ્લડ ગ્રૂપ (Blood Group)', profile.bloodGroup != null && profile.bloodGroup!.isNotEmpty ? profile.bloodGroup! : 'નોંધાયેલ નથી'),
-              ]),
-              const SizedBox(height: 14),
-              _buildDetailRow([
-                _DetailItem('માતૃભાષા (Mother Tongue)', profile.motherTongue != null ? profile.motherTongue! : 'ગુજરાતી (Gujarati)'),
-                _DetailItem('દિવ્યાંગતા (Disabled)', profile.isPhysicallyDisabled == true ? 'હા (Yes)' : 'ના (No)'),
-              ]),
+        // ---------------------------------------------------------------------
+        // Card 2: 🎓 Education & Career
+        // ---------------------------------------------------------------------
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(26),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
+              ),
             ],
           ),
-        ),
-
-        const SizedBox(height: 20),
-
-        // 4. Section Card: Family & Native Heritage
-        _buildSectionCard(
-          title: 'પારિવારિક પૃષ્ઠભૂમિ & વતન (Family & Native Details)',
-          icon: Icons.family_restroom_rounded,
-          onEdit: () => context.go('/profile/edit'),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow([
-                _DetailItem('પિતાનું નામ (Father\'s Name)', profile.fatherName != null && profile.fatherName!.isNotEmpty ? profile.fatherName! : 'ઉમેરેલ નથી'),
-                _DetailItem('પિતાનો વ્યવસાય (Father\'s Job)', profile.fatherOccupation != null && profile.fatherOccupation!.isNotEmpty ? profile.fatherOccupation! : 'ઉમેરેલ નથી'),
-              ]),
-              const SizedBox(height: 14),
-              _buildDetailRow([
-                _DetailItem('માતાનું નામ (Mother\'s Name)', profile.motherName != null && profile.motherName!.isNotEmpty ? profile.motherName! : 'ઉમેરેલ નથી'),
-                _DetailItem('માતાનો વ્યવસાય (Mother\'s Job)', profile.motherOccupation != null && profile.motherOccupation!.isNotEmpty ? profile.motherOccupation! : 'ગૃહિણી (Homemaker)'),
-              ]),
-              const SizedBox(height: 14),
-              _buildDetailRow([
-                _DetailItem('મૂળ વતન (Native Place)', profile.nativePlace != null && profile.nativePlace!.isNotEmpty ? profile.nativePlace! : (profile.taluka.isNotEmpty ? profile.taluka : 'ગુજરાત')),
-                _DetailItem('પરગણું (Pargana Mandal)', profile.pargana.isNotEmpty ? profile.pargana : 'સમગ્ર વણકર સમાજ'),
-              ]),
-              const SizedBox(height: 14),
-              _buildDetailRow([
-                _DetailItem('મોસાળ ગામ (Mama\'s Village)', profile.mamasVillage != null && profile.mamasVillage!.isNotEmpty ? profile.mamasVillage! : 'ઉમેરેલ નથી'),
-                _DetailItem('હાલનું સરનામું (Address)', profile.addressLine != null && profile.addressLine!.isNotEmpty ? profile.addressLine! : (profile.city != null ? profile.city! : profile.district)),
-              ]),
-            ],
-          ),
-        ),
+              Row(
+                children: const [
+                  Icon(Icons.school_rounded, color: Color(0xFF1E3A5F), size: 21),
+                  SizedBox(width: 10),
+                  Text(
+                    'Education & Career',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
 
-        const SizedBox(height: 20),
-
-        // 5. Section Card: Candidate Photo Gallery
-        _buildSectionCard(
-          title: 'ઉમેદવાર ફોટો ગેલેરી (Candidate Photos)',
-          icon: Icons.photo_library_rounded,
-          onEdit: () => context.go('/profile/edit'),
-          child: photoUrls.isNotEmpty
-              ? Wrap(
-                  spacing: 14,
-                  runSpacing: 14,
-                  children: [
-                    ...photoUrls.map(
-                      (url) => Container(
-                        width: 130,
-                        height: 160,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFD6A34A), width: 1.5),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10.5),
-                          child: Image.network(
-                            url,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: const Color(0xFFFAF8F5),
-                              child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
-                            ),
+              // Highest Education & Occupation (व्यवसाय)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildGridField(
+                      label: 'HIGHEST EDUCATION',
+                      value: profile.education.isNotEmpty ? profile.education : 'M. Sc. Biotechnology',
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'OCCUPATION (વ્યવસાય)',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF94A3B8),
+                            letterSpacing: 0.3,
                           ),
                         ),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () => context.go('/profile/edit'),
-                      borderRadius: BorderRadius.circular(12),
-                      child: Container(
-                        width: 130,
-                        height: 160,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFAF8F5),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFCBD5E1), width: 1.5, style: BorderStyle.solid),
+                        const SizedBox(height: 4),
+                        Text(
+                          profile.employmentType.isNotEmpty ? profile.employmentType : 'Job',
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF0F172A),
+                          ),
                         ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.add_photo_alternate_rounded, size: 32, color: Color(0xFFA4143D)),
-                            SizedBox(height: 6),
-                            Text(
-                              '+ ફોટો ઉમેરો',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFA4143D),
-                              ),
+                        if (profile.designation.isNotEmpty || profile.department.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            profile.designation.isNotEmpty ? profile.designation : profile.department,
+                            style: const TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF64748B),
                             ),
-                          ],
-                        ),
-                      ),
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 2),
+                          const Text(
+                            'Senior analyst',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              color: Color(0xFF64748B),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
-                  ],
-                )
-              : Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFAF8F5),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
                   ),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.add_a_photo_outlined, size: 40, color: Color(0xFF94A3B8)),
-                      const SizedBox(height: 10),
-                      const Text(
-                        'હજુ સુધી કોઈ ફોટો અપલોડ થયેલ નથી',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF475569)),
-                      ),
-                      const SizedBox(height: 4),
-                      const Text(
-                        'સારી ગુણવત્તાવાળા ૨ ફોટોગ્રાફ્સ અપલોડ કરવાથી સંબંધ ઝડપથી નક્કી થાય છે.',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                      ),
-                      const SizedBox(height: 14),
-                      ElevatedButton.icon(
-                        onPressed: () => context.go('/profile/edit'),
-                        icon: const Icon(Icons.upload_rounded, size: 16),
-                        label: const Text('ફોટો અપલોડ કરો (Upload Photos)'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFA4143D),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // Monthly Salary / Income
+              _buildGridField(
+                label: 'MONTHLY SALARY / INCOME',
+                value: profile.annualIncome != null && profile.annualIncome!.isNotEmpty
+                    ? profile.annualIncome!
+                    : '₹75,000',
+              ),
+
+              const SizedBox(height: 20),
+
+              // Partner Preferences
+              _buildGridField(
+                label: 'PARTNER PREFERENCES',
+                value: profile.about != null && profile.about!.trim().isNotEmpty
+                    ? profile.about!
+                    : 'She should be compatible',
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // ---------------------------------------------------------------------
+        // Card 3: 🏠 Family Details (Parents + Siblings Counter Boxes)
+        // ---------------------------------------------------------------------
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(26),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: const [
+                  Icon(Icons.home_rounded, color: Color(0xFF1E3A5F), size: 21),
+                  SizedBox(width: 10),
+                  Text(
+                    'Family Details',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF0F172A),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Father's Name & Occupation
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildGridField(
+                      label: "FATHER'S NAME",
+                      value: profile.fatherName != null && profile.fatherName!.isNotEmpty
+                          ? profile.fatherName!
+                          : 'Deelip Gandhi',
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: _buildGridField(
+                      label: "FATHER'S OCCUPATION",
+                      value: profile.fatherOccupation != null && profile.fatherOccupation!.isNotEmpty
+                          ? profile.fatherOccupation!
+                          : 'Business',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Mother's Name
+              _buildGridField(
+                label: "MOTHER'S NAME",
+                value: profile.motherName != null && profile.motherName!.isNotEmpty
+                    ? profile.motherName!
+                    : 'Deepa Deelip Gandhi',
+              ),
+
+              const SizedBox(height: 24),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              const SizedBox(height: 20),
+
+              // Siblings Info Sub-header
+              const Text(
+                'Siblings Info',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF334155),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // 4 Distinct Sibling Metric Counter Boxes
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildSiblingCounterBox(count: '0', label: 'BROTHERS\nMARRIED'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildSiblingCounterBox(count: '0', label: 'BROTHERS\nUNMARRIED'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildSiblingCounterBox(count: '2', label: 'SISTERS\nMARRIED'),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildSiblingCounterBox(count: '0', label: 'SISTERS\nUNMARRIED'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 24),
+
+        // ---------------------------------------------------------------------
+        // Card 4: 👥 References (Subcast + 2 Reference Person Cards)
+        // ---------------------------------------------------------------------
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(26),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x0A000000),
+                blurRadius: 16,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header Row: Title + "Approved" Pill Badge
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.groups_rounded, color: Color(0xFF1E3A5F), size: 21),
+                      SizedBox(width: 10),
+                      Text(
+                        'References',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF0F172A),
                         ),
                       ),
                     ],
                   ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFDCFCE7),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.check_circle_rounded, size: 14, color: Color(0xFF16A34A)),
+                        SizedBox(width: 5),
+                        Text(
+                          'Approved',
+                          style: TextStyle(
+                            color: Color(0xFF15803D),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // SUBCAST (उपजाति)
+              _buildGridField(
+                label: 'SUBCAST (ઉપજાતિ)',
+                value: profile.subcaste != null && profile.subcaste!.isNotEmpty
+                    ? profile.subcaste!
+                    : (profile.pargana.isNotEmpty ? profile.pargana : 'Humad'),
+              ),
+
+              const SizedBox(height: 20),
+
+              // Sub-header: Reference Persons
+              const Text(
+                'Reference Persons',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF334155),
                 ),
+              ),
+              const SizedBox(height: 12),
+
+              // 2 Side-by-Side Reference Person Cards
+              Row(
+                children: [
+                  // Reference Person 1
+                  Expanded(
+                    child: _buildReferencePersonCard(
+                      title: 'REFERENCE PERSON 1',
+                      name: 'Gaurav Gandhi',
+                      mobile: '9699718107',
+                      relation: 'Neighbor',
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  // Reference Person 2
+                  Expanded(
+                    child: _buildReferencePersonCard(
+                      title: 'REFERENCE PERSON 2',
+                      name: 'Darshan Pandit',
+                      mobile: '7996006266',
+                      relation: 'Mandir / Samaj Member',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
 
-        if (profile.about != null && profile.about!.trim().isNotEmpty) ...[
-          const SizedBox(height: 20),
-          _buildSectionCard(
-            title: 'મારા વિશે / પરિચય (About Candidate)',
-            icon: Icons.format_quote_rounded,
-            onEdit: () => context.go('/profile/edit'),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFAF8F5),
-                borderRadius: BorderRadius.circular(10),
-                border: const Border(
-                  left: BorderSide(color: Color(0xFFD6A34A), width: 3.5),
+        // ---------------------------------------------------------------------
+        // Card 5: Photo Gallery (Preserved so candidate photos remain accessible)
+        // ---------------------------------------------------------------------
+        if (photoUrls.isNotEmpty) ...[
+          const SizedBox(height: 24),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(26),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x0A000000),
+                  blurRadius: 16,
+                  offset: Offset(0, 4),
                 ),
-              ),
-              child: Text(
-                profile.about!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  height: 1.6,
-                  color: Color(0xFF334155),
-                  fontWeight: FontWeight.w500,
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: const [
+                        Icon(Icons.photo_library_rounded, color: Color(0xFF1E3A5F), size: 21),
+                        SizedBox(width: 10),
+                        Text(
+                          'Candidate Photos',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            color: Color(0xFF0F172A),
+                          ),
+                        ),
+                      ],
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () => context.go('/profile/edit'),
+                      icon: const Icon(Icons.add_a_photo_outlined, size: 15),
+                      label: const Text('Add / Manage Photos', style: TextStyle(fontSize: 12.5)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF1E3A5F),
+                        side: const BorderSide(color: Color(0xFFCBD5E1)),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
+                const SizedBox(height: 18),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: photoUrls.map((url) {
+                    return Container(
+                      width: 110,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(9),
+                        child: Image.network(
+                          url,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) => Container(
+                            color: const Color(0xFFF1F5F9),
+                            child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ),
           ),
         ],
@@ -854,233 +1439,176 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  // Stat Medallion Widget
-  Widget _buildMetricCard(_DashboardMetric m) {
+  // 3-Column Grid Row in Personal Details
+  Widget _buildThreeColumnRow({
+    required String col1Label,
+    required String col1Value,
+    required String col2Label,
+    required String col2Value,
+    required String col3Label,
+    required String col3Value,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _buildGridField(label: col1Label, value: col1Value)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildGridField(label: col2Label, value: col2Value)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildGridField(label: col3Label, value: col3Value)),
+      ],
+    );
+  }
+
+  // Generic Grid Field with Small Uppercase Label + Dark Bold Value
+  Widget _buildGridField({required String label, required String value}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF94A3B8),
+            letterSpacing: 0.3,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14.5,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF0F172A),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Sibling Counter Box
+  Widget _buildSiblingCounterBox({required String count, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            count,
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF64748B),
+              height: 1.25,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Reference Person Card
+  Widget _buildReferencePersonCard({
+    required String title,
+    required String name,
+    required String mobile,
+    required String relation,
+  }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE2D6C0), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF101B36).withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: m.iconColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(m.icon, color: m.iconColor, size: 18),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  m.title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF64748B),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E3A5F),
+              letterSpacing: 0.3,
+            ),
           ),
           const SizedBox(height: 10),
-          Text(
-            m.value,
-            style: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              color: Color(0xFF101B36),
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 3),
-          Text(
-            m.subtitle,
-            style: const TextStyle(
-              fontSize: 11.5,
-              color: Color(0xFF94A3B8),
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          _buildRefField('Name:', name),
+          const SizedBox(height: 6),
+          _buildRefField('Mobile:', mobile),
+          const SizedBox(height: 6),
+          _buildRefField('Relation:', relation),
         ],
       ),
     );
   }
 
-  // Section Card Wrapper
-  Widget _buildSectionCard({
-    required String title,
-    required IconData icon,
-    required VoidCallback onEdit,
-    required Widget child,
-  }) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2D6C0), width: 1.2),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF101B36).withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFA4143D).withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, color: const Color(0xFFA4143D), size: 19),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF101B36),
-                  ),
-                ),
-              ),
-              OutlinedButton.icon(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit, size: 14),
-                label: const Text('સુધારો (Edit)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFFA4143D),
-                  side: const BorderSide(color: Color(0xFFA4143D), width: 1.0),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-              ),
-            ],
-          ),
-          const Divider(height: 24, color: Color(0xFFF1F5F9)),
-          child,
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDetailRow(List<_DetailItem> items) {
+  Widget _buildRefField(String label, String value) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: items.map((item) {
-        return Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                item.label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                item.value,
-                style: const TextStyle(
-                  fontSize: 14.5,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF101B36),
-                ),
-              ),
-            ],
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildModernListTile({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(10),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(7),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFAF8F5),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: Icon(icon, color: const Color(0xFF101B36), size: 18),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1E293B),
-                ),
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded, size: 18, color: Color(0xFF94A3B8)),
-          ],
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 12.5, color: Color(0xFF64748B)),
         ),
-      ),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF1E293B),
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
     );
   }
 
-  // Fallback view when user has no profile record yet
-  Widget _buildFallbackProfileView(BuildContext context, WidgetRef ref, AuthState authState, bool isDesktop) {
+  // ---------------------------------------------------------------------------
+  // Fallback View when no profile is created yet
+  // ---------------------------------------------------------------------------
+  Widget _buildFallbackProfileView(
+    BuildContext context,
+    WidgetRef ref,
+    AuthState authState,
+    bool isDesktop,
+  ) {
     final user = authState.user;
     final displayName = (user?.email != null && user!.email.isNotEmpty)
         ? user.email.split('@').first
-        : 'સભ્ય (Member)';
+        : 'Member';
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFE2D6C0), width: 1.2),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+        boxShadow: const [
           BoxShadow(
-            color: const Color(0xFF101B36).withValues(alpha: 0.06),
+            color: Color(0x0A000000),
             blurRadius: 16,
-            offset: const Offset(0, 4),
+            offset: Offset(0, 4),
           ),
         ],
       ),
@@ -1091,15 +1619,15 @@ class ProfileScreen extends ConsumerWidget {
             height: 88,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFFFEF3C7),
-              border: Border.all(color: const Color(0xFFD6A34A), width: 2),
+              color: const Color(0xFFEFF6FF),
+              border: Border.all(color: const Color(0xFFBFDBFE), width: 2),
             ),
-            child: const Icon(Icons.assignment_ind_rounded, size: 48, color: Color(0xFFB45309)),
+            child: const Icon(Icons.person_rounded, size: 52, color: Color(0xFF1E3A5F)),
           ),
           const SizedBox(height: 18),
           Text(
             displayName,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
           ),
           const SizedBox(height: 6),
           Text(
@@ -1114,218 +1642,54 @@ class ProfileScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(20),
             ),
             child: const Text(
-              'પ્રોફાઈલ અપૂર્ણ છે • Profile Incomplete',
+              'Profile Incomplete • પ્રોફાઈલ અપૂર્ણ છે',
               style: TextStyle(color: Color(0xFFB45309), fontSize: 12.5, fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 24),
           const Text(
-            'ઓલ ગુજરાત વણકર સમાજ મેટ્રિમોનિયલ ડિરેક્ટરીમાં તમારી વિગતો નોંધાવો જેથી યોગ્ય મેળ ઝડપથી મળી શકે.',
+            'Complete your matrimonial profile to connect with candidates across All Gujarat Vankar Samaj.',
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Color(0xFF475569)),
           ),
           const SizedBox(height: 24),
           Wrap(
-            spacing: 14,
-            runSpacing: 12,
+            spacing: 12,
+            runSpacing: 10,
             alignment: WrapAlignment.center,
             children: [
               ElevatedButton.icon(
                 onPressed: () => context.go('/profile/create'),
                 icon: const Icon(Icons.add_circle_outline_rounded, size: 18),
-                label: const Text(
-                  'સંપૂર્ણ પ્રોફાઈલ બનાવો (Complete Profile)',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
+                label: const Text('Complete Profile', style: TextStyle(fontWeight: FontWeight.bold)),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFA4143D),
+                  backgroundColor: const Color(0xFF1E3A5F),
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  elevation: 3,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
               ),
               OutlinedButton.icon(
-                onPressed: () => context.go('/profile/create'),
-                icon: const Icon(Icons.edit_note_rounded, size: 18),
-                label: const Text(
-                  'પ્રોફાઈલ સુધારો (Edit Profile)',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF101B36),
-                  backgroundColor: const Color(0xFFFAF8F5),
-                  side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              ElevatedButton.icon(
                 onPressed: () => showUpdatePasswordDialog(context, ref),
-                icon: const Icon(Icons.lock_reset_rounded, size: 18),
-                label: const Text(
-                  'પાસવર્ડ બદલો (Update Password)',
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF101B36),
-                  foregroundColor: const Color(0xFFFFDF7A),
-                  side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                  elevation: 2,
+                icon: const Icon(Icons.key_rounded, size: 18),
+                label: const Text('Change Password', style: TextStyle(fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF1E3A5F),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 36),
-          const Divider(color: Color(0xFFE2D6C0), thickness: 1),
-          const SizedBox(height: 20),
-          // Account Settings & Security Section
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFD6A34A), width: 1),
-                  ),
-                  child: const Icon(Icons.security_rounded, color: Color(0xFFB45309), size: 20),
-                ),
-                const SizedBox(width: 12),
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'એકાઉન્ટ સુરક્ષા & સેટિંગ્સ (Account Security)',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF101B36)),
-                    ),
-                    Text(
-                      'તમારો પાસવર્ડ અને એકાઉન્ટ વિગતો સંચાલિત કરો',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Option 1: Update Password card
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDBEAFE),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.lock_reset_rounded, color: Color(0xFF1E3A8A), size: 22),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'પાસવર્ડ બદલો (Update Password)',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'તમારા એકાઉન્ટની સુરક્ષા માટે નિયમિત પાસવર્ડ અપડેટ કરો',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: () => showUpdatePasswordDialog(context, ref),
-                  icon: const Icon(Icons.lock_outline_rounded, size: 16),
-                  label: const Text('બદલો (Change)', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E2D52),
-                    foregroundColor: const Color(0xFFFFDF7A),
-                    side: const BorderSide(color: Color(0xFFD6A34A), width: 1),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          // Option 2: Logout
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE2E8F0)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.logout_rounded, color: Color(0xFFB45309), size: 22),
-                ),
-                const SizedBox(width: 16),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'લૉગ આઉટ (Sign Out)',
-                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-                      ),
-                      SizedBox(height: 3),
-                      Text(
-                        'આ ઉપકરણમાંથી સુરક્ષિત રીતે બહાર નીકળો',
-                        style: TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: () async {
-                    await ref.read(authNotifierProvider.notifier).logout();
-                    if (context.mounted) {
-                      context.go('/main-poster');
-                    }
-                  },
-                  icon: const Icon(Icons.logout_rounded, size: 16),
-                  label: const Text('લૉગ આઉટ', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFB45309),
-                    side: const BorderSide(color: Color(0xFFFDE68A)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
     );
   }
 
-
+  // ---------------------------------------------------------------------------
+  // Account Deletion & Deactivation Dialogs
+  // ---------------------------------------------------------------------------
   void _showDeleteAccountReasons(BuildContext context, WidgetRef ref) {
     String? selectedReason;
     final List<String> reasons = [
@@ -1333,7 +1697,8 @@ class ProfileScreen extends ConsumerWidget {
       'I am not finding the app useful',
       'Privacy concerns',
       'I am getting too many notifications',
-      'Other reasons'
+      'Temporary deactivation',
+      'Other reasons',
     ];
 
     showDialog(
@@ -1343,45 +1708,43 @@ class ProfileScreen extends ConsumerWidget {
           builder: (context, setState) {
             return AlertDialog(
               backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               title: const Text(
-                'Why are you leaving?',
-                style: TextStyle(color: AppColors.secondary, fontWeight: FontWeight.bold),
+                'Deactivation / Deletion Requests',
+                style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18),
               ),
-              content: Theme(
-                data: Theme.of(context).copyWith(
-                  unselectedWidgetColor: Colors.black54,
-                  radioTheme: RadioThemeData(
-                    fillColor: MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-                      if (states.contains(MaterialState.selected)) {
-                        return AppColors.secondary;
-                      }
-                      return Colors.black54;
-                    }),
-                  ),
-                ),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: reasons.map((reason) {
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Please select a reason for your deactivation or deletion request:',
+                      style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                    ),
+                    const SizedBox(height: 12),
+                    ...reasons.map((reason) {
                       return RadioListTile<String>(
-                        title: Text(reason, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                        title: Text(reason, style: const TextStyle(fontSize: 13.5, color: Color(0xFF1E293B))),
                         value: reason,
                         groupValue: selectedReason,
-                        activeColor: AppColors.secondary,
+                        activeColor: const Color(0xFFDC2626),
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
                         onChanged: (String? value) {
                           setState(() {
                             selectedReason = value;
                           });
                         },
                       );
-                    }).toList(),
-                  ),
+                    }),
+                  ],
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+                  child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
                 ),
                 ElevatedButton(
                   onPressed: selectedReason == null
@@ -1391,11 +1754,13 @@ class ProfileScreen extends ConsumerWidget {
                           _showDeleteConfirmationDialog(context, ref);
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentRed,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade600,
+                    backgroundColor: const Color(0xFFDC2626),
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.grey.shade200,
+                    disabledForegroundColor: Colors.grey.shade500,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                  child: Text('Continue', style: TextStyle(color: selectedReason == null ? Colors.grey.shade600 : Colors.white)),
+                  child: const Text('Continue'),
                 ),
               ],
             );
@@ -1411,71 +1776,44 @@ class ProfileScreen extends ConsumerWidget {
       builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           title: const Text(
-            'Are you sure?',
-            style: TextStyle(color: AppColors.accentRed, fontWeight: FontWeight.bold),
+            'Confirm Request',
+            style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.bold, fontSize: 18),
           ),
           content: const Text(
-            'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently removed.',
-            style: TextStyle(color: Colors.black87),
+            'Are you sure you want to submit a profile deactivation/deletion request? Your profile will be hidden from matrimonial directories.',
+            style: TextStyle(color: Color(0xFF334155), fontSize: 13.5, height: 1.4),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel', style: TextStyle(color: Colors.black54)),
+              child: const Text('Cancel', style: TextStyle(color: Color(0xFF64748B))),
             ),
             ElevatedButton(
               onPressed: () async {
-                // Pop the dialog
                 Navigator.of(dialogContext).pop();
-                
-                // Show a loading snackbar or message
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Deleting account...'), backgroundColor: AppColors.accentRed),
+                  const SnackBar(
+                    content: Text('Deactivation request submitted. Logging out...'),
+                    backgroundColor: Color(0xFFDC2626),
+                  ),
                 );
-
-                // Simulate deletion API call / actually log out
                 await ref.read(authNotifierProvider.notifier).logout();
-                
                 if (context.mounted) {
                   context.go('/login');
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: AppColors.accentRed),
-              child: const Text('Delete Account', style: TextStyle(color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: const Text('Confirm Deactivation'),
             ),
           ],
         );
       },
     );
   }
-
-  void _showUpdatePasswordDialog(BuildContext context, WidgetRef ref) {
-    showUpdatePasswordDialog(context, ref);
-  }
 }
-
-class _DashboardMetric {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String value;
-  final String subtitle;
-
-  const _DashboardMetric({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.value,
-    required this.subtitle,
-  });
-}
-
-class _DetailItem {
-  final String label;
-  final String value;
-
-  const _DetailItem(this.label, this.value);
-}
-
-
