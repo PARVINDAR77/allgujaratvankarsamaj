@@ -1125,12 +1125,18 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
             throw new common_1.NotFoundException(`Samaj Service Person with ID ${id} not found`);
         }
         if (dto.serviceId) {
-            const service = await this.prisma.samajService.findUnique({
+            let service = await this.prisma.samajService.findUnique({
                 where: { id: dto.serviceId },
             });
             if (!service) {
+                service = await this.prisma.samajService.findFirst({
+                    where: { slug: dto.serviceId },
+                });
+            }
+            if (!service) {
                 throw new common_1.NotFoundException(`Associated Samaj Service with ID ${dto.serviceId} not found`);
             }
+            dto.serviceId = service.id;
         }
         return this.prisma.samajServicePerson.update({
             where: { id },
