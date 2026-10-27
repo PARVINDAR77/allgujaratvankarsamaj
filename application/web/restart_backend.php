@@ -148,6 +148,37 @@ if ($action === 'fix_db') {
     fix_database_genders($project_dir, $results);
 }
 
+if ($action === 'check_verif') {
+    $env_file = $project_dir . '/.env.production';
+    if (!file_exists($env_file)) $env_file = $project_dir . '/next-nest/backend/.env';
+    $lines = @file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+    $conf = [];
+    foreach ($lines as $line) {
+        if (strpos($line, '=') !== false) {
+            list($k, $v) = explode('=', $line, 2);
+            $conf[trim($k)] = trim(trim($v), '"\'');
+        }
+    }
+    $host = $conf['DB_HOST'] ?? 'localhost';
+    $user = $conf['DB_USER'] ?? '';
+    $pass = $conf['DB_PASSWORD'] ?? '';
+    $name = $conf['DB_NAME'] ?? '';
+    if (empty($user) && !empty($conf['DATABASE_URL'])) {
+        $p = parse_url($conf['DATABASE_URL']);
+        $host = $p['host'] ?? 'localhost';
+        $user = $p['user'] ?? '';
+        $pass = $p['pass'] ?? '';
+        $name = ltrim($p['path'] ?? '', '/');
+    }
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass);
+        $stmt = $pdo->query("SELECT vr.id, vr.document_type, vr.document_url, vr.document_back_url, vr.status, mp.first_name, mp.last_name, mp.photos FROM verification_requests vr LEFT JOIN matrimonial_profiles mp ON vr.profile_id = mp.id ORDER BY vr.created_at DESC LIMIT 15");
+        $results['verifications'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $results['verif_err'] = $e->getMessage();
+    }
+}
+
 if ($action === 'restart' || $action === 'start') {
     fix_database_genders($project_dir, $results);
     // 1. Touch trigger file for the watchdog script
