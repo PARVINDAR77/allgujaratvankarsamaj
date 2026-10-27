@@ -1079,16 +1079,78 @@ class _CandidateProfileDetailScreenState
   Widget _buildBottomActionBar(BuildContext context, ProfileModel profile) {
     final isMarried = profile.isMarried;
     if (isMarried) {
+      final phone = profile.fatherContact ?? profile.altPhone;
       return Container(
         color: Colors.white,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: Colors.grey.shade200)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, -3),
+            ),
+          ],
+        ),
         child: SafeArea(
           top: false,
-          child: Center(
-            child: Text(
-              'પરિણીત સભ્ય - વૈવાહિક પ્રસ્તાવ અક્ષમ છે (Married Member - Proposals Disabled)',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.grey.shade700),
-            ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle, size: 14, color: Color(0xFF2E7D32)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'પરિણીત સભ્ય (Married Member)',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey.shade800),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      'સમાજ ડિરેક્ટરી સભ્ય - વૈવાહિક પ્રસ્તાવ અક્ષમ છે',
+                      style: TextStyle(fontSize: 10.5, color: Colors.grey.shade600),
+                    ),
+                  ],
+                ),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => _shareProfile(profile),
+                icon: const Icon(Icons.share, size: 15),
+                label: const Text('Share (શેર)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF0056D2),
+                  side: const BorderSide(color: Color(0xFF0056D2)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                ),
+              ),
+              if (phone != null && phone.trim().isNotEmpty) ...[
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: () async {
+                    final uri = Uri.parse('tel:${phone.replaceAll(' ', '')}');
+                    if (await canLaunchUrl(uri)) {
+                      await launchUrl(uri);
+                    }
+                  },
+                  icon: const Icon(Icons.call, size: 15),
+                  label: const Text('Call', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2E7D32),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
       );
@@ -1426,7 +1488,7 @@ class _CandidateProfileDetailScreenState
     final repo = ref.read(chatRepositoryProvider);
     final res = await repo.acceptConnectionRequest(interestId);
     ref.invalidate(connectionStatusProvider(profile.id));
-    if (mounted) {
+    if (context.mounted) {
       if (res['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1443,7 +1505,7 @@ class _CandidateProfileDetailScreenState
     final repo = ref.read(chatRepositoryProvider);
     await repo.declineConnectionRequest(interestId);
     ref.invalidate(connectionStatusProvider(profile.id));
-    if (mounted) {
+    if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('વિનંતી નકારવામાં આવી છે.')),
       );
@@ -2038,18 +2100,74 @@ class _CandidateProfileDetailScreenState
   Widget _buildWebConnectionBlock(BuildContext context, ProfileModel profile, bool isOwner) {
     final isMarried = profile.isMarried;
     if (isMarried) {
+      final phone = profile.contactPhone ?? profile.altPhone;
       return Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
-        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
         decoration: BoxDecoration(
           color: const Color(0xFFFEF3C7),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: const Color(0xFFF59E0B)),
         ),
-        child: const Text(
-          'પરિણીત સભ્ય - વૈવાહિક પ્રસ્તાવ અક્ષમ છે\n(Married Member - Proposals Disabled)',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF92400E)),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.check_circle_rounded, size: 16, color: Color(0xFF2E7D32)),
+                SizedBox(width: 6),
+                Text(
+                  'પરિણીત સભ્ય (Married Member)',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF92400E)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'સમાજ ડિરેક્ટરી સભ્ય - વૈવાહિક પ્રસ્તાવ અક્ષમ છે\n(Directory Member - Proposals Disabled)',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 11.5, color: Color(0xFF78350F), height: 1.3),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _shareProfile(profile),
+                    icon: const Icon(Icons.share_rounded, size: 15),
+                    label: const Text('શેર (Share)', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFF0056D2),
+                      side: const BorderSide(color: Color(0xFF0056D2)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      backgroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                if (phone != null && phone.trim().isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        final uri = Uri.parse('tel:${phone.replaceAll(' ', '')}');
+                        if (await canLaunchUrl(uri)) {
+                          await launchUrl(uri);
+                        }
+                      },
+                      icon: const Icon(Icons.call, size: 15),
+                      label: const Text('Call', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2E7D32),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
         ),
       );
     }

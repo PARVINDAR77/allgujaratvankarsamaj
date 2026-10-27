@@ -142,11 +142,15 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
     final profiles = rawProfiles.where((p) {
       if (_selectedGender == 'MALE' && !p.isMale) return false;
       if (_selectedGender == 'FEMALE' && !p.isFemale) return false;
-      // Matrimonial candidate listings MUST NEVER show married profiles
-      if (p.isMarried) return false;
-      if (_selectedMaritalStatus != 'ALL') {
-        final norm = ProfileModel.normalizeMaritalStatusToApi(p.maritalStatus);
-        if (norm != _selectedMaritalStatus) return false;
+      if (_selectedMaritalStatus == 'MARRIED') {
+        if (!p.isMarried) return false;
+      } else {
+        // By default, exclude married profiles from general matrimony searches unless specifically selected
+        if (_selectedMaritalStatus == 'ALL' && p.isMarried) return false;
+        if (_selectedMaritalStatus != 'ALL') {
+          final norm = ProfileModel.normalizeMaritalStatusToApi(p.maritalStatus);
+          if (norm != _selectedMaritalStatus) return false;
+        }
       }
       return true;
     }).toList();
@@ -759,6 +763,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
             children: [
               _buildSidebarMaritalChip('બધા (All)', 'ALL'),
               _buildSidebarMaritalChip('અપરિણીત (Never Married)', 'NEVER_MARRIED'),
+              _buildSidebarMaritalChip('પરિણીત (Married)', 'MARRIED'),
               _buildSidebarMaritalChip('છૂટાછેડા (Divorced)', 'DIVORCED'),
               _buildSidebarMaritalChip('વિધુર / વિધવા (Widowed)', 'WIDOWED'),
             ],
@@ -1180,19 +1185,27 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                               decoration: BoxDecoration(
-                                color: isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE0F2F1),
+                                color: profile.isMarried
+                                    ? const Color(0xFFFEF3C7)
+                                    : (isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE0F2F1)),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isGirl ? const Color(0xFFF48FB1) : const Color(0xFF80CBC4),
+                                  color: profile.isMarried
+                                      ? const Color(0xFFF59E0B)
+                                      : (isGirl ? const Color(0xFFF48FB1) : const Color(0xFF80CBC4)),
                                   width: 1.0,
                                 ),
                               ),
                               child: Text(
-                                isGirl ? '👰 કન્યા (Bride)' : '👨 વર (Groom)',
+                                profile.isMarried
+                                    ? '💍 પરિણીત (Married)'
+                                    : (isGirl ? '👰 કન્યા (Bride)' : '👨 વર (Groom)'),
                                 style: TextStyle(
                                   fontSize: 10.5,
                                   fontWeight: FontWeight.bold,
-                                  color: isGirl ? const Color(0xFFA4143D) : const Color(0xFF00695C),
+                                  color: profile.isMarried
+                                      ? const Color(0xFF92400E)
+                                      : (isGirl ? const Color(0xFFA4143D) : const Color(0xFF00695C)),
                                 ),
                               ),
                             ),
@@ -2395,16 +2408,27 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE0F7F0),
+                              color: profile.isMarried
+                                  ? const Color(0xFFFEF3C7)
+                                  : (isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE0F7F0)),
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFF80CBC4), width: 1.0),
+                              border: Border.all(
+                                color: profile.isMarried
+                                    ? const Color(0xFFF59E0B)
+                                    : (isGirl ? const Color(0xFFF48FB1) : const Color(0xFF80CBC4)),
+                                width: 1.0,
+                              ),
                             ),
                             child: Text(
-                              isGirl ? '👧 કન્યા (Bride)' : '👦 વર (Groom)',
-                              style: const TextStyle(
+                              profile.isMarried
+                                  ? '💍 પરિણીત (Married)'
+                                  : (isGirl ? '👧 કન્યા (Bride)' : '👦 વર (Groom)'),
+                              style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF00695C),
+                                color: profile.isMarried
+                                    ? const Color(0xFF92400E)
+                                    : (isGirl ? const Color(0xFFA4143D) : const Color(0xFF00695C)),
                               ),
                             ),
                           ),
@@ -2853,6 +2877,11 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                           label: 'અપરિણીત (Never Married)',
                           isSelected: tempMaritalStatus == 'NEVER_MARRIED',
                           onTap: () => setSheetState(() => tempMaritalStatus = 'NEVER_MARRIED'),
+                        ),
+                        _buildChoiceChipItem(
+                          label: 'પરિણીત (Married)',
+                          isSelected: tempMaritalStatus == 'MARRIED',
+                          onTap: () => setSheetState(() => tempMaritalStatus = 'MARRIED'),
                         ),
                         _buildChoiceChipItem(
                           label: 'છૂટાછેડા (Divorced)',

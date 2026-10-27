@@ -134,8 +134,6 @@ class FamilyModel {
       candidateEducation: json['candidateEducation']?.toString(),
       candidateOccupation: json['candidateOccupation']?.toString(),
       candidateId: () {
-        final isMarried = ProfileModel.checkIsMarried(json['maritalStatus'] ?? json['marital_status']);
-        if (isMarried) return null;
         final cId = json['candidateId']?.toString();
         if (cId != null && cId.isNotEmpty) return cId;
         return null;
@@ -208,7 +206,7 @@ class FamilyModel {
       candidateAge: p.age,
       candidateEducation: p.education,
       candidateOccupation: p.designation.isNotEmpty ? p.designation : p.employmentType,
-      candidateId: (!p.isMarried) ? p.id : null,
+      candidateId: p.id.isNotEmpty ? p.id : null,
       photoUrl: AppConfig.resolveMediaUrl(p.photoUrl),
       isVerified: p.isVerified ?? false,
       isLiveMember: true,

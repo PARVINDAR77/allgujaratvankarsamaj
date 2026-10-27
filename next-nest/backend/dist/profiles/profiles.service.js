@@ -1279,29 +1279,26 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 where.gender = resolvedGender;
             }
         }
+        const isExplicitMarried = query.maritalStatus === client_1.MaritalStatus.MARRIED ||
+            query.maritalStatus === "MARRIED";
         if (query.maritalStatus) {
-            if (query.maritalStatus === client_1.MaritalStatus.MARRIED || query.maritalStatus === "MARRIED") {
-                return {
-                    items: [],
-                    meta: {
-                        page,
-                        limit,
-                        total: 0,
-                        totalPages: 0,
-                    },
-                };
-            }
-            where.maritalStatus = query.maritalStatus;
+            where.maritalStatus = isExplicitMarried
+                ? client_1.MaritalStatus.MARRIED
+                : query.maritalStatus;
         }
         else {
-            where.maritalStatus = {
-                in: [
-                    client_1.MaritalStatus.NEVER_MARRIED,
-                    client_1.MaritalStatus.DIVORCED,
-                    client_1.MaritalStatus.WIDOWED,
-                    client_1.MaritalStatus.SEPARATED,
-                ],
-            };
+            if (query.includeAllProfiles) {
+            }
+            else {
+                where.maritalStatus = {
+                    in: [
+                        client_1.MaritalStatus.NEVER_MARRIED,
+                        client_1.MaritalStatus.DIVORCED,
+                        client_1.MaritalStatus.WIDOWED,
+                        client_1.MaritalStatus.SEPARATED,
+                    ],
+                };
+            }
         }
         if (query.includeAllProfiles) {
             if (query.showInMatrimony !== undefined) {
@@ -1311,6 +1308,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         query.showInMatrimony === 1 ||
                         query.showInMatrimony === "1";
             }
+        }
+        else if (isExplicitMarried) {
         }
         else {
             where.showInMatrimony = true;
@@ -2048,7 +2047,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         : 25,
                     candidateEducation: p.education || "",
                     candidateOccupation: p.occupation || p.designation || "",
-                    candidateId: (p.maritalStatus !== client_1.MaritalStatus.MARRIED && p.showInMatrimony) ? p.id : "",
+                    candidateId: p.id || "",
                     maritalStatus: p.maritalStatus || "MARRIED",
                     photoUrl: p.photoUrl || "",
                     isVerified: p.isVerified || false,

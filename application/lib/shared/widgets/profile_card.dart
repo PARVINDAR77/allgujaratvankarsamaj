@@ -93,24 +93,26 @@ class ProfileCard extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                               decoration: BoxDecoration(
-                                color: isGirl
-                                    ? const Color(0xFFFCE4EC)
-                                    : const Color(0xFFE3F2FD),
+                                color: profile.isMarried
+                                    ? const Color(0xFFFEF3C7)
+                                    : (isGirl ? const Color(0xFFFCE4EC) : const Color(0xFFE3F2FD)),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                  color: isGirl
-                                      ? const Color(0xFFF06292)
-                                      : const Color(0xFF64B5F6),
+                                  color: profile.isMarried
+                                      ? const Color(0xFFF59E0B)
+                                      : (isGirl ? const Color(0xFFF06292) : const Color(0xFF64B5F6)),
                                 ),
                               ),
                               child: Text(
-                                isGirl ? '👰 Bride' : '👨 Groom',
+                                profile.isMarried
+                                    ? '💍 પરિણીત (Married)'
+                                    : (isGirl ? '👰 Bride' : '👨 Groom'),
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
-                                  color: isGirl
-                                      ? const Color(0xFFC2185B)
-                                      : const Color(0xFF1976D2),
+                                  color: profile.isMarried
+                                      ? const Color(0xFF92400E)
+                                      : (isGirl ? const Color(0xFFC2185B) : const Color(0xFF1976D2)),
                                 ),
                               ),
                             ),

@@ -1285,56 +1285,35 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                 ),
                 const SizedBox(width: 8),
               ],
-              // View Profile button - only for unmarried candidates
-              if (!profile.isMarried)
-                Expanded(
-                  flex: isCompact ? 4 : 3,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      final pId = profile.id;
-                      if (pId.isNotEmpty) {
-                        context.push('/candidate-profile-details?id=$pId', extra: profile);
-                      } else {
-                        context.push('/candidate-profile-details', extra: profile);
-                      }
-                    },
-                    icon: const Icon(Icons.person_search, size: 15),
-                    label: Text(
-                      isCompact ? 'સંપૂર્ણ પ્રોફાઇલ' : 'સંપૂર્ણ પ્રોફાઇલ (Profile)',
-                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0056D2),
-                      foregroundColor: Colors.white,
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-                      minimumSize: const Size(0, 40),
-                    ),
+              // View Profile button for all candidates
+              Expanded(
+                flex: isCompact ? 4 : 3,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    final pId = profile.id;
+                    if (pId.isNotEmpty) {
+                      context.push('/candidate-profile-details?id=$pId', extra: profile);
+                    } else {
+                      context.push('/candidate-profile-details', extra: profile);
+                    }
+                  },
+                  icon: const Icon(Icons.person_search, size: 15),
+                  label: Text(
+                    isCompact ? 'સંપૂર્ણ પ્રોફાઇલ' : 'સંપૂર્ણ પ્રોફાઇલ (Profile)',
+                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                )
-              else
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFCBD5E1)),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle_outline, size: 14, color: Color(0xFF475569)),
-                      SizedBox(width: 5),
-                      Text(
-                        'પરિણીત સભ્ય (Married Member)',
-                        style: TextStyle(fontSize: 11.5, color: Color(0xFF475569), fontWeight: FontWeight.w600),
-                      ),
-                    ],
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0056D2),
+                    foregroundColor: Colors.white,
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                    minimumSize: const Size(0, 40),
                   ),
                 ),
+              ),
             ],
           );
         },

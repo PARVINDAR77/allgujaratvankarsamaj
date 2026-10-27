@@ -1508,7 +1508,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                         child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                       ),
                       const Spacer(),
-                      if (emp.profileId.isNotEmpty && !ProfileModel.checkIsMarried(emp.maritalStatus)) ...[
+                      if (emp.profileId.isNotEmpty) ...[
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
@@ -1537,26 +1537,6 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                          ),
-                        ),
-                      ] else if (ProfileModel.checkIsMarried(emp.maritalStatus)) ...[
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: const Color(0xFFCBD5E1)),
-                          ),
-                          child: const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.check_circle_outline, size: 14, color: Color(0xFF475569)),
-                              SizedBox(width: 5),
-                              Text(
-                                'પરિણીત સભ્ય (Married Member)',
-                                style: TextStyle(fontSize: 11.5, color: Color(0xFF475569), fontWeight: FontWeight.w600),
-                              ),
-                            ],
                           ),
                         ),
                       ],

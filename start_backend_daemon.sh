@@ -4,7 +4,9 @@
 # Keeps Node.js NestJS backend running 24/7 on Hostinger
 # ========================================================
 
-export PATH="/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH"
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
+export PATH="/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH"
 export UV_THREADPOOL_SIZE=2
 export NODE_OPTIONS="--max-old-space-size=256"
 
@@ -44,6 +46,7 @@ cleanup() {
     rm -f "$SOCKET_FILE"
     exit 0
 }
+trap '' HUP
 trap cleanup SIGTERM SIGINT
 
 while true; do

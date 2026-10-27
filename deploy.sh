@@ -453,14 +453,16 @@ rm -rf "$PREV_ADMIN_DIR" "$PREV_APP_DIR"
 # ---------------------------------------------------------
 echo "🔄 Executing atomic deployments..."
 
-# 1. NestJS (Managed via PM2 with Internal Watchdog on Unix Socket)
-echo "🔄 Managing NestJS Backend & Watchdog via PM2..."
-cd "$PROJECT_ROOT/next-nest/backend"
+# 1. NestJS (Managed via lightweight start_backend_daemon.sh on Unix Socket)
+echo "🔄 Managing NestJS Backend via start_backend_daemon.sh..."
+cd "$PROJECT_ROOT"
+pm2 kill 2>/dev/null || true
 pkill -f "start_backend_daemon.sh" 2>/dev/null || true
+pkill -f "dist/main.js" 2>/dev/null || true
 rm -f /home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock
+chmod +x "$PROJECT_ROOT/start_backend_daemon.sh"
 chmod +x "$PROJECT_ROOT/keep_backend_alive.sh"
-pm2 restart ecosystem.config.js --env production 2>/dev/null || pm2 start ecosystem.config.js --env production
-pm2 save
+nohup bash "$PROJECT_ROOT/start_backend_daemon.sh" >> "$PROJECT_ROOT/next-nest/backend/backend.log" 2>&1 &
 
 echo "Waiting for backend socket to initialize..."
 SOCKET_FILE="/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock"

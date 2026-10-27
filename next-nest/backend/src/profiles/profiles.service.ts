@@ -1508,29 +1508,28 @@ export class ProfilesService {
       }
     }
 
+    const isExplicitMarried =
+      query.maritalStatus === MaritalStatus.MARRIED ||
+      (query.maritalStatus as string) === "MARRIED";
+
     if (query.maritalStatus) {
-      if (query.maritalStatus === MaritalStatus.MARRIED || (query.maritalStatus as string) === "MARRIED") {
-        return {
-          items: [],
-          meta: {
-            page,
-            limit,
-            total: 0,
-            totalPages: 0,
-          },
+      where.maritalStatus = isExplicitMarried
+        ? MaritalStatus.MARRIED
+        : query.maritalStatus;
+    } else {
+      if ((query as any).includeAllProfiles) {
+        // Allow all marital statuses when includeAllProfiles is requested
+      } else {
+        // By default in matrimonial candidate listings, show eligible candidates
+        where.maritalStatus = {
+          in: [
+            MaritalStatus.NEVER_MARRIED,
+            MaritalStatus.DIVORCED,
+            MaritalStatus.WIDOWED,
+            MaritalStatus.SEPARATED,
+          ],
         };
       }
-      where.maritalStatus = query.maritalStatus;
-    } else {
-      // By default in matrimonial candidate listings, strictly only show eligible matrimonial candidates
-      where.maritalStatus = {
-        in: [
-          MaritalStatus.NEVER_MARRIED,
-          MaritalStatus.DIVORCED,
-          MaritalStatus.WIDOWED,
-          MaritalStatus.SEPARATED,
-        ],
-      };
     }
 
     if ((query as any).includeAllProfiles) {
@@ -1541,8 +1540,10 @@ export class ProfilesService {
           (query as any).showInMatrimony === 1 ||
           (query as any).showInMatrimony === "1";
       }
+    } else if (isExplicitMarried) {
+      // If user specifically asked for married community members, show them
     } else {
-      // Public matrimonial candidates MUST strictly have showInMatrimony = true and exclude MARRIED
+      // Public matrimonial candidates strictly exclude MARRIED
       where.showInMatrimony = true;
       where.NOT = [
         ...(((where as any).NOT as any[]) || []),
@@ -2393,7 +2394,7 @@ export class ProfilesService {
             : 25,
           candidateEducation: p.education || "",
           candidateOccupation: p.occupation || p.designation || "",
-          candidateId: (p.maritalStatus !== MaritalStatus.MARRIED && p.showInMatrimony) ? p.id : "",
+          candidateId: p.id || "",
           maritalStatus: p.maritalStatus || "MARRIED",
           photoUrl: p.photoUrl || "",
           isVerified: p.isVerified || false,
