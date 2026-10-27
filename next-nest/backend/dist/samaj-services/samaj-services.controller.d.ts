@@ -40,16 +40,16 @@ export declare class SamajServicesController {
         persons: {
             description: string | null;
             name: string;
-            id: string;
-            phone: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string | null;
             city: string | null;
             photoUrl: string | null;
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
             districtId: string | null;
             talukaId: string | null;
+            userId: string | null;
             villageId: string | null;
+            phone: string;
             isActive: boolean;
             gujaratiName: string | null;
             serviceId: string;
@@ -58,13 +58,13 @@ export declare class SamajServicesController {
         }[];
     } & {
         description: string | null;
+        title: string;
         id: string;
+        contactPhone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
-        title: string;
         sortOrder: number;
-        contactPhone: string | null;
+        isActive: boolean;
         slug: string;
         category: string;
         icon: string;
@@ -90,13 +90,13 @@ export declare class SamajServicesController {
             };
         }[];
         description: string | null;
+        title: string;
         id: string;
+        contactPhone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
-        title: string;
         sortOrder: number;
-        contactPhone: string | null;
+        isActive: boolean;
         slug: string;
         category: string;
         icon: string;
@@ -193,13 +193,13 @@ export declare class SamajServicesController {
     }[]>;
     createService(body: any): Promise<{
         description: string | null;
+        title: string;
         id: string;
+        contactPhone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
-        title: string;
         sortOrder: number;
-        contactPhone: string | null;
+        isActive: boolean;
         slug: string;
         category: string;
         icon: string;
@@ -207,13 +207,13 @@ export declare class SamajServicesController {
     }>;
     updateService(id: string, body: any): Promise<{
         description: string | null;
+        title: string;
         id: string;
+        contactPhone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
-        title: string;
         sortOrder: number;
-        contactPhone: string | null;
+        isActive: boolean;
         slug: string;
         category: string;
         icon: string;
@@ -221,13 +221,13 @@ export declare class SamajServicesController {
     }>;
     deleteService(id: string): Promise<{
         description: string | null;
+        title: string;
         id: string;
+        contactPhone: string | null;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
-        title: string;
         sortOrder: number;
-        contactPhone: string | null;
+        isActive: boolean;
         slug: string;
         category: string;
         icon: string;
@@ -254,23 +254,23 @@ export declare class SamajServicesController {
     }[]>;
     createServicePerson(dto: CreateServicePersonDto): Promise<{
         service: {
-            id: string;
             title: string;
+            id: string;
             category: string;
         };
     } & {
         description: string | null;
         name: string;
-        id: string;
-        phone: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string | null;
         city: string | null;
         photoUrl: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         districtId: string | null;
         talukaId: string | null;
+        userId: string | null;
         villageId: string | null;
+        phone: string;
         isActive: boolean;
         gujaratiName: string | null;
         serviceId: string;
@@ -279,23 +279,23 @@ export declare class SamajServicesController {
     }>;
     updateServicePerson(id: string, dto: UpdateServicePersonDto): Promise<{
         service: {
-            id: string;
             title: string;
+            id: string;
             category: string;
         };
     } & {
         description: string | null;
         name: string;
-        id: string;
-        phone: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string | null;
         city: string | null;
         photoUrl: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         districtId: string | null;
         talukaId: string | null;
+        userId: string | null;
         villageId: string | null;
+        phone: string;
         isActive: boolean;
         gujaratiName: string | null;
         serviceId: string;
@@ -305,16 +305,16 @@ export declare class SamajServicesController {
     deleteServicePerson(id: string): Promise<{
         description: string | null;
         name: string;
-        id: string;
-        phone: string;
-        createdAt: Date;
-        updatedAt: Date;
-        userId: string | null;
         city: string | null;
         photoUrl: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         districtId: string | null;
         talukaId: string | null;
+        userId: string | null;
         villageId: string | null;
+        phone: string;
         isActive: boolean;
         gujaratiName: string | null;
         serviceId: string;

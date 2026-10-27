@@ -14,15 +14,15 @@ export declare class ChatService {
                 name: string;
                 gujaratiName: string;
             };
-            id: string;
-            gender: import(".prisma/client").$Enums.Gender;
             firstName: string;
             lastName: string;
+            gender: import(".prisma/client").$Enums.Gender;
             city: string;
             occupation: string;
             designation: string;
             photoUrl: string;
             photos: string;
+            id: string;
         };
         lastMessage: string;
         lastMessageAt: Date;
@@ -37,14 +37,14 @@ export declare class ChatService {
                 name: string;
                 gujaratiName: string;
             };
-            id: string;
-            gender: import(".prisma/client").$Enums.Gender;
             firstName: string;
             lastName: string;
+            gender: import(".prisma/client").$Enums.Gender;
             city: string;
             occupation: string;
             designation: string;
             photoUrl: string;
+            id: string;
         };
         messages: {
             content: string;
@@ -64,14 +64,14 @@ export declare class ChatService {
                 name: string;
                 gujaratiName: string;
             };
-            id: string;
-            gender: import(".prisma/client").$Enums.Gender;
             firstName: string;
             lastName: string;
+            gender: import(".prisma/client").$Enums.Gender;
             city: string;
             occupation: string;
             designation: string;
             photoUrl: string;
+            id: string;
         };
         messages: {
             content: string;

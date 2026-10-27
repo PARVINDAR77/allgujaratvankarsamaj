@@ -59,8 +59,8 @@ class SamajServiceRepository {
         '/samaj-services/$serviceId/persons',
         queryParameters: params.isNotEmpty ? params : null,
         options: Options(
-          sendTimeout: const Duration(seconds: 4),
-          receiveTimeout: const Duration(seconds: 4),
+          sendTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
         ),
       );
       dynamic raw = response.data;

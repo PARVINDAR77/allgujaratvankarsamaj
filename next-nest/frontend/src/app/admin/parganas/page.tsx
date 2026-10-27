@@ -66,8 +66,8 @@ export default function AdminParganasPage() {
       try {
         await adminApi.deletePargana(id);
         loadParganas();
-      } catch (err) {
-        alert("Failed to delete Pargana");
+      } catch (err: any) {
+        alert(err?.message || "Failed to delete Pargana");
       }
     }
   };
@@ -93,8 +93,8 @@ export default function AdminParganasPage() {
       }
       setShowModal(false);
       loadParganas();
-    } catch (err) {
-      alert("Error saving Pargana division");
+    } catch (err: any) {
+      alert(err?.message || "Error saving Pargana division");
     }
   };
 

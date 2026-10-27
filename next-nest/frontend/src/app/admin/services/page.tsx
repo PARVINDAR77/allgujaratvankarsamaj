@@ -130,9 +130,9 @@ export default function AdminServicesPage() {
       }
       setShowServiceModal(false);
       loadServices();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to save service");
+      alert("Failed to save service: " + (err?.message || "Unknown error"));
     }
   };
 
@@ -143,9 +143,9 @@ export default function AdminServicesPage() {
       setServiceToDelete(null);
       loadServices();
       loadPersons();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to delete service");
+      alert("Failed to delete service: " + (err?.message || "Unknown error"));
     }
   };
 
@@ -228,9 +228,9 @@ export default function AdminServicesPage() {
       }
       setShowPersonModal(false);
       loadPersons();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to save service person");
+      alert("Failed to save service person: " + (err?.message || "Unknown error"));
     }
   };
 
@@ -240,9 +240,9 @@ export default function AdminServicesPage() {
       await adminApi.deleteSamajServicePerson(personToDelete.id);
       setPersonToDelete(null);
       loadPersons();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to delete service person");
+      alert("Failed to delete service person: " + (err?.message || "Unknown error"));
     }
   };
 

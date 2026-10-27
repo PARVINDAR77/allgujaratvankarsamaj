@@ -5,44 +5,44 @@ export declare class NotificationsService {
     private readonly logger;
     constructor(prisma: PrismaService);
     findAllPublic(): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }[]>;
     findAllAdmin(): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }[]>;
     create(dto: CreateNotificationDto): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }>;
     remove(id: string): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }>;
     getUserNotifications(userId: string): Promise<{
         type: string;
+        title: string;
         id: string;
         createdAt: Date;
         userId: string;
         message: string;
-        title: string;
         metadata: string | null;
         isRead: boolean;
     }[]>;

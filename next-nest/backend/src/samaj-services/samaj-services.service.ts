@@ -780,8 +780,6 @@ export class SamajServicesService {
 
   async getPublicServices(search?: string, category?: string) {
     try {
-      await this.syncMissingBusinessProfiles();
-
       const whereClause: any = { isActive: true };
       if (category && category.trim()) {
         whereClause.category = { contains: category.trim() };
@@ -833,8 +831,6 @@ export class SamajServicesService {
 
   async getPublicServiceById(id: string) {
     try {
-      await this.syncMissingBusinessProfiles();
-
       const service = await this.prisma.samajService.findFirst({
         where: { id, isActive: true },
         include: {
@@ -1028,8 +1024,6 @@ export class SamajServicesService {
     },
   ) {
     try {
-      await this.syncMissingBusinessProfiles();
-
       // Resolve service if ID or slug was provided
       let targetServiceId = serviceId;
       if (serviceId !== "all") {
@@ -1137,7 +1131,6 @@ export class SamajServicesService {
 
   async getAllAdminServices() {
     try {
-      await this.syncMissingBusinessProfiles();
       const res = await this.prisma.samajService.findMany({
         orderBy: { createdAt: "desc" },
         include: {
@@ -1231,7 +1224,6 @@ export class SamajServicesService {
 
   async getAllAdminServicePersons(serviceId?: string) {
     try {
-      await this.syncMissingBusinessProfiles();
       return await this.prisma.samajServicePerson.findMany({
         where: serviceId ? { serviceId } : undefined,
         include: {
@@ -1253,9 +1245,15 @@ export class SamajServicesService {
   }
 
   async createServicePerson(dto: CreateServicePersonDto) {
-    const service = await this.prisma.samajService.findUnique({
+    let service = await this.prisma.samajService.findUnique({
       where: { id: dto.serviceId },
     });
+
+    if (!service) {
+      service = await this.prisma.samajService.findFirst({
+        where: { slug: dto.serviceId },
+      });
+    }
 
     if (!service) {
       throw new NotFoundException(
@@ -1265,7 +1263,7 @@ export class SamajServicesService {
 
     return this.prisma.samajServicePerson.create({
       data: {
-        serviceId: dto.serviceId,
+        serviceId: service.id,
         name: dto.name,
         gujaratiName: dto.gujaratiName || null,
         photoUrl: dto.photoUrl || null,

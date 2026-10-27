@@ -4,20 +4,20 @@ export declare class NotificationsController {
     private readonly notificationsService;
     constructor(notificationsService: NotificationsService);
     findAllPublic(): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }[]>;
     findUserNotifications(req: any): Promise<{
         type: string;
+        title: string;
         id: string;
         createdAt: Date;
         userId: string;
         message: string;
-        title: string;
         metadata: string | null;
         isRead: boolean;
     }[]>;
@@ -31,26 +31,26 @@ export declare class NotificationsController {
         success: boolean;
     }>;
     findAllAdmin(): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }[]>;
     create(dto: CreateNotificationDto): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }>;
     remove(id: string): Promise<{
+        title: string;
         id: string;
         createdAt: Date;
         message: string;
-        title: string;
         route: string | null;
         target: string;
     }>;

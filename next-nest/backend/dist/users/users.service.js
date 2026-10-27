@@ -17,6 +17,7 @@ const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const uuid_1 = require("uuid");
 const normalize_profile_helper_1 = require("../profiles/dto/normalize-profile.helper");
+const profiles_service_1 = require("../profiles/profiles.service");
 function normalizePhoneNumber(phone) {
     if (!phone || typeof phone !== "string") {
         return { isValid: false, variants: [] };
@@ -351,7 +352,7 @@ let UsersService = UsersService_1 = class UsersService {
         }
     }
     async updateProfileStatusAdmin(profileId, adminId, status, ipAddress) {
-        return this.prisma.$transaction(async (tx) => {
+        const res = await this.prisma.$transaction(async (tx) => {
             const profile = await tx.matrimonialProfile.findUnique({
                 where: { id: profileId },
             });
@@ -419,6 +420,8 @@ let UsersService = UsersService_1 = class UsersService {
             });
             return { id: profileId, status: updatedProfile.status, isVerified: updatedProfile.isVerified };
         });
+        profiles_service_1.ProfilesService.clearMemoryProfile(profileId);
+        return res;
     }
     async toggleProfileFeaturedAdmin(profileId, adminId, isFeatured, ipAddress) {
         return this.prisma.$transaction(async (tx) => {
@@ -567,7 +570,9 @@ let UsersService = UsersService_1 = class UsersService {
         });
     }
     async deleteProfileAdmin(profileIdOrUserId, adminId, ipAddress) {
-        return this.prisma.$transaction(async (tx) => {
+        let resolvedUserId = null;
+        let resolvedProfileId = null;
+        const res = await this.prisma.$transaction(async (tx) => {
             let profile = await tx.matrimonialProfile.findUnique({
                 where: { id: profileIdOrUserId },
             });
@@ -580,6 +585,9 @@ let UsersService = UsersService_1 = class UsersService {
                 throw new common_1.NotFoundException("પ્રોફાઇલ મળી નથી (Profile not found)");
             }
             const profileId = profile.id;
+            const userId = profile.userId;
+            resolvedProfileId = profileId;
+            resolvedUserId = userId;
             await tx.verificationRequest.deleteMany({ where: { profileId } });
             const govtList = await tx.governmentEmployment.findMany({
                 where: { profileId },
@@ -605,6 +613,42 @@ let UsersService = UsersService_1 = class UsersService {
             await tx.shortlist.deleteMany({ where: { targetProfileId: profileId } });
             await tx.report.deleteMany({ where: { targetProfileId: profileId } });
             await tx.matrimonialProfile.deleteMany({ where: { id: profileId } });
+            if (userId) {
+                const userObj = await tx.user.findUnique({ where: { id: userId } });
+                if (userObj &&
+                    userObj.role !== client_1.Role.SUPER_ADMIN &&
+                    userObj.role !== client_1.Role.ADMIN &&
+                    userObj.email !== "admin@vankarsamaj.org" &&
+                    userObj.email !== "admin@vankarsamaj.com") {
+                    await tx.shortlist.deleteMany({ where: { userId } });
+                    await tx.userNotification.deleteMany({ where: { userId } });
+                    const conversations = await tx.chatConversation.findMany({
+                        where: {
+                            OR: [{ participant1Id: userId }, { participant2Id: userId }],
+                        },
+                        select: { id: true },
+                    });
+                    const convIds = conversations.map((c) => c.id);
+                    if (convIds.length > 0) {
+                        await tx.chatMessage.deleteMany({
+                            where: { conversationId: { in: convIds } },
+                        });
+                        await tx.chatConversation.deleteMany({
+                            where: { id: { in: convIds } },
+                        });
+                    }
+                    await tx.chatMessage.deleteMany({
+                        where: { OR: [{ senderId: userId }, { receiverId: userId }] },
+                    });
+                    await tx.report.deleteMany({ where: { reporterUserId: userId } });
+                    await tx.samajServicePerson.deleteMany({ where: { userId } });
+                    await tx.advertisement.updateMany({
+                        where: { createdBy: userId },
+                        data: { createdBy: null },
+                    });
+                    await tx.user.deleteMany({ where: { id: userId } });
+                }
+            }
             await tx.adminAuditLog.create({
                 data: {
                     adminId,
@@ -622,9 +666,16 @@ let UsersService = UsersService_1 = class UsersService {
             });
             return {
                 success: true,
-                message: "મેટ્રિમોનિયલ પ્રોફાઇલ સફળતાપૂર્વક કાઢી નાખવામાં આવી છે (Matrimonial profile deleted successfully)",
+                message: "મેટ્રિમોનિયલ પ્રોફાઇલ અને ઉમેદવાર એકાઉન્ટ સફળતાપૂર્વક કાઢી નાખવામાં આવ્યા છે (Matrimonial profile and candidate account deleted successfully)",
             };
         });
+        if (resolvedProfileId) {
+            profiles_service_1.ProfilesService.clearMemoryProfile(resolvedProfileId);
+        }
+        if (resolvedUserId) {
+            profiles_service_1.ProfilesService.clearMemoryProfile(resolvedUserId);
+        }
+        return res;
     }
 };
 exports.UsersService = UsersService;

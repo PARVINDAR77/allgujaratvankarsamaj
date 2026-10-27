@@ -51,15 +51,15 @@ export declare class AuthController {
         profileStatus: string;
         status: import(".prisma/client").$Enums.Status;
         name: string | null;
+        gender: import(".prisma/client").$Enums.Gender | null;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         email: string | null;
         phone: string | null;
-        gender: import(".prisma/client").$Enums.Gender | null;
         role: import(".prisma/client").$Enums.Role;
         isEmailVerified: boolean;
         isPhoneVerified: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     login(dto: LoginDto, res: Response): Promise<{
         message: string;
@@ -69,15 +69,15 @@ export declare class AuthController {
             profileStatus: import(".prisma/client").$Enums.ProfileStatus;
             status: import(".prisma/client").$Enums.Status;
             name: string | null;
+            gender: import(".prisma/client").$Enums.Gender | null;
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
-            gender: import(".prisma/client").$Enums.Gender | null;
             role: import(".prisma/client").$Enums.Role;
             isEmailVerified: boolean;
             isPhoneVerified: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         accessToken: string;
         tokenType: string;

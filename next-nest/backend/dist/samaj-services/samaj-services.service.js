@@ -814,7 +814,6 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
     }
     async getPublicServices(search, category) {
         try {
-            await this.syncMissingBusinessProfiles();
             const whereClause = { isActive: true };
             if (category && category.trim()) {
                 whereClause.category = { contains: category.trim() };
@@ -860,7 +859,6 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
     }
     async getPublicServiceById(id) {
         try {
-            await this.syncMissingBusinessProfiles();
             const service = await this.prisma.samajService.findFirst({
                 where: { id, isActive: true },
                 include: {
@@ -914,7 +912,6 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
     }
     async getPublicPersonsByServiceId(serviceId, filters) {
         try {
-            await this.syncMissingBusinessProfiles();
             let targetServiceId = serviceId;
             if (serviceId !== "all") {
                 const foundSvc = await this.prisma.samajService.findFirst({
@@ -1003,7 +1000,6 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
     }
     async getAllAdminServices() {
         try {
-            await this.syncMissingBusinessProfiles();
             const res = await this.prisma.samajService.findMany({
                 orderBy: { createdAt: "desc" },
                 include: {
@@ -1065,7 +1061,6 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
     }
     async getAllAdminServicePersons(serviceId) {
         try {
-            await this.syncMissingBusinessProfiles();
             return await this.prisma.samajServicePerson.findMany({
                 where: serviceId ? { serviceId } : undefined,
                 include: {
@@ -1087,15 +1082,20 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
         }
     }
     async createServicePerson(dto) {
-        const service = await this.prisma.samajService.findUnique({
+        let service = await this.prisma.samajService.findUnique({
             where: { id: dto.serviceId },
         });
+        if (!service) {
+            service = await this.prisma.samajService.findFirst({
+                where: { slug: dto.serviceId },
+            });
+        }
         if (!service) {
             throw new common_1.NotFoundException(`Associated Samaj Service with ID ${dto.serviceId} not found`);
         }
         return this.prisma.samajServicePerson.create({
             data: {
-                serviceId: dto.serviceId,
+                serviceId: service.id,
                 name: dto.name,
                 gujaratiName: dto.gujaratiName || null,
                 photoUrl: dto.photoUrl || null,

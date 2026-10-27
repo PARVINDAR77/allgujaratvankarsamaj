@@ -10,6 +10,7 @@ import { User, Role, Status, Gender, ProfileStatus, VerificationStatus, MaritalS
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 import { normalizeGender } from "../profiles/dto/normalize-profile.helper";
+import { ProfilesService } from "../profiles/profiles.service";
 
 export function normalizePhoneNumber(phone?: string | null): {
   isValid: boolean;
@@ -407,7 +408,7 @@ export class UsersService {
     status: string,
     ipAddress?: string,
   ) {
-    return this.prisma.$transaction(async (tx) => {
+    const res = await this.prisma.$transaction(async (tx) => {
       const profile = await tx.matrimonialProfile.findUnique({
         where: { id: profileId },
       });
@@ -484,6 +485,9 @@ export class UsersService {
 
       return { id: profileId, status: updatedProfile.status, isVerified: updatedProfile.isVerified };
     });
+
+    ProfilesService.clearMemoryProfile(profileId);
+    return res;
   }
 
   async toggleProfileFeaturedAdmin(
@@ -698,7 +702,10 @@ export class UsersService {
     adminId: string,
     ipAddress?: string,
   ): Promise<{ success: boolean; message: string }> {
-    return this.prisma.$transaction(async (tx) => {
+    let resolvedUserId: string | null = null;
+    let resolvedProfileId: string | null = null;
+
+    const res = await this.prisma.$transaction(async (tx) => {
       let profile = await tx.matrimonialProfile.findUnique({
         where: { id: profileIdOrUserId },
       });
@@ -713,6 +720,9 @@ export class UsersService {
       }
 
       const profileId = profile.id;
+      const userId = profile.userId;
+      resolvedProfileId = profileId;
+      resolvedUserId = userId;
 
       // 1. Delete verification requests
       await tx.verificationRequest.deleteMany({ where: { profileId } });
@@ -745,13 +755,66 @@ export class UsersService {
       // 4. Delete shortlists targeting this profile
       await tx.shortlist.deleteMany({ where: { targetProfileId: profileId } });
 
-      // 5. Delete reports
+      // 5. Delete reports targeting this profile
       await tx.report.deleteMany({ where: { targetProfileId: profileId } });
 
       // 6. Delete profile
       await tx.matrimonialProfile.deleteMany({ where: { id: profileId } });
 
-      // 7. Audit log
+      // 7. Clean up associated user account if non-admin member
+      if (userId) {
+        const userObj = await tx.user.findUnique({ where: { id: userId } });
+        if (
+          userObj &&
+          userObj.role !== Role.SUPER_ADMIN &&
+          userObj.role !== Role.ADMIN &&
+          userObj.email !== "admin@vankarsamaj.org" &&
+          userObj.email !== "admin@vankarsamaj.com"
+        ) {
+          // Delete user's own shortlists
+          await tx.shortlist.deleteMany({ where: { userId } });
+
+          // Delete user notifications
+          await tx.userNotification.deleteMany({ where: { userId } });
+
+          // Delete chat conversations & messages
+          const conversations = await tx.chatConversation.findMany({
+            where: {
+              OR: [{ participant1Id: userId }, { participant2Id: userId }],
+            },
+            select: { id: true },
+          });
+          const convIds = conversations.map((c) => c.id);
+          if (convIds.length > 0) {
+            await tx.chatMessage.deleteMany({
+              where: { conversationId: { in: convIds } },
+            });
+            await tx.chatConversation.deleteMany({
+              where: { id: { in: convIds } },
+            });
+          }
+          await tx.chatMessage.deleteMany({
+            where: { OR: [{ senderId: userId }, { receiverId: userId }] },
+          });
+
+          // Delete reports created by user
+          await tx.report.deleteMany({ where: { reporterUserId: userId } });
+
+          // Delete samaj service persons registered by user
+          await tx.samajServicePerson.deleteMany({ where: { userId } });
+
+          // Unlink advertisements
+          await tx.advertisement.updateMany({
+            where: { createdBy: userId },
+            data: { createdBy: null },
+          });
+
+          // Delete the user account
+          await tx.user.deleteMany({ where: { id: userId } });
+        }
+      }
+
+      // 8. Audit log
       await tx.adminAuditLog.create({
         data: {
           adminId,
@@ -771,8 +834,17 @@ export class UsersService {
       return {
         success: true,
         message:
-          "મેટ્રિમોનિયલ પ્રોફાઇલ સફળતાપૂર્વક કાઢી નાખવામાં આવી છે (Matrimonial profile deleted successfully)",
+          "મેટ્રિમોનિયલ પ્રોફાઇલ અને ઉમેદવાર એકાઉન્ટ સફળતાપૂર્વક કાઢી નાખવામાં આવ્યા છે (Matrimonial profile and candidate account deleted successfully)",
       };
     });
+
+    if (resolvedProfileId) {
+      ProfilesService.clearMemoryProfile(resolvedProfileId);
+    }
+    if (resolvedUserId) {
+      ProfilesService.clearMemoryProfile(resolvedUserId);
+    }
+
+    return res;
   }
 }

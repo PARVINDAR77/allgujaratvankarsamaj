@@ -26,8 +26,8 @@ export declare class GovernmentEmployeesService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        code: string | null;
         gujaratiName: string | null;
+        code: string | null;
     }>;
     updateDepartment(id: string, dto: Partial<CreateDepartmentDto>, adminId: string): Promise<{
         name: string;
@@ -35,8 +35,8 @@ export declare class GovernmentEmployeesService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        code: string | null;
         gujaratiName: string | null;
+        code: string | null;
     }>;
     softDeleteDepartment(id: string, adminId: string): Promise<{
         name: string;
@@ -44,38 +44,38 @@ export declare class GovernmentEmployeesService {
         createdAt: Date;
         updatedAt: Date;
         isActive: boolean;
-        code: string | null;
         gujaratiName: string | null;
+        code: string | null;
     }>;
     createDesignation(dto: CreateDesignationDto, adminId: string): Promise<{
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         departmentId: string;
-        code: string | null;
+        isActive: boolean;
         gujaratiName: string | null;
+        code: string | null;
     }>;
     updateDesignation(id: string, dto: Partial<CreateDesignationDto>, adminId: string): Promise<{
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         departmentId: string;
-        code: string | null;
+        isActive: boolean;
         gujaratiName: string | null;
+        code: string | null;
     }>;
     softDeleteDesignation(id: string, adminId: string): Promise<{
         name: string;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        isActive: boolean;
         departmentId: string;
-        code: string | null;
+        isActive: boolean;
         gujaratiName: string | null;
+        code: string | null;
     }>;
     getMyEmployment(userId: string): Promise<{
         designation: {
@@ -83,10 +83,10 @@ export declare class GovernmentEmployeesService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             departmentId: string;
-            code: string | null;
+            isActive: boolean;
             gujaratiName: string | null;
+            code: string | null;
         };
         department: {
             name: string;
@@ -94,8 +94,8 @@ export declare class GovernmentEmployeesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            code: string | null;
             gujaratiName: string | null;
+            code: string | null;
         };
         verifications: {
             status: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -117,6 +117,8 @@ export declare class GovernmentEmployeesService {
         profileId: string;
         rejectionReason: string | null;
         employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+        departmentId: string | null;
+        designationId: string | null;
         officeLocation: string | null;
         joiningYear: number | null;
         verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -124,8 +126,6 @@ export declare class GovernmentEmployeesService {
         verifiedAt: Date | null;
         verifiedBy: string | null;
         isActive: boolean;
-        departmentId: string | null;
-        designationId: string | null;
     }>;
     createMyEmployment(userId: string, dto: CreateGovtEmploymentDto): Promise<{
         designation: {
@@ -133,10 +133,10 @@ export declare class GovernmentEmployeesService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             departmentId: string;
-            code: string | null;
+            isActive: boolean;
             gujaratiName: string | null;
+            code: string | null;
         };
         department: {
             name: string;
@@ -144,8 +144,8 @@ export declare class GovernmentEmployeesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            code: string | null;
             gujaratiName: string | null;
+            code: string | null;
         };
     } & {
         id: string;
@@ -155,6 +155,8 @@ export declare class GovernmentEmployeesService {
         profileId: string;
         rejectionReason: string | null;
         employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+        departmentId: string | null;
+        designationId: string | null;
         officeLocation: string | null;
         joiningYear: number | null;
         verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -162,8 +164,6 @@ export declare class GovernmentEmployeesService {
         verifiedAt: Date | null;
         verifiedBy: string | null;
         isActive: boolean;
-        departmentId: string | null;
-        designationId: string | null;
     }>;
     updateMyEmployment(userId: string, dto: UpdateGovtEmploymentDto): Promise<{
         designation: {
@@ -171,10 +171,10 @@ export declare class GovernmentEmployeesService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             departmentId: string;
-            code: string | null;
+            isActive: boolean;
             gujaratiName: string | null;
+            code: string | null;
         };
         department: {
             name: string;
@@ -182,8 +182,8 @@ export declare class GovernmentEmployeesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            code: string | null;
             gujaratiName: string | null;
+            code: string | null;
         };
     } & {
         id: string;
@@ -193,6 +193,8 @@ export declare class GovernmentEmployeesService {
         profileId: string;
         rejectionReason: string | null;
         employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+        departmentId: string | null;
+        designationId: string | null;
         officeLocation: string | null;
         joiningYear: number | null;
         verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -200,8 +202,6 @@ export declare class GovernmentEmployeesService {
         verifiedAt: Date | null;
         verifiedBy: string | null;
         isActive: boolean;
-        departmentId: string | null;
-        designationId: string | null;
     }>;
     submitMyVerification(userId: string, dto: SubmitVerificationDto): Promise<{
         designation: {
@@ -209,10 +209,10 @@ export declare class GovernmentEmployeesService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             departmentId: string;
-            code: string | null;
+            isActive: boolean;
             gujaratiName: string | null;
+            code: string | null;
         };
         department: {
             name: string;
@@ -220,8 +220,8 @@ export declare class GovernmentEmployeesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            code: string | null;
             gujaratiName: string | null;
+            code: string | null;
         };
         verifications: {
             status: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -243,6 +243,8 @@ export declare class GovernmentEmployeesService {
         profileId: string;
         rejectionReason: string | null;
         employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+        departmentId: string | null;
+        designationId: string | null;
         officeLocation: string | null;
         joiningYear: number | null;
         verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -250,8 +252,6 @@ export declare class GovernmentEmployeesService {
         verifiedAt: Date | null;
         verifiedBy: string | null;
         isActive: boolean;
-        departmentId: string | null;
-        designationId: string | null;
     }>;
     syncMissingGovtEmployees(): Promise<void>;
     searchPublicGovtEmployees(query: GovtEmployeeSearchQueryDto): Promise<{
@@ -329,20 +329,30 @@ export declare class GovernmentEmployeesService {
     }>;
     getAdminGovtEmployees(page?: number, limit?: number, status?: string): Promise<{
         data: ({
+            designation: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                departmentId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
             profile: {
                 user: {
                     status: import(".prisma/client").$Enums.Status;
                     name: string | null;
+                    gender: import(".prisma/client").$Enums.Gender | null;
                     id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
                     email: string | null;
                     phone: string | null;
-                    gender: import(".prisma/client").$Enums.Gender | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
                     isEmailVerified: boolean;
                     isPhoneVerified: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
                 district: {
                     name: string;
@@ -351,8 +361,8 @@ export declare class GovernmentEmployeesService {
                     updatedAt: Date;
                     stateId: string;
                     isActive: boolean;
-                    code: string | null;
                     gujaratiName: string | null;
+                    code: string | null;
                 };
                 taluka: {
                     name: string;
@@ -361,32 +371,28 @@ export declare class GovernmentEmployeesService {
                     updatedAt: Date;
                     districtId: string;
                     isActive: boolean;
-                    code: string | null;
                     gujaratiName: string | null;
+                    code: string | null;
                 };
             } & {
                 state: string | null;
                 status: import(".prisma/client").$Enums.ProfileStatus;
-                id: string;
-                gender: import(".prisma/client").$Enums.Gender;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
                 firstName: string;
                 lastName: string;
                 dateOfBirth: Date;
+                gender: import(".prisma/client").$Enums.Gender;
                 maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
                 religion: string | null;
                 caste: string | null;
                 subcaste: string | null;
-                nativePlace: string | null;
                 city: string | null;
                 country: string | null;
                 education: string | null;
                 occupation: string | null;
+                about: string | null;
+                nativePlace: string | null;
                 organizationName: string | null;
                 designation: string | null;
-                about: string | null;
                 photoUrl: string | null;
                 photos: string | null;
                 isPhysicallyDisabled: boolean;
@@ -395,6 +401,7 @@ export declare class GovernmentEmployeesService {
                 abroadCountry: string | null;
                 businessIndustry: string | null;
                 businessService: string | null;
+                id: string;
                 bloodGroup: string | null;
                 isVankar: boolean;
                 annualIncome: string | null;
@@ -412,24 +419,17 @@ export declare class GovernmentEmployeesService {
                 contactEmail: string | null;
                 motherTongue: string | null;
                 privacySettings: string | null;
-                stateId: string | null;
+                showInMatrimony: boolean;
+                createdAt: Date;
+                updatedAt: Date;
                 districtId: string | null;
                 talukaId: string | null;
                 parganaId: string | null;
+                userId: string;
+                stateId: string | null;
                 villageId: string | null;
                 isVerified: boolean;
                 isFeatured: boolean;
-                showInMatrimony: boolean;
-            };
-            designation: {
-                name: string;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isActive: boolean;
-                departmentId: string;
-                code: string | null;
-                gujaratiName: string | null;
             };
             department: {
                 name: string;
@@ -437,8 +437,8 @@ export declare class GovernmentEmployeesService {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                code: string | null;
                 gujaratiName: string | null;
+                code: string | null;
             };
             verifications: {
                 status: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -460,6 +460,8 @@ export declare class GovernmentEmployeesService {
             profileId: string;
             rejectionReason: string | null;
             employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+            departmentId: string | null;
+            designationId: string | null;
             officeLocation: string | null;
             joiningYear: number | null;
             verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -467,24 +469,32 @@ export declare class GovernmentEmployeesService {
             verifiedAt: Date | null;
             verifiedBy: string | null;
             isActive: boolean;
-            departmentId: string | null;
-            designationId: string | null;
         })[];
         items: ({
+            designation: {
+                name: string;
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                departmentId: string;
+                isActive: boolean;
+                gujaratiName: string | null;
+                code: string | null;
+            };
             profile: {
                 user: {
                     status: import(".prisma/client").$Enums.Status;
                     name: string | null;
+                    gender: import(".prisma/client").$Enums.Gender | null;
                     id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
                     email: string | null;
                     phone: string | null;
-                    gender: import(".prisma/client").$Enums.Gender | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
                     isEmailVerified: boolean;
                     isPhoneVerified: boolean;
-                    createdAt: Date;
-                    updatedAt: Date;
                 };
                 district: {
                     name: string;
@@ -493,8 +503,8 @@ export declare class GovernmentEmployeesService {
                     updatedAt: Date;
                     stateId: string;
                     isActive: boolean;
-                    code: string | null;
                     gujaratiName: string | null;
+                    code: string | null;
                 };
                 taluka: {
                     name: string;
@@ -503,32 +513,28 @@ export declare class GovernmentEmployeesService {
                     updatedAt: Date;
                     districtId: string;
                     isActive: boolean;
-                    code: string | null;
                     gujaratiName: string | null;
+                    code: string | null;
                 };
             } & {
                 state: string | null;
                 status: import(".prisma/client").$Enums.ProfileStatus;
-                id: string;
-                gender: import(".prisma/client").$Enums.Gender;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
                 firstName: string;
                 lastName: string;
                 dateOfBirth: Date;
+                gender: import(".prisma/client").$Enums.Gender;
                 maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
                 religion: string | null;
                 caste: string | null;
                 subcaste: string | null;
-                nativePlace: string | null;
                 city: string | null;
                 country: string | null;
                 education: string | null;
                 occupation: string | null;
+                about: string | null;
+                nativePlace: string | null;
                 organizationName: string | null;
                 designation: string | null;
-                about: string | null;
                 photoUrl: string | null;
                 photos: string | null;
                 isPhysicallyDisabled: boolean;
@@ -537,6 +543,7 @@ export declare class GovernmentEmployeesService {
                 abroadCountry: string | null;
                 businessIndustry: string | null;
                 businessService: string | null;
+                id: string;
                 bloodGroup: string | null;
                 isVankar: boolean;
                 annualIncome: string | null;
@@ -554,24 +561,17 @@ export declare class GovernmentEmployeesService {
                 contactEmail: string | null;
                 motherTongue: string | null;
                 privacySettings: string | null;
-                stateId: string | null;
+                showInMatrimony: boolean;
+                createdAt: Date;
+                updatedAt: Date;
                 districtId: string | null;
                 talukaId: string | null;
                 parganaId: string | null;
+                userId: string;
+                stateId: string | null;
                 villageId: string | null;
                 isVerified: boolean;
                 isFeatured: boolean;
-                showInMatrimony: boolean;
-            };
-            designation: {
-                name: string;
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                isActive: boolean;
-                departmentId: string;
-                code: string | null;
-                gujaratiName: string | null;
             };
             department: {
                 name: string;
@@ -579,8 +579,8 @@ export declare class GovernmentEmployeesService {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                code: string | null;
                 gujaratiName: string | null;
+                code: string | null;
             };
             verifications: {
                 status: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -602,6 +602,8 @@ export declare class GovernmentEmployeesService {
             profileId: string;
             rejectionReason: string | null;
             employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+            departmentId: string | null;
+            designationId: string | null;
             officeLocation: string | null;
             joiningYear: number | null;
             verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -609,8 +611,6 @@ export declare class GovernmentEmployeesService {
             verifiedAt: Date | null;
             verifiedBy: string | null;
             isActive: boolean;
-            departmentId: string | null;
-            designationId: string | null;
         })[];
         meta: {
             page: number;
@@ -635,10 +635,10 @@ export declare class GovernmentEmployeesService {
             id: string;
             createdAt: Date;
             updatedAt: Date;
-            isActive: boolean;
             departmentId: string;
-            code: string | null;
+            isActive: boolean;
             gujaratiName: string | null;
+            code: string | null;
         };
         department: {
             name: string;
@@ -646,8 +646,8 @@ export declare class GovernmentEmployeesService {
             createdAt: Date;
             updatedAt: Date;
             isActive: boolean;
-            code: string | null;
             gujaratiName: string | null;
+            code: string | null;
         };
     } & {
         id: string;
@@ -657,6 +657,8 @@ export declare class GovernmentEmployeesService {
         profileId: string;
         rejectionReason: string | null;
         employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+        departmentId: string | null;
+        designationId: string | null;
         officeLocation: string | null;
         joiningYear: number | null;
         verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -664,8 +666,6 @@ export declare class GovernmentEmployeesService {
         verifiedAt: Date | null;
         verifiedBy: string | null;
         isActive: boolean;
-        departmentId: string | null;
-        designationId: string | null;
     }>;
     setGovtEmployeeFeatured(id: string, dto: AdminFeatureGovtEmpDto, adminId: string): Promise<{
         id: string;
@@ -675,6 +675,8 @@ export declare class GovernmentEmployeesService {
         profileId: string;
         rejectionReason: string | null;
         employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+        departmentId: string | null;
+        designationId: string | null;
         officeLocation: string | null;
         joiningYear: number | null;
         verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -682,8 +684,6 @@ export declare class GovernmentEmployeesService {
         verifiedAt: Date | null;
         verifiedBy: string | null;
         isActive: boolean;
-        departmentId: string | null;
-        designationId: string | null;
     }>;
     setGovtEmployeeStatus(id: string, dto: AdminStatusGovtEmpDto, adminId: string): Promise<{
         id: string;
@@ -693,6 +693,8 @@ export declare class GovernmentEmployeesService {
         profileId: string;
         rejectionReason: string | null;
         employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+        departmentId: string | null;
+        designationId: string | null;
         officeLocation: string | null;
         joiningYear: number | null;
         verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -700,8 +702,6 @@ export declare class GovernmentEmployeesService {
         verifiedAt: Date | null;
         verifiedBy: string | null;
         isActive: boolean;
-        departmentId: string | null;
-        designationId: string | null;
     }>;
     private logAdminAudit;
     isNonGovtProfile(item: any): boolean;

@@ -150,26 +150,22 @@ export declare class AdminService {
                 } & {
                     state: string | null;
                     status: import(".prisma/client").$Enums.ProfileStatus;
-                    id: string;
-                    gender: import(".prisma/client").$Enums.Gender;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    userId: string;
                     firstName: string;
                     lastName: string;
                     dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
                     maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
                     religion: string | null;
                     caste: string | null;
                     subcaste: string | null;
-                    nativePlace: string | null;
                     city: string | null;
                     country: string | null;
                     education: string | null;
                     occupation: string | null;
+                    about: string | null;
+                    nativePlace: string | null;
                     organizationName: string | null;
                     designation: string | null;
-                    about: string | null;
                     photoUrl: string | null;
                     photos: string | null;
                     isPhysicallyDisabled: boolean;
@@ -178,6 +174,7 @@ export declare class AdminService {
                     abroadCountry: string | null;
                     businessIndustry: string | null;
                     businessService: string | null;
+                    id: string;
                     bloodGroup: string | null;
                     isVankar: boolean;
                     annualIncome: string | null;
@@ -195,14 +192,17 @@ export declare class AdminService {
                     contactEmail: string | null;
                     motherTongue: string | null;
                     privacySettings: string | null;
-                    stateId: string | null;
+                    showInMatrimony: boolean;
+                    createdAt: Date;
+                    updatedAt: Date;
                     districtId: string | null;
                     talukaId: string | null;
                     parganaId: string | null;
+                    userId: string;
+                    stateId: string | null;
                     villageId: string | null;
                     isVerified: boolean;
                     isFeatured: boolean;
-                    showInMatrimony: boolean;
                 };
             };
             userB: {
@@ -224,26 +224,22 @@ export declare class AdminService {
                 } & {
                     state: string | null;
                     status: import(".prisma/client").$Enums.ProfileStatus;
-                    id: string;
-                    gender: import(".prisma/client").$Enums.Gender;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    userId: string;
                     firstName: string;
                     lastName: string;
                     dateOfBirth: Date;
+                    gender: import(".prisma/client").$Enums.Gender;
                     maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
                     religion: string | null;
                     caste: string | null;
                     subcaste: string | null;
-                    nativePlace: string | null;
                     city: string | null;
                     country: string | null;
                     education: string | null;
                     occupation: string | null;
+                    about: string | null;
+                    nativePlace: string | null;
                     organizationName: string | null;
                     designation: string | null;
-                    about: string | null;
                     photoUrl: string | null;
                     photos: string | null;
                     isPhysicallyDisabled: boolean;
@@ -252,6 +248,7 @@ export declare class AdminService {
                     abroadCountry: string | null;
                     businessIndustry: string | null;
                     businessService: string | null;
+                    id: string;
                     bloodGroup: string | null;
                     isVankar: boolean;
                     annualIncome: string | null;
@@ -269,14 +266,17 @@ export declare class AdminService {
                     contactEmail: string | null;
                     motherTongue: string | null;
                     privacySettings: string | null;
-                    stateId: string | null;
+                    showInMatrimony: boolean;
+                    createdAt: Date;
+                    updatedAt: Date;
                     districtId: string | null;
                     talukaId: string | null;
                     parganaId: string | null;
+                    userId: string;
+                    stateId: string | null;
                     villageId: string | null;
                     isVerified: boolean;
                     isFeatured: boolean;
-                    showInMatrimony: boolean;
                 };
             };
             compatibility: string;
@@ -291,8 +291,8 @@ export declare class AdminService {
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        receiverProfileId: string;
         senderProfileId: string;
+        receiverProfileId: string;
     } | {
         success: boolean;
         message: string;
@@ -308,12 +308,12 @@ export declare class AdminService {
         };
     }>;
     getPendingPhotos(): Promise<{
-        id: string;
-        createdAt: Date;
-        userId: string;
         firstName: string;
         lastName: string;
         photoUrl: string;
+        id: string;
+        createdAt: Date;
+        userId: string;
     }[]>;
     getShortlists(): Promise<{
         id: string;

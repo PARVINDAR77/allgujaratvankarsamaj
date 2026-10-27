@@ -18,10 +18,20 @@ const profile_query_dto_1 = require("./dto/profile-query.dto");
 const normalize_profile_helper_1 = require("./dto/normalize-profile.helper");
 const uuid_1 = require("uuid");
 let ProfilesService = ProfilesService_1 = class ProfilesService {
+    static clearMemoryProfile(idOrUserId) {
+        ProfilesService_1.memoryProfiles.delete(idOrUserId);
+        for (const [key, val] of ProfilesService_1.memoryProfiles.entries()) {
+            if (val.id === idOrUserId || val.userId === idOrUserId) {
+                ProfilesService_1.memoryProfiles.delete(key);
+            }
+        }
+    }
+    get memoryProfiles() {
+        return ProfilesService_1.memoryProfiles;
+    }
     constructor(prisma) {
         this.prisma = prisma;
         this.logger = new common_1.Logger(ProfilesService_1.name);
-        this.memoryProfiles = new Map();
     }
     getReferenceData() {
         return {
@@ -527,26 +537,6 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 },
             });
             if (!profile) {
-                const user = await this.prisma.user.findUnique({
-                    where: { id: userId },
-                });
-                if (user) {
-                    const nameParts = (user.name || "User").trim().split(" ");
-                    profile = await this.prisma.matrimonialProfile.create({
-                        data: {
-                            userId,
-                            firstName: nameParts[0] || "User",
-                            lastName: nameParts.slice(1).join(" ") || "Member",
-                            gender: user.gender || client_1.Gender.MALE,
-                            dateOfBirth: new Date(2000, 0, 1),
-                            maritalStatus: client_1.MaritalStatus.NEVER_MARRIED,
-                            status: client_1.ProfileStatus.PENDING,
-                            isVerified: false,
-                        },
-                    });
-                }
-            }
-            if (!profile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
             let idNumber = null;
@@ -694,6 +684,19 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             }
             if (!profile) {
                 throw new common_1.NotFoundException("Profile not found");
+            }
+            const isViewerAdmin = viewerUser &&
+                (viewerUser.role === "ADMIN" || viewerUser.role === "SUPER_ADMIN");
+            const isOwner = viewerUser && viewerUser.id === profile.userId;
+            if (!isViewerAdmin && !isOwner) {
+                if (profile.status === client_1.ProfileStatus.SUSPENDED ||
+                    profile.status === client_1.ProfileStatus.REJECTED ||
+                    profile.showInMatrimony === false) {
+                    throw new common_1.NotFoundException("This candidate profile is suspended or unavailable");
+                }
+                if (profile.user && profile.user.status === "INACTIVE") {
+                    throw new common_1.NotFoundException("This candidate account is currently deactivated");
+                }
             }
             let isMutualAccepted = false;
             if (viewerUser?.id && viewerUser.id !== profile.userId) {
@@ -1248,12 +1251,19 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
         const limit = Number(query.limit) || 10;
         const skip = (page - 1) * limit;
         const where = {};
-        if (query.status) {
+        const isViewerAdmin = viewerUser &&
+            (viewerUser.role === "ADMIN" || viewerUser.role === "SUPER_ADMIN");
+        if (query.status && isViewerAdmin) {
             where.status = query.status;
         }
         else {
             where.status = {
                 in: [client_1.ProfileStatus.APPROVED, client_1.ProfileStatus.PENDING],
+            };
+        }
+        if (!isViewerAdmin) {
+            where.user = {
+                status: client_1.Status.ACTIVE,
             };
         }
         const resolvedGender = query.gender || (query.lookingFor ? (0, normalize_profile_helper_1.normalizeGender)(query.lookingFor) : undefined);
@@ -1318,6 +1328,8 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             where.showInMatrimony = true;
             where.NOT = [
                 ...(where.NOT || []),
+                { status: client_1.ProfileStatus.SUSPENDED },
+                { status: client_1.ProfileStatus.REJECTED },
                 { showInMatrimony: false },
                 { maritalStatus: client_1.MaritalStatus.MARRIED },
             ];
@@ -2235,6 +2247,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
     }
 };
 exports.ProfilesService = ProfilesService;
+ProfilesService.memoryProfiles = new Map();
 exports.ProfilesService = ProfilesService = ProfilesService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])

@@ -6,11 +6,11 @@ export declare class PavanPrernadataService {
     findAllAdmin(): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -19,11 +19,11 @@ export declare class PavanPrernadataService {
     findAllPublic(): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -32,11 +32,11 @@ export declare class PavanPrernadataService {
     create(data: any): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -45,11 +45,11 @@ export declare class PavanPrernadataService {
     update(id: string, data: any): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -58,11 +58,11 @@ export declare class PavanPrernadataService {
     remove(id: string): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;

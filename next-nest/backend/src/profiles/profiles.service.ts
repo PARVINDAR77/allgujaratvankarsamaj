@@ -11,6 +11,7 @@ import {
   MaritalStatus,
   MatrimonialProfile,
   ProfileStatus,
+  Status,
   VerificationStatus,
   GovtEmploymentType,
   GovtVerificationStatus,
@@ -37,7 +38,20 @@ export interface CompletenessResult {
 @Injectable()
 export class ProfilesService {
   private readonly logger = new Logger(ProfilesService.name);
-  private readonly memoryProfiles: Map<string, MatrimonialProfile> = new Map();
+  private static readonly memoryProfiles: Map<string, MatrimonialProfile> = new Map();
+
+  public static clearMemoryProfile(idOrUserId: string) {
+    ProfilesService.memoryProfiles.delete(idOrUserId);
+    for (const [key, val] of ProfilesService.memoryProfiles.entries()) {
+      if (val.id === idOrUserId || val.userId === idOrUserId) {
+        ProfilesService.memoryProfiles.delete(key);
+      }
+    }
+  }
+
+  private get memoryProfiles() {
+    return ProfilesService.memoryProfiles;
+  }
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -645,27 +659,6 @@ export class ProfilesService {
       });
 
       if (!profile) {
-        const user = await this.prisma.user.findUnique({
-          where: { id: userId },
-        });
-        if (user) {
-          const nameParts = (user.name || "User").trim().split(" ");
-          profile = await this.prisma.matrimonialProfile.create({
-            data: {
-              userId,
-              firstName: nameParts[0] || "User",
-              lastName: nameParts.slice(1).join(" ") || "Member",
-              gender: user.gender || Gender.MALE,
-              dateOfBirth: new Date(2000, 0, 1),
-              maritalStatus: MaritalStatus.NEVER_MARRIED,
-              status: ProfileStatus.PENDING,
-              isVerified: false,
-            },
-          });
-        }
-      }
-
-      if (!profile) {
         throw new NotFoundException("Profile not found");
       }
 
@@ -838,6 +831,25 @@ export class ProfilesService {
 
       if (!profile) {
         throw new NotFoundException("Profile not found");
+      }
+
+      // Check if profile is suspended or user is deactivated
+      const isViewerAdmin =
+        viewerUser &&
+        (viewerUser.role === "ADMIN" || viewerUser.role === "SUPER_ADMIN");
+      const isOwner = viewerUser && viewerUser.id === profile.userId;
+
+      if (!isViewerAdmin && !isOwner) {
+        if (
+          profile.status === ProfileStatus.SUSPENDED ||
+          profile.status === ProfileStatus.REJECTED ||
+          profile.showInMatrimony === false
+        ) {
+          throw new NotFoundException("This candidate profile is suspended or unavailable");
+        }
+        if (profile.user && (profile.user as any).status === "INACTIVE") {
+          throw new NotFoundException("This candidate account is currently deactivated");
+        }
       }
 
       let isMutualAccepted = false;
@@ -1475,12 +1487,22 @@ export class ProfilesService {
 
     const where: Prisma.MatrimonialProfileWhereInput = {};
 
+    const isViewerAdmin =
+      viewerUser &&
+      (viewerUser.role === "ADMIN" || viewerUser.role === "SUPER_ADMIN");
+
     // By default, show active approved and pending profiles so new candidate profiles appear immediately
-    if (query.status) {
+    if (query.status && isViewerAdmin) {
       where.status = query.status;
     } else {
       where.status = {
         in: [ProfileStatus.APPROVED, ProfileStatus.PENDING],
+      };
+    }
+
+    if (!isViewerAdmin) {
+      where.user = {
+        status: Status.ACTIVE,
       };
     }
 
@@ -1546,10 +1568,12 @@ export class ProfilesService {
     } else if (isExplicitMarried) {
       // If user specifically asked for married community members, show them
     } else {
-      // Public matrimonial candidates strictly exclude MARRIED
+      // Public matrimonial candidates strictly exclude MARRIED, SUSPENDED, and REJECTED
       where.showInMatrimony = true;
       where.NOT = [
         ...(((where as any).NOT as any[]) || []),
+        { status: ProfileStatus.SUSPENDED },
+        { status: ProfileStatus.REJECTED },
         { showInMatrimony: false },
         { maritalStatus: MaritalStatus.MARRIED },
       ];

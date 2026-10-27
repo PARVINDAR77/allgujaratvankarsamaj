@@ -20,15 +20,15 @@ export declare class AuthService {
         profileStatus: string;
         status: import(".prisma/client").$Enums.Status;
         name: string | null;
+        gender: import(".prisma/client").$Enums.Gender | null;
         id: string;
+        createdAt: Date;
+        updatedAt: Date;
         email: string | null;
         phone: string | null;
-        gender: import(".prisma/client").$Enums.Gender | null;
         role: import(".prisma/client").$Enums.Role;
         isEmailVerified: boolean;
         isPhoneVerified: boolean;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
@@ -38,15 +38,15 @@ export declare class AuthService {
             profileStatus: import(".prisma/client").$Enums.ProfileStatus;
             status: import(".prisma/client").$Enums.Status;
             name: string | null;
+            gender: import(".prisma/client").$Enums.Gender | null;
             id: string;
+            createdAt: Date;
+            updatedAt: Date;
             email: string | null;
             phone: string | null;
-            gender: import(".prisma/client").$Enums.Gender | null;
             role: import(".prisma/client").$Enums.Role;
             isEmailVerified: boolean;
             isPhoneVerified: boolean;
-            createdAt: Date;
-            updatedAt: Date;
         };
         tokenType: string;
         expiresIn: string;

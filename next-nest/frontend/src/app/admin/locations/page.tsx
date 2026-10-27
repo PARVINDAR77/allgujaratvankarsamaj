@@ -133,8 +133,8 @@ export default function AdminLocationsPage() {
         if (activeTab === "talukas") await adminApi.deleteTaluka(id);
         if (activeTab === "villages") await adminApi.deleteVillage(id);
         loadData();
-      } catch {
-        alert("Failed to deactivate location");
+      } catch (err: any) {
+        alert(err?.message || "Failed to deactivate location");
       }
     }
   };
@@ -161,8 +161,8 @@ export default function AdminLocationsPage() {
       }
       setShowModal(false);
       loadData();
-    } catch {
-      alert("Error saving location entity");
+    } catch (err: any) {
+      alert(err?.message || "Error saving location entity");
     }
   };
 

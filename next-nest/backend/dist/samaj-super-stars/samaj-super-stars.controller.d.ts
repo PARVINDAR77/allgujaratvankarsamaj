@@ -5,11 +5,11 @@ export declare class SamajSuperStarsController {
     findAllPublic(): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -18,11 +18,11 @@ export declare class SamajSuperStarsController {
     findAllAdmin(): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -31,11 +31,11 @@ export declare class SamajSuperStarsController {
     create(createDto: any): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -44,11 +44,11 @@ export declare class SamajSuperStarsController {
     update(id: string, updateDto: any): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;
@@ -57,11 +57,11 @@ export declare class SamajSuperStarsController {
     remove(id: string): Promise<{
         description: string | null;
         name: string;
+        designation: string | null;
+        photoUrl: string | null;
         id: string;
         createdAt: Date;
         updatedAt: Date;
-        designation: string | null;
-        photoUrl: string | null;
         isActive: boolean;
         gujaratiName: string | null;
         year: string | null;

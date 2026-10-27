@@ -25,8 +25,8 @@ export declare class InterestsService {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            receiverProfileId: string;
             senderProfileId: string;
+            receiverProfileId: string;
         };
         conversationId: string;
     } | {
@@ -36,8 +36,8 @@ export declare class InterestsService {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            receiverProfileId: string;
             senderProfileId: string;
+            receiverProfileId: string;
         };
     }>;
     acceptInterest(userId: string, interestId: string): Promise<{
@@ -47,8 +47,8 @@ export declare class InterestsService {
             status: import(".prisma/client").$Enums.InterestStatus;
             id: string;
             createdAt: Date;
-            receiverProfileId: string;
             senderProfileId: string;
+            receiverProfileId: string;
         };
         conversationId: string;
     }>;
@@ -56,24 +56,24 @@ export declare class InterestsService {
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        receiverProfileId: string;
         senderProfileId: string;
+        receiverProfileId: string;
     }>;
     getSentInterests(userId: string): Promise<{
         receiverProfile: any;
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        receiverProfileId: string;
         senderProfileId: string;
+        receiverProfileId: string;
     }[]>;
     getReceivedInterests(userId: string): Promise<{
         senderProfile: any;
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        receiverProfileId: string;
         senderProfileId: string;
+        receiverProfileId: string;
     }[]>;
     getMutualInterests(userId: string): Promise<{
         otherProfile: {
@@ -88,8 +88,8 @@ export declare class InterestsService {
                 updatedAt: Date;
                 stateId: string;
                 isActive: boolean;
-                code: string | null;
                 gujaratiName: string | null;
+                code: string | null;
             };
             taluka: {
                 name: string;
@@ -98,19 +98,19 @@ export declare class InterestsService {
                 updatedAt: Date;
                 districtId: string;
                 isActive: boolean;
-                code: string | null;
                 gujaratiName: string | null;
+                code: string | null;
             };
             pargana: {
                 description: string | null;
                 name: string;
                 id: string;
+                contactPhone: string | null;
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                code: string | null;
-                contactPhone: string | null;
                 gujaratiName: string | null;
+                code: string | null;
                 villageCount: string | null;
                 districtRegion: string | null;
                 leaderName: string | null;
@@ -120,14 +120,14 @@ export declare class InterestsService {
             village: {
                 name: string;
                 id: string;
+                pincode: string | null;
                 createdAt: Date;
                 updatedAt: Date;
-                pincode: string | null;
                 talukaId: string | null;
                 parganaId: string | null;
                 isActive: boolean;
-                code: string | null;
                 gujaratiName: string | null;
+                code: string | null;
             };
             governmentEmployment: {
                 designation: {
@@ -135,10 +135,10 @@ export declare class InterestsService {
                     id: string;
                     createdAt: Date;
                     updatedAt: Date;
-                    isActive: boolean;
                     departmentId: string;
-                    code: string | null;
+                    isActive: boolean;
                     gujaratiName: string | null;
+                    code: string | null;
                 };
                 department: {
                     name: string;
@@ -146,8 +146,8 @@ export declare class InterestsService {
                     createdAt: Date;
                     updatedAt: Date;
                     isActive: boolean;
-                    code: string | null;
                     gujaratiName: string | null;
+                    code: string | null;
                 };
             } & {
                 id: string;
@@ -157,6 +157,8 @@ export declare class InterestsService {
                 profileId: string;
                 rejectionReason: string | null;
                 employmentType: import(".prisma/client").$Enums.GovtEmploymentType;
+                departmentId: string | null;
+                designationId: string | null;
                 officeLocation: string | null;
                 joiningYear: number | null;
                 verificationStatus: import(".prisma/client").$Enums.GovtVerificationStatus;
@@ -164,8 +166,6 @@ export declare class InterestsService {
                 verifiedAt: Date | null;
                 verifiedBy: string | null;
                 isActive: boolean;
-                departmentId: string | null;
-                designationId: string | null;
             };
             stateRef: {
                 name: string;
@@ -173,32 +173,28 @@ export declare class InterestsService {
                 createdAt: Date;
                 updatedAt: Date;
                 isActive: boolean;
-                code: string;
                 gujaratiName: string | null;
+                code: string;
             };
         } & {
             state: string | null;
             status: import(".prisma/client").$Enums.ProfileStatus;
-            id: string;
-            gender: import(".prisma/client").$Enums.Gender;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
             firstName: string;
             lastName: string;
             dateOfBirth: Date;
+            gender: import(".prisma/client").$Enums.Gender;
             maritalStatus: import(".prisma/client").$Enums.MaritalStatus;
             religion: string | null;
             caste: string | null;
             subcaste: string | null;
-            nativePlace: string | null;
             city: string | null;
             country: string | null;
             education: string | null;
             occupation: string | null;
+            about: string | null;
+            nativePlace: string | null;
             organizationName: string | null;
             designation: string | null;
-            about: string | null;
             photoUrl: string | null;
             photos: string | null;
             isPhysicallyDisabled: boolean;
@@ -207,6 +203,7 @@ export declare class InterestsService {
             abroadCountry: string | null;
             businessIndustry: string | null;
             businessService: string | null;
+            id: string;
             bloodGroup: string | null;
             isVankar: boolean;
             annualIncome: string | null;
@@ -224,20 +221,23 @@ export declare class InterestsService {
             contactEmail: string | null;
             motherTongue: string | null;
             privacySettings: string | null;
-            stateId: string | null;
+            showInMatrimony: boolean;
+            createdAt: Date;
+            updatedAt: Date;
             districtId: string | null;
             talukaId: string | null;
             parganaId: string | null;
+            userId: string;
+            stateId: string | null;
             villageId: string | null;
             isVerified: boolean;
             isFeatured: boolean;
-            showInMatrimony: boolean;
         };
         conversationId: string;
         status: import(".prisma/client").$Enums.InterestStatus;
         id: string;
         createdAt: Date;
-        receiverProfileId: string;
         senderProfileId: string;
+        receiverProfileId: string;
     }[]>;
 }

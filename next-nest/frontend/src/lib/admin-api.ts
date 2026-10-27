@@ -30,6 +30,17 @@ async function adminFetch(url: string, options: RequestInit = {}): Promise<Respo
   return res;
 }
 
+async function checkResponse(res: Response, defaultMessage: string) {
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const msg = Array.isArray(errorData.errors) && errorData.errors.length
+      ? errorData.errors.join(", ")
+      : errorData.message || `${defaultMessage} (Status: ${res.status})`;
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
 export interface DashboardStats {
   totalUsers: number;
   activeProfiles: number;
@@ -398,7 +409,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to create Pargana");
   },
 
   async updatePargana(id: string, data: Partial<ParganaItem>) {
@@ -407,7 +418,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update Pargana");
   },
 
   async deletePargana(id: string) {
@@ -415,7 +426,7 @@ export const adminApi = {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
-    return res.json();
+    return checkResponse(res, "Failed to delete Pargana");
   },
 
   // ==================== SAMAJ SERVICES API ====================
@@ -433,7 +444,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to create Samaj Service");
   },
 
   async updateSamajService(id: string, data: Partial<SamajServiceItem>) {
@@ -442,7 +453,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update Samaj Service");
   },
 
   async deleteSamajService(id: string) {
@@ -450,7 +461,7 @@ export const adminApi = {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
-    return res.json();
+    return checkResponse(res, "Failed to delete Samaj Service");
   },
 
   // ==================== SAMAJ SERVICE PERSONS API ====================
@@ -471,7 +482,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to create Samaj Service Person");
   },
 
   async updateSamajServicePerson(id: string, data: Partial<SamajServicePersonItem>) {
@@ -480,7 +491,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update Samaj Service Person");
   },
 
   async deleteSamajServicePerson(id: string) {
@@ -488,7 +499,7 @@ export const adminApi = {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
-    return res.json();
+    return checkResponse(res, "Failed to delete Samaj Service Person");
   },
 
   async getSettings(): Promise<SiteSettings> {
@@ -505,7 +516,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(settings),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update settings");
   },
 
   async getPendingPhotos() {
@@ -571,7 +582,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to create State");
   },
   async updateState(id: string, data: Partial<StateItem>) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/states/${id}`, {
@@ -579,14 +590,14 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update State");
   },
   async deleteState(id: string) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/states/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
-    return res.json();
+    return checkResponse(res, "Failed to delete State");
   },
 
   // Districts
@@ -606,7 +617,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to create District");
   },
   async updateDistrict(id: string, data: Partial<DistrictItem>) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/districts/${id}`, {
@@ -614,14 +625,14 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update District");
   },
   async deleteDistrict(id: string) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/districts/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
-    return res.json();
+    return checkResponse(res, "Failed to delete District");
   },
 
   // Talukas
@@ -641,7 +652,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to create Taluka");
   },
   async updateTaluka(id: string, data: Partial<TalukaItem>) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/talukas/${id}`, {
@@ -649,14 +660,14 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update Taluka");
   },
   async deleteTaluka(id: string) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/talukas/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
-    return res.json();
+    return checkResponse(res, "Failed to delete Taluka");
   },
 
   // Villages
@@ -679,7 +690,7 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to create Village");
   },
   async updateVillage(id: string, data: Partial<VillageItem>) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/villages/${id}`, {
@@ -687,14 +698,14 @@ export const adminApi = {
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
-    return res.json();
+    return checkResponse(res, "Failed to update Village");
   },
   async deleteVillage(id: string) {
     const res = await adminFetch(`${API_BASE_URL}/locations/admin/villages/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders(),
     });
-    return res.json();
+    return checkResponse(res, "Failed to delete Village");
   },
 
   // ----------------------------------------------------
