@@ -208,7 +208,7 @@ export class UsersService {
       throw new BadRequestException("Invalid status");
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const res = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: { id: userId },
         include: { profile: true },
@@ -278,6 +278,9 @@ export class UsersService {
         status: updatedUser.status,
       };
     });
+
+    ProfilesService.clearMemoryProfile(userId);
+    return res;
   }
 
   async updateUserRoleAdmin(
@@ -533,7 +536,7 @@ export class UsersService {
     deletedByAdminId?: string,
     ipAddress?: string,
   ): Promise<{ success: boolean; message: string }> {
-    return this.prisma.$transaction(async (tx) => {
+    const res = await this.prisma.$transaction(async (tx) => {
       const user = await tx.user.findUnique({
         where: { id: userId },
         include: { profile: true },
@@ -695,6 +698,9 @@ export class UsersService {
           "વપરાશકર્તા એકાઉન્ટ અને તમામ ડેટા કાયમ માટે કાઢી નાખવામાં આવ્યા છે (User account and all data deleted permanently)",
       };
     });
+
+    ProfilesService.clearMemoryProfile(userId);
+    return res;
   }
 
   async deleteProfileAdmin(
