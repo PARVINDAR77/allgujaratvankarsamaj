@@ -487,10 +487,11 @@ export class ProfilesService {
       }
 
       // Also sync user phone/email if user provided contact details
-      if (dto.altPhone || dto.contactEmail) {
+      const primaryPhone = dto.contactPhone?.trim() || dto.altPhone?.trim();
+      if (primaryPhone || dto.contactEmail) {
         try {
           const userUpdates: any = {};
-          if (dto.altPhone) userUpdates.phone = dto.altPhone.trim();
+          if (primaryPhone) userUpdates.phone = primaryPhone;
           if (dto.contactEmail) userUpdates.email = dto.contactEmail.trim();
           await this.prisma.user.update({
             where: { id: userId },
@@ -1102,10 +1103,11 @@ export class ProfilesService {
         },
       });
 
-      if (dto.altPhone || dto.contactEmail) {
+      const primaryPhone = dto.contactPhone?.trim() || dto.altPhone?.trim();
+      if (primaryPhone || dto.contactEmail) {
         try {
           const userUpdates: any = {};
-          if (dto.altPhone) userUpdates.phone = dto.altPhone.trim();
+          if (primaryPhone) userUpdates.phone = primaryPhone;
           if (dto.contactEmail) userUpdates.email = dto.contactEmail.trim();
           await this.prisma.user.update({
             where: { id: userId },

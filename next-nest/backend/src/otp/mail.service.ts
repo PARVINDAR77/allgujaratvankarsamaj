@@ -45,6 +45,10 @@ export class MailService {
     }
   }
 
+  public isConfigured(): boolean {
+    return this.transporter !== null;
+  }
+
   private buildHtmlTemplate(params: {
     otp: string;
     purpose: OtpPurpose;

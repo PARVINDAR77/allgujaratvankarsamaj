@@ -21,9 +21,7 @@ export function validateAndNormalizeAllowedOrigins(
 
   if (!rawStr || rawStr.trim() === "") {
     if (isEnforcedEnv) {
-      throw new Error(
-        `ALLOWED_ORIGINS must be explicitly configured in ${env} environment!`,
-      );
+      return ["https://allgujaratvankarsamaj.com", "https://www.allgujaratvankarsamaj.com"];
     }
     return [];
   }

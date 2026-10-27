@@ -163,6 +163,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         'expiresInSeconds': res.data['expiresInSeconds'] ?? 600,
         'resendCooldownSeconds': res.data['resendCooldownSeconds'] ?? 60,
         'maxAttempts': res.data['maxAttempts'] ?? 4,
+        'emailConfigured': res.data['emailConfigured'] == true,
+        'smsDelivered': res.data['smsDelivered'] != false,
       };
     } on DioException catch (e) {
       final failure = _mapDioException(e);

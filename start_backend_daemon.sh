@@ -51,7 +51,7 @@ trap cleanup SIGTERM SIGINT
 
 while true; do
     echo "[$(date)] Starting NestJS backend with --max-old-space-size=256..." >> "$LOG_FILE"
-    SOCKET_PATH="$SOCKET_FILE" NODE_ENV=production node --max-old-space-size=256 dist/main.js >> "$LOG_FILE" 2>&1
+    ALLOWED_ORIGINS="https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com" SOCKET_PATH="$SOCKET_FILE" NODE_ENV=production node --max-old-space-size=256 dist/main.js >> "$LOG_FILE" 2>&1
     EXIT_CODE=$?
     echo "[$(date)] Backend process stopped with exit code $EXIT_CODE. Restarting in 2 seconds..." >> "$LOG_FILE"
     rm -f "$SOCKET_FILE"

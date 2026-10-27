@@ -35,7 +35,7 @@ async function bootstrap() {
         forbidNonWhitelisted: false,
     }));
     const nodeEnv = configService.get("NODE_ENV", "development");
-    const allowedOriginsStr = configService.get("ALLOWED_ORIGINS", "");
+    const allowedOriginsStr = configService.get("ALLOWED_ORIGINS", "https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com");
     let corsOrigin = true;
     if (nodeEnv === "production" || nodeEnv === "staging") {
         try {

@@ -1,6 +1,8 @@
 class UserModel {
   final String id;
   final String email;
+  final String? phone;
+  final String? name;
   final String role;
   final String status;
   final bool isVerified;
@@ -11,6 +13,8 @@ class UserModel {
   const UserModel({
     required this.id,
     required this.email,
+    this.phone,
+    this.name,
     required this.role,
     required this.status,
     this.isVerified = false,
@@ -22,6 +26,8 @@ class UserModel {
   UserModel copyWith({
     String? id,
     String? email,
+    String? phone,
+    String? name,
     String? role,
     String? status,
     bool? isVerified,
@@ -32,6 +38,8 @@ class UserModel {
     return UserModel(
       id: id ?? this.id,
       email: email ?? this.email,
+      phone: phone ?? this.phone,
+      name: name ?? this.name,
       role: role ?? this.role,
       status: status ?? this.status,
       isVerified: isVerified ?? this.isVerified,
@@ -45,6 +53,8 @@ class UserModel {
     return UserModel(
       id: json['id'] as String? ?? '1',
       email: json['email'] as String? ?? '',
+      phone: json['phone'] as String?,
+      name: json['name'] as String?,
       role: json['role'] as String? ?? 'USER',
       status: json['status'] as String? ?? 'ACTIVE',
       isVerified: json['isVerified'] == true,
@@ -58,6 +68,8 @@ class UserModel {
     return {
       'id': id,
       'email': email,
+      'phone': phone,
+      'name': name,
       'role': role,
       'status': status,
       'isVerified': isVerified,

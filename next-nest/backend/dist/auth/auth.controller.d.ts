@@ -16,6 +16,8 @@ export declare class AuthController {
         message: string;
         maskedPhone: string;
         maskedEmail: string;
+        smsDelivered: boolean;
+        emailConfigured: boolean;
         expiresInSeconds: number;
         resendCooldownSeconds: number;
         maxAttempts: number;
@@ -25,6 +27,8 @@ export declare class AuthController {
         message: string;
         maskedPhone: string;
         maskedEmail: string;
+        smsDelivered: boolean;
+        emailConfigured: boolean;
         expiresInSeconds: number;
         resendCooldownSeconds: number;
         maxAttempts: number;

@@ -99,9 +99,30 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   bool _showInMatrimony = true;
 
   // Contact Details
+  late final TextEditingController _mobileController;
+  late final TextEditingController _emailController;
   String _mobileNumber = '';
   String _emailAddress = '';
   String _whatsappNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    final user = ref.read(authNotifierProvider).user;
+    final phone = user?.phone ?? '';
+    final email = user?.email ?? '';
+    _mobileNumber = phone;
+    _emailAddress = email;
+    _mobileController = TextEditingController(text: phone);
+    _emailController = TextEditingController(text: email);
+  }
+
+  @override
+  void dispose() {
+    _mobileController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
 
   // Location & Address
   String _houseNumber = '';
@@ -884,18 +905,58 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 'Mobile Number (મોબાઈલ નંબર - 10 અંક) *',
                 'Enter 10-digit Mobile Number',
                 Icons.phone_android,
+                controller: _mobileController,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(10),
                 ],
+                suffix: _mobileNumber.trim().length == 10
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.green.shade400),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                            SizedBox(width: 4),
+                            Text('ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      )
+                    : null,
                 onChanged: (v) => setState(() => _mobileNumber = v),
               ),
               _buildTextField(
                 'Email Address (ઈમેઈલ સરનામું)',
                 'Enter Email Address (ઈમેઈલ સરનામું)',
                 Icons.email_outlined,
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
+                suffix: _emailAddress.trim().isNotEmpty
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.green.shade400),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                            SizedBox(width: 4),
+                            Text('ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      )
+                    : null,
                 onChanged: (v) => setState(() => _emailAddress = v),
               ),
               _buildTextField(
@@ -1326,6 +1387,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
     String? errorText,
+    TextEditingController? controller,
+    Widget? suffix,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -1347,6 +1410,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               ],
             ),
             child: TextField(
+              controller: controller,
               maxLines: isMultiline ? 4 : 1,
               style: const TextStyle(color: Colors.black87),
               onChanged: onChanged,
@@ -1358,7 +1422,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 hintText: hint,
                 hintStyle: TextStyle(color: readOnly && hint != 'Tap to select date of birth' ? Colors.black87 : Colors.black38, fontSize: 14),
                 prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
-                suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Colors.black54) : null,
+                suffixIcon: suffix ?? (isDropdown ? const Icon(Icons.arrow_drop_down, color: Colors.black54) : null),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),

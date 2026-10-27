@@ -11,6 +11,7 @@ export declare class MailService {
     private transporter;
     constructor(prisma: PrismaService);
     private initTransporter;
+    isConfigured(): boolean;
     private buildHtmlTemplate;
     sendOtpEmail(params: {
         email: string;

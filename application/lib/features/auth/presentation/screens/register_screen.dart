@@ -95,6 +95,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     final emailOtpCtrl = TextEditingController();
     final maskedPhone = initialData['maskedPhone'] ?? _mobileController.text.trim();
     final maskedEmail = initialData['maskedEmail'] ?? _emailController.text.trim();
+    final isEmailConfigured = initialData['emailConfigured'] == true;
 
     bool isVerifying = false;
     bool isResending = false;
@@ -206,7 +207,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                     decoration: InputDecoration(
                       counterText: '',
                       prefixIcon: const Icon(Icons.mark_email_read_outlined, color: Color(0xFFD4AF37), size: 20),
-                      labelText: 'Email OTP ($maskedEmail) *',
+                      labelText: isEmailConfigured
+                          ? 'Email OTP ($maskedEmail) *'
+                          : 'Email OTP ($maskedEmail) [જો મળ્યો હોય તો / Optional]',
                       labelStyle: const TextStyle(color: Colors.white70, fontSize: 12.5, letterSpacing: 0),
                       hintText: '123456',
                       hintStyle: const TextStyle(color: Colors.white30, fontSize: 13, letterSpacing: 4),
@@ -333,9 +336,16 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                         final pOtp = phoneOtpCtrl.text.trim();
                         final eOtp = emailOtpCtrl.text.trim();
 
-                        if (pOtp.length != 6 || eOtp.length != 6) {
+                        if (pOtp.length != 6) {
                           setDialogState(() {
-                            statusMsg = 'કૃપા કરીને બંને 6-અંકના OTP કોડ દાખલ કરો (Please enter both 6-digit OTP codes)';
+                            statusMsg = 'કૃપા કરીને 6-અંકનો મોબાઇલ SMS OTP દાખલ કરો (Please enter 6-digit Mobile SMS OTP)';
+                          });
+                          return;
+                        }
+
+                        if (isEmailConfigured && eOtp.length != 6) {
+                          setDialogState(() {
+                            statusMsg = 'કૃપા કરીને ઈમેલ પર મોકલેલો 6-અંકનો OTP દાખલ કરો (Please enter 6-digit Email OTP)';
                           });
                           return;
                         }
@@ -353,7 +363,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
                               phone: phone,
                               email: email,
                               phoneOtp: pOtp,
-                              emailOtp: eOtp,
+                              emailOtp: eOtp.isNotEmpty ? eOtp : (isEmailConfigured ? '' : '000000'),
                             );
 
                         if (verifyRes['success'] == true && verifyRes['registrationToken'] != null) {

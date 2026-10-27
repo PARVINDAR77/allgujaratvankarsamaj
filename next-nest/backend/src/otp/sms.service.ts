@@ -31,7 +31,11 @@ export class SmsService {
   /**
    * Builds the TRAI DLT approved template text
    */
-  private formatDltMessage(name: string, otp: string, signOff: string = "All Gujarat Vankar Samaj"): string {
+  private formatDltMessage(
+    name: string,
+    otp: string,
+    signOff: string = process.env.SMS_SIGNOFF || "Team Emperor",
+  ): string {
     const cleanName = (name || "Member").trim().slice(0, 30);
     const cleanSignOff = signOff.trim().slice(0, 30);
     return `Dear ${cleanName} Your OTP for verification is ${otp}. Please enter this code to complete the process.\nRegards ${cleanSignOff}\nTEXT2`;

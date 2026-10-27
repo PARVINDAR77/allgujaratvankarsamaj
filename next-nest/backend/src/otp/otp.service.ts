@@ -195,11 +195,16 @@ export class OtpService {
       `Registration OTP dispatched: Mobile=${cleanPhone} (${smsRes.success ? "SMS OK" : "SMS ERR"}), Email=${cleanEmail} (${mailRes.success ? "Mail OK" : "Mail ERR"})`,
     );
 
+    const isSmtpConfigured = this.mailService.isConfigured();
     return {
       success: true,
-      message: `ચકાસણી કોડ તમારા મોબાઇલ (${this.maskPhone(cleanPhone)}) અને ઈમેઈલ (${this.maskEmail(cleanEmail)}) પર મોકલવામાં આવ્યો છે.`,
+      message: isSmtpConfigured
+        ? `ચકાસણી કોડ તમારા મોબાઇલ (${this.maskPhone(cleanPhone)}) અને ઈમેઈલ (${this.maskEmail(cleanEmail)}) પર મોકલવામાં આવ્યો છે.`
+        : `ચકાસણી કોડ તમારા મોબાઇલ (${this.maskPhone(cleanPhone)}) પર મોકલવામાં આવ્યો છે.`,
       maskedPhone: this.maskPhone(cleanPhone),
       maskedEmail: this.maskEmail(cleanEmail),
+      smsDelivered: smsRes.success,
+      emailConfigured: isSmtpConfigured,
       expiresInSeconds: this.OTP_EXPIRY_MINUTES * 60,
       resendCooldownSeconds: this.RESEND_COOLDOWN_SECONDS,
       maxAttempts: this.MAX_ATTEMPTS,
@@ -271,33 +276,40 @@ export class OtpService {
     }
 
     // 4. Verify Email OTP with attempt limit
-    if (emailSession.code !== dto.emailOtp.trim()) {
-      const newAttempts = emailSession.attempts + 1;
-      const remainingAttempts = Math.max(0, this.MAX_ATTEMPTS - newAttempts);
-      const isLocking = newAttempts >= this.MAX_ATTEMPTS;
-      const lockedUntil = isLocking
-        ? new Date(Date.now() + this.LOCKOUT_MINUTES * 60 * 1000)
-        : null;
+    const isSmtpConfigured = this.mailService.isConfigured();
+    const cleanEmailOtp = (dto.emailOtp || "").trim();
 
-      await this.prisma.otpSession.update({
-        where: { id: emailSession.id },
-        data: { attempts: newAttempts, lockedUntil },
-      });
+    if (isSmtpConfigured) {
+      if (emailSession.code !== cleanEmailOtp) {
+        const newAttempts = emailSession.attempts + 1;
+        const remainingAttempts = Math.max(0, this.MAX_ATTEMPTS - newAttempts);
+        const isLocking = newAttempts >= this.MAX_ATTEMPTS;
+        const lockedUntil = isLocking
+          ? new Date(Date.now() + this.LOCKOUT_MINUTES * 60 * 1000)
+          : null;
 
-      if (isLocking) {
-        throw new HttpException(
-          {
-            statusCode: HttpStatus.TOO_MANY_REQUESTS,
-            message: `ઈમેઈલ OTP ના 4 અમાન્ય પ્રયાસો થયા છે. એકાઉન્ટ ${this.LOCKOUT_MINUTES} મિનિટ માટે લોક કરવામાં આવ્યું છે.`,
-            remainingSeconds: this.LOCKOUT_MINUTES * 60,
-          },
-          HttpStatus.TOO_MANY_REQUESTS,
+        await this.prisma.otpSession.update({
+          where: { id: emailSession.id },
+          data: { attempts: newAttempts, lockedUntil },
+        });
+
+        if (isLocking) {
+          throw new HttpException(
+            {
+              statusCode: HttpStatus.TOO_MANY_REQUESTS,
+              message: `ઈમેઈલ OTP ના 4 અમાન્ય પ્રયાસો થયા છે. એકાઉન્ટ ${this.LOCKOUT_MINUTES} મિનિટ માટે લોક કરવામાં આવ્યું છે.`,
+              remainingSeconds: this.LOCKOUT_MINUTES * 60,
+            },
+            HttpStatus.TOO_MANY_REQUESTS,
+          );
+        }
+
+        throw new BadRequestException(
+          `અમાન્ય ઈમેઈલ OTP કોડ. બાકી રહેલા પ્રયાસો: ${remainingAttempts} (Invalid Email OTP. Attempts remaining: ${remainingAttempts})`,
         );
       }
-
-      throw new BadRequestException(
-        `અમાન્ય ઈમેઈલ OTP કોડ. બાકી રહેલા પ્રયાસો: ${remainingAttempts} (Invalid Email OTP. Attempts remaining: ${remainingAttempts})`,
-      );
+    } else {
+      this.logger.log(`SMTP not active, verified Phone OTP (${cleanPhone}) confirmed for registration.`);
     }
 
     // 5. Both verified! Generate registration proof token

@@ -64,9 +64,11 @@ async function bootstrap() {
     }),
   );
 
-  // Enable CORS with strict origin validation for production and staging
   const nodeEnv = configService.get<string>("NODE_ENV", "development");
-  const allowedOriginsStr = configService.get<string>("ALLOWED_ORIGINS", "");
+  const allowedOriginsStr = configService.get<string>(
+    "ALLOWED_ORIGINS",
+    "https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com",
+  );
 
   let corsOrigin: any = true;
   if (nodeEnv === "production" || nodeEnv === "staging") {

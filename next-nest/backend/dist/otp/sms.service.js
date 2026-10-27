@@ -27,7 +27,7 @@ let SmsService = SmsService_1 = class SmsService {
         this.entityId = process.env.SMS_ENTITY_ID || "1401805350000060162";
         this.route = process.env.SMS_ROUTE || "TRANS";
     }
-    formatDltMessage(name, otp, signOff = "All Gujarat Vankar Samaj") {
+    formatDltMessage(name, otp, signOff = process.env.SMS_SIGNOFF || "Team Emperor") {
         const cleanName = (name || "Member").trim().slice(0, 30);
         const cleanSignOff = signOff.trim().slice(0, 30);
         return `Dear ${cleanName} Your OTP for verification is ${otp}. Please enter this code to complete the process.\nRegards ${cleanSignOff}\nTEXT2`;

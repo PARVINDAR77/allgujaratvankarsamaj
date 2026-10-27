@@ -373,11 +373,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     },
                 });
             }
-            if (dto.altPhone || dto.contactEmail) {
+            const primaryPhone = dto.contactPhone?.trim() || dto.altPhone?.trim();
+            if (primaryPhone || dto.contactEmail) {
                 try {
                     const userUpdates = {};
-                    if (dto.altPhone)
-                        userUpdates.phone = dto.altPhone.trim();
+                    if (primaryPhone)
+                        userUpdates.phone = primaryPhone;
                     if (dto.contactEmail)
                         userUpdates.email = dto.contactEmail.trim();
                     await this.prisma.user.update({
@@ -931,11 +932,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     },
                 },
             });
-            if (dto.altPhone || dto.contactEmail) {
+            const primaryPhone = dto.contactPhone?.trim() || dto.altPhone?.trim();
+            if (primaryPhone || dto.contactEmail) {
                 try {
                     const userUpdates = {};
-                    if (dto.altPhone)
-                        userUpdates.phone = dto.altPhone.trim();
+                    if (primaryPhone)
+                        userUpdates.phone = primaryPhone;
                     if (dto.contactEmail)
                         userUpdates.email = dto.contactEmail.trim();
                     await this.prisma.user.update({

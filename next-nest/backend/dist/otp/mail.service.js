@@ -47,6 +47,9 @@ let MailService = MailService_1 = class MailService {
             this.logger.warn("SMTP credentials not fully set (SMTP_HOST, SMTP_USER, SMTP_PASS). Outgoing emails will be logged to console until configured.");
         }
     }
+    isConfigured() {
+        return this.transporter !== null;
+    }
     buildHtmlTemplate(params) {
         const isRegister = params.purpose === client_1.OtpPurpose.REGISTRATION;
         const title = isRegister
