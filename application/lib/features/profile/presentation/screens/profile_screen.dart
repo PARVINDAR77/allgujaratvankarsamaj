@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../auth/providers/auth_provider.dart';
@@ -19,16 +18,6 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  final TextEditingController _transactionIdController = TextEditingController();
-  String? _selectedFileName;
-  bool _isSavingTransaction = false;
-
-  @override
-  void dispose() {
-    _transactionIdController.dispose();
-    super.dispose();
-  }
-
   List<String> _extractPhotoUrls(ProfileModel profile) {
     final urls = <String>[];
     if (profile.fullPhotoUrl != null && profile.fullPhotoUrl!.trim().isNotEmpty) {
@@ -73,63 +62,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     } catch (_) {
       return null;
     }
-  }
-
-  void _pickPaymentScreenshot() async {
-    try {
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
-      );
-      if (result != null && result.files.isNotEmpty) {
-        setState(() {
-          _selectedFileName = result.files.first.name;
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('સ્ક્રીનશોટ પસંદ કર્યો: ${result.files.first.name} (File Selected)'),
-              backgroundColor: const Color(0xFF10B981),
-            ),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('ફાઇલ પસંદ કરવામાં ભૂલ: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _savePaymentInfo() {
-    final tid = _transactionIdController.text.trim();
-    if (tid.isEmpty && _selectedFileName == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('કૃપા કરીને Transaction ID અથવા સ્ક્રીનશોટ પસંદ કરો (Please enter Transaction ID or choose file)'),
-          backgroundColor: Color(0xFFE11D48),
-        ),
-      );
-      return;
-    }
-
-    setState(() => _isSavingTransaction = true);
-    Future.delayed(const Duration(milliseconds: 700), () {
-      if (mounted) {
-        setState(() => _isSavingTransaction = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('ચુકવણીની વિગતો સફળતાપૂર્વક સાચવવામાં આવી છે (Payment details submitted for verification!)'),
-            backgroundColor: Color(0xFF10B981),
-          ),
-        );
-      }
-    });
   }
 
   void _openWhatsAppHelp() async {
@@ -664,165 +596,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 label: 'PERMANENT ADDRESS',
                 value: permanentAddress,
                 isLast: true,
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 24),
-
-        // ---------------------------------------------------------------------
-        // Card 3: Payment Screenshot Card
-        // ---------------------------------------------------------------------
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(22),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x0A000000),
-                blurRadius: 16,
-                offset: Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: const [
-                  Icon(Icons.receipt_long_rounded, color: Color(0xFF1E3A5F), size: 19),
-                  SizedBox(width: 8),
-                  Text(
-                    'Payment Screenshot',
-                    style: TextStyle(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-
-              // Transaction ID Field
-              RichText(
-                text: const TextSpan(
-                  text: 'Transaction ID ',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF334155),
-                  ),
-                  children: [
-                    TextSpan(
-                      text: '*',
-                      style: TextStyle(color: Color(0xFFDC2626)),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextField(
-                controller: _transactionIdController,
-                decoration: InputDecoration(
-                  hintText: 'e.g. GPay Transaction ID',
-                  hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: const BorderSide(color: Color(0xFF1E3A5F), width: 1.5),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Upload New Screenshot
-              RichText(
-                text: const TextSpan(
-                  text: 'Upload New Screenshot ',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF334155),
-                  ),
-                  children: [
-                    TextSpan(
-                      text: '*',
-                      style: TextStyle(color: Color(0xFFDC2626)),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  OutlinedButton(
-                    onPressed: _pickPaymentScreenshot,
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: const Color(0xFFEFF6FF),
-                      foregroundColor: const Color(0xFF1E3A5F),
-                      side: const BorderSide(color: Color(0xFFBFDBFE)),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                    ),
-                    child: const Text('Choose File', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      _selectedFileName ?? 'No file chosen',
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Allowed formats: JPG, PNG, PDF',
-                style: TextStyle(fontSize: 11, color: Color(0xFF94A3B8)),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Save Profile Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSavingTransaction ? null : _savePaymentInfo,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E3A5F),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    elevation: 0,
-                  ),
-                  child: _isSavingTransaction
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                        )
-                      : const Text(
-                          'Save Profile',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                        ),
-                ),
               ),
             ],
           ),
