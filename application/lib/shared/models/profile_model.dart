@@ -429,6 +429,87 @@ class ProfileModel {
     return parts.join(' - ');
   }
 
+  int get brothersMarried => _extractSiblingMetric('bm', 'brothersMarried', 'brothers_married', r'(?:married\s+brothers?|brothers?\s+married|ભાઈ\s*પરિણિત|પરિણિત\s*ભાઈ)');
+  int get brothersUnmarried => _extractSiblingMetric('bu', 'brothersUnmarried', 'brothers_unmarried', r'(?:unmarried\s+brothers?|brothers?\s+unmarried|ભાઈ\s*અપરિણિત|અપરિણિત\s*ભાઈ)');
+  int get sistersMarried => _extractSiblingMetric('sm', 'sistersMarried', 'sisters_married', r'(?:married\s+sisters?|sisters?\s+married|બહેન\s*પરિણિત|પરિણિત\s*બહેન)');
+  int get sistersUnmarried => _extractSiblingMetric('su', 'sistersUnmarried', 'sisters_unmarried', r'(?:unmarried\s+sisters?|sisters?\s+unmarried|બહેન\s*અપરિણિત|અપરિણિત\s*બહેન)');
+
+  int _extractSiblingMetric(String key1, String key2, String key3, String regexPattern) {
+    final s = siblings?.trim() ?? '';
+    if (s.isEmpty) return 0;
+    if (s.startsWith('{') && s.endsWith('}')) {
+      try {
+        final decoded = jsonDecode(s);
+        if (decoded is Map) {
+          final val = decoded[key1] ?? decoded[key2] ?? decoded[key3];
+          if (val != null) return int.tryParse(val.toString()) ?? 0;
+        }
+      } catch (_) {}
+    }
+    var normalized = s;
+    const guj = ['૦', '૧', '૨', '૩', '૪', '૫', '૬', '૭', '૮', '૯'];
+    for (int i = 0; i < 10; i++) {
+      normalized = normalized.replaceAll(guj[i], i.toString());
+    }
+    final match = RegExp('(\\d+)\\s*$regexPattern', caseSensitive: false).firstMatch(normalized);
+    if (match != null) {
+      return int.tryParse(match.group(1)!) ?? 0;
+    }
+    final matchReverse = RegExp('$regexPattern\\s*(\\d+)', caseSensitive: false).firstMatch(normalized);
+    if (matchReverse != null) {
+      return int.tryParse(matchReverse.group(1)!) ?? 0;
+    }
+    return 0;
+  }
+
+  String get displaySiblingDetails {
+    final s = siblings?.trim() ?? '';
+    if (s.isEmpty) return '';
+    if (s.startsWith('{') && s.endsWith('}')) {
+      try {
+        final decoded = jsonDecode(s);
+        if (decoded is Map) {
+          final d = decoded['details'] ?? decoded['notes'] ?? decoded['desc'] ?? '';
+          return d.toString().trim();
+        }
+      } catch (_) {}
+    }
+    return s;
+  }
+
+  String get displaySiblings {
+    final s = siblings?.trim() ?? '';
+    if (s.isEmpty) return 'Not specified';
+    if (s.startsWith('{') && s.endsWith('}')) {
+      try {
+        final decoded = jsonDecode(s);
+        if (decoded is Map) {
+          final bm = brothersMarried;
+          final bu = brothersUnmarried;
+          final sm = sistersMarried;
+          final su = sistersUnmarried;
+          final details = displaySiblingDetails;
+
+          final parts = <String>[];
+          if (bm > 0 || bu > 0) {
+            parts.add('Brothers: $bm Married, $bu Unmarried');
+          }
+          if (sm > 0 || su > 0) {
+            parts.add('Sisters: $sm Married, $su Unmarried');
+          }
+          if (parts.isEmpty && (bm + bu + sm + su == 0)) {
+            parts.add('No brothers or sisters');
+          }
+          if (details.isNotEmpty) {
+            parts.add('($details)');
+          }
+          return parts.join(' | ');
+        }
+      } catch (_) {}
+    }
+    return s;
+  }
+
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
     String extractString(dynamic val) {
       if (val == null) return '';

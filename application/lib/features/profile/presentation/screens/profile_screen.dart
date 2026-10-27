@@ -735,25 +735,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Row 1: DOB, Birth Time, Birth Place
+              // Row 1: DOB, Mother Tongue, Native Place
               _buildThreeColumnRow(
                 col1Label: 'DATE OF BIRTH',
                 col1Value: profile.displayDob,
-                col2Label: 'TIME OF BIRTH',
-                col2Value: '04:20 PM',
-                col3Label: 'PLACE OF BIRTH',
+                col2Label: 'MOTHER TONGUE',
+                col2Value: profile.motherTongue != null && profile.motherTongue!.isNotEmpty
+                    ? profile.motherTongue!
+                    : 'Gujarati (ગુજરાતી)',
+                col3Label: 'NATIVE PLACE',
                 col3Value: profile.nativePlace != null && profile.nativePlace!.isNotEmpty
                     ? profile.nativePlace!
-                    : (profile.district.isNotEmpty ? profile.district : 'Aland dist kalburgi'),
+                    : (profile.district.isNotEmpty ? profile.district : 'Not specified'),
               ),
               const SizedBox(height: 20),
 
-              // Row 2: Manglik, Weight, Marital Status
+              // Row 2: Gender, Blood Group, Marital Status
               _buildThreeColumnRow(
-                col1Label: 'MANGLIK',
-                col1Value: 'Yes',
-                col2Label: 'WEIGHT',
-                col2Value: '64 kg',
+                col1Label: 'GENDER',
+                col1Value: profile.displayGender,
+                col2Label: 'BLOOD GROUP',
+                col2Value: profile.bloodGroup != null && profile.bloodGroup!.isNotEmpty
+                    ? profile.bloodGroup!
+                    : 'Not specified',
                 col3Label: 'MARITAL STATUS',
                 col3Value: profile.displayMaritalStatus.isNotEmpty
                     ? profile.displayMaritalStatus
@@ -761,17 +765,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Row 3: Self Gotra, Mama Gotra, Handicapped
+              // Row 3: Pargana, Mosal/Mama Village, Handicapped
               _buildThreeColumnRow(
-                col1Label: 'SELF GOTRA',
-                col1Value: profile.subcaste != null && profile.subcaste!.isNotEmpty
-                    ? profile.subcaste!
-                    : (profile.pargana.isNotEmpty ? profile.pargana : 'Dasa Humad'),
-                col2Label: 'MAMA GOTRA',
+                col1Label: 'PARGANA (પરગણું)',
+                col1Value: profile.pargana.isNotEmpty
+                    ? profile.pargana
+                    : (profile.subcaste != null && profile.subcaste!.isNotEmpty ? profile.subcaste! : 'All Gujarat Vankar Samaj'),
+                col2Label: 'MOSAL / MAMA VILLAGE',
                 col2Value: profile.mamasVillage != null && profile.mamasVillage!.isNotEmpty
                     ? profile.mamasVillage!
-                    : 'Dasa Humad',
-                col3Label: 'HANDICAPPED',
+                    : 'Not specified',
+                col3Label: 'PHYSICALLY CHALLENGED',
                 col3Value: profile.isPhysicallyDisabled == true ? 'Yes' : 'No',
               ),
             ],
@@ -946,7 +950,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       label: "FATHER'S NAME",
                       value: profile.fatherName != null && profile.fatherName!.isNotEmpty
                           ? profile.fatherName!
-                          : 'Deelip Gandhi',
+                          : 'Not specified',
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -955,19 +959,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       label: "FATHER'S OCCUPATION",
                       value: profile.fatherOccupation != null && profile.fatherOccupation!.isNotEmpty
                           ? profile.fatherOccupation!
-                          : 'Business',
+                          : 'Not specified',
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
 
-              // Mother's Name
-              _buildGridField(
-                label: "MOTHER'S NAME",
-                value: profile.motherName != null && profile.motherName!.isNotEmpty
-                    ? profile.motherName!
-                    : 'Deepa Deelip Gandhi',
+              // Mother's Name & Occupation
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: _buildGridField(
+                      label: "MOTHER'S NAME",
+                      value: profile.motherName != null && profile.motherName!.isNotEmpty
+                          ? profile.motherName!
+                          : 'Not specified',
+                    ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: _buildGridField(
+                      label: "MOTHER'S OCCUPATION",
+                      value: profile.motherOccupation != null && profile.motherOccupation!.isNotEmpty
+                          ? profile.motherOccupation!
+                          : 'Not specified',
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 24),
@@ -985,26 +1005,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 14),
 
-              // 4 Distinct Sibling Metric Counter Boxes
+              // 4 Distinct Sibling Metric Counter Boxes (Connected to Live Profile)
               Row(
                 children: [
                   Expanded(
-                    child: _buildSiblingCounterBox(count: '0', label: 'BROTHERS\nMARRIED'),
+                    child: _buildSiblingCounterBox(
+                      count: profile.brothersMarried.toString(),
+                      label: 'BROTHERS\nMARRIED',
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildSiblingCounterBox(count: '0', label: 'BROTHERS\nUNMARRIED'),
+                    child: _buildSiblingCounterBox(
+                      count: profile.brothersUnmarried.toString(),
+                      label: 'BROTHERS\nUNMARRIED',
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildSiblingCounterBox(count: '2', label: 'SISTERS\nMARRIED'),
+                    child: _buildSiblingCounterBox(
+                      count: profile.sistersMarried.toString(),
+                      label: 'SISTERS\nMARRIED',
+                    ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: _buildSiblingCounterBox(count: '0', label: 'SISTERS\nUNMARRIED'),
+                    child: _buildSiblingCounterBox(
+                      count: profile.sistersUnmarried.toString(),
+                      label: 'SISTERS\nUNMARRIED',
+                    ),
                   ),
                 ],
               ),
+
+              // Live Sibling Additional Notes or Details (if provided)
+              if (profile.displaySiblingDetails.isNotEmpty) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Icon(Icons.info_outline, size: 16, color: Color(0xFF64748B)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'વિગત (Details): ${profile.displaySiblingDetails}',
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            color: Color(0xFF334155),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -1076,12 +1139,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               ),
               const SizedBox(height: 20),
 
-              // SUBCAST (उपजाति)
+              // SUBCAST (ઉપજાતિ / પરગણું)
               _buildGridField(
-                label: 'SUBCAST (ઉપજાતિ)',
+                label: 'SUBCAST / PARGANA (ઉપજાતિ / પરગણું)',
                 value: profile.subcaste != null && profile.subcaste!.isNotEmpty
                     ? profile.subcaste!
-                    : (profile.pargana.isNotEmpty ? profile.pargana : 'Humad'),
+                    : (profile.pargana.isNotEmpty ? profile.pargana : 'All Gujarat Vankar Samaj'),
               ),
 
               const SizedBox(height: 20),
@@ -1100,23 +1163,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               // 2 Side-by-Side Reference Person Cards
               Row(
                 children: [
-                  // Reference Person 1
+                  // Reference Person 1: Guardian Reference
                   Expanded(
                     child: _buildReferencePersonCard(
-                      title: 'REFERENCE PERSON 1',
-                      name: 'Gaurav Gandhi',
-                      mobile: '9699718107',
-                      relation: 'Neighbor',
+                      title: 'GUARDIAN / FAMILY REFERENCE',
+                      name: profile.fatherName != null && profile.fatherName!.isNotEmpty
+                          ? profile.fatherName!
+                          : (profile.motherName != null && profile.motherName!.isNotEmpty
+                              ? profile.motherName!
+                              : 'Family Guardian'),
+                      mobile: profile.guardianContact != null && profile.guardianContact!.isNotEmpty
+                          ? profile.guardianContact!
+                          : (profile.fatherContact != null && profile.fatherContact!.isNotEmpty
+                              ? profile.fatherContact!
+                              : 'Available via Profile'),
+                      relation: 'Father / Guardian (વાલી)',
                     ),
                   ),
                   const SizedBox(width: 14),
-                  // Reference Person 2
+                  // Reference Person 2: Samaj Verification
                   Expanded(
                     child: _buildReferencePersonCard(
-                      title: 'REFERENCE PERSON 2',
-                      name: 'Darshan Pandit',
-                      mobile: '7996006266',
-                      relation: 'Mandir / Samaj Member',
+                      title: 'SAMAJ VERIFICATION STATUS',
+                      name: 'All Gujarat Vankar Samaj',
+                      mobile: profile.isVerified == true ? 'Verified Member ID' : 'Pending Verification',
+                      relation: profile.isVerified == true ? 'Verified Profile (ચકાસાયેલ)' : 'Under Verification',
                     ),
                   ),
                 ],

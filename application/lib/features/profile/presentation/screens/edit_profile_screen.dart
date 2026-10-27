@@ -112,7 +112,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _motherName;
   String? _motherOccupation;
   String? _guardianContact;
-  String? _siblings;
+  int _brothersMarried = 0;
+  int _brothersUnmarried = 0;
+  int _sistersMarried = 0;
+  int _sistersUnmarried = 0;
+  String _siblingDetails = '';
   String? _mamasVillage;
   String? _nativePlace;
   String? _aboutMe;
@@ -408,7 +412,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _motherName = profile.motherName;
               _motherOccupation = profile.motherOccupation;
               _guardianContact = profile.guardianContact;
-              _siblings = profile.siblings;
+              _brothersMarried = profile.brothersMarried;
+              _brothersUnmarried = profile.brothersUnmarried;
+              _sistersMarried = profile.sistersMarried;
+              _sistersUnmarried = profile.sistersUnmarried;
+              _siblingDetails = profile.displaySiblingDetails;
               _mamasVillage = profile.mamasVillage;
               _aboutMe = profile.about;
 
@@ -928,7 +936,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 ],
                 onChanged: (v) => _guardianContact = v,
               ),
-              _buildTextField('Brothers & Sisters (ભાઈ-બહેનની વિગત)', 'Enter Brothers & Sisters (ભાઈ-બહેનની વિગત)', Icons.groups_outlined, initialValue: _siblings ?? profile.siblings, onChanged: (v) => _siblings = v),
+              _buildSiblingsSection(),
               _buildTextField('Mama\'s Village / Mosal (મોસાળ / મોસાળનું ગામ)', 'Enter Mama\'s Village / Mosal...', Icons.holiday_village_outlined, initialValue: _mamasVillage ?? profile.mamasVillage, onChanged: (v) => _mamasVillage = v),
               _buildTextField('Native Place (મૂળ વતન / પરગણું)', 'Enter Native Place (મૂળ વતન / પરગણું)', Icons.home_work_outlined, initialValue: _nativePlace ?? (profile.nativePlace ?? profile.pargana), onChanged: (v) => _nativePlace = v),
 
@@ -1005,7 +1013,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_motherName != null) updateData['motherName'] = _motherName;
                     if (_motherOccupation != null) updateData['motherOccupation'] = _motherOccupation;
                     if (_guardianContact != null) updateData['guardianContact'] = _guardianContact;
-                    if (_siblings != null) updateData['siblings'] = _siblings;
+                    final siblingPayload = jsonEncode({
+                      'bm': _brothersMarried,
+                      'bu': _brothersUnmarried,
+                      'sm': _sistersMarried,
+                      'su': _sistersUnmarried,
+                      'details': _siblingDetails.trim(),
+                    });
+                    updateData['siblings'] = siblingPayload;
                     if (_mamasVillage != null) updateData['mamasVillage'] = _mamasVillage;
                     updateData['isPhysicallyDisabled'] = _isPhysicallyDisabled;
                     if (_pwbdCategory != null) updateData['pwbdCategory'] = _pwbdCategory;
@@ -2550,6 +2565,182 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ],
                     ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSiblingsSection() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E3A8A).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.people_outline, color: Color(0xFF1E3A8A), size: 20),
+              ),
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Siblings Info (ભાઈ-બહેનની સંખ્યા અને વિગત)',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      'પરિણિત અને અપરિણિત ભાઈ-બહેનની સંખ્યા સેટ કરો',
+                      style: TextStyle(fontSize: 11, color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // 4 Counter Selectors (Brothers & Sisters)
+          Row(
+            children: [
+              Expanded(
+                child: _buildNumberCounter(
+                  label: 'Brothers Married\n(પરિણિત ભાઈ)',
+                  value: _brothersMarried,
+                  onChanged: (val) => setState(() => _brothersMarried = val),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildNumberCounter(
+                  label: 'Brothers Unmarried\n(અપરિણિત ભાઈ)',
+                  value: _brothersUnmarried,
+                  onChanged: (val) => setState(() => _brothersUnmarried = val),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildNumberCounter(
+                  label: 'Sisters Married\n(પરિણિત બહેન)',
+                  value: _sistersMarried,
+                  onChanged: (val) => setState(() => _sistersMarried = val),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _buildNumberCounter(
+                  label: 'Sisters Unmarried\n(અપરિણિત બહેન)',
+                  value: _sistersUnmarried,
+                  onChanged: (val) => setState(() => _sistersUnmarried = val),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Additional Sibling Details / Occupation Note
+          TextFormField(
+            initialValue: _siblingDetails,
+            decoration: InputDecoration(
+              labelText: 'Additional Sibling Details / Notes (વિશેષ વિગત)',
+              hintText: 'દા.ત. ૧ ભાઈ સોફ્ટવેર એન્જિનિયર, ૧ બહેન પરિણિત...',
+              prefixIcon: const Icon(Icons.notes_rounded, color: Color(0xFF1E3A8A)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            ),
+            onChanged: (v) => _siblingDetails = v,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNumberCounter({
+    required String label,
+    required int value,
+    required ValueChanged<int> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              InkWell(
+                onTap: value > 0 ? () => onChanged(value - 1) : null,
+                borderRadius: BorderRadius.circular(15),
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: value > 0 ? Colors.white : Colors.grey.shade200,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Icon(Icons.remove, size: 15, color: value > 0 ? const Color(0xFF1E3A8A) : Colors.grey),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  value.toString(),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                ),
+              ),
+              InkWell(
+                onTap: value < 20 ? () => onChanged(value + 1) : null,
+                borderRadius: BorderRadius.circular(15),
+                child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: const Icon(Icons.add, size: 15, color: Color(0xFF1E3A8A)),
+                ),
+              ),
+            ],
           ),
         ],
       ),
