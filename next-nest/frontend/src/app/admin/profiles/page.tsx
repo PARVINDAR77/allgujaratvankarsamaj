@@ -997,6 +997,24 @@ export default function AdminProfilesPage() {
                   {selectedProfile.status === "SUSPENDED" ? "Activate Profile" : "Suspend Profile"}
                 </button>
                 <button
+                  onClick={() => handleDeleteProfile(selectedProfile.id, selectedProfile.name)}
+                  style={{
+                    flex: 1,
+                    padding: "12px",
+                    borderRadius: "12px",
+                    backgroundColor: "rgba(225, 29, 72, 0.2)",
+                    color: "#FDA4AF",
+                    border: "1px solid #E11D48",
+                    fontWeight: 900,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    transition: "all 0.2s ease",
+                  }}
+                  className="hover:scale-[1.02] active:scale-[0.98] hover:bg-rose-600 hover:text-white"
+                >
+                  Delete Profile
+                </button>
+                <button
                   onClick={() => setSelectedProfile(null)}
                   style={{
                     flex: 1,
