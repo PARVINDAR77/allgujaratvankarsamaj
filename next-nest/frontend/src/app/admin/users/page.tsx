@@ -348,8 +348,8 @@ export default function AdminUsersPage() {
               <span>Loading user records...</span>
             </div>
           ) : (
-            <div  className="overflow-hidden border border-admin-gold/20 rounded-xl">
-              <table  className="w-full text-left border-collapse text-white text-xs">
+            <div className="overflow-x-auto border border-admin-gold/20 rounded-xl">
+              <table className="w-full text-left border-collapse text-white text-xs">
                 <thead>
                   <tr  className="bg-admin-card border-b border-admin-gold/30">
                     <th   className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[18px] tracking-[1px]" >Member Name</th>

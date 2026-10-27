@@ -5,6 +5,132 @@ import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { adminApi } from "@/lib/admin-api";
 
+function isPdf(url?: string): boolean {
+  if (!url) return false;
+  const clean = url.split("?")[0].toLowerCase();
+  return clean.endsWith(".pdf");
+}
+
+function DocumentThumbnail({
+  url,
+  label,
+  side,
+  memberName,
+  onZoom,
+}: {
+  url?: string;
+  label: string;
+  side: "front" | "back";
+  memberName: string;
+  onZoom: (url: string, title: string) => void;
+}) {
+  const [loadError, setLoadError] = useState(false);
+  const isFront = side === "front";
+  const borderColor = isFront ? "border-emerald-500/50 hover:border-emerald-400" : "border-cyan-500/50 hover:border-cyan-400";
+  const bgOverlay = isFront ? "bg-emerald-950/30" : "bg-cyan-950/30";
+  const badgeColor = isFront ? "text-emerald-300 bg-emerald-950/80 border-emerald-500/40" : "text-cyan-300 bg-cyan-950/80 border-cyan-500/40";
+
+  if (!url || url === "null" || url.trim() === "") {
+    return (
+      <div className="flex flex-col items-center">
+        <span className="text-[9px] font-extrabold text-admin-gold uppercase tracking-wider mb-1">{isFront ? "Front Side" : "Back Side"}</span>
+        <div className={`w-16 h-12 rounded-lg border border-dashed ${isFront ? "border-rose-500/40 text-rose-400" : "border-amber-500/40 text-amber-400"} flex items-center justify-center text-[9px] font-bold bg-[#041026]/40`}>
+          {isFront ? "Missing" : "N/A"}
+        </div>
+      </div>
+    );
+  }
+
+  const pdf = isPdf(url);
+
+  return (
+    <div className="flex flex-col items-center">
+      <span className="text-[9px] font-extrabold text-admin-gold uppercase tracking-wider mb-1">{isFront ? "Front Side" : "Back Side"}</span>
+      {pdf ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="relative w-16 h-12 rounded-lg overflow-hidden border-2 border-red-500/60 bg-red-950/40 hover:bg-red-900/50 flex flex-col items-center justify-center text-center p-1 cursor-pointer hover:scale-105 transition-all shadow-md group"
+          title={`Click to open ${isFront ? "Front" : "Back"} PDF Document`}
+        >
+          <span className="text-sm">📄</span>
+          <span className="text-[8px] font-bold text-red-200 uppercase tracking-tighter">Open PDF ↗</span>
+        </a>
+      ) : loadError ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`relative w-16 h-12 rounded-lg overflow-hidden border ${badgeColor} flex flex-col items-center justify-center text-center p-1 cursor-pointer hover:scale-105 transition-all shadow-md`}
+          title={`Click to open document in new tab (${url})`}
+        >
+          <span className="text-xs">🪪</span>
+          <span className="text-[8px] font-extrabold uppercase tracking-tight">View Doc ↗</span>
+        </a>
+      ) : (
+        <div
+          onClick={() => onZoom(url, `${memberName} - ${label} (${isFront ? "Front Side" : "Back Side"})`)}
+          className={`relative w-16 h-12 rounded-lg overflow-hidden border-2 ${borderColor} cursor-pointer hover:scale-105 transition-transform group shadow-md bg-[#041026]`}
+          title={`Click to inspect ${isFront ? "Front" : "Back"} ID`}
+        >
+          <img
+            src={url}
+            alt={isFront ? "Front ID" : "Back ID"}
+            className="w-full h-full object-cover"
+            onError={() => setLoadError(true)}
+          />
+          <div className={`absolute inset-0 ${bgOverlay} group-hover:bg-transparent flex items-center justify-center text-[10px] font-bold text-white transition-colors`}>
+            🔍
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CandidatePhotoThumb({
+  url,
+  idx,
+  memberName,
+  onZoom,
+}: {
+  url: string;
+  idx: number;
+  memberName: string;
+  onZoom: (url: string, title: string) => void;
+}) {
+  const [loadError, setLoadError] = useState(false);
+
+  return (
+    <div
+      onClick={() => onZoom(url, `${memberName} - Photo ${idx + 1}`)}
+      className="relative w-11 h-11 rounded-lg overflow-hidden border border-admin-gold/40 cursor-pointer hover:scale-110 hover:border-admin-gold transition-all group bg-[#041026] shadow-sm flex items-center justify-center"
+      title={`Click to zoom photo ${idx + 1}`}
+    >
+      {loadError ? (
+        <div className="w-full h-full flex flex-col items-center justify-center bg-admin-card text-admin-gold text-[10px]">
+          <span>📷</span>
+          <span className="text-[8px] font-bold">#{idx + 1}</span>
+        </div>
+      ) : (
+        <>
+          <img
+            src={url}
+            alt={`Photo ${idx + 1}`}
+            className="w-full h-full object-cover"
+            onError={() => setLoadError(true)}
+          />
+          <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors" />
+          <span className="absolute bottom-0 right-0 bg-black/75 text-[8px] font-extrabold text-admin-gold px-1 rounded-tl">
+            #{idx + 1}
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function AdminVerificationsPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -217,16 +343,16 @@ export default function AdminVerificationsPage() {
               No verification requests found matching your filter.
             </div>
           ) : (
-            <div className="overflow-x-auto border border-admin-gold/20 rounded-xl">
+            <div className="overflow-x-auto border border-admin-gold/20 rounded-xl max-h-[750px] overflow-y-auto">
               <table className="w-full text-left border-collapse text-white text-xs">
-                <thead>
-                  <tr className="bg-admin-card border-b border-admin-gold/30">
-                    <th className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Member Details</th>
-                    <th className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Candidate Photos (2-5)</th>
-                    <th className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">ID Proof (Front & Back)</th>
-                    <th className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Date</th>
-                    <th className="font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Status</th>
-                    <th className="text-right font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Actions</th>
+                <thead className="sticky top-0 z-20 bg-[#0B1D3D] shadow-md border-b-2 border-admin-gold/40">
+                  <tr>
+                    <th className="bg-[#0B1D3D] font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Member Details</th>
+                    <th className="bg-[#0B1D3D] font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Candidate Photos (2-5)</th>
+                    <th className="bg-[#0B1D3D] font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">ID Proof (Front & Back)</th>
+                    <th className="bg-[#0B1D3D] font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Date</th>
+                    <th className="bg-[#0B1D3D] font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Status</th>
+                    <th className="bg-[#0B1D3D] text-right font-extrabold uppercase text-admin-gold text-[10px] py-[14px] px-[16px] tracking-[1px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-admin-card divide-y divide-admin-gold/10">
@@ -264,27 +390,15 @@ export default function AdminVerificationsPage() {
                                 <span>📸</span> {photos.length} Photo{photos.length > 1 ? "s" : ""}
                               </div>
                               <div className="flex flex-wrap gap-1.5 max-w-[200px]">
-                                {photos.map((pUrl, idx) => {
-                                  const full = getFullUrl(pUrl);
-                                  return (
-                                    <div
-                                      key={idx}
-                                      onClick={() => setPreviewImage({ url: full, title: `${memberName} - Photo ${idx + 1}` })}
-                                      className="relative w-11 h-11 rounded-lg overflow-hidden border border-admin-gold/40 cursor-pointer hover:scale-110 hover:border-admin-gold transition-transform group"
-                                      title={`Click to zoom photo ${idx + 1}`}
-                                    >
-                                      <img
-                                        src={full}
-                                        alt={`Photo ${idx + 1}`}
-                                        className="w-full h-full object-cover"
-                                      />
-                                      <div className="absolute inset-0 bg-black/30 group-hover:bg-transparent transition-colors" />
-                                      <span className="absolute bottom-0 right-0 bg-black/70 text-[8px] font-bold text-admin-gold px-1 rounded-tl">
-                                        #{idx + 1}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
+                                {photos.map((pUrl, idx) => (
+                                  <CandidatePhotoThumb
+                                    key={idx}
+                                    url={getFullUrl(pUrl)}
+                                    idx={idx}
+                                    memberName={memberName}
+                                    onZoom={(url, title) => setPreviewImage({ url, title })}
+                                  />
+                                ))}
                               </div>
                             </div>
                           ) : (
@@ -301,55 +415,20 @@ export default function AdminVerificationsPage() {
                           </div>
 
                           <div className="flex items-center gap-2 mt-1">
-                            {/* Front Side */}
-                            <div className="flex flex-col items-center">
-                              <span className="text-[9px] font-extrabold text-admin-gold uppercase tracking-wider mb-0.5">Front Side</span>
-                              {frontUrl ? (
-                                <div
-                                  onClick={() => setPreviewImage({ url: frontUrl, title: `${memberName} - ${item.documentType || 'ID Proof'} (Front Side)` })}
-                                  className="relative w-16 h-12 rounded-lg overflow-hidden border-2 border-emerald-500/50 hover:border-emerald-400 cursor-pointer hover:scale-105 transition-transform group shadow-md"
-                                  title="Click to view Front Side ID"
-                                >
-                                  <img
-                                    src={frontUrl}
-                                    alt="Front ID"
-                                    className="w-full h-full object-cover"
-                                  />
-                                  <span className="absolute inset-0 bg-emerald-950/20 group-hover:bg-transparent flex items-center justify-center text-[10px] font-bold text-white">
-                                    🔍
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="w-16 h-12 rounded-lg border border-dashed border-rose-500/40 flex items-center justify-center text-[9px] text-rose-400">
-                                  Missing
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Back Side */}
-                            <div className="flex flex-col items-center">
-                              <span className="text-[9px] font-extrabold text-admin-gold uppercase tracking-wider mb-0.5">Back Side</span>
-                              {backUrl ? (
-                                <div
-                                  onClick={() => setPreviewImage({ url: backUrl, title: `${memberName} - ${item.documentType || 'ID Proof'} (Back Side)` })}
-                                  className="relative w-16 h-12 rounded-lg overflow-hidden border-2 border-cyan-500/50 hover:border-cyan-400 cursor-pointer hover:scale-105 transition-transform group shadow-md"
-                                  title="Click to view Back Side ID"
-                                >
-                                  <img
-                                    src={backUrl}
-                                    alt="Back ID"
-                                    className="w-full h-full object-cover"
-                                  />
-                                  <span className="absolute inset-0 bg-cyan-950/20 group-hover:bg-transparent flex items-center justify-center text-[10px] font-bold text-white">
-                                    🔍
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="w-16 h-12 rounded-lg border border-dashed border-amber-500/40 flex items-center justify-center text-[9px] text-amber-400">
-                                  N/A
-                                </div>
-                              )}
-                            </div>
+                            <DocumentThumbnail
+                              url={frontUrl}
+                              label={item.documentType || "ID Proof"}
+                              side="front"
+                              memberName={memberName}
+                              onZoom={(url, title) => setPreviewImage({ url, title })}
+                            />
+                            <DocumentThumbnail
+                              url={backUrl}
+                              label={item.documentType || "ID Proof"}
+                              side="back"
+                              memberName={memberName}
+                              onZoom={(url, title) => setPreviewImage({ url, title })}
+                            />
                           </div>
                         </td>
 
@@ -458,16 +537,17 @@ export default function AdminVerificationsPage() {
             <div
               style={{
                 position: "relative",
-                maxWidth: "90vw",
-                maxHeight: "85vh",
+                maxWidth: "92vw",
+                maxHeight: "88vh",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: "12px",
+                width: isPdf(previewImage.url) ? "750px" : "auto",
               }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex justify-between items-center w-full bg-admin-card/90 px-4 py-2 rounded-xl border border-admin-gold/30">
+              <div className="flex justify-between items-center w-full bg-admin-card/95 px-4 py-2.5 rounded-xl border border-admin-gold/30 shadow-lg">
                 <span className="font-extrabold text-admin-gold text-xs tracking-wider">
                   {previewImage.title}
                 </span>
@@ -476,31 +556,59 @@ export default function AdminVerificationsPage() {
                     href={previewImage.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[11px] text-white hover:text-admin-gold font-bold underline"
+                    className="text-[11px] text-white hover:text-admin-gold font-bold underline flex items-center gap-1"
                   >
-                    Open Original ↗
+                    <span>Open Original</span> ↗
                   </a>
                   <button
                     onClick={() => setPreviewImage(null)}
-                    className="text-gray-400 hover:text-white text-lg font-bold px-2 py-0.5"
+                    className="text-gray-400 hover:text-white text-lg font-bold px-2 py-0.5 leading-none rounded hover:bg-white/10"
                   >
                     ✕
                   </button>
                 </div>
               </div>
 
-              <img
-                src={previewImage.url}
-                alt={previewImage.title}
-                style={{
-                  maxWidth: "90vw",
-                  maxHeight: "75vh",
-                  objectFit: "contain",
-                  borderRadius: "16px",
-                  border: "2px solid rgba(212, 175, 55, 0.5)",
-                  boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
-                }}
-              />
+              {isPdf(previewImage.url) ? (
+                <div className="w-full h-[65vh] bg-[#071224] rounded-2xl border-2 border-admin-gold/50 flex flex-col items-center justify-center p-8 text-center shadow-2xl">
+                  <span className="text-5xl mb-4">📄</span>
+                  <h4 className="text-white font-bold text-base mb-2">PDF Verification Document</h4>
+                  <p className="text-slate-400 text-xs mb-6 max-w-md">
+                    This document was uploaded as a PDF file. You can view it directly in your browser tab or download it.
+                  </p>
+                  <a
+                    href={previewImage.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-6 py-2.5 rounded-xl bg-admin-gold text-admin-bg font-extrabold text-xs shadow-lg hover:brightness-110 transition-all"
+                  >
+                    Open PDF Document ↗
+                  </a>
+                </div>
+              ) : (
+                <img
+                  src={previewImage.url}
+                  alt={previewImage.title}
+                  style={{
+                    maxWidth: "90vw",
+                    maxHeight: "75vh",
+                    objectFit: "contain",
+                    borderRadius: "16px",
+                    border: "2px solid rgba(212, 175, 55, 0.5)",
+                    boxShadow: "0 25px 60px rgba(0,0,0,0.8)",
+                  }}
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = "none";
+                    const parent = (e.target as HTMLElement).parentElement;
+                    if (parent && !parent.querySelector(".modal-img-error")) {
+                      const errDiv = document.createElement("div");
+                      errDiv.className = "modal-img-error p-8 text-center bg-[#071224] rounded-xl border border-admin-gold/40 text-white";
+                      errDiv.innerHTML = `<div style="font-size: 32px; margin-bottom: 8px;">⚠️</div><div style="font-weight: 700; margin-bottom: 6px;">Image could not be loaded</div><div style="font-size: 11px; color: #94a3b8; margin-bottom: 12px;">The original image file may be missing or protected.</div><a href="${previewImage.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 6px 14px; background: rgba(212,175,55,0.2); border: 1px solid #D4AF37; border-radius: 8px; color: #D4AF37; font-size: 11px; font-weight: 700;">Open Direct URL ↗</a>`;
+                      parent.appendChild(errDiv);
+                    }
+                  }}
+                />
+              )}
             </div>
           </div>
         )}

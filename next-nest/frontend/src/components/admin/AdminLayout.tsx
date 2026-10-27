@@ -69,7 +69,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         />
 
         {/* Page Content Container */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 space-y-6 w-full max-w-7xl mx-auto">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 pt-6 pb-16 space-y-6 w-full max-w-7xl mx-auto">
           {children}
         </main>
       </div>

@@ -395,50 +395,58 @@ export default function AdminProfilesPage() {
                   <div style={{ position: "absolute", top: 0, right: 0, width: "100px", height: "100px", background: p.isFeatured ? "radial-gradient(circle, rgba(212,175,55,0.3) 0%, rgba(0,0,0,0) 70%)" : "radial-gradient(circle, rgba(212,175,55,0.1) 0%, rgba(0,0,0,0) 70%)", transform: "translate(30%, -30%)" }}></div>
 
                   <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "20px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                    {/* Card Top: Avatar, Name & Status */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "16px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "14px", minWidth: 0, flex: 1 }}>
                         <div
                           style={{
-                            width: "56px",
-                            height: "56px",
-                            borderRadius: "16px",
-                            background: p.isFeatured ? "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)" : "linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(4, 16, 38, 0.9) 100%)",
+                            width: "54px",
+                            height: "54px",
+                            borderRadius: "14px",
+                            background: p.isFeatured ? "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)" : "linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(4, 16, 38, 0.9) 100%)",
                             color: p.isFeatured ? "#041026" : "#D4AF37",
-                            border: p.isFeatured ? "none" : "1px solid rgba(212, 175, 55, 0.5)",
+                            border: p.isFeatured ? "none" : "1px solid rgba(212, 175, 55, 0.4)",
                             fontWeight: 900,
-                            fontSize: "24px",
+                            fontSize: "18px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            boxShadow: p.isFeatured ? "0 8px 20px rgba(212, 175, 55, 0.4)" : "inset 0 2px 10px rgba(255,255,255,0.1)",
+                            boxShadow: p.isFeatured ? "0 8px 20px rgba(212, 175, 55, 0.4)" : "none",
                             flexShrink: 0,
                             overflow: "hidden",
                             position: "relative",
                             transition: "all 0.3s ease"
                           }}
-                          className="group-hover:scale-110 group-hover:rotate-3"
+                          className="group-hover:scale-105"
                         >
                           {avatarPhoto ? (
                             <img
                               src={avatarPhoto}
                               alt={p.name}
                               className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLElement).style.display = "none";
+                              }}
                             />
                           ) : (
-                            p.name.charAt(0)
+                            (p.name || "V").trim().split(/\s+/).slice(0, 2).map((w: string) => w[0]).join("").toUpperCase()
                           )}
                         </div>
-                        <div style={{ minWidth: 0 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <h3 style={{ fontSize: "18px", fontWeight: 900, color: "#FFFFFF", margin: 0, lineHeight: 1.2 }} className="group-hover:text-[#F3E5AB] transition-colors truncate">
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                            <h3
+                              title={p.name}
+                              style={{ fontSize: "16px", fontWeight: 900, color: "#FFFFFF", margin: 0, lineHeight: 1.25 }}
+                              className="group-hover:text-[#F3E5AB] transition-colors truncate"
+                            >
                               {p.name}
                             </h3>
-                            {p.isFeatured && <span style={{ fontSize: "16px", filter: "drop-shadow(0 0 5px rgba(212,175,55,0.8))" }} title="Featured Candidate">⭐</span>}
+                            {p.isFeatured && <span style={{ fontSize: "14px", filter: "drop-shadow(0 0 5px rgba(212,175,55,0.8))" }} title="Featured Candidate">⭐</span>}
                           </div>
-                          <p style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 600, margin: "4px 0 0 0", textTransform: "uppercase", letterSpacing: "0.5px" }} className="truncate">
-                            {p.age} yrs • <span style={{ color: p.gender?.toLowerCase() === 'male' ? '#60A5FA' : '#F472B6' }}>{p.gender}</span> • {p.city}
+                          <p style={{ fontSize: "11px", color: "#8E9BAE", fontWeight: 600, margin: "3px 0 0 0", textTransform: "uppercase", letterSpacing: "0.5px" }} className="truncate">
+                            {p.age} yrs • <span style={{ color: p.gender?.toLowerCase() === 'female' ? '#F472B6' : '#60A5FA' }}>{p.gender}</span> • {p.city || "Gujarat"}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                             {candidatePhotos.length > 0 && (
                               <span className="text-[10px] bg-admin-card text-admin-gold border border-admin-gold/30 px-1.5 py-0.5 rounded font-bold">
                                 📸 {candidatePhotos.length} photo{candidatePhotos.length > 1 ? "s" : ""}
@@ -457,15 +465,16 @@ export default function AdminProfilesPage() {
                       </div>
                     </div>
 
+                    {/* Profile Fields List */}
                     <div
                       style={{
                         display: "flex",
                         flexDirection: "column",
-                        gap: "10px",
-                        padding: "16px 0",
+                        gap: "8px",
+                        padding: "14px 0",
                         borderTop: "1px solid rgba(212, 175, 55, 0.15)",
                         borderBottom: "1px solid rgba(212, 175, 55, 0.15)",
-                        marginBottom: "20px",
+                        marginBottom: "16px",
                       }}
                     >
                       {[
@@ -474,123 +483,142 @@ export default function AdminProfilesPage() {
                         { label: "Occupation", value: p.occupation },
                         ...(p.user?.phone ? [{ label: "Contact Phone", value: p.user.phone }] : [])
                       ].map((item, idx) => (
-                        <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderRadius: "10px", backgroundColor: "rgba(4, 16, 38, 0.4)", border: "1px solid rgba(212, 175, 55, 0.05)" }}>
-                          <span style={{ fontSize: "12px", color: "#8E9BAE", fontWeight: 700 }}>{item.label}:</span>
-                          <span style={{ fontSize: "13px", color: "#FFFFFF", fontWeight: 800, textAlign: "right", maxWidth: "65%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.value}</span>
+                        <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", borderRadius: "8px", backgroundColor: "rgba(4, 16, 38, 0.4)", border: "1px solid rgba(212, 175, 55, 0.05)" }}>
+                          <span style={{ fontSize: "11px", color: "#8E9BAE", fontWeight: 700 }}>{item.label}:</span>
+                          <span title={String(item.value || "")} style={{ fontSize: "12px", color: "#FFFFFF", fontWeight: 800, textAlign: "right", maxWidth: "68%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.value || "-"}</span>
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", gap: "10px" }}>
-                    <button
-                      onClick={() => setSelectedProfile(p)}
-                      style={{
-                        flex: 1,
-                        padding: "12px",
-                        borderRadius: "12px",
-                        backgroundColor: "rgba(4, 16, 38, 0.8)",
-                        border: "1px solid rgba(212, 175, 55, 0.4)",
-                        color: "#D4AF37",
-                        fontSize: "12px",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        transition: "all 0.3s ease",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                      }}
-                      className="hover:bg-[#D4AF37] hover:text-black hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]"
-                    >
-                      View Details
-                    </button>
-                    <button
-                      onClick={() => handleToggleFeatured(p.id, p.isFeatured)}
-                      style={{
-                        padding: "12px 16px",
-                        borderRadius: "12px",
-                        fontSize: "12px",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        gap: "6px",
-                        backgroundColor: p.isFeatured ? "rgba(212, 175, 55, 0.15)" : "rgba(4, 16, 38, 0.6)",
-                        color: p.isFeatured ? "#F3E5AB" : "#8E9BAE",
-                        border: p.isFeatured ? "1px solid rgba(212, 175, 55, 0.5)" : "1px solid rgba(212, 175, 55, 0.2)",
-                        transition: "all 0.3s ease",
-                      }}
-                      className="hover:bg-[rgba(212,175,55,0.2)] hover:border-[#D4AF37] hover:text-[#D4AF37]"
-                    >
-                      {p.isFeatured ? "⭐ Featured" : "Feature"}
-                    </button>
-                    <button
-                      onClick={() => handleStatusChange(p.id, p.status)}
-                      style={{
-                        padding: "10px 14px",
-                        borderRadius: "10px",
-                        fontSize: "11px",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: p.status === "APPROVED" ? "rgba(225, 29, 72, 0.12)" : "rgba(16, 185, 129, 0.12)",
-                        color: p.status === "APPROVED" ? "#FDA4AF" : "#6EE7B7",
-                        border: p.status === "APPROVED" ? "1px solid rgba(225, 29, 72, 0.4)" : "1px solid rgba(16, 185, 129, 0.4)",
-                        transition: "all 0.2s ease",
-                      }}
-                      className={p.status === "APPROVED" ? "hover:bg-[#E11D48] hover:text-white" : "hover:bg-[#10B981] hover:text-white"}
-                      title={p.status === "APPROVED" ? "Reject candidate" : "Approve candidate"}
-                    >
-                      {p.status === "APPROVED" ? "Reject" : "Approve"}
-                    </button>
-                    <button
-                      onClick={() => handleToggleSuspend(p.id, p.status)}
-                      style={{
-                        padding: "10px 14px",
-                        borderRadius: "10px",
-                        fontSize: "11px",
-                        fontWeight: 800,
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: p.status === "SUSPENDED" ? "rgba(16, 185, 129, 0.15)" : "rgba(234, 88, 12, 0.15)",
-                        color: p.status === "SUSPENDED" ? "#34D399" : "#FB923C",
-                        border: p.status === "SUSPENDED" ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid rgba(234, 88, 12, 0.4)",
-                        transition: "all 0.2s ease",
-                      }}
-                      className={p.status === "SUSPENDED" ? "hover:bg-emerald-600 hover:text-white" : "hover:bg-orange-600 hover:text-white"}
-                      title={p.status === "SUSPENDED" ? "Reactivate profile" : "Suspend profile from listings"}
-                    >
-                      {p.status === "SUSPENDED" ? "Activate" : "Suspend"}
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteProfile(p.id, p.name);
-                      }}
-                      title="Permanently Delete Matrimonial Profile"
-                      style={{
-                        padding: "10px 12px",
-                        fontSize: "11px",
-                        fontWeight: 800,
-                        borderRadius: "10px",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor: "rgba(225, 29, 72, 0.15)",
-                        color: "#FB7185",
-                        border: "1px solid rgba(225, 29, 72, 0.4)",
-                        transition: "all 0.2s ease",
-                      }}
-                      className="hover:bg-[#E11D48] hover:text-white"
-                    >
-                      Delete
-                    </button>
+                  {/* Actions Toolbar - Structured 2-tier layout */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+                    {/* Tier 1: Primary View & Feature Toggle */}
+                    <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+                      <button
+                        onClick={() => setSelectedProfile(p)}
+                        style={{
+                          flex: 1,
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          backgroundColor: "rgba(212, 175, 55, 0.12)",
+                          border: "1px solid rgba(212, 175, 55, 0.45)",
+                          color: "#F3E5AB",
+                          fontSize: "12px",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          transition: "all 0.25s ease",
+                          display: "flex",
+                          justifyContent: "center",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                        className="hover:bg-[#D4AF37] hover:text-[#041026] hover:shadow-[0_0_15px_rgba(212,175,55,0.4)]"
+                        title="View full candidate biodata and documents"
+                      >
+                        <span>👁️</span> View Details
+                      </button>
+                      <button
+                        onClick={() => handleToggleFeatured(p.id, p.isFeatured)}
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: "10px",
+                          fontSize: "12px",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "6px",
+                          backgroundColor: p.isFeatured ? "rgba(212, 175, 55, 0.2)" : "rgba(255, 255, 255, 0.05)",
+                          color: p.isFeatured ? "#D4AF37" : "#94A3B8",
+                          border: p.isFeatured ? "1px solid rgba(212, 175, 55, 0.6)" : "1px solid rgba(255, 255, 255, 0.15)",
+                          transition: "all 0.25s ease",
+                        }}
+                        className="hover:border-[#D4AF37] hover:text-[#D4AF37] hover:bg-[rgba(212,175,55,0.15)]"
+                        title={p.isFeatured ? "Remove from Featured candidates" : "Mark as Featured candidate"}
+                      >
+                        <span>⭐</span> {p.isFeatured ? "Featured" : "Feature"}
+                      </button>
+                    </div>
+
+                    {/* Tier 2: Moderation Actions (Approve/Reject, Suspend/Activate, Delete) */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", width: "100%" }}>
+                      <button
+                        onClick={() => handleStatusChange(p.id, p.status)}
+                        style={{
+                          padding: "8px 4px",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "4px",
+                          backgroundColor: p.status === "APPROVED" ? "rgba(225, 29, 72, 0.12)" : "rgba(16, 185, 129, 0.15)",
+                          color: p.status === "APPROVED" ? "#FDA4AF" : "#6EE7B7",
+                          border: p.status === "APPROVED" ? "1px solid rgba(225, 29, 72, 0.4)" : "1px solid rgba(16, 185, 129, 0.45)",
+                          transition: "all 0.2s ease",
+                        }}
+                        className={p.status === "APPROVED" ? "hover:bg-[#E11D48] hover:text-white" : "hover:bg-[#10B981] hover:text-white"}
+                        title={p.status === "APPROVED" ? "Reject candidate" : "Approve candidate"}
+                      >
+                        <span>{p.status === "APPROVED" ? "✕" : "✓"}</span>
+                        <span>{p.status === "APPROVED" ? "Reject" : "Approve"}</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleToggleSuspend(p.id, p.status)}
+                        style={{
+                          padding: "8px 4px",
+                          borderRadius: "8px",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "4px",
+                          backgroundColor: p.status === "SUSPENDED" ? "rgba(16, 185, 129, 0.15)" : "rgba(234, 88, 12, 0.15)",
+                          color: p.status === "SUSPENDED" ? "#34D399" : "#FB923C",
+                          border: p.status === "SUSPENDED" ? "1px solid rgba(16, 185, 129, 0.4)" : "1px solid rgba(234, 88, 12, 0.45)",
+                          transition: "all 0.2s ease",
+                        }}
+                        className={p.status === "SUSPENDED" ? "hover:bg-emerald-600 hover:text-white" : "hover:bg-orange-600 hover:text-white"}
+                        title={p.status === "SUSPENDED" ? "Reactivate profile" : "Suspend profile from listings"}
+                      >
+                        <span>{p.status === "SUSPENDED" ? "▶" : "⏸"}</span>
+                        <span>{p.status === "SUSPENDED" ? "Activate" : "Suspend"}</span>
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteProfile(p.id, p.name);
+                        }}
+                        title="Permanently Delete Matrimonial Profile"
+                        style={{
+                          padding: "8px 4px",
+                          fontSize: "11px",
+                          fontWeight: 800,
+                          borderRadius: "8px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: "4px",
+                          backgroundColor: "rgba(225, 29, 72, 0.15)",
+                          color: "#FB7185",
+                          border: "1px solid rgba(225, 29, 72, 0.4)",
+                          transition: "all 0.2s ease",
+                        }}
+                        className="hover:bg-[#E11D48] hover:text-white"
+                      >
+                        <span>🗑️</span>
+                        <span>Delete</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               );

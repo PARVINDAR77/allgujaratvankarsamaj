@@ -347,12 +347,13 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   return (
     <header
       style={{
-        backgroundColor: "rgba(7, 17, 32, 0.92)",
+        backgroundColor: "#071224",
         backdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(212, 175, 55, 0.22)",
+        borderBottom: "1px solid rgba(212, 175, 55, 0.25)",
+        boxShadow: "0 6px 25px rgba(0, 0, 0, 0.65)",
         position: "sticky",
         top: 0,
-        zIndex: 30,
+        zIndex: 40,
         padding: "14px 24px",
       }}
       className="flex justify-between items-center gap-4 transition-all"
