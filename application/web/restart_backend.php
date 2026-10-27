@@ -121,9 +121,9 @@ $results = [
 
 if ($action === 'deploy') {
     if (function_exists('shell_exec')) {
-        $deployLog = shell_exec("cd " . escapeshellarg($project_dir) . " && git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1 && git pull origin main 2>&1 && cp -r application/build/web/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1 && cp -r next-nest/backend/dist/* " . escapeshellarg($backend_dir . "/dist/") . " 2>&1");
+        $deployLog = shell_exec("cd " . escapeshellarg($project_dir) . " && git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1 && git pull origin main 2>&1 && cp -r application/build/web/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1 && cp -r next-nest/backend/dist/* " . escapeshellarg($backend_dir . "/dist/") . " 2>&1 && mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/admin && cp -r next-nest/frontend/out/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/admin/ 2>&1 && pkill -f 'dist/main.js' 2>&1");
         $results['deploy_log'] = $deployLog;
-        $results['actions_taken'][] = 'Pulled origin main and deployed web + backend dist';
+        $results['actions_taken'][] = 'Pulled origin main and deployed web + admin + backend dist';
     }
     @touch($trigger_file);
 }
