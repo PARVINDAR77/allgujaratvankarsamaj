@@ -149,7 +149,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                               ? Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    // Left Column: Identity, Contact, Payment Screenshot (~350px)
+                                    // Left Column: Identity & Contact Details (~350px)
                                     SizedBox(
                                       width: 350,
                                       child: _buildLeftColumn(context, ref, authState, profile),
@@ -312,7 +312,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // LEFT COLUMN: Identity Card + Contact Details + Payment Screenshot
+  // LEFT COLUMN: Identity Card + Contact Details
   // ---------------------------------------------------------------------------
   Widget _buildLeftColumn(
     BuildContext context,
