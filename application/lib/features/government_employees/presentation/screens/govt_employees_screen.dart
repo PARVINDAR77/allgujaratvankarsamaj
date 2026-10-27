@@ -1347,6 +1347,8 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
         ? '${emp.districtName!} ($districtGuj)'
         : (emp.districtName ?? '');
 
+    final targetProfileId = emp.profileId.isNotEmpty ? emp.profileId : emp.id;
+
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -1508,14 +1510,15 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                         child: const Text('બંધ કરો (Close)', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
                       ),
                       const Spacer(),
-                      if (emp.profileId.isNotEmpty) ...[
+                      if (targetProfileId.isNotEmpty) ...[
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.pop(ctx);
                             context.push(
-                              '/candidate-profile-details?id=${emp.profileId}',
+                              '/candidate-profile-details?id=$targetProfileId',
                               extra: {
-                                'id': emp.profileId,
+                                'id': targetProfileId,
+                                'profileId': targetProfileId,
                                 'fullName': emp.fullName,
                                 'gender': emp.gender,
                                 'age': emp.age,
@@ -1527,6 +1530,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                                 'employmentType': emp.employmentType,
                                 'department': emp.departmentName,
                                 'designation': emp.designationName,
+                                'occupation': '${emp.designationName} - ${emp.departmentName}',
                               },
                             );
                           },

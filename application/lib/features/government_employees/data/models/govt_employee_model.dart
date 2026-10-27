@@ -68,7 +68,7 @@ class GovtEmployeeModel {
   factory GovtEmployeeModel.fromJson(Map<String, dynamic> json) {
     return GovtEmployeeModel(
       id: json['id'] as String? ?? '',
-      profileId: json['profileId'] as String? ?? '',
+      profileId: (json['profileId'] as String? ?? json['profile_id'] as String? ?? json['id'] as String? ?? '').trim(),
       fullName: json['fullName'] as String? ?? 'Vankar Member',
       gender: json['gender'] as String? ?? 'MALE',
       age: json['age'] as int?,

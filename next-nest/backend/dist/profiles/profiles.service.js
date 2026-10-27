@@ -675,6 +675,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         OR: [
                             { id },
                             { userId: id },
+                            { governmentEmployment: { id } },
                         ],
                     },
                     include: {

@@ -818,6 +818,7 @@ export class ProfilesService {
             OR: [
               { id },
               { userId: id },
+              { governmentEmployment: { id } },
             ],
           },
           include: {
