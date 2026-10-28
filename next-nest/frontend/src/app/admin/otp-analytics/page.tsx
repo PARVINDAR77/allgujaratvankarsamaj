@@ -270,17 +270,17 @@ export default function OtpAnalyticsPage() {
       title="OTP & SMS Analytics Dashboard"
       subtitle="Super Admin real-time transmission monitor, DLT gateway telemetry & security lockouts"
     >
-      <div className="flex flex-col gap-5 text-white font-sans w-full min-w-0 pb-10">
+      <div className="flex flex-col gap-4 text-white font-sans w-full min-w-0 pb-10">
         {/* ========================================================================= */}
         {/* 1. TOP TELEMETRY RIBBON & QUICK ACTIONS                                   */}
         {/* ========================================================================= */}
-        <div className="bg-[#081326] border border-amber-500/25 rounded-2xl p-3.5 sm:p-4 shadow-xl backdrop-blur-xl flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2.5">
+        <div className="bg-[#081326] border border-amber-500/25 rounded-xl p-2.5 sm:px-4 sm:py-2.5 shadow-xl backdrop-blur-xl flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {/* Live Gateway Active Pill */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold tracking-wide shadow-[0_0_12px_rgba(16,185,129,0.15)]">
-              <span className="relative flex h-2.5 w-2.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-bold tracking-wide shadow-[0_0_10px_rgba(16,185,129,0.15)]">
+              <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <span>Live Gateway Active (allsmsolution.in)</span>
             </div>
@@ -290,35 +290,35 @@ export default function OtpAnalyticsPage() {
               <button
                 onClick={() => handleCopy("TXXTOO", "sender")}
                 title="Click to copy Sender ID"
-                className="group flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 text-slate-300 transition-all cursor-pointer"
+                className="group flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 text-slate-300 transition-all cursor-pointer"
               >
                 <span className="text-slate-400">Sender ID:</span>
                 <strong className="text-amber-300 font-mono tracking-wider">TXXTOO</strong>
                 <span className="text-[10px] text-slate-400 group-hover:text-amber-300">
-                  {copiedKey === "sender" ? "✓ Copied" : "📋"}
+                  {copiedKey === "sender" ? "✓" : "📋"}
                 </span>
               </button>
 
               <button
                 onClick={() => handleCopy("1607100000000313742", "template")}
                 title="Click to copy DLT Template ID"
-                className="group flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 text-slate-300 transition-all cursor-pointer"
+                className="group flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/40 text-slate-300 transition-all cursor-pointer"
               >
                 <span className="text-slate-400">DLT Template:</span>
                 <strong className="text-sky-300 font-mono">1607100000000313742</strong>
                 <span className="text-[10px] text-slate-400 group-hover:text-sky-300">
-                  {copiedKey === "template" ? "✓ Copied" : "📋"}
+                  {copiedKey === "template" ? "✓" : "📋"}
                 </span>
               </button>
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={handleExportCsv}
               disabled={!logs.length}
-              className="px-3.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed border border-white/15 text-slate-200 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+              className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed border border-white/15 text-slate-200 hover:text-white text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
             >
               <span>📥</span>
               <span>Export CSV</span>
@@ -327,10 +327,10 @@ export default function OtpAnalyticsPage() {
             <button
               onClick={refreshAll}
               disabled={refreshing}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] hover:brightness-110 active:scale-95 text-[#041026] text-xs font-black transition-all flex items-center gap-1.5 shadow-[0_4px_12px_rgba(212,175,55,0.3)] cursor-pointer"
+              className="px-3 py-1 rounded-lg bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] hover:brightness-110 active:scale-95 text-[#041026] text-xs font-black transition-all flex items-center gap-1.5 shadow-[0_4px_12px_rgba(212,175,55,0.3)] cursor-pointer"
             >
               <span className={refreshing ? "animate-spin" : ""}>🔄</span>
-              <span>{refreshing ? "Refreshing..." : "Refresh Stats"}</span>
+              <span>{refreshing ? "Refreshing..." : "Refresh"}</span>
             </button>
           </div>
         </div>
@@ -338,10 +338,10 @@ export default function OtpAnalyticsPage() {
         {/* ========================================================================= */}
         {/* 2. TOP KPI CARDS (4 COMPACT EXECUTIVE GLASS TILES)                         */}
         {/* ========================================================================= */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Card 1: Today's Total Dispatches */}
-          <div className="relative rounded-2xl p-4 sm:p-4.5 bg-gradient-to-b from-[#0F1E38]/90 to-[#081224]/90 border border-amber-500/35 shadow-xl hover:border-amber-400/60 transition-all group overflow-hidden">
-            <div className="absolute top-0 right-0 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none -mr-8 -mt-8 group-hover:bg-amber-500/20 transition-all" />
+          <div className="relative rounded-xl p-3.5 sm:p-4 bg-gradient-to-b from-[#0F1E38]/90 to-[#081224]/90 border border-amber-500/35 shadow-xl hover:border-amber-400/60 transition-all group overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl pointer-events-none -mr-6 -mt-6 group-hover:bg-amber-500/20 transition-all" />
             <div className="flex justify-between items-start">
               <div className="min-w-0">
                 <p className="text-[11px] font-extrabold uppercase tracking-wider text-amber-400/90 truncate">
@@ -354,7 +354,7 @@ export default function OtpAnalyticsPage() {
                   <span className="text-xs text-slate-400 font-medium">OTPs</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/40 flex items-center justify-center text-xl shadow-inner shrink-0 ml-2">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/40 flex items-center justify-center text-lg shadow-inner shrink-0 ml-2">
                 ⚡
               </div>
             </div>
@@ -382,8 +382,8 @@ export default function OtpAnalyticsPage() {
           </div>
 
           {/* Card 2: DLT SMS Sent Today */}
-          <div className="relative rounded-2xl p-4 sm:p-4.5 bg-gradient-to-b from-[#0A223E]/90 to-[#061426]/90 border border-sky-500/35 shadow-xl hover:border-sky-400/60 transition-all group overflow-hidden">
-            <div className="absolute top-0 right-0 w-28 h-28 bg-sky-500/10 rounded-full blur-2xl pointer-events-none -mr-8 -mt-8 group-hover:bg-sky-500/20 transition-all" />
+          <div className="relative rounded-xl p-3.5 sm:p-4 bg-gradient-to-b from-[#0A223E]/90 to-[#061426]/90 border border-sky-500/35 shadow-xl hover:border-sky-400/60 transition-all group overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-sky-500/10 rounded-full blur-2xl pointer-events-none -mr-6 -mt-6 group-hover:bg-sky-500/20 transition-all" />
             <div className="flex justify-between items-start">
               <div className="min-w-0">
                 <p className="text-[11px] font-extrabold uppercase tracking-wider text-sky-400 truncate">
@@ -396,7 +396,7 @@ export default function OtpAnalyticsPage() {
                   <span className="text-xs text-sky-300 font-medium">SMS</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400/20 to-sky-600/10 border border-sky-400/40 flex items-center justify-center text-xl text-sky-400 shadow-inner shrink-0 ml-2">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-sky-400/20 to-sky-600/10 border border-sky-400/40 flex items-center justify-center text-lg text-sky-400 shadow-inner shrink-0 ml-2">
                 📱
               </div>
             </div>
@@ -424,8 +424,8 @@ export default function OtpAnalyticsPage() {
           </div>
 
           {/* Card 3: Email OTPs Delivered */}
-          <div className="relative rounded-2xl p-4 sm:p-4.5 bg-gradient-to-b from-[#1C143B]/90 to-[#0C0820]/90 border border-purple-500/35 shadow-xl hover:border-purple-400/60 transition-all group overflow-hidden">
-            <div className="absolute top-0 right-0 w-28 h-28 bg-purple-500/10 rounded-full blur-2xl pointer-events-none -mr-8 -mt-8 group-hover:bg-purple-500/20 transition-all" />
+          <div className="relative rounded-xl p-3.5 sm:p-4 bg-gradient-to-b from-[#1C143B]/90 to-[#0C0820]/90 border border-purple-500/35 shadow-xl hover:border-purple-400/60 transition-all group overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-2xl pointer-events-none -mr-6 -mt-6 group-hover:bg-purple-500/20 transition-all" />
             <div className="flex justify-between items-start">
               <div className="min-w-0">
                 <p className="text-[11px] font-extrabold uppercase tracking-wider text-purple-300 truncate">
@@ -438,7 +438,7 @@ export default function OtpAnalyticsPage() {
                   <span className="text-xs text-purple-300 font-medium">Emails</span>
                 </div>
               </div>
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400/20 to-purple-600/10 border border-purple-400/40 flex items-center justify-center text-xl text-purple-300 shadow-inner shrink-0 ml-2">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-400/20 to-purple-600/10 border border-purple-400/40 flex items-center justify-center text-lg text-purple-300 shadow-inner shrink-0 ml-2">
                 ✉️
               </div>
             </div>
@@ -456,7 +456,7 @@ export default function OtpAnalyticsPage() {
 
           {/* Card 4: Active Lockouts */}
           <div
-            className={`relative rounded-2xl p-4 sm:p-4.5 bg-gradient-to-b border shadow-xl transition-all group overflow-hidden ${
+            className={`relative rounded-xl p-3.5 sm:p-4 bg-gradient-to-b border shadow-xl transition-all group overflow-hidden ${
               (summary?.activeLockouts ?? 0) > 0
                 ? "from-[#2A0F1A]/90 to-[#14060C]/90 border-rose-500/40 hover:border-rose-400/70"
                 : "from-[#0F2328]/90 to-[#071318]/90 border-emerald-500/35 hover:border-emerald-400/60"
@@ -479,7 +479,7 @@ export default function OtpAnalyticsPage() {
                 </div>
               </div>
               <div
-                className={`w-10 h-10 rounded-xl border flex items-center justify-center text-xl shadow-inner shrink-0 ml-2 ${
+                className={`w-9 h-9 rounded-lg border flex items-center justify-center text-lg shadow-inner shrink-0 ml-2 ${
                   (summary?.activeLockouts ?? 0) > 0
                     ? "bg-rose-500/15 border-rose-500/40 text-rose-400"
                     : "bg-emerald-500/15 border-emerald-500/40 text-emerald-400"
@@ -510,9 +510,9 @@ export default function OtpAnalyticsPage() {
         {/* ========================================================================= */}
         {/* 3. 7-DAY DISPATCH TRENDS CHART & PURPOSE HEALTH (12-COL RESPONSIVE GRID)  */}
         {/* ========================================================================= */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-stretch">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-stretch">
           {/* Trend Bar Chart (8 columns on XL) */}
-          <div className="xl:col-span-8 bg-[#09152A] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col justify-between min-w-0">
+          <div className="xl:col-span-8 bg-[#09152A] border border-white/10 rounded-xl p-4 sm:p-4.5 shadow-2xl flex flex-col justify-between min-w-0">
             <div>
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div>
@@ -652,7 +652,7 @@ export default function OtpAnalyticsPage() {
           </div>
 
           {/* Purpose Breakdown & Telemetry (4 columns on XL) */}
-          <div className="xl:col-span-4 bg-[#09152A] border border-white/10 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col justify-between min-w-0">
+          <div className="xl:col-span-4 bg-[#09152A] border border-white/10 rounded-xl p-4 sm:p-4.5 shadow-2xl flex flex-col justify-between min-w-0">
             <div>
               <h4 className="text-sm sm:text-base font-extrabold text-white flex items-center gap-2">
                 <span>🎯</span>
@@ -770,7 +770,7 @@ export default function OtpAnalyticsPage() {
         {/* ========================================================================= */}
         {/* 4. REAL-TIME OTP AUDIT LOG TABLE & FILTERS                                */}
         {/* ========================================================================= */}
-        <div className="bg-[#09152A] border border-white/10 rounded-2xl p-5 sm:p-6 shadow-2xl">
+        <div className="bg-[#09152A] border border-white/10 rounded-xl p-4 sm:p-5 shadow-2xl">
           {/* Header & Filter Controls */}
           <div className="flex flex-wrap items-center justify-between gap-4 mb-5">
             <div>
