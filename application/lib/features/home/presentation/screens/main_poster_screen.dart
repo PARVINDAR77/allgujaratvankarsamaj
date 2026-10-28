@@ -50,17 +50,20 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
 
     final unreadNotificationCount = ref.watch(unreadNotificationCountProvider);
     final size = MediaQuery.of(context).size;
+    final padding = MediaQuery.paddingOf(context);
+    final availableHeight = size.height - padding.top - padding.bottom;
     final isMobile = size.width < 600;
 
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Container(
-            width: isMobile ? size.width : 500,
-            height: isMobile ? (size.width * (1600 / 735)) : (500 * (1600 / 735)),
-            margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
+        child: Center(
+          child: SingleChildScrollView(
+            physics: isMobile ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            child: Container(
+              width: isMobile ? size.width : 500,
+              height: isMobile ? availableHeight : (500 * (1600 / 735)),
+              margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: const Color(0xFF020B18),
               borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(16),
@@ -435,6 +438,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
               ),
             ),
           ),
+        ),
       );
   }
 }
