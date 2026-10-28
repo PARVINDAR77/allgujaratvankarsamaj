@@ -34,6 +34,22 @@ export declare class OtpService {
         message: string;
         registrationToken: string;
     }>;
+    sendProfileContactOtp(userId: string, dto: SendRegistrationOtpDto, ipAddress?: string): Promise<{
+        success: boolean;
+        message: string;
+        maskedPhone: string;
+        maskedEmail: string;
+        smsDelivered: boolean;
+        emailConfigured: boolean;
+        expiresInSeconds: number;
+        resendCooldownSeconds: number;
+        maxAttempts: number;
+    }>;
+    verifyProfileContactOtp(userId: string, dto: VerifyRegistrationOtpDto): Promise<{
+        success: boolean;
+        verified: boolean;
+        message: string;
+    }>;
     consumeRegistrationToken(token: string, phone: string, email: string): Promise<boolean>;
     sendForgotPasswordOtp(dto: SendForgotPasswordOtpDto, ipAddress?: string): Promise<{
         success: boolean;

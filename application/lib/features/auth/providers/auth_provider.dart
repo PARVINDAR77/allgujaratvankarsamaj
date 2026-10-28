@@ -211,6 +211,72 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<Map<String, dynamic>> sendProfileContactOtp({
+    required String name,
+    required String phone,
+    required String email,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/profile/send-contact-otp', data: {
+        'name': name.trim(),
+        'phone': phone.trim(),
+        'email': email.trim(),
+      });
+      return {
+        'success': true,
+        'message': res.data['message'] ?? 'ચકાસણી કોડ મોકલવામાં આવ્યા છે',
+        'maskedPhone': res.data['maskedPhone'] ?? phone,
+        'maskedEmail': res.data['maskedEmail'] ?? email,
+        'expiresInSeconds': res.data['expiresInSeconds'] ?? 600,
+        'resendCooldownSeconds': res.data['resendCooldownSeconds'] ?? 60,
+        'maxAttempts': res.data['maxAttempts'] ?? 4,
+        'emailConfigured': true,
+        'smsDelivered': res.data['smsDelivered'] != false,
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {
+        'success': false,
+        'message': failure.message,
+        'isLocked': e.response?.statusCode == 429,
+        'remainingSeconds': e.response?.data is Map ? e.response?.data['remainingSeconds'] : null,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyProfileContactOtp({
+    required String phone,
+    required String email,
+    required String phoneOtp,
+    required String emailOtp,
+  }) async {
+    try {
+      final res = await _dio.post('/auth/profile/verify-contact-otp', data: {
+        'phone': phone.trim(),
+        'email': email.trim(),
+        'phoneOtp': phoneOtp.trim(),
+        'emailOtp': emailOtp.trim(),
+      });
+      return {
+        'success': true,
+        'verified': true,
+        'message': res.data['message'] ?? 'મોબાઇલ અને ઈમેઈલ સફળતાપૂર્વક ચકાસાયેલ છે',
+      };
+    } on DioException catch (e) {
+      final failure = _mapDioException(e);
+      return {
+        'success': false,
+        'message': failure.message,
+        'isLocked': e.response?.statusCode == 429,
+        'remainingSeconds': e.response?.data is Map ? e.response?.data['remainingSeconds'] : null,
+      };
+    } catch (e) {
+      return {'success': false, 'message': 'ભૂલ: $e'};
+    }
+  }
+
   Future<bool> register(
     String email,
     String password, {

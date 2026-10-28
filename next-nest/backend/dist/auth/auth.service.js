@@ -39,16 +39,20 @@ let AuthService = AuthService_1 = class AuthService {
             isEmailVerified = true;
             isPhoneVerified = true;
         }
+        let existingUnverifiedUser = null;
         if (dto.email) {
             const cleanEmail = dto.email.trim().toLowerCase();
             const existingByEmail = await this.usersService.findByEmail(cleanEmail);
             if (existingByEmail) {
-                throw new common_1.ConflictException("આ ઈમેઈલ સરનામું પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already registered. Candidates can use their email only once.)");
+                if (existingByEmail.isEmailVerified || existingByEmail.isPhoneVerified) {
+                    throw new common_1.ConflictException("આ ઈમેઈલ સરનામું પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already registered. Candidates can use their email only once.)");
+                }
+                existingUnverifiedUser = existingByEmail;
             }
             const existingProfileEmail = await this.prisma.matrimonialProfile.findFirst({
                 where: { contactEmail: cleanEmail },
             });
-            if (existingProfileEmail) {
+            if (existingProfileEmail && (!existingUnverifiedUser || existingProfileEmail.userId !== existingUnverifiedUser.id)) {
                 throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can use their email only once.)");
             }
         }
@@ -56,20 +60,40 @@ let AuthService = AuthService_1 = class AuthService {
             const cleanPhone = dto.phone.trim();
             const existingByPhone = await this.usersService.findByPhone(cleanPhone);
             if (existingByPhone) {
-                throw new common_1.ConflictException("આ મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે. (This mobile number is already registered.)");
+                if (existingByPhone.isPhoneVerified || existingByPhone.isEmailVerified) {
+                    throw new common_1.ConflictException("આ મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે. (This mobile number is already registered.)");
+                }
+                existingUnverifiedUser = existingByPhone;
             }
         }
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(dto.password, saltRounds);
-        const user = await this.usersService.createUser({
-            email: dto.email,
-            phone: dto.phone,
-            name: dto.name,
-            gender: dto.gender,
-            passwordHash,
-            isEmailVerified,
-            isPhoneVerified,
-        });
+        let user;
+        if (existingUnverifiedUser) {
+            user = await this.prisma.user.update({
+                where: { id: existingUnverifiedUser.id },
+                data: {
+                    email: dto.email,
+                    phone: dto.phone,
+                    name: dto.name,
+                    gender: dto.gender,
+                    passwordHash,
+                    isEmailVerified,
+                    isPhoneVerified,
+                },
+            });
+        }
+        else {
+            user = await this.usersService.createUser({
+                email: dto.email,
+                phone: dto.phone,
+                name: dto.name,
+                gender: dto.gender,
+                passwordHash,
+                isEmailVerified,
+                isPhoneVerified,
+            });
+        }
         const { passwordHash: _, ...safeUser } = user;
         return {
             ...safeUser,

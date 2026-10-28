@@ -16,6 +16,7 @@ import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/widgets/samaj_service_picker_sheet.dart';
 import '../../../../shared/constants/pargana_constants.dart';
 import '../widgets/update_password_dialog.dart';
+import '../../../auth/providers/auth_provider.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -385,8 +386,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _abroadCountry = profile.abroadCountry;
               _firstName = profile.firstName;
               _lastName = profile.lastName;
-              _mobileNumber = profile.contactPhone;
-              _emailAddress = profile.contactEmail;
+              final user = ref.read(authNotifierProvider).user;
+              _mobileNumber = (profile.contactPhone != null && profile.contactPhone!.isNotEmpty) ? profile.contactPhone : user?.phone;
+              _emailAddress = (profile.contactEmail != null && profile.contactEmail!.isNotEmpty) ? profile.contactEmail : user?.email;
               _whatsappNumber = profile.altPhone;
               _houseNumber = profile.addressLine;
               _city = profile.taluka;
@@ -590,7 +592,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(10),
                 ],
-                onChanged: (v) => _mobileNumber = v,
+                suffix: ((_mobileNumber ?? profile.contactPhone ?? '').trim().length == 10)
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.green.shade400),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                            SizedBox(width: 4),
+                            Text('ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      )
+                    : null,
+                onChanged: (v) => setState(() => _mobileNumber = v),
               ),
               _buildTextField(
                 'Email Address (ઈમેઈલ સરનામું)',
@@ -598,7 +619,26 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 Icons.email_outlined,
                 initialValue: _emailAddress ?? profile.contactEmail,
                 keyboardType: TextInputType.emailAddress,
-                onChanged: (v) => _emailAddress = v,
+                suffix: ((_emailAddress ?? profile.contactEmail ?? '').trim().isNotEmpty && (_emailAddress ?? profile.contactEmail ?? '').contains('@'))
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        margin: const EdgeInsets.only(right: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE8F5E9),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: Colors.green.shade400),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
+                            SizedBox(width: 4),
+                            Text('ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                      )
+                    : null,
+                onChanged: (v) => setState(() => _emailAddress = v),
               ),
               _buildTextField(
                 'WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)',
@@ -1335,6 +1375,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     String? initialValue,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
+    Widget? suffix,
+    TextEditingController? controller,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -1356,7 +1398,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ],
             ),
             child: TextFormField(
-              initialValue: initialValue,
+              controller: controller,
+              initialValue: controller == null ? initialValue : null,
               maxLines: isMultiline ? 4 : 1,
               readOnly: readOnly,
               onTap: onTap,
@@ -1368,7 +1411,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 hintText: hint,
                 hintStyle: TextStyle(color: readOnly && hint != 'Tap to select date of birth' ? Colors.black87 : Colors.black38, fontSize: 14),
                 prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
-                suffixIcon: isDropdown ? const Icon(Icons.arrow_drop_down, color: Colors.black54) : null,
+                suffixIcon: suffix ?? (isDropdown ? const Icon(Icons.arrow_drop_down, color: Colors.black54) : null),
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
               ),

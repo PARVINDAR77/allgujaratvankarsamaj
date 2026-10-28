@@ -85,6 +85,29 @@ export class AuthController {
     return this.verifyRegistrationOtp(dto);
   }
 
+  @Post("profile/send-contact-otp")
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Send OTP to user's mobile and email for profile contact verification" })
+  async sendProfileContactOtp(@Request() req: any, @Body() dto: SendRegistrationOtpDto) {
+    const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+    const userId = req.user?.sub || req.user?.id;
+    return this.otpService.sendProfileContactOtp(
+      userId,
+      dto,
+      Array.isArray(ip) ? ip[0] : ip,
+    );
+  }
+
+  @Post("profile/verify-contact-otp")
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: "Verify mobile OTP and email OTP for profile contact verification" })
+  async verifyProfileContactOtp(@Request() req: any, @Body() dto: VerifyRegistrationOtpDto) {
+    const userId = req.user?.sub || req.user?.id;
+    return this.otpService.verifyProfileContactOtp(userId, dto);
+  }
+
   @Post("register")
   @ApiOperation({ summary: "Register a new user" })
   @ApiResponse({

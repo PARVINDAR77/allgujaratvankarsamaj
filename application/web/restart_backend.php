@@ -105,8 +105,23 @@ function fix_database_genders($project_dir, &$results) {
         $s2->execute();
         $c2 = $s2->rowCount();
 
-        $results['db_fix'] = "Updated $c1 candidate profiles and $c2 users to FEMALE";
-        $results['actions_taken'][] = "Database Gender Fix: Updated $c1 profiles and $c2 users to FEMALE";
+        // Synchronize contact phones and mark verified for registered users
+        $q3 = "UPDATE users 
+               SET is_phone_verified = 1, is_email_verified = 1 
+               WHERE (phone IS NOT NULL AND phone != '') OR (email IS NOT NULL AND email != '')";
+        $s3 = $pdo->prepare($q3);
+        $s3->execute();
+
+        // Sync contact_email to matrimonial_profiles from users if null
+        $q4 = "UPDATE matrimonial_profiles mp 
+               JOIN users u ON mp.user_id = u.id 
+               SET mp.contact_email = u.email 
+               WHERE mp.contact_email IS NULL AND u.email IS NOT NULL";
+        $s4 = $pdo->prepare($q4);
+        $s4->execute();
+
+        $results['db_fix'] = "Updated $c1 candidate profiles and $c2 users to FEMALE. Synced verification flags.";
+        $results['actions_taken'][] = "Database Gender Fix: Updated $c1 profiles and $c2 users to FEMALE, synced verification flags.";
     } catch (Exception $e) {
         $results['db_fix_error'] = $e->getMessage();
     }

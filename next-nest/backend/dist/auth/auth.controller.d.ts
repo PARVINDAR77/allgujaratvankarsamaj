@@ -45,22 +45,23 @@ export declare class AuthController {
         message: string;
         registrationToken: string;
     }>;
-    register(dto: RegisterDto): Promise<{
-        isVerified: boolean;
-        hasProfile: boolean;
-        profileStatus: string;
-        status: import(".prisma/client").$Enums.Status;
-        name: string | null;
-        gender: import(".prisma/client").$Enums.Gender | null;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        email: string | null;
-        phone: string | null;
-        role: import(".prisma/client").$Enums.Role;
-        isEmailVerified: boolean;
-        isPhoneVerified: boolean;
+    sendProfileContactOtp(req: any, dto: SendRegistrationOtpDto): Promise<{
+        success: boolean;
+        message: string;
+        maskedPhone: string;
+        maskedEmail: string;
+        smsDelivered: boolean;
+        emailConfigured: boolean;
+        expiresInSeconds: number;
+        resendCooldownSeconds: number;
+        maxAttempts: number;
     }>;
+    verifyProfileContactOtp(req: any, dto: VerifyRegistrationOtpDto): Promise<{
+        success: boolean;
+        verified: boolean;
+        message: string;
+    }>;
+    register(dto: RegisterDto): Promise<any>;
     login(dto: LoginDto, res: Response): Promise<{
         message: string;
         user: {

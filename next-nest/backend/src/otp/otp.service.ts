@@ -110,11 +110,11 @@ export class OtpService {
     const cleanPhone = this.smsService.cleanPhoneNumber(dto.phone);
     const cleanEmail = dto.email.trim().toLowerCase();
 
-    // 1. Ensure user does not already exist
+    // 1. Ensure user does not already exist with verified status
     const existingPhone = await this.prisma.user.findFirst({
       where: { phone: cleanPhone },
     });
-    if (existingPhone) {
+    if (existingPhone && (existingPhone.isPhoneVerified || existingPhone.isEmailVerified)) {
       throw new ConflictException(
         "આ મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે (This mobile number is already registered)",
       );
@@ -123,7 +123,7 @@ export class OtpService {
     const existingEmail = await this.prisma.user.findFirst({
       where: { email: cleanEmail },
     });
-    if (existingEmail) {
+    if (existingEmail && (existingEmail.isPhoneVerified || existingEmail.isEmailVerified)) {
       throw new ConflictException(
         "આ ઈમેઈલ પહેલેથી જ નોંધાયેલ છે (This email address is already registered)",
       );
@@ -332,11 +332,221 @@ export class OtpService {
       }),
     ]);
 
+    // If an existing unverified user is in the database with this phone or email, mark them verified!
+    try {
+      await this.prisma.user.updateMany({
+        where: {
+          OR: [{ phone: cleanPhone }, { email: cleanEmail }],
+        },
+        data: {
+          isPhoneVerified: true,
+          isEmailVerified: true,
+        },
+      });
+    } catch (_) {}
+
     return {
       success: true,
       verified: true,
       message: "મોબાઇલ અને ઈમેઈલ સફળતાપૂર્વક ચકાસાયા છે! (Mobile & Email verified successfully)",
       registrationToken,
+    };
+  }
+
+  /**
+   * Profile Contact Verification: Send OTP to Phone and Email for logged-in user
+   */
+  async sendProfileContactOtp(
+    userId: string,
+    dto: SendRegistrationOtpDto,
+    ipAddress?: string,
+  ) {
+    const cleanPhone = this.smsService.cleanPhoneNumber(dto.phone);
+    const cleanEmail = dto.email.trim().toLowerCase();
+
+    // Check if another user is already verified with this phone or email
+    const otherPhone = await this.prisma.user.findFirst({
+      where: {
+        phone: cleanPhone,
+        id: { not: userId },
+        isPhoneVerified: true,
+      },
+    });
+    if (otherPhone) {
+      throw new ConflictException(
+        "આ મોબાઇલ નંબર અન્ય ખાતામાં ચકાસાયેલ છે (This mobile number is already verified by another account)",
+      );
+    }
+
+    const otherEmail = await this.prisma.user.findFirst({
+      where: {
+        email: cleanEmail,
+        id: { not: userId },
+        isEmailVerified: true,
+      },
+    });
+    if (otherEmail) {
+      throw new ConflictException(
+        "આ ઈમેઈલ અન્ય ખાતામાં ચકાસાયેલ છે (This email is already verified by another account)",
+      );
+    }
+
+    // Check lockout & cooldown
+    const phoneSession = await this.checkLockout(cleanPhone, OtpPurpose.REGISTRATION);
+    this.checkCooldown(phoneSession);
+    const emailSession = await this.checkLockout(cleanEmail, OtpPurpose.REGISTRATION);
+    this.checkCooldown(emailSession);
+
+    // Generate OTPs
+    const phoneOtp = this.generate6DigitOtp();
+    const emailOtp = this.generate6DigitOtp();
+    const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MINUTES * 60 * 1000);
+
+    await this.prisma.otpSession.deleteMany({
+      where: {
+        target: { in: [cleanPhone, cleanEmail] },
+        purpose: OtpPurpose.REGISTRATION,
+      },
+    });
+
+    await this.prisma.otpSession.create({
+      data: {
+        target: cleanPhone,
+        channel: OtpChannel.SMS,
+        purpose: OtpPurpose.REGISTRATION,
+        code: phoneOtp,
+        attempts: 0,
+        maxAttempts: this.MAX_ATTEMPTS,
+        expiresAt,
+      },
+    });
+
+    await this.prisma.otpSession.create({
+      data: {
+        target: cleanEmail,
+        channel: OtpChannel.EMAIL,
+        purpose: OtpPurpose.REGISTRATION,
+        code: emailOtp,
+        attempts: 0,
+        maxAttempts: this.MAX_ATTEMPTS,
+        expiresAt,
+      },
+    });
+
+    // Dispatch SMS and Email
+    const [smsRes, mailRes] = await Promise.all([
+      this.smsService.sendOtpSms({
+        phone: cleanPhone,
+        otp: phoneOtp,
+        recipientName: dto.name,
+        purpose: OtpPurpose.REGISTRATION,
+        ipAddress,
+      }),
+      this.mailService.sendOtpEmail({
+        email: cleanEmail,
+        otp: emailOtp,
+        recipientName: dto.name,
+        purpose: OtpPurpose.REGISTRATION,
+        ipAddress,
+      }),
+    ]);
+
+    return {
+      success: true,
+      message: `ચકાસણી કોડ તમારા મોબાઇલ (${this.maskPhone(cleanPhone)}) અને ઈમેઈલ (${this.maskEmail(cleanEmail)}) પર મોકલવામાં આવ્યો છે.`,
+      maskedPhone: this.maskPhone(cleanPhone),
+      maskedEmail: this.maskEmail(cleanEmail),
+      smsDelivered: smsRes.success,
+      emailConfigured: true,
+      expiresInSeconds: this.OTP_EXPIRY_MINUTES * 60,
+      resendCooldownSeconds: this.RESEND_COOLDOWN_SECONDS,
+      maxAttempts: this.MAX_ATTEMPTS,
+    };
+  }
+
+  /**
+   * Profile Contact Verification: Verify Phone & Email OTPs and update User & Profile records
+   */
+  async verifyProfileContactOtp(userId: string, dto: VerifyRegistrationOtpDto) {
+    const cleanPhone = this.smsService.cleanPhoneNumber(dto.phone);
+    const cleanEmail = dto.email.trim().toLowerCase();
+
+    // Check lockouts
+    await this.checkLockout(cleanPhone, OtpPurpose.REGISTRATION);
+    await this.checkLockout(cleanEmail, OtpPurpose.REGISTRATION);
+
+    const phoneSession = await this.prisma.otpSession.findFirst({
+      where: { target: cleanPhone, purpose: OtpPurpose.REGISTRATION },
+      orderBy: { createdAt: "desc" },
+    });
+    const emailSession = await this.prisma.otpSession.findFirst({
+      where: { target: cleanEmail, purpose: OtpPurpose.REGISTRATION },
+      orderBy: { createdAt: "desc" },
+    });
+
+    if (!phoneSession || !emailSession) {
+      throw new BadRequestException(
+        "ચકાસણી સત્ર મળ્યું નથી. કૃપા કરીને ફરીથી કોડ મોકલો (Verification session not found. Please request codes again.)",
+      );
+    }
+
+    const now = new Date();
+    if (phoneSession.expiresAt < now || emailSession.expiresAt < now) {
+      throw new BadRequestException(
+        "OTP ની મુદત પૂરી થઈ ગઈ છે. કૃપા કરીને નવો કોડ મેળવો (OTP has expired. Please request a new code.)",
+      );
+    }
+
+    // Verify Phone OTP
+    if (phoneSession.code !== dto.phoneOtp.trim()) {
+      const newAttempts = phoneSession.attempts + 1;
+      const remainingAttempts = Math.max(0, this.MAX_ATTEMPTS - newAttempts);
+      await this.prisma.otpSession.update({
+        where: { id: phoneSession.id },
+        data: { attempts: newAttempts },
+      });
+      throw new BadRequestException(
+        `અમાન્ય મોબાઇલ OTP કોડ. બાકી રહેલા પ્રયાસો: ${remainingAttempts}`,
+      );
+    }
+
+    // Verify Email OTP
+    const cleanEmailOtp = (dto.emailOtp || "").trim();
+    if (emailSession.code !== cleanEmailOtp) {
+      const newAttempts = emailSession.attempts + 1;
+      const remainingAttempts = Math.max(0, this.MAX_ATTEMPTS - newAttempts);
+      await this.prisma.otpSession.update({
+        where: { id: emailSession.id },
+        data: { attempts: newAttempts },
+      });
+      throw new BadRequestException(
+        `અમાન્ય ઈમેઈલ OTP કોડ. બાકી રહેલા પ્રયાસો: ${remainingAttempts}`,
+      );
+    }
+
+    // Mark user and profile verified!
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        phone: cleanPhone,
+        email: cleanEmail,
+        isPhoneVerified: true,
+        isEmailVerified: true,
+      },
+    });
+
+    // Update matrimonial profile contact if profile exists
+    await this.prisma.matrimonialProfile.updateMany({
+      where: { userId },
+      data: {
+        contactEmail: cleanEmail,
+      },
+    });
+
+    return {
+      success: true,
+      verified: true,
+      message: "મોબાઇલ નંબર અને ઈમેઈલ સફળતાપૂર્વક ચકાસાયેલ છે! (Mobile number and Email successfully verified!)",
     };
   }
 

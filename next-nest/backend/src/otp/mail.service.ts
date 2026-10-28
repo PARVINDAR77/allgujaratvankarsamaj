@@ -2,6 +2,9 @@ import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 import { OtpChannel, OtpPurpose, OtpStatus } from "@prisma/client";
 import * as nodemailer from "nodemailer";
+import * as https from "https";
+import * as http from "http";
+import { URL } from "url";
 
 export interface SendMailResult {
   success: boolean;
@@ -13,6 +16,11 @@ export interface SendMailResult {
 export class MailService {
   private readonly logger = new Logger(MailService.name);
   private transporter: nodemailer.Transporter | null = null;
+  private readonly mailBridgeUrl =
+    process.env.MAIL_BRIDGE_URL ||
+    "https://allgujaratvankarsamaj.com/mail_bridge.php";
+  private readonly mailBridgeSecret =
+    process.env.MAIL_BRIDGE_SECRET || "VANKAR_INTERNAL_MAIL_SECRET_2026";
 
   constructor(private readonly prisma: PrismaService) {
     this.initTransporter();
@@ -39,14 +47,95 @@ export class MailService {
         this.transporter = null;
       }
     } else {
-      this.logger.warn(
-        "SMTP credentials not fully set (SMTP_HOST, SMTP_USER, SMTP_PASS). Outgoing emails will be logged to console until configured.",
+      this.logger.log(
+        "Using Hostinger Native Mail Bridge (mail_bridge.php) for outgoing email delivery.",
       );
     }
   }
 
   public isConfigured(): boolean {
-    return this.transporter !== null;
+    return true; // Transporter or Hostinger Native Mail Bridge is always active
+  }
+
+  /**
+   * Dispatch email via Hostinger Mail Bridge
+   */
+  private async sendViaMailBridge(params: {
+    to: string;
+    subject: string;
+    html: string;
+    otp: string;
+  }): Promise<{ success: boolean; messageId?: string; error?: string }> {
+    const payload = JSON.stringify({
+      secret: this.mailBridgeSecret,
+      to: params.to,
+      subject: params.subject,
+      html: params.html,
+      otp: params.otp,
+    });
+
+    try {
+      const parsedUrl = new URL(this.mailBridgeUrl);
+      const isHttps = parsedUrl.protocol === "https:";
+      const client = isHttps ? https : http;
+
+      return new Promise((resolve) => {
+        const req = client.request(
+          {
+            protocol: parsedUrl.protocol,
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port || (isHttps ? 443 : 80),
+            path: `${parsedUrl.pathname}${parsedUrl.search}`,
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Content-Length": Buffer.byteLength(payload).toString(),
+              "X-Mail-Secret": this.mailBridgeSecret,
+            },
+            timeout: 10000,
+          },
+          (res) => {
+            let data = "";
+            res.on("data", (chunk) => (data += chunk));
+            res.on("end", () => {
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.success) {
+                  resolve({
+                    success: true,
+                    messageId: `bridge_${Date.now()}`,
+                  });
+                } else {
+                  resolve({
+                    success: false,
+                    error: parsed.error || "Bridge returned error",
+                  });
+                }
+              } catch {
+                resolve({
+                  success: res.statusCode === 200,
+                  messageId: `bridge_${Date.now()}`,
+                });
+              }
+            });
+          },
+        );
+
+        req.on("error", (err) => {
+          resolve({ success: false, error: err.message });
+        });
+
+        req.on("timeout", () => {
+          req.destroy();
+          resolve({ success: false, error: "Bridge request timed out" });
+        });
+
+        req.write(payload);
+        req.end();
+      });
+    } catch (err: any) {
+      return { success: false, error: err.message };
+    }
   }
 
   private buildHtmlTemplate(params: {
@@ -139,21 +228,40 @@ export class MailService {
 
     try {
       if (this.transporter) {
-        const info = await this.transporter.sendMail({
-          from: fromAddress,
+        try {
+          const info = await this.transporter.sendMail({
+            from: fromAddress,
+            to: cleanEmail,
+            subject,
+            html,
+          });
+          messageId = info.messageId;
+          gatewayResp = `SMTP Success: messageId=${info.messageId}`;
+          status = OtpStatus.DELIVERED;
+          this.logger.log(`Email delivered to ${cleanEmail} via SMTP (ID: ${messageId})`);
+        } catch (smtpErr: any) {
+          this.logger.warn(`SMTP failed (${smtpErr.message}), falling back to Hostinger Mail Bridge`);
+        }
+      }
+
+      if (status !== OtpStatus.DELIVERED) {
+        const bridgeRes = await this.sendViaMailBridge({
           to: cleanEmail,
           subject,
           html,
+          otp: params.otp,
         });
-        messageId = info.messageId;
-        gatewayResp = `SMTP Success: messageId=${info.messageId}`;
-        status = OtpStatus.DELIVERED;
-        this.logger.log(`Email delivered to ${cleanEmail} (ID: ${messageId})`);
-      } else {
-        // Fallback when SMTP is not configured yet
-        gatewayResp = `SMTP not configured in environment. Outputting OTP: ${params.otp}`;
-        this.logger.warn(`EMAIL TO ${cleanEmail} (OTP: ${params.otp})`);
-        status = OtpStatus.SENT;
+
+        if (bridgeRes.success) {
+          messageId = bridgeRes.messageId;
+          gatewayResp = "Delivered via Hostinger Mail Bridge";
+          status = OtpStatus.DELIVERED;
+          this.logger.log(`Email OTP successfully delivered to ${cleanEmail} via Hostinger Mail Bridge`);
+        } else {
+          gatewayResp = `Bridge error: ${bridgeRes.error}`;
+          status = OtpStatus.FAILED;
+          this.logger.error(`Failed to send email to ${cleanEmail} via Bridge: ${bridgeRes.error}`);
+        }
       }
 
       await this.prisma.otpLog.create({

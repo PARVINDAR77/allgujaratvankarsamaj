@@ -9,9 +9,12 @@ export declare class MailService {
     private readonly prisma;
     private readonly logger;
     private transporter;
+    private readonly mailBridgeUrl;
+    private readonly mailBridgeSecret;
     constructor(prisma: PrismaService);
     private initTransporter;
     isConfigured(): boolean;
+    private sendViaMailBridge;
     private buildHtmlTemplate;
     sendOtpEmail(params: {
         email: string;

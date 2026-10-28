@@ -14,22 +14,7 @@ export declare class AuthService {
     private readonly otpService;
     private readonly logger;
     constructor(usersService: UsersService, jwtService: JwtService, configService: ConfigService, prisma: PrismaService, otpService: OtpService);
-    register(dto: RegisterDto): Promise<{
-        isVerified: boolean;
-        hasProfile: boolean;
-        profileStatus: string;
-        status: import(".prisma/client").$Enums.Status;
-        name: string | null;
-        gender: import(".prisma/client").$Enums.Gender | null;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        email: string | null;
-        phone: string | null;
-        role: import(".prisma/client").$Enums.Role;
-        isEmailVerified: boolean;
-        isPhoneVerified: boolean;
-    }>;
+    register(dto: RegisterDto): Promise<any>;
     login(dto: LoginDto): Promise<{
         accessToken: string;
         user: {
