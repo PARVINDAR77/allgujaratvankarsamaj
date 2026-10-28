@@ -1800,31 +1800,34 @@ export class ProfilesService {
       }
     }
 
-    // Keyword search across multiple fields
+    // Keyword search across multiple fields (supporting full names like "Parvindar Panjabi", "Raj Parmar", "Rohit Vankar", "Jayesh Solanki")
     const searchTerm = query.search || (query as any).keyword;
     if (searchTerm && searchTerm.trim() !== "") {
-      const term = searchTerm.trim();
-      andConditions.push({
-        OR: [
-          { id: { contains: term } },
-          { firstName: { contains: term } },
-          { lastName: { contains: term } },
-          { city: { contains: term } },
-          { state: { contains: term } },
-          { occupation: { contains: term } },
-          { organizationName: { contains: term } },
-          { designation: { contains: term } },
-          { nativePlace: { contains: term } },
-          { education: { contains: term } },
-          { fatherName: { contains: term } },
-          { motherName: { contains: term } },
-          { mamasVillage: { contains: term } },
-          { annualIncome: { contains: term } },
-          { bloodGroup: { contains: term } },
-          { religion: { contains: term } },
-          { caste: { contains: term } },
-        ],
-      });
+      const trimmed = searchTerm.trim();
+      const tokens = trimmed.split(/\s+/).filter(Boolean);
+      for (const token of tokens) {
+        andConditions.push({
+          OR: [
+            { id: { contains: token } },
+            { firstName: { contains: token } },
+            { lastName: { contains: token } },
+            { city: { contains: token } },
+            { state: { contains: token } },
+            { occupation: { contains: token } },
+            { organizationName: { contains: token } },
+            { designation: { contains: token } },
+            { nativePlace: { contains: token } },
+            { education: { contains: token } },
+            { fatherName: { contains: token } },
+            { motherName: { contains: token } },
+            { mamasVillage: { contains: token } },
+            { annualIncome: { contains: token } },
+            { bloodGroup: { contains: token } },
+            { religion: { contains: token } },
+            { caste: { contains: token } },
+          ],
+        });
+      }
     }
 
     const cleanFilter = (val: any) => {

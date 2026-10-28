@@ -635,6 +635,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       }
       if (_searchController.text.trim().isNotEmpty) {
         final q = _searchController.text.trim().toLowerCase();
+        final tokens = q.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
         final name = (item['name'] ?? '').toString().toLowerCase();
         final id = (item['id'] ?? '').toString().toLowerCase();
         final dept = (item['dept'] ?? '').toString().toLowerCase();
@@ -645,17 +646,22 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
         final about = (item['about'] ?? '').toString().toLowerCase();
         final native = (item['nativePlace'] ?? '').toString().toLowerCase();
         final pargana = (item['pargana'] ?? '').toString().toLowerCase();
+        final phone = (item['phone'] ?? '').toString().toLowerCase();
+        final edu = (item['education'] ?? '').toString().toLowerCase();
         
-        final matches = name.contains(q) ||
-            id.contains(q) ||
-            dept.contains(q) ||
-            post.contains(q) ||
-            company.contains(q) ||
-            dist.contains(q) ||
-            tal.contains(q) ||
-            about.contains(q) ||
-            native.contains(q) ||
-            pargana.contains(q);
+        final matches = tokens.every((token) =>
+            name.contains(token) ||
+            id.contains(token) ||
+            dept.contains(token) ||
+            post.contains(token) ||
+            company.contains(token) ||
+            dist.contains(token) ||
+            tal.contains(token) ||
+            about.contains(token) ||
+            native.contains(token) ||
+            pargana.contains(token) ||
+            phone.contains(token) ||
+            edu.contains(token));
         if (!matches) return false;
       }
       return true;
@@ -1555,6 +1561,15 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                       onChanged: (_) => setState(() {}),
                       decoration: InputDecoration(
                         prefixIcon: const Icon(Icons.search, color: Color(0xFFA4143D), size: 20),
+                        suffixIcon: _searchController.text.isNotEmpty
+                            ? IconButton(
+                                icon: const Icon(Icons.clear, size: 16, color: Color(0xFF9CA3AF)),
+                                onPressed: () {
+                                  _searchController.clear();
+                                  setState(() {});
+                                },
+                              )
+                            : null,
                         hintText: 'Search by Name (નામથી શોધો)...',
                         hintStyle: const TextStyle(fontSize: 12.5, color: Color(0xFF9CA3AF)),
                         contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),
@@ -1619,6 +1634,15 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                     onChanged: (_) => setState(() {}),
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search, color: Color(0xFFA4143D), size: 20),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 16, color: Color(0xFF9CA3AF)),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() {});
+                              },
+                            )
+                          : null,
                       hintText: 'Search by Name (નામથી શોધો)...',
                       hintStyle: const TextStyle(fontSize: 12.5, color: Color(0xFF9CA3AF)),
                       contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 12),

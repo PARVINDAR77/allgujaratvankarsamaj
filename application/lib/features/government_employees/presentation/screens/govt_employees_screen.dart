@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,6 +24,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   TabController? _tabController;
   final TextEditingController _searchController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  Timer? _debounceTimer;
 
   // Local filter state — reflects what is sent to the backend.
   String? _selectedDepartmentId;
@@ -64,6 +66,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     _tabController?.dispose();
     _scrollController.removeListener(_onScroll);
@@ -135,7 +138,36 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   }
 
   List<GovtEmployeeModel> _filterGovtOnly(List<GovtEmployeeModel> items) {
-    return items.where((emp) => !_isNonGovtEmployee(emp)).toList();
+    var list = items.where((emp) => !_isNonGovtEmployee(emp)).toList();
+    final q = _searchController.text.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      final tokens = q.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+      list = list.where((emp) {
+        final name = emp.fullName.toLowerCase();
+        final id = emp.profileId.toLowerCase();
+        final dept = emp.departmentName.toLowerCase();
+        final deptGu = emp.departmentGujaratiName.toLowerCase();
+        final desig = emp.designationName.toLowerCase();
+        final desigGu = emp.designationGujaratiName.toLowerCase();
+        final dist = (emp.districtName ?? '').toLowerCase();
+        final tal = (emp.talukaName ?? '').toLowerCase();
+        final loc = (emp.officeLocation ?? '').toLowerCase();
+        final edu = (emp.education ?? '').toLowerCase();
+
+        return tokens.every((token) =>
+            name.contains(token) ||
+            id.contains(token) ||
+            dept.contains(token) ||
+            deptGu.contains(token) ||
+            desig.contains(token) ||
+            desigGu.contains(token) ||
+            dist.contains(token) ||
+            tal.contains(token) ||
+            loc.contains(token) ||
+            edu.contains(token));
+      }).toList();
+    }
+    return list;
   }
 
   @override
@@ -626,9 +658,26 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
                   child: TextField(
                     controller: _searchController,
                     style: const TextStyle(fontSize: 13, color: Color(0xFF101B36), fontWeight: FontWeight.w500),
+                    onChanged: (val) {
+                      _debounceTimer?.cancel();
+                      _debounceTimer = Timer(const Duration(milliseconds: 350), () {
+                        _applyCurrentFilters();
+                      });
+                      setState(() {});
+                    },
                     decoration: InputDecoration(
                       prefixIcon: const Icon(Icons.search,
                           color: Color(0xFFA4143D), size: 20),
+                      suffixIcon: _searchController.text.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear, size: 16, color: Color(0xFF9CA3AF)),
+                              onPressed: () {
+                                _searchController.clear();
+                                _applyCurrentFilters();
+                                setState(() {});
+                              },
+                            )
+                          : null,
                       hintText: 'Search by Name (નામથી શોધો)...',
                       hintStyle: const TextStyle(fontSize: 12, color: Color(0xFF9CA3AF)),
                       contentPadding: const EdgeInsets.symmetric(

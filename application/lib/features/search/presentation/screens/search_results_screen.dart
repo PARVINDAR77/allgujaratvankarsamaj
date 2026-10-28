@@ -156,10 +156,39 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       return true;
     }).toList();
 
+    final q = _searchController.text.trim().toLowerCase();
+    final filteredProfiles = (q.isEmpty)
+        ? profiles
+        : profiles.where((p) {
+            final tokens = q.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+            final name = p.fullName.toLowerCase();
+            final id = p.id.toLowerCase();
+            final city = (p.city ?? '').toLowerCase();
+            final state = (p.state ?? '').toLowerCase();
+            final native = (p.nativePlace ?? '').toLowerCase();
+            final pargana = p.pargana.toLowerCase();
+            final occ = p.employmentType.toLowerCase();
+            final edu = p.education.toLowerCase();
+            final org = p.department.toLowerCase();
+            final desig = p.designation.toLowerCase();
+
+            return tokens.every((token) =>
+                name.contains(token) ||
+                id.contains(token) ||
+                city.contains(token) ||
+                state.contains(token) ||
+                native.contains(token) ||
+                pargana.contains(token) ||
+                occ.contains(token) ||
+                edu.contains(token) ||
+                org.contains(token) ||
+                desig.contains(token));
+          }).toList();
+
     if (kIsWeb) {
-      return _buildWebScaffold(context, profileState, profiles);
+      return _buildWebScaffold(context, profileState, filteredProfiles);
     }
-    return _buildMobileScaffold(context, profileState, profiles);
+    return _buildMobileScaffold(context, profileState, filteredProfiles);
   }
 
   // ==========================================

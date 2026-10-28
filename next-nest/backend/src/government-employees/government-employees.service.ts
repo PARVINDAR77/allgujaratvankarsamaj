@@ -733,46 +733,133 @@ export class GovernmentEmployeesService {
           query.employmentType as GovtEmploymentType;
       }
 
-      if (query.departmentId) {
-        whereCondition.departmentId = query.departmentId;
+      if (query.departmentId && query.departmentId !== "ALL" && query.departmentId.trim() !== "") {
+        const dept = await this.prisma.govtDepartment.findUnique({
+          where: { id: query.departmentId },
+          select: { name: true, gujaratiName: true },
+        }).catch(() => null);
+
+        const deptName = dept?.name || "";
+        const isEducation = deptName.toLowerCase().includes("education");
+        const isPolice = deptName.toLowerCase().includes("police");
+
+        whereCondition.AND = whereCondition.AND || [];
+        whereCondition.AND.push({
+          OR: [
+            { departmentId: query.departmentId },
+            ...(deptName ? [
+              { department: { name: { contains: deptName } } },
+              { profile: { organizationName: { contains: deptName } } },
+              { profile: { occupation: { contains: deptName } } },
+            ] : []),
+            ...(isEducation ? [
+              { designation: { name: { contains: "Teacher" } } },
+              { designation: { gujaratiName: { contains: "શિક્ષક" } } },
+              { profile: { designation: { contains: "Teacher" } } },
+              { profile: { designation: { contains: "શિક્ષક" } } },
+            ] : []),
+            ...(isPolice ? [
+              { designation: { name: { contains: "Police" } } },
+              { designation: { gujaratiName: { contains: "પોલીસ" } } },
+              { profile: { designation: { contains: "Police" } } },
+              { profile: { designation: { contains: "પોલીસ" } } },
+            ] : []),
+          ],
+        });
       }
 
-      if (query.designationId) {
-        whereCondition.designationId = query.designationId;
+      if (query.designationId && query.designationId !== "ALL" && query.designationId.trim() !== "") {
+        const desig = await this.prisma.govtDesignation.findUnique({
+          where: { id: query.designationId },
+          select: { name: true, gujaratiName: true },
+        }).catch(() => null);
+
+        const desigName = desig?.name || "";
+
+        whereCondition.AND = whereCondition.AND || [];
+        whereCondition.AND.push({
+          OR: [
+            { designationId: query.designationId },
+            ...(desigName ? [
+              { designation: { name: { contains: desigName } } },
+              { profile: { designation: { contains: desigName } } },
+            ] : []),
+          ],
+        });
       }
 
-      if (query.search) {
-        whereCondition.OR = [
-          { profile: { firstName: { contains: query.search } } },
-          { profile: { lastName: { contains: query.search } } },
-          { profile: { organizationName: { contains: query.search } } },
-          { profile: { designation: { contains: query.search } } },
-          { officeLocation: { contains: query.search } },
-          { department: { name: { contains: query.search } } },
-          { designation: { name: { contains: query.search } } },
-        ];
+      if (query.search && query.search.trim() !== "") {
+        const tokens = query.search.trim().split(/\s+/).filter(Boolean);
+        for (const token of tokens) {
+          whereCondition.AND = whereCondition.AND || [];
+          whereCondition.AND.push({
+            OR: [
+              { profile: { id: { contains: token } } },
+              { profile: { firstName: { contains: token } } },
+              { profile: { lastName: { contains: token } } },
+              { profile: { organizationName: { contains: token } } },
+              { profile: { designation: { contains: token } } },
+              { profile: { state: { contains: token } } },
+              { profile: { city: { contains: token } } },
+              { profile: { nativePlace: { contains: token } } },
+              { officeLocation: { contains: token } },
+              { department: { name: { contains: token } } },
+              { department: { gujaratiName: { contains: token } } },
+              { designation: { name: { contains: token } } },
+              { designation: { gujaratiName: { contains: token } } },
+            ],
+          });
+        }
       }
 
       // Add base profile filters (gender, age, location)
-      if (query.gender) {
-        whereCondition.profile.gender = query.gender.toUpperCase();
+      const rawGender = (query.gender as string) || "";
+      if (rawGender && rawGender.toUpperCase() !== "ALL" && rawGender.trim() !== "") {
+        whereCondition.AND = whereCondition.AND || [];
+        whereCondition.AND.push({
+          profile: { gender: rawGender.toUpperCase() },
+        });
       }
-      if (query.districtId) {
-        whereCondition.profile.OR = [
-          { districtId: query.districtId },
-          { district: { name: { contains: query.districtId } } },
-          { city: { contains: query.districtId } },
-          { nativePlace: { contains: query.districtId } },
-        ];
+      if (query.districtId && query.districtId !== "ALL" && query.districtId.trim() !== "") {
+        const distTerm = query.districtId.trim();
+        whereCondition.AND = whereCondition.AND || [];
+        whereCondition.AND.push({
+          OR: [
+            { officeLocation: { contains: distTerm } },
+            { profile: { state: { contains: distTerm } } },
+            { profile: { city: { contains: distTerm } } },
+            { profile: { nativePlace: { contains: distTerm } } },
+            { profile: { districtId: distTerm } },
+            { profile: { district: { name: { contains: distTerm } } } },
+            { profile: { district: { gujaratiName: { contains: distTerm } } } },
+          ],
+        });
       }
-      if (query.talukaId) {
-        whereCondition.profile.talukaId = query.talukaId;
+      if (query.talukaId && query.talukaId !== "ALL" && query.talukaId.trim() !== "") {
+        const talTerm = query.talukaId.trim();
+        whereCondition.AND = whereCondition.AND || [];
+        whereCondition.AND.push({
+          OR: [
+            { officeLocation: { contains: talTerm } },
+            { profile: { city: { contains: talTerm } } },
+            { profile: { talukaId: talTerm } },
+            { profile: { taluka: { name: { contains: talTerm } } } },
+            { profile: { taluka: { gujaratiName: { contains: talTerm } } } },
+          ],
+        });
       }
-      if (query.stateId) {
-        whereCondition.profile.stateId = query.stateId;
+      if (query.stateId && query.stateId !== "ALL" && query.stateId.trim() !== "") {
+        whereCondition.AND = whereCondition.AND || [];
+        whereCondition.AND.push({
+          profile: { stateId: query.stateId },
+        });
       }
-      if (query.maritalStatus) {
-        whereCondition.profile.maritalStatus = query.maritalStatus;
+      const rawMarital = (query.maritalStatus as string) || "";
+      if (rawMarital && rawMarital.toUpperCase() !== "ALL" && rawMarital.trim() !== "") {
+        whereCondition.AND = whereCondition.AND || [];
+        whereCondition.AND.push({
+          profile: { maritalStatus: query.maritalStatus },
+        });
       }
 
       const [items, total] = await Promise.all([
