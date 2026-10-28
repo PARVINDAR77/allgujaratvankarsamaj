@@ -50,43 +50,82 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
 
     final unreadNotificationCount = ref.watch(unreadNotificationCountProvider);
     final size = MediaQuery.of(context).size;
-    final padding = MediaQuery.paddingOf(context);
-    final availableHeight = size.height - padding.top - padding.bottom;
     final isMobile = size.width < 600;
+
+    if (isMobile) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF020B18),
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          child: SizedBox.expand(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return _buildPosterStack(
+                  context,
+                  ref,
+                  constraints.maxWidth,
+                  constraints.maxHeight,
+                  unreadNotificationCount,
+                );
+              },
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            physics: isMobile ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             child: Container(
-              width: isMobile ? size.width : 500,
-              height: isMobile ? availableHeight : (500 * (1600 / 735)),
-              margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: const Color(0xFF020B18),
-              borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(16),
-                border: isMobile ? null : Border.all(color: const Color(0xFFD4AF37), width: 2),
-                boxShadow: isMobile
-                    ? []
-                    : [
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                          blurRadius: 14,
-                        ),
-                      ],
+              width: 500,
+              height: 500 * (1600 / 735),
+              margin: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF020B18),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                    blurRadius: 14,
+                  ),
+                ],
               ),
               child: ClipRRect(
-                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                      final w = constraints.maxWidth;
-                      final h = constraints.maxHeight;
+                    return _buildPosterStack(
+                      context,
+                      ref,
+                      constraints.maxWidth,
+                      constraints.maxHeight,
+                      unreadNotificationCount,
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                      return Stack(
-                        children: [
-                          // 1. Post-Login Home Graphic: 2 image.jpeg (New layout)
+  Widget _buildPosterStack(
+    BuildContext context,
+    WidgetRef ref,
+    double w,
+    double h,
+    int unreadNotificationCount,
+  ) {
+    return Stack(
+      children: [
+        // 1. Post-Login Home Graphic: 2 image.jpeg (New layout)
                           Positioned.fill(
                             child: Image.asset(
                               'assets/images/2 image.jpeg',
@@ -431,14 +470,6 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                             ),
                           ),
                         ],
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
+    );
   }
 }
