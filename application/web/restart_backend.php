@@ -186,6 +186,53 @@ if ($action === 'check_verif') {
     }
 }
 
+if ($action === 'check_user') {
+    $env_file = $project_dir . '/.env.production';
+    if (!file_exists($env_file)) $env_file = $project_dir . '/next-nest/backend/.env';
+    $lines = @file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+    $conf = [];
+    foreach ($lines as $line) {
+        if (strpos($line, '=') !== false) {
+            list($k, $v) = explode('=', $line, 2);
+            $conf[trim($k)] = trim(trim($v), '"\'');
+        }
+    }
+    $host = $conf['DB_HOST'] ?? 'localhost';
+    $user = $conf['DB_USER'] ?? '';
+    $pass = $conf['DB_PASSWORD'] ?? '';
+    $name = $conf['DB_NAME'] ?? '';
+    if (empty($user) && !empty($conf['DATABASE_URL'])) {
+        $p = parse_url($conf['DATABASE_URL']);
+        $host = $p['host'] ?? 'localhost';
+        $user = $p['user'] ?? '';
+        $pass = $p['pass'] ?? '';
+        $name = ltrim($p['path'] ?? '', '/');
+    }
+    $results['smtp_status'] = [
+        'has_host' => !empty($conf['SMTP_HOST']),
+        'host' => $conf['SMTP_HOST'] ?? null,
+        'has_user' => !empty($conf['SMTP_USER']),
+        'user' => $conf['SMTP_USER'] ?? null,
+        'has_pass' => !empty($conf['SMTP_PASS']),
+        'port' => $conf['SMTP_PORT'] ?? null,
+    ];
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass);
+        $search = $_GET['search'] ?? '9234567890';
+        $st = $pdo->prepare("SELECT id, email, phone, name, role, status, is_email_verified, is_phone_verified, created_at FROM users WHERE phone LIKE :s1 OR email LIKE :s2 LIMIT 10");
+        $st->execute([':s1' => "%$search%", ':s2' => "%$search%"]);
+        $results['matched_users'] = $st->fetchAll(PDO::FETCH_ASSOC);
+
+        $st2 = $pdo->query("SELECT * FROM otp_sessions ORDER BY created_at DESC LIMIT 10");
+        $results['recent_otp_sessions'] = $st2->fetchAll(PDO::FETCH_ASSOC);
+
+        $st3 = $pdo->query("SELECT * FROM otp_logs ORDER BY created_at DESC LIMIT 10");
+        $results['recent_otp_logs'] = $st3->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Exception $e) {
+        $results['db_error'] = $e->getMessage();
+    }
+}
+
 if ($action === 'restart' || $action === 'start') {
     fix_database_genders($project_dir, $results);
     // 1. Touch trigger file for the watchdog script
