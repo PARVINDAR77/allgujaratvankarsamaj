@@ -150,7 +150,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, otp_dto_1.SendRegistrationOtpDto]),
+    __metadata("design:paramtypes", [Object, otp_dto_1.SendProfileContactOtpDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "sendProfileContactOtp", null);
 __decorate([
@@ -161,7 +161,7 @@ __decorate([
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object, otp_dto_1.VerifyRegistrationOtpDto]),
+    __metadata("design:paramtypes", [Object, otp_dto_1.VerifyProfileContactOtpDto]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "verifyProfileContactOtp", null);
 __decorate([

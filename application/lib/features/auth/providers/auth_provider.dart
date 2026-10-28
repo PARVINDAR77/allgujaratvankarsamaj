@@ -25,6 +25,18 @@ class AuthState {
   factory AuthState.loading() => const AuthState(status: AuthStatus.loading);
   factory AuthState.error(String message) => AuthState(status: AuthStatus.error, errorMessage: message);
 
+  AuthState copyWith({
+    AuthStatus? status,
+    UserModel? user,
+    String? errorMessage,
+  }) {
+    return AuthState(
+      status: status ?? this.status,
+      user: user ?? this.user,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+
   bool get isAuthenticated => status == AuthStatus.authenticated;
 }
 
@@ -212,21 +224,25 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<Map<String, dynamic>> sendProfileContactOtp({
-    required String name,
-    required String phone,
-    required String email,
+    String? name,
+    String? phone,
+    String? email,
+    String? channel,
   }) async {
     try {
-      final res = await _dio.post('/auth/profile/send-contact-otp', data: {
-        'name': name.trim(),
-        'phone': phone.trim(),
-        'email': email.trim(),
-      });
+      final payload = <String, dynamic>{
+        if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
+        if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
+        if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+        if (channel != null && channel.isNotEmpty) 'channel': channel,
+      };
+      final res = await _dio.post('/auth/profile/send-contact-otp', data: payload);
       return {
         'success': true,
         'message': res.data['message'] ?? 'ચકાસણી કોડ મોકલવામાં આવ્યા છે',
         'maskedPhone': res.data['maskedPhone'] ?? phone,
         'maskedEmail': res.data['maskedEmail'] ?? email,
+        'channel': res.data['channel'] ?? channel ?? 'BOTH',
         'expiresInSeconds': res.data['expiresInSeconds'] ?? 600,
         'resendCooldownSeconds': res.data['resendCooldownSeconds'] ?? 60,
         'maxAttempts': res.data['maxAttempts'] ?? 4,
@@ -247,22 +263,39 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<Map<String, dynamic>> verifyProfileContactOtp({
-    required String phone,
-    required String email,
-    required String phoneOtp,
-    required String emailOtp,
+    String? phone,
+    String? email,
+    String? phoneOtp,
+    String? emailOtp,
   }) async {
     try {
-      final res = await _dio.post('/auth/profile/verify-contact-otp', data: {
-        'phone': phone.trim(),
-        'email': email.trim(),
-        'phoneOtp': phoneOtp.trim(),
-        'emailOtp': emailOtp.trim(),
-      });
+      final payload = <String, dynamic>{
+        if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
+        if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
+        if (phoneOtp != null && phoneOtp.trim().isNotEmpty) 'phoneOtp': phoneOtp.trim(),
+        if (emailOtp != null && emailOtp.trim().isNotEmpty) 'emailOtp': emailOtp.trim(),
+      };
+      final res = await _dio.post('/auth/profile/verify-contact-otp', data: payload);
+      final isPhVer = res.data['isPhoneVerified'] == true;
+      final isEmVer = res.data['isEmailVerified'] == true;
+
+      if (state.user != null) {
+        state = state.copyWith(
+          user: state.user!.copyWith(
+            phone: phone ?? state.user!.phone,
+            email: email ?? state.user!.email,
+            isPhoneVerified: isPhVer ? true : state.user!.isPhoneVerified,
+            isEmailVerified: isEmVer ? true : state.user!.isEmailVerified,
+          ),
+        );
+      }
+
       return {
         'success': true,
         'verified': true,
-        'message': res.data['message'] ?? 'મોબાઇલ અને ઈમેઈલ સફળતાપૂર્વક ચકાસાયેલ છે',
+        'isPhoneVerified': isPhVer,
+        'isEmailVerified': isEmVer,
+        'message': res.data['message'] ?? 'ચકાસણી સફળ થઈ',
       };
     } on DioException catch (e) {
       final failure = _mapDioException(e);

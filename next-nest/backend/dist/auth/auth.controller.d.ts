@@ -1,7 +1,7 @@
 import { AuthService } from "./auth.service";
 import { UsersService } from "../users/users.service";
 import { OtpService } from "../otp/otp.service";
-import { SendRegistrationOtpDto, VerifyRegistrationOtpDto } from "../otp/dto/otp.dto";
+import { SendProfileContactOtpDto, SendRegistrationOtpDto, VerifyProfileContactOtpDto, VerifyRegistrationOtpDto } from "../otp/dto/otp.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { ForgotPasswordDto, VerifyResetCodeDto, ResetPasswordDto, UpdatePasswordDto } from "./dto/password-reset.dto";
@@ -45,20 +45,23 @@ export declare class AuthController {
         message: string;
         registrationToken: string;
     }>;
-    sendProfileContactOtp(req: any, dto: SendRegistrationOtpDto): Promise<{
+    sendProfileContactOtp(req: any, dto: SendProfileContactOtpDto): Promise<{
         success: boolean;
         message: string;
         maskedPhone: string;
         maskedEmail: string;
-        smsDelivered: boolean;
+        channel: string;
+        smsDelivered: any;
         emailConfigured: boolean;
         expiresInSeconds: number;
         resendCooldownSeconds: number;
         maxAttempts: number;
     }>;
-    verifyProfileContactOtp(req: any, dto: VerifyRegistrationOtpDto): Promise<{
+    verifyProfileContactOtp(req: any, dto: VerifyProfileContactOtpDto): Promise<{
         success: boolean;
         verified: boolean;
+        isPhoneVerified: boolean;
+        isEmailVerified: boolean;
         message: string;
     }>;
     register(dto: RegisterDto): Promise<any>;

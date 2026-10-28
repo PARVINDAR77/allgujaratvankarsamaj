@@ -992,10 +992,14 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (primaryPhone || dto.contactEmail) {
                 try {
                     const userUpdates = {};
-                    if (primaryPhone)
+                    if (primaryPhone) {
                         userUpdates.phone = primaryPhone;
-                    if (dto.contactEmail)
+                        userUpdates.isPhoneVerified = true;
+                    }
+                    if (dto.contactEmail) {
                         userUpdates.email = dto.contactEmail.trim();
+                        userUpdates.isEmailVerified = true;
+                    }
                     await this.prisma.user.update({
                         where: { id: userId },
                         data: userUpdates,

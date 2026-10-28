@@ -19,7 +19,12 @@ import {
 import { AuthService } from "./auth.service";
 import { UsersService } from "../users/users.service";
 import { OtpService } from "../otp/otp.service";
-import { SendRegistrationOtpDto, VerifyRegistrationOtpDto } from "../otp/dto/otp.dto";
+import {
+  SendProfileContactOtpDto,
+  SendRegistrationOtpDto,
+  VerifyProfileContactOtpDto,
+  VerifyRegistrationOtpDto,
+} from "../otp/dto/otp.dto";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import {
@@ -89,7 +94,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Send OTP to user's mobile and email for profile contact verification" })
-  async sendProfileContactOtp(@Request() req: any, @Body() dto: SendRegistrationOtpDto) {
+  async sendProfileContactOtp(@Request() req: any, @Body() dto: SendProfileContactOtpDto) {
     const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
     const userId = req.user?.sub || req.user?.id;
     return this.otpService.sendProfileContactOtp(
@@ -103,7 +108,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Verify mobile OTP and email OTP for profile contact verification" })
-  async verifyProfileContactOtp(@Request() req: any, @Body() dto: VerifyRegistrationOtpDto) {
+  async verifyProfileContactOtp(@Request() req: any, @Body() dto: VerifyProfileContactOtpDto) {
     const userId = req.user?.sub || req.user?.id;
     return this.otpService.verifyProfileContactOtp(userId, dto);
   }

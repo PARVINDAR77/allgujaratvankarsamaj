@@ -35,6 +35,8 @@ class ProfileModel {
 
   // Verification (Prisma: is_verified Boolean @default(false))
   final bool? isVerified;
+  final bool isPhoneVerified;
+  final bool isEmailVerified;
 
   // Disability
   final bool? isPhysicallyDisabled;
@@ -109,6 +111,8 @@ class ProfileModel {
     this.addressLine,
     this.pincode,
     this.isVerified,
+    this.isPhoneVerified = false,
+    this.isEmailVerified = false,
     this.isPhysicallyDisabled,
     this.pwbdCategory,
     this.isAbroad,
@@ -628,6 +632,25 @@ class ProfileModel {
       } catch (_) {}
     }
 
+    bool phoneVer = false;
+    bool emailVer = false;
+    if (json['user'] is Map) {
+      phoneVer = json['user']['isPhoneVerified'] == true ||
+          json['user']['is_phone_verified'] == 1 ||
+          json['user']['is_phone_verified'] == true;
+      emailVer = json['user']['isEmailVerified'] == true ||
+          json['user']['is_email_verified'] == 1 ||
+          json['user']['is_email_verified'] == true;
+    }
+    phoneVer = phoneVer ||
+        json['isPhoneVerified'] == true ||
+        json['is_phone_verified'] == 1 ||
+        json['is_phone_verified'] == true;
+    emailVer = emailVer ||
+        json['isEmailVerified'] == true ||
+        json['is_email_verified'] == 1 ||
+        json['is_email_verified'] == true;
+
     return ProfileModel(
       id: (json['id'] ?? '').toString(),
       firstName: rawFirst,
@@ -655,6 +678,8 @@ class ProfileModel {
       addressLine: (json['addressLine'] ?? json['address_line'] ?? json['address'])?.toString(),
       pincode: (json['pincode'])?.toString(),
       isVerified: (json['isVerified'] ?? json['is_verified']) as bool?,
+      isPhoneVerified: phoneVer,
+      isEmailVerified: emailVer,
       isPhysicallyDisabled: (json['isPhysicallyDisabled'] ?? json['is_physically_disabled']) as bool?,
       pwbdCategory: (json['pwbdCategory'] ?? json['pwbd_category']) as String?,
       isAbroad: (json['isAbroad'] ?? json['is_abroad']) as bool?,

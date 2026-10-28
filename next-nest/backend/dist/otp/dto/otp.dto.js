@@ -9,7 +9,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AdminOtpQueryDto = exports.VerifyResetOtpDto = exports.SendForgotPasswordOtpDto = exports.VerifyRegistrationOtpDto = exports.SendRegistrationOtpDto = void 0;
+exports.VerifyProfileContactOtpDto = exports.SendProfileContactOtpDto = exports.AdminOtpQueryDto = exports.VerifyResetOtpDto = exports.SendForgotPasswordOtpDto = exports.VerifyRegistrationOtpDto = exports.SendRegistrationOtpDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
 const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
@@ -168,4 +168,58 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], AdminOtpQueryDto.prototype, "search", void 0);
+class SendProfileContactOtpDto {
+}
+exports.SendProfileContactOtpDto = SendProfileContactOtpDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Recipient name" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SendProfileContactOtpDto.prototype, "name", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "10-digit mobile number" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SendProfileContactOtpDto.prototype, "phone", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Email address" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SendProfileContactOtpDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Target channel: SMS, EMAIL, or BOTH", enum: ["SMS", "EMAIL", "BOTH"] }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SendProfileContactOtpDto.prototype, "channel", void 0);
+class VerifyProfileContactOtpDto {
+}
+exports.VerifyProfileContactOtpDto = VerifyProfileContactOtpDto;
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "10-digit mobile number" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], VerifyProfileContactOtpDto.prototype, "phone", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Email address" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], VerifyProfileContactOtpDto.prototype, "email", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "6-digit OTP code for Mobile" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], VerifyProfileContactOtpDto.prototype, "phoneOtp", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "6-digit OTP code for Email" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], VerifyProfileContactOtpDto.prototype, "emailOtp", void 0);
 //# sourceMappingURL=otp.dto.js.map

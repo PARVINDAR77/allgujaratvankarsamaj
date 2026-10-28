@@ -142,3 +142,47 @@ export class AdminOtpQueryDto {
   @IsString()
   search?: string;
 }
+
+export class SendProfileContactOtpDto {
+  @ApiPropertyOptional({ description: "Recipient name" })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({ description: "10-digit mobile number" })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({ description: "Email address" })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @ApiPropertyOptional({ description: "Target channel: SMS, EMAIL, or BOTH", enum: ["SMS", "EMAIL", "BOTH"] })
+  @IsOptional()
+  @IsString()
+  channel?: "SMS" | "EMAIL" | "BOTH";
+}
+
+export class VerifyProfileContactOtpDto {
+  @ApiPropertyOptional({ description: "10-digit mobile number" })
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @ApiPropertyOptional({ description: "Email address" })
+  @IsOptional()
+  @IsString()
+  email?: string;
+
+  @ApiPropertyOptional({ description: "6-digit OTP code for Mobile" })
+  @IsOptional()
+  @IsString()
+  phoneOtp?: string;
+
+  @ApiPropertyOptional({ description: "6-digit OTP code for Email" })
+  @IsOptional()
+  @IsString()
+  emailOtp?: string;
+}

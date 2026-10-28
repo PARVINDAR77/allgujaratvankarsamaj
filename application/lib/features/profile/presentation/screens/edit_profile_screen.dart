@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -98,6 +99,39 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _lastName;
   String? _mobileNumber;
   String? _emailAddress;
+  bool _isPhoneVerified = false;
+  bool _isEmailVerified = false;
+  final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  bool get _isCurrentPhoneVerified {
+    final user = ref.read(authNotifierProvider).user;
+    final currentDigits = (_mobileNumber ?? _mobileController.text).replaceAll(RegExp(r'\D'), '');
+    if (_isPhoneVerified) return true;
+    final userPhoneDigits = (user?.phone ?? '').replaceAll(RegExp(r'\D'), '');
+    if (currentDigits.isNotEmpty && currentDigits == userPhoneDigits && (user?.isPhoneVerified == true)) {
+      return true;
+    }
+    return false;
+  }
+
+  bool get _isCurrentEmailVerified {
+    final user = ref.read(authNotifierProvider).user;
+    final current = (_emailAddress ?? _emailController.text).trim().toLowerCase();
+    if (_isEmailVerified) return true;
+    final userEmail = (user?.email ?? '').trim().toLowerCase();
+    if (current.isNotEmpty && current == userEmail && (user?.isEmailVerified == true)) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _mobileController.dispose();
+    _emailController.dispose();
+    super.dispose();
+  }
   String? _whatsappNumber;
   String? _houseNumber;
   String? _area;
@@ -293,6 +327,309 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
+  void _openContactOtpDialog({required bool isPhone}) async {
+    final targetValue = isPhone
+        ? (_mobileNumber ?? _mobileController.text).trim().replaceAll(RegExp(r'\D'), '')
+        : (_emailAddress ?? _emailController.text).trim();
+
+    if (isPhone && targetValue.length != 10) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને માન્ય 10-અંકનો મોબાઇલ નંબર દાખલ કરો (Please enter valid 10-digit mobile number)'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (!isPhone && (!targetValue.contains('@') || !targetValue.contains('.'))) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter valid email address)'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+      ),
+    );
+
+    final sendRes = await ref.read(authNotifierProvider.notifier).sendProfileContactOtp(
+      name: '${_firstName ?? ''} ${_lastName ?? ''}'.trim(),
+      phone: isPhone ? targetValue : null,
+      email: !isPhone ? targetValue : null,
+      channel: isPhone ? 'SMS' : 'EMAIL',
+    );
+
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
+
+    if (sendRes['success'] != true) {
+      final err = sendRes['message'] ?? 'ચકાસણી કોડ મોકલવામાં નિષ્ફળતા';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(err), backgroundColor: Colors.redAccent),
+      );
+      return;
+    }
+
+    final otpCtrl = TextEditingController();
+    int cooldown = sendRes['resendCooldownSeconds'] ?? 60;
+    Timer? timer;
+    bool isVerifying = false;
+    bool isResending = false;
+    String statusMsg = '';
+    final masked = isPhone
+        ? (sendRes['maskedPhone'] ?? targetValue)
+        : (sendRes['maskedEmail'] ?? targetValue);
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) {
+          void startTimer([int sec = 60]) {
+            timer?.cancel();
+            cooldown = sec;
+            timer = Timer.periodic(const Duration(seconds: 1), (t) {
+              if (cooldown <= 1) {
+                t.cancel();
+                setDialogState(() => cooldown = 0);
+              } else {
+                setDialogState(() => cooldown--);
+              }
+            });
+          }
+
+          if (timer == null && cooldown > 0) {
+            startTimer(cooldown);
+          }
+
+          return AlertDialog(
+            backgroundColor: const Color(0xFF041126),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+            ),
+            title: Row(
+              children: [
+                Icon(
+                  isPhone ? Icons.phone_android_rounded : Icons.mark_email_read_rounded,
+                  color: const Color(0xFFD4AF37),
+                  size: 26,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    isPhone
+                        ? 'મોબાઇલ ચકાસણી (Number Verification)'
+                        : 'ઈમેઈલ ચકાસણી (Email Verification)',
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'ચકાસણી માટે $masked પર 6-અંકનો OTP કોડ મોકલવામાં આવ્યો છે:\n(Enter 6-digit OTP code sent to $masked)',
+                    style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                  ),
+                  const SizedBox(height: 18),
+                  TextField(
+                    controller: otpCtrl,
+                    keyboardType: TextInputType.number,
+                    maxLength: 6,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      letterSpacing: 6,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    decoration: const InputDecoration(
+                      counterText: '',
+                      prefixIcon: Icon(Icons.pin, color: Color(0xFFD4AF37)),
+                      labelText: 'Verification OTP (6-અંકનો કોડ)',
+                      labelStyle: TextStyle(color: Colors.white70, fontSize: 13, letterSpacing: 0),
+                      hintText: '123456',
+                      hintStyle: TextStyle(color: Colors.white30, letterSpacing: 6),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      TextButton.icon(
+                        onPressed: (cooldown > 0 || isResending)
+                            ? null
+                            : () async {
+                                setDialogState(() {
+                                  isResending = true;
+                                  statusMsg = '';
+                                });
+                                final res = await ref.read(authNotifierProvider.notifier).sendProfileContactOtp(
+                                  name: '${_firstName ?? ''} ${_lastName ?? ''}'.trim(),
+                                  phone: isPhone ? targetValue : null,
+                                  email: !isPhone ? targetValue : null,
+                                  channel: isPhone ? 'SMS' : 'EMAIL',
+                                );
+                                setDialogState(() {
+                                  isResending = false;
+                                  if (res['success'] == true) {
+                                    statusMsg = 'નવો કોડ મોકલવામાં આવ્યો છે.';
+                                    startTimer(res['resendCooldownSeconds'] ?? 60);
+                                  } else {
+                                    statusMsg = res['message'] ?? 'કોડ ફરી મોકલવામાં નિષ્ફળ';
+                                  }
+                                });
+                              },
+                        icon: isResending
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4AF37)),
+                              )
+                            : const Icon(Icons.refresh, size: 16, color: Color(0xFFD4AF37)),
+                        label: Text(
+                          cooldown > 0
+                              ? 'Resend in ${cooldown}s'
+                              : 'Resend Code (ફરી કોડ મોકલો)',
+                          style: TextStyle(
+                            color: (cooldown > 0 || isResending) ? Colors.white38 : const Color(0xFFD4AF37),
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (statusMsg.isNotEmpty) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.18),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.redAccent, width: 1),
+                      ),
+                      child: Text(
+                        statusMsg,
+                        style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isVerifying
+                    ? null
+                    : () {
+                        timer?.cancel();
+                        otpCtrl.dispose();
+                        Navigator.pop(dialogCtx);
+                      },
+                child: const Text('Cancel (રદ કરો)', style: TextStyle(color: Colors.white60)),
+              ),
+              ElevatedButton(
+                onPressed: isVerifying
+                    ? null
+                    : () async {
+                        final code = otpCtrl.text.trim();
+                        if (code.length != 6) {
+                          setDialogState(() {
+                            statusMsg = 'કૃપા કરીને 6-અંકનો OTP કોડ દાખલ કરો';
+                          });
+                          return;
+                        }
+                        setDialogState(() {
+                          isVerifying = true;
+                          statusMsg = '';
+                        });
+
+                        final verifyRes = await ref.read(authNotifierProvider.notifier).verifyProfileContactOtp(
+                          phone: isPhone ? targetValue : null,
+                          email: !isPhone ? targetValue : null,
+                          phoneOtp: isPhone ? code : null,
+                          emailOtp: !isPhone ? code : null,
+                        );
+
+                        if (verifyRes['success'] == true) {
+                          timer?.cancel();
+                          otpCtrl.dispose();
+                          if (dialogCtx.mounted) {
+                            Navigator.pop(dialogCtx);
+                          }
+                          setState(() {
+                            if (isPhone) {
+                              _isPhoneVerified = true;
+                              _mobileNumber = targetValue;
+                              _mobileController.text = targetValue;
+                            } else {
+                              _isEmailVerified = true;
+                              _emailAddress = targetValue;
+                              _emailController.text = targetValue;
+                            }
+                          });
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  isPhone
+                                      ? '✓ મોબાઇલ નંબર સફળતાપૂર્વક ચકાસાયેલ છે! (Mobile number verified!)'
+                                      : '✓ ઈમેઈલ સરનામું સફળતાપૂર્વક ચકાસાયેલ છે! (Email address verified!)',
+                                ),
+                                backgroundColor: Colors.green,
+                                duration: const Duration(seconds: 4),
+                              ),
+                            );
+                          }
+                        } else {
+                          setDialogState(() {
+                            isVerifying = false;
+                            statusMsg = verifyRes['message'] ?? 'ચકાસણી નિષ્ફળ થઈ';
+                          });
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFD4AF37),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: isVerifying
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                      )
+                    : const Text('Verify (ચકાસો)', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final myProfileAsync = ref.watch(myProfileProvider);
@@ -387,8 +724,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _firstName = profile.firstName;
               _lastName = profile.lastName;
               final user = ref.read(authNotifierProvider).user;
-              _mobileNumber = (profile.contactPhone != null && profile.contactPhone!.isNotEmpty) ? profile.contactPhone : user?.phone;
-              _emailAddress = (profile.contactEmail != null && profile.contactEmail!.isNotEmpty) ? profile.contactEmail : user?.email;
+              final ph = (profile.contactPhone != null && profile.contactPhone!.isNotEmpty) ? profile.contactPhone : user?.phone;
+              final em = (profile.contactEmail != null && profile.contactEmail!.isNotEmpty) ? profile.contactEmail : user?.email;
+              _mobileNumber = ph;
+              _emailAddress = em;
+              if (_mobileController.text.isEmpty && ph != null) {
+                _mobileController.text = ph;
+              }
+              if (_emailController.text.isEmpty && em != null) {
+                _emailController.text = em;
+              }
+              _isPhoneVerified = profile.isPhoneVerified || (user?.isPhoneVerified == true);
+              _isEmailVerified = profile.isEmailVerified || (user?.isEmailVerified == true);
               _whatsappNumber = profile.altPhone;
               _houseNumber = profile.addressLine;
               _city = profile.taluka;
@@ -586,13 +933,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Mobile Number (મોબાઈલ નંબર - 10 અંક) *',
                 'Enter 10-digit Mobile Number',
                 Icons.phone_android,
-                initialValue: _mobileNumber ?? profile.contactPhone,
+                controller: _mobileController,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(10),
                 ],
-                suffix: ((_mobileNumber ?? profile.contactPhone ?? '').trim().length == 10)
+                suffix: _isCurrentPhoneVerified
                     ? Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         margin: const EdgeInsets.only(right: 8),
@@ -606,20 +953,40 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           children: [
                             Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
                             SizedBox(width: 4),
-                            Text('ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                            Text('✓ ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       )
-                    : null,
-                onChanged: (v) => setState(() => _mobileNumber = v),
+                    : ((_mobileNumber ?? _mobileController.text).trim().length == 10)
+                        ? Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            child: ElevatedButton.icon(
+                              onPressed: () => _openContactOtpDialog(isPhone: true),
+                              icon: const Icon(Icons.verified_outlined, size: 14),
+                              label: const Text('ચકાસો (Verify Code)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD4AF37),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                              ),
+                            ),
+                          )
+                        : null,
+                onChanged: (v) => setState(() {
+                  _mobileNumber = v;
+                  if (v != profile.contactPhone) _isPhoneVerified = false;
+                }),
               ),
               _buildTextField(
                 'Email Address (ઈમેઈલ સરનામું)',
                 'Enter Email Address (ઈમેઈલ સરનામું)',
                 Icons.email_outlined,
-                initialValue: _emailAddress ?? profile.contactEmail,
+                controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                suffix: ((_emailAddress ?? profile.contactEmail ?? '').trim().isNotEmpty && (_emailAddress ?? profile.contactEmail ?? '').contains('@'))
+                suffix: _isCurrentEmailVerified
                     ? Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         margin: const EdgeInsets.only(right: 8),
@@ -633,12 +1000,32 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                           children: [
                             Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
                             SizedBox(width: 4),
-                            Text('ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
+                            Text('✓ ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
                           ],
                         ),
                       )
-                    : null,
-                onChanged: (v) => setState(() => _emailAddress = v),
+                    : ((_emailAddress ?? _emailController.text).trim().contains('@'))
+                        ? Container(
+                            margin: const EdgeInsets.only(right: 8),
+                            child: ElevatedButton.icon(
+                              onPressed: () => _openContactOtpDialog(isPhone: false),
+                              icon: const Icon(Icons.mark_email_read_outlined, size: 14),
+                              label: const Text('ચકાસો (Verify Code)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFD4AF37),
+                                foregroundColor: Colors.black,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                              ),
+                            ),
+                          )
+                        : null,
+                onChanged: (v) => setState(() {
+                  _emailAddress = v;
+                  if (v != profile.contactEmail) _isEmailVerified = false;
+                }),
               ),
               _buildTextField(
                 'WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)',

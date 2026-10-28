@@ -6,6 +6,8 @@ class UserModel {
   final String role;
   final String status;
   final bool isVerified;
+  final bool isPhoneVerified;
+  final bool isEmailVerified;
   final bool hasProfile;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -18,6 +20,8 @@ class UserModel {
     required this.role,
     required this.status,
     this.isVerified = false,
+    this.isPhoneVerified = false,
+    this.isEmailVerified = false,
     this.hasProfile = false,
     this.createdAt,
     this.updatedAt,
@@ -31,6 +35,8 @@ class UserModel {
     String? role,
     String? status,
     bool? isVerified,
+    bool? isPhoneVerified,
+    bool? isEmailVerified,
     bool? hasProfile,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -43,6 +49,8 @@ class UserModel {
       role: role ?? this.role,
       status: status ?? this.status,
       isVerified: isVerified ?? this.isVerified,
+      isPhoneVerified: isPhoneVerified ?? this.isPhoneVerified,
+      isEmailVerified: isEmailVerified ?? this.isEmailVerified,
       hasProfile: hasProfile ?? this.hasProfile,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -58,6 +66,8 @@ class UserModel {
       role: json['role'] as String? ?? 'USER',
       status: json['status'] as String? ?? 'ACTIVE',
       isVerified: json['isVerified'] == true,
+      isPhoneVerified: json['isPhoneVerified'] == true || json['is_phone_verified'] == 1 || json['is_phone_verified'] == true,
+      isEmailVerified: json['isEmailVerified'] == true || json['is_email_verified'] == 1 || json['is_email_verified'] == true,
       hasProfile: json['hasProfile'] == true,
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
@@ -73,6 +83,8 @@ class UserModel {
       'role': role,
       'status': status,
       'isVerified': isVerified,
+      'isPhoneVerified': isPhoneVerified,
+      'isEmailVerified': isEmailVerified,
       'hasProfile': hasProfile,
       'createdAt': createdAt?.toIso8601String(),
       'updatedAt': updatedAt?.toIso8601String(),

@@ -1,7 +1,7 @@
 import { PrismaService } from "../prisma/prisma.service";
 import { SmsService } from "./sms.service";
 import { MailService } from "./mail.service";
-import { AdminOtpQueryDto, SendForgotPasswordOtpDto, SendRegistrationOtpDto, VerifyRegistrationOtpDto, VerifyResetOtpDto } from "./dto/otp.dto";
+import { AdminOtpQueryDto, SendForgotPasswordOtpDto, SendProfileContactOtpDto, SendRegistrationOtpDto, VerifyProfileContactOtpDto, VerifyRegistrationOtpDto, VerifyResetOtpDto } from "./dto/otp.dto";
 export declare class OtpService {
     private readonly prisma;
     private readonly smsService;
@@ -34,20 +34,23 @@ export declare class OtpService {
         message: string;
         registrationToken: string;
     }>;
-    sendProfileContactOtp(userId: string, dto: SendRegistrationOtpDto, ipAddress?: string): Promise<{
+    sendProfileContactOtp(userId: string, dto: SendProfileContactOtpDto, ipAddress?: string): Promise<{
         success: boolean;
         message: string;
         maskedPhone: string;
         maskedEmail: string;
-        smsDelivered: boolean;
+        channel: string;
+        smsDelivered: any;
         emailConfigured: boolean;
         expiresInSeconds: number;
         resendCooldownSeconds: number;
         maxAttempts: number;
     }>;
-    verifyProfileContactOtp(userId: string, dto: VerifyRegistrationOtpDto): Promise<{
+    verifyProfileContactOtp(userId: string, dto: VerifyProfileContactOtpDto): Promise<{
         success: boolean;
         verified: boolean;
+        isPhoneVerified: boolean;
+        isEmailVerified: boolean;
         message: string;
     }>;
     consumeRegistrationToken(token: string, phone: string, email: string): Promise<boolean>;
