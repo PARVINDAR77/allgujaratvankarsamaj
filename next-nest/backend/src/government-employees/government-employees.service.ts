@@ -618,22 +618,6 @@ export class GovernmentEmployeesService {
         where: {
           governmentEmployment: null,
           status: { not: ProfileStatus.REJECTED },
-          NOT: [
-            { occupation: { contains: "Private" } },
-            { occupation: { contains: "ખાનગી" } },
-            { occupation: { contains: "Business" } },
-            { occupation: { contains: "વેપાર" } },
-            { occupation: { contains: "સ્વરોજગાર" } },
-            { occupation: { contains: "Not Working" } },
-            { occupation: { contains: "કોઈ નોકરી નથી" } },
-            { organizationName: { contains: "it company" } },
-            { organizationName: { contains: "pvt" } },
-            { organizationName: { contains: "private" } },
-            { organizationName: { contains: "ખાનગી" } },
-            { organizationName: { contains: "ltd" } },
-            { organizationName: { contains: "llp" } },
-            { designation: { contains: "it company" } },
-          ],
           OR: [
             { occupation: { contains: "Gov" } },
             { occupation: { contains: "સરકારી" } },
@@ -643,6 +627,12 @@ export class GovernmentEmployeesService {
             { occupation: { contains: "Central Govt" } },
             { organizationName: { contains: "State Govt" } },
             { organizationName: { contains: "Central Govt" } },
+            { designation: { contains: "Teacher" } },
+            { designation: { contains: "શિક્ષક" } },
+            { designation: { contains: "Police" } },
+            { designation: { contains: "પોલીસ" } },
+            { designation: { contains: "Talati" } },
+            { designation: { contains: "તલાટી" } },
           ],
         },
       });
@@ -650,6 +640,28 @@ export class GovernmentEmployeesService {
       for (const p of govtProfiles) {
         const occ = (p.occupation || "").toLowerCase();
         const org = (p.organizationName || "").toLowerCase();
+        const desig = (p.designation || "").toLowerCase();
+        const fn = (p.firstName || "").toLowerCase();
+
+        // Safely exclude private or business profiles in JS without breaking on null DB fields
+        if (
+          occ.includes("private") ||
+          occ.includes("ખાનગી") ||
+          occ.includes("business") ||
+          occ.includes("વેપાર") ||
+          occ.includes("સ્વરોજગાર") ||
+          occ.includes("not working") ||
+          occ.includes("કોઈ નોકરી નથી") ||
+          org.includes("it company") ||
+          org.includes("pvt ltd") ||
+          org.includes("private limited") ||
+          org.includes("ખાનગી") ||
+          desig.includes("it company") ||
+          fn.includes("parvindar")
+        ) {
+          continue;
+        }
+
         let empType: GovtEmploymentType = GovtEmploymentType.STATE_GOVT;
         if (
           org.includes("central") ||
@@ -713,22 +725,6 @@ export class GovernmentEmployeesService {
           status: {
             not: ProfileStatus.REJECTED,
           },
-          NOT: [
-            { occupation: { contains: "Private" } },
-            { occupation: { contains: "ખાનગી" } },
-            { occupation: { contains: "Business" } },
-            { occupation: { contains: "વેપાર" } },
-            { occupation: { contains: "સ્વરોજગાર" } },
-            { occupation: { contains: "Not Working" } },
-            { occupation: { contains: "કોઈ નોકરી નથી" } },
-            { organizationName: { contains: "it company" } },
-            { organizationName: { contains: "pvt" } },
-            { organizationName: { contains: "private" } },
-            { organizationName: { contains: "ખાનગી" } },
-            { organizationName: { contains: "ltd" } },
-            { organizationName: { contains: "llp" } },
-            { designation: { contains: "it company" } },
-          ],
         },
       };
 
@@ -931,22 +927,7 @@ export class GovernmentEmployeesService {
     await this.syncMissingGovtEmployees();
     const whereCondition: any = {
       profile: {
-        NOT: [
-          { occupation: { contains: "Private" } },
-          { occupation: { contains: "ખાનગી" } },
-          { occupation: { contains: "Business" } },
-          { occupation: { contains: "વેપાર" } },
-          { occupation: { contains: "સ્વરોજગાર" } },
-          { occupation: { contains: "Not Working" } },
-          { occupation: { contains: "કોઈ નોકરી નથી" } },
-          { organizationName: { contains: "it company" } },
-          { organizationName: { contains: "pvt" } },
-          { organizationName: { contains: "private" } },
-          { organizationName: { contains: "ખાનગી" } },
-          { organizationName: { contains: "ltd" } },
-          { organizationName: { contains: "llp" } },
-          { designation: { contains: "it company" } },
-        ],
+        status: { not: ProfileStatus.REJECTED },
       },
     };
     if (status && status !== "ALL") {
@@ -1214,18 +1195,15 @@ export class GovernmentEmployeesService {
     const loc = (item?.officeLocation || "").toLowerCase();
 
     const nonGovtTerms = [
-      "parvindar",
-      "takhatsing",
       "it company",
       "private",
       "ખાનગી",
-      "pvt",
-      "ltd",
-      "llp",
+      "pvt ltd",
+      "pvt. ltd",
+      "private limited",
       "business",
       "વેપાર",
       "સ્વરોજગાર",
-      "self",
       "not working",
       "કોઈ નોકરી નથી",
     ];

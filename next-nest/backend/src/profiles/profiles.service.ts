@@ -565,8 +565,17 @@ export class ProfilesService {
         });
       }
 
-      await this.syncSamajServicePerson(userId, profile);
-      await this.syncGovernmentEmployment(profile);
+      try {
+        await this.syncSamajServicePerson(userId, profile);
+      } catch (err: any) {
+        this.logger.warn("syncSamajServicePerson error:", err?.message || err);
+      }
+
+      try {
+        await this.syncGovernmentEmployment(profile);
+      } catch (err: any) {
+        this.logger.warn("syncGovernmentEmployment error:", err?.message || err);
+      }
       return profile;
     } catch (err: any) {
       if (err instanceof ConflictException || err instanceof BadRequestException) throw err;
@@ -890,8 +899,7 @@ export class ProfilesService {
       if (!isViewerAdmin && !isOwner) {
         if (
           profile.status === ProfileStatus.SUSPENDED ||
-          profile.status === ProfileStatus.REJECTED ||
-          profile.showInMatrimony === false
+          profile.status === ProfileStatus.REJECTED
         ) {
           throw new NotFoundException("This candidate profile is suspended or unavailable");
         }
@@ -1581,17 +1589,45 @@ export class ProfilesService {
       }
     }
 
-    const isExplicitMarried =
-      query.maritalStatus === MaritalStatus.MARRIED ||
-      (query.maritalStatus as string) === "MARRIED";
+    let normalizedMaritalStatus: any = query.maritalStatus;
+    if (typeof query.maritalStatus === "string") {
+      const msClean = query.maritalStatus.replace(/\s*\([^)]*\)/g, "").trim().toUpperCase();
+      if (msClean === "ALL" || msClean === "ANY" || !msClean) {
+        normalizedMaritalStatus = undefined;
+      } else if (
+        msClean.includes("UNMARRIED") ||
+        msClean.includes("NEVER") ||
+        msClean.includes("અપરિણીત") ||
+        msClean.includes("અવિવાહિત")
+      ) {
+        normalizedMaritalStatus = MaritalStatus.NEVER_MARRIED;
+      } else if (msClean.includes("DIVORCED") || msClean.includes("છૂટાછેડા")) {
+        normalizedMaritalStatus = MaritalStatus.DIVORCED;
+      } else if (
+        msClean.includes("WIDOWED") ||
+        msClean.includes("WIDOW") ||
+        msClean.includes("વિધવા") ||
+        msClean.includes("વિધુર")
+      ) {
+        normalizedMaritalStatus = MaritalStatus.WIDOWED;
+      } else if (msClean === "MARRIED") {
+        normalizedMaritalStatus = MaritalStatus.MARRIED;
+      }
+    }
 
-    if (query.maritalStatus) {
-      where.maritalStatus = isExplicitMarried
-        ? MaritalStatus.MARRIED
-        : query.maritalStatus;
+    const isExplicitMarried =
+      normalizedMaritalStatus === MaritalStatus.MARRIED ||
+      (normalizedMaritalStatus as string) === "MARRIED";
+
+    const isOccupationQuery = Boolean(
+      query.occupationCategory && query.occupationCategory.trim().length > 0
+    );
+
+    if (normalizedMaritalStatus) {
+      where.maritalStatus = normalizedMaritalStatus;
     } else {
-      if ((query as any).includeAllProfiles) {
-        // Allow all marital statuses when includeAllProfiles is requested
+      if ((query as any).includeAllProfiles || isOccupationQuery) {
+        // Allow all marital statuses when includeAllProfiles or occupationCategory is requested
       } else {
         // By default in matrimonial candidate listings, show eligible candidates
         where.maritalStatus = {
@@ -1605,7 +1641,7 @@ export class ProfilesService {
       }
     }
 
-    if ((query as any).includeAllProfiles) {
+    if ((query as any).includeAllProfiles || isOccupationQuery) {
       if ((query as any).showInMatrimony !== undefined) {
         where.showInMatrimony =
           (query as any).showInMatrimony === true ||
@@ -1613,8 +1649,18 @@ export class ProfilesService {
           (query as any).showInMatrimony === 1 ||
           (query as any).showInMatrimony === "1";
       }
+      where.NOT = [
+        ...(((where as any).NOT as any[]) || []),
+        { status: ProfileStatus.SUSPENDED },
+        { status: ProfileStatus.REJECTED },
+      ];
     } else if (isExplicitMarried) {
       // If user specifically asked for married community members, show them
+      where.NOT = [
+        ...(((where as any).NOT as any[]) || []),
+        { status: ProfileStatus.SUSPENDED },
+        { status: ProfileStatus.REJECTED },
+      ];
     } else {
       // Public matrimonial candidates strictly exclude MARRIED, SUSPENDED, and REJECTED
       where.showInMatrimony = true;
@@ -1696,11 +1742,29 @@ export class ProfilesService {
             // Strictly exclude Government employees
             { governmentEmployment: { is: null } },
             {
-              NOT: [
-                { occupation: { contains: "Government" } },
-                { occupation: { contains: "સરકારી" } },
-                { organizationName: { contains: "Government" } },
-                { organizationName: { contains: "સરકારી" } },
+              OR: [
+                { occupation: null },
+                {
+                  NOT: [
+                    { occupation: { contains: "Government" } },
+                    { occupation: { contains: "સરકારી" } },
+                    { occupation: { contains: "State Govt" } },
+                    { occupation: { contains: "Central Govt" } },
+                  ],
+                },
+              ],
+            },
+            {
+              OR: [
+                { organizationName: null },
+                {
+                  NOT: [
+                    { organizationName: { contains: "Government" } },
+                    { organizationName: { contains: "સરકારી" } },
+                    { organizationName: { contains: "State Govt" } },
+                    { organizationName: { contains: "Central Govt" } },
+                  ],
+                },
               ],
             },
             // Must match private or business occupation / employment / organization / service
@@ -1763,24 +1827,37 @@ export class ProfilesService {
       });
     }
 
-    const pargana = (query as any).pargana;
-    if (pargana && pargana.trim() !== "") {
+    const cleanFilter = (val: any) => {
+      if (!val || typeof val !== "string") return null;
+      const stripped = val.replace(/\s*\([^)]*\)/g, "").trim();
+      if (
+        !stripped ||
+        stripped.toLowerCase() === "all" ||
+        stripped.toLowerCase() === "any"
+      ) {
+        return null;
+      }
+      return stripped;
+    };
+
+    const pargana = cleanFilter((query as any).pargana);
+    if (pargana) {
       andConditions.push({
-        nativePlace: { contains: pargana.trim() },
+        nativePlace: { contains: pargana },
       });
     }
 
-    const city = (query as any).city;
-    if (city && city.trim() !== "") {
+    const city = cleanFilter((query as any).city);
+    if (city) {
       andConditions.push({
-        city: { contains: city.trim() },
+        city: { contains: city },
       });
     }
 
-    const education = (query as any).education;
-    if (education && education.trim() !== "") {
+    const education = cleanFilter((query as any).education);
+    if (education) {
       andConditions.push({
-        education: { contains: education.trim() },
+        education: { contains: education },
       });
     }
 
@@ -2275,6 +2352,7 @@ export class ProfilesService {
       if (!profile || !profile.id) return;
       const occ = (profile.occupation || "").toLowerCase();
       const org = (profile.organizationName || "").toLowerCase();
+      const desig = (profile.designation || "").toLowerCase();
 
       // Check if profile is explicitly private, business, or non-government
       const isPrivateOrBusiness =
@@ -2283,13 +2361,11 @@ export class ProfilesService {
         occ.includes("business") ||
         occ.includes("વેપાર") ||
         occ.includes("સ્વરોજગાર") ||
-        occ.includes("self") ||
         occ.includes("not working") ||
         org.includes("it company") ||
-        org.includes("pvt") ||
-        org.includes("private") ||
-        org.includes("ltd") ||
-        org.includes("llp");
+        org.includes("pvt ltd") ||
+        org.includes("private limited") ||
+        desig.includes("it company");
 
       const isGov =
         !isPrivateOrBusiness &&
@@ -2300,7 +2376,13 @@ export class ProfilesService {
           occ.includes("state govt") ||
           occ.includes("central govt") ||
           org.includes("state govt") ||
-          org.includes("central govt"));
+          org.includes("central govt") ||
+          desig.includes("teacher") ||
+          desig.includes("શિક્ષક") ||
+          desig.includes("police") ||
+          desig.includes("પોલીસ") ||
+          desig.includes("talati") ||
+          desig.includes("તલાટી"));
 
       if (isGov) {
         let empType: GovtEmploymentType = GovtEmploymentType.STATE_GOVT;

@@ -26,9 +26,6 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(profileNotifierProvider.notifier).updateFilters(occupationCategory: 'Private');
-    });
   }
 
   static const Map<String, String> _translations = {
@@ -425,10 +422,11 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   }
 
   List<Map<String, dynamic>> get _allData {
-    final profileState = ref.watch(profileNotifierProvider);
+    final privateAsync = ref.watch(privateProfilesProvider);
+    final profilesList = privateAsync.value ?? [];
     
     // Strictly filter out any government profiles
-    final privateProfiles = profileState.profiles.where((p) {
+    final privateProfiles = profilesList.where((p) {
       final emp = p.employmentType.toLowerCase();
       final dept = p.department.toLowerCase();
       final desig = p.designation.toLowerCase();
@@ -1775,7 +1773,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                     ),
                   ),
                 ),
-                if (ref.watch(profileNotifierProvider).isLoading)
+                if (ref.watch(privateProfilesProvider).isLoading)
                   Container(
                     width: tableWidth,
                     padding: const EdgeInsets.all(40.0),

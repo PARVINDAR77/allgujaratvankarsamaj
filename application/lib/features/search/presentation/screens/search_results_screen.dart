@@ -60,7 +60,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       final activeGender = _selectedGender == 'ALL' ? '' : _selectedGender;
       final currentInProvider = ref.read(profileNotifierProvider.notifier).currentGender ?? '';
       if (currentInProvider != activeGender || ref.read(profileNotifierProvider).profiles.isEmpty) {
-        ref.read(profileNotifierProvider.notifier).updateFilters(gender: activeGender);
+        ref.read(profileNotifierProvider.notifier).updateFilters(gender: activeGender, occupationCategory: null);
       }
     });
   }
@@ -106,6 +106,7 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       status: status,
       minAge: minAge > 18 ? minAge : null,
       maxAge: maxAge < 55 ? maxAge : null,
+      occupationCategory: null,
     );
   }
 

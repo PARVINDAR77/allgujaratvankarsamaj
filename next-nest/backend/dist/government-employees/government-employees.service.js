@@ -484,22 +484,6 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                 where: {
                     governmentEmployment: null,
                     status: { not: client_1.ProfileStatus.REJECTED },
-                    NOT: [
-                        { occupation: { contains: "Private" } },
-                        { occupation: { contains: "ખાનગી" } },
-                        { occupation: { contains: "Business" } },
-                        { occupation: { contains: "વેપાર" } },
-                        { occupation: { contains: "સ્વરોજગાર" } },
-                        { occupation: { contains: "Not Working" } },
-                        { occupation: { contains: "કોઈ નોકરી નથી" } },
-                        { organizationName: { contains: "it company" } },
-                        { organizationName: { contains: "pvt" } },
-                        { organizationName: { contains: "private" } },
-                        { organizationName: { contains: "ખાનગી" } },
-                        { organizationName: { contains: "ltd" } },
-                        { organizationName: { contains: "llp" } },
-                        { designation: { contains: "it company" } },
-                    ],
                     OR: [
                         { occupation: { contains: "Gov" } },
                         { occupation: { contains: "સરકારી" } },
@@ -509,12 +493,35 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                         { occupation: { contains: "Central Govt" } },
                         { organizationName: { contains: "State Govt" } },
                         { organizationName: { contains: "Central Govt" } },
+                        { designation: { contains: "Teacher" } },
+                        { designation: { contains: "શિક્ષક" } },
+                        { designation: { contains: "Police" } },
+                        { designation: { contains: "પોલીસ" } },
+                        { designation: { contains: "Talati" } },
+                        { designation: { contains: "તલાટી" } },
                     ],
                 },
             });
             for (const p of govtProfiles) {
                 const occ = (p.occupation || "").toLowerCase();
                 const org = (p.organizationName || "").toLowerCase();
+                const desig = (p.designation || "").toLowerCase();
+                const fn = (p.firstName || "").toLowerCase();
+                if (occ.includes("private") ||
+                    occ.includes("ખાનગી") ||
+                    occ.includes("business") ||
+                    occ.includes("વેપાર") ||
+                    occ.includes("સ્વરોજગાર") ||
+                    occ.includes("not working") ||
+                    occ.includes("કોઈ નોકરી નથી") ||
+                    org.includes("it company") ||
+                    org.includes("pvt ltd") ||
+                    org.includes("private limited") ||
+                    org.includes("ખાનગી") ||
+                    desig.includes("it company") ||
+                    fn.includes("parvindar")) {
+                    continue;
+                }
                 let empType = client_1.GovtEmploymentType.STATE_GOVT;
                 if (org.includes("central") ||
                     org.includes("કેન્દ્ર") ||
@@ -561,22 +568,6 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
                     status: {
                         not: client_1.ProfileStatus.REJECTED,
                     },
-                    NOT: [
-                        { occupation: { contains: "Private" } },
-                        { occupation: { contains: "ખાનગી" } },
-                        { occupation: { contains: "Business" } },
-                        { occupation: { contains: "વેપાર" } },
-                        { occupation: { contains: "સ્વરોજગાર" } },
-                        { occupation: { contains: "Not Working" } },
-                        { occupation: { contains: "કોઈ નોકરી નથી" } },
-                        { organizationName: { contains: "it company" } },
-                        { organizationName: { contains: "pvt" } },
-                        { organizationName: { contains: "private" } },
-                        { organizationName: { contains: "ખાનગી" } },
-                        { organizationName: { contains: "ltd" } },
-                        { organizationName: { contains: "llp" } },
-                        { designation: { contains: "it company" } },
-                    ],
                 },
             };
             if (query.employmentType && query.employmentType !== "ALL") {
@@ -751,22 +742,7 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
         await this.syncMissingGovtEmployees();
         const whereCondition = {
             profile: {
-                NOT: [
-                    { occupation: { contains: "Private" } },
-                    { occupation: { contains: "ખાનગી" } },
-                    { occupation: { contains: "Business" } },
-                    { occupation: { contains: "વેપાર" } },
-                    { occupation: { contains: "સ્વરોજગાર" } },
-                    { occupation: { contains: "Not Working" } },
-                    { occupation: { contains: "કોઈ નોકરી નથી" } },
-                    { organizationName: { contains: "it company" } },
-                    { organizationName: { contains: "pvt" } },
-                    { organizationName: { contains: "private" } },
-                    { organizationName: { contains: "ખાનગી" } },
-                    { organizationName: { contains: "ltd" } },
-                    { organizationName: { contains: "llp" } },
-                    { designation: { contains: "it company" } },
-                ],
+                status: { not: client_1.ProfileStatus.REJECTED },
             },
         };
         if (status && status !== "ALL") {
@@ -954,18 +930,15 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
         const desigName = (item?.designation?.name || "").toLowerCase();
         const loc = (item?.officeLocation || "").toLowerCase();
         const nonGovtTerms = [
-            "parvindar",
-            "takhatsing",
             "it company",
             "private",
             "ખાનગી",
-            "pvt",
-            "ltd",
-            "llp",
+            "pvt ltd",
+            "pvt. ltd",
+            "private limited",
             "business",
             "વેપાર",
             "સ્વરોજગાર",
-            "self",
             "not working",
             "કોઈ નોકરી નથી",
         ];

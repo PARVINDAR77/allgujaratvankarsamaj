@@ -22,24 +22,26 @@ interface ProfileResult {
 
 function SearchContent() {
   const searchParams = useSearchParams();
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     lookingFor: "Bride (કન્યા)",
-    maritalStatus: "Unmarried (અવિકસિત / અવિવાહિત)",
+    maritalStatus: "All",
     ageFrom: "18",
-    ageTo: "35",
-    heightFrom: "5'0\"",
-    heightTo: "6'2\"",
-    pargana: "35 Pargana (૩૫ પરગણા)",
-    city: "Ahmedabad (અમદાવાદ)",
-    education: "Graduate (સ્નાતક)",
-    occupation: "Private Service (ખાનગી નોકરી)",
-    religion: "Hindu (હિન્દુ)",
-    annualIncome: "5 to 10 Lakhs",
-    diet: "Vegetarian (શાકાહારી)",
-    familyType: "Joint Family (સંયુક્ત કુટુંબ)",
-    motherTongue: "Gujarati (ગુજરાતી)",
+    ageTo: "50",
+    heightFrom: "All",
+    heightTo: "All",
+    pargana: "All",
+    city: "All",
+    education: "All",
+    occupation: "All",
+    religion: "All",
+    annualIncome: "All",
+    diet: "All",
+    familyType: "All",
+    motherTongue: "All",
     keyword: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ProfileResult[] | null>(null);
@@ -82,25 +84,16 @@ function SearchContent() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const cleanFilterValue = (val: string | undefined): string | undefined => {
+    if (!val || val === "All" || val === "Any" || val.trim() === "") return undefined;
+    const cleaned = val.replace(/\s*\([^)]*\)/g, "").trim();
+    return cleaned.length > 0 && cleaned.toLowerCase() !== "all" && cleaned.toLowerCase() !== "any"
+      ? cleaned
+      : undefined;
+  };
+
   const handleReset = () => {
-    setFormData({
-      lookingFor: "Bride (કન્યા)",
-      maritalStatus: "Unmarried (અવિકસિત / અવિવાહિત)",
-      ageFrom: "18",
-      ageTo: "35",
-      heightFrom: "5'0\"",
-      heightTo: "6'2\"",
-      pargana: "35 Pargana (૩૫ પરગણા)",
-      city: "Ahmedabad (અમદાવાદ)",
-      education: "Graduate (સ્નાતક)",
-      occupation: "Private Service (ખાનગી નોકરી)",
-      religion: "Hindu (હિન્દુ)",
-      annualIncome: "5 to 10 Lakhs",
-      diet: "Vegetarian (શાકાહારી)",
-      familyType: "Joint Family (સંયુક્ત કુટુંબ)",
-      motherTongue: "Gujarati (ગુજરાતી)",
-      keyword: "",
-    });
+    setFormData(initialFormData);
     setResults(null);
   };
 
@@ -115,11 +108,35 @@ function SearchContent() {
         formData.lookingFor.includes("પુરુષ");
       const targetGender = isLookingForGroom ? "MALE" : "FEMALE";
 
-      const payload = {
-        ...formData,
+      let mappedMarital: string | undefined = undefined;
+      const msLower = formData.maritalStatus.toLowerCase();
+      if (msLower.includes("unmarried") || msLower.includes("અપરિણીત") || msLower.includes("અવિવાહિત")) {
+        mappedMarital = "NEVER_MARRIED";
+      } else if (msLower.includes("divorced") || msLower.includes("છૂટાછેડા")) {
+        mappedMarital = "DIVORCED";
+      } else if (msLower.includes("widow") || msLower.includes("વિધવા") || msLower.includes("વિધુર")) {
+        mappedMarital = "WIDOWED";
+      }
+
+      const payload: Record<string, any> = {
         gender: targetGender,
         lookingFor: isLookingForGroom ? "Groom" : "Bride",
+        keyword: formData.keyword.trim() || undefined,
+        maritalStatus: mappedMarital,
+        pargana: cleanFilterValue(formData.pargana),
+        city: cleanFilterValue(formData.city),
+        education: cleanFilterValue(formData.education),
+        occupation: cleanFilterValue(formData.occupation),
+        religion: cleanFilterValue(formData.religion),
+        annualIncome: cleanFilterValue(formData.annualIncome),
+        diet: cleanFilterValue(formData.diet),
+        familyType: cleanFilterValue(formData.familyType),
+        motherTongue: cleanFilterValue(formData.motherTongue),
+        ageFrom: formData.ageFrom !== "All" ? parseInt(formData.ageFrom) : undefined,
+        ageTo: formData.ageTo !== "All" ? parseInt(formData.ageTo) : undefined,
       };
+
+      Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
 
       const response = await fetch(`${apiBase}/profiles/search-query`, {
         method: "POST",
@@ -133,9 +150,15 @@ function SearchContent() {
         setResults(profilesList);
       } else {
         // Direct query to GET /profiles
-        const getUrl = `${apiBase}/profiles?gender=${targetGender}&limit=50${
-          formData.keyword ? `&search=${encodeURIComponent(formData.keyword)}` : ""
-        }`;
+        const params = new URLSearchParams();
+        params.append("gender", targetGender);
+        params.append("limit", "50");
+        if (formData.keyword.trim()) params.append("search", formData.keyword.trim());
+        if (mappedMarital) params.append("maritalStatus", mappedMarital);
+        if (payload.city) params.append("city", payload.city);
+        if (payload.pargana) params.append("pargana", payload.pargana);
+
+        const getUrl = `${apiBase}/profiles?${params.toString()}`;
         const getRes = await fetch(getUrl);
         if (getRes.ok) {
           const getData = await getRes.json();
@@ -148,9 +171,9 @@ function SearchContent() {
               ? Math.floor((Date.now() - new Date(p.dateOfBirth).getTime()) / (365.25 * 24 * 3600 * 1000))
               : 25,
             height: "5'6\"",
-            pargana: p.nativePlace || formData.pargana,
-            city: p.city || formData.city,
-            education: p.education || formData.education,
+            pargana: p.nativePlace || (formData.pargana !== "All" ? formData.pargana : "Gujarat"),
+            city: p.city || (formData.city !== "All" ? formData.city : "Gujarat"),
+            education: p.education || "Graduate",
             occupation: p.occupation || p.designation || "Service",
             maritialStatus: p.maritalStatus || "Unmarried",
             isVerified: p.isVerified || false,
@@ -237,9 +260,10 @@ function SearchContent() {
                 onChange={handleChange}
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white focus:outline-none focus:border-[#FFE066] text-xs font-semibold"
               >
-                <option>Unmarried (અપરિણીત / અવિવાહિત)</option>
-                <option>Divorced (છૂટાછેડા)</option>
-                <option>Widowed (વિધવા / વિધુર)</option>
+                <option value="All">All / ગમે તે (બધા)</option>
+                <option value="Unmarried">Unmarried (અપરિણીત / અવિવાહિત)</option>
+                <option value="Divorced">Divorced (છૂટાછેડા)</option>
+                <option value="Widowed">Widowed (વિધવા / વિધુર)</option>
               </select>
             </div>
 
@@ -253,10 +277,10 @@ function SearchContent() {
                   onChange={handleChange}
                   className="w-1/2 bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
                 >
-                  <option>18 Yrs</option>
-                  <option>21 Yrs</option>
-                  <option>25 Yrs</option>
-                  <option>30 Yrs</option>
+                  <option value="18">18 Yrs</option>
+                  <option value="21">21 Yrs</option>
+                  <option value="25">25 Yrs</option>
+                  <option value="30">30 Yrs</option>
                 </select>
                 <span className="self-center text-[#FFE066] font-bold">to</span>
                 <select
@@ -265,10 +289,11 @@ function SearchContent() {
                   onChange={handleChange}
                   className="w-1/2 bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
                 >
-                  <option>30 Yrs</option>
-                  <option>35 Yrs</option>
-                  <option>40 Yrs</option>
-                  <option>50 Yrs</option>
+                  <option value="30">30 Yrs</option>
+                  <option value="35">35 Yrs</option>
+                  <option value="40">40 Yrs</option>
+                  <option value="50">50 Yrs</option>
+                  <option value="60">60 Yrs</option>
                 </select>
               </div>
             </div>
@@ -283,9 +308,10 @@ function SearchContent() {
                   onChange={handleChange}
                   className="w-1/2 bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
                 >
-                  <option>5&apos;0&quot;</option>
-                  <option>5&apos;3&quot;</option>
-                  <option>5&apos;6&quot;</option>
+                  <option value="All">Any Height</option>
+                  <option value="5'0&quot;">5&apos;0&quot;</option>
+                  <option value="5'3&quot;">5&apos;3&quot;</option>
+                  <option value="5'6&quot;">5&apos;6&quot;</option>
                 </select>
                 <span className="self-center text-[#FFE066] font-bold">to</span>
                 <select
@@ -294,9 +320,10 @@ function SearchContent() {
                   onChange={handleChange}
                   className="w-1/2 bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
                 >
-                  <option>5&apos;8&quot;</option>
-                  <option>6&apos;0&quot;</option>
-                  <option>6&apos;4&quot;</option>
+                  <option value="All">Any Height</option>
+                  <option value="5'8&quot;">5&apos;8&quot;</option>
+                  <option value="6'0&quot;">6&apos;0&quot;</option>
+                  <option value="6'4&quot;">6&apos;4&quot;</option>
                 </select>
               </div>
             </div>
@@ -310,11 +337,12 @@ function SearchContent() {
                 onChange={handleChange}
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white focus:outline-none focus:border-[#FFE066] text-xs font-semibold"
               >
-                <option>35 Pargana (૩૫ પરગણા)</option>
-                <option>27 Pargana (૨૭ પરગણા)</option>
-                <option>16 Pargana (૧૬ પરગણા)</option>
-                <option>14 Pargana (૧૪ પરગણા)</option>
-                <option>Other / NRI (અન્ય)</option>
+                <option value="All">All Pargana (તમામ પરગણા)</option>
+                <option value="35 Pargana">35 Pargana (૩૫ પરગણા)</option>
+                <option value="27 Pargana">27 Pargana (૨૭ પરગણા)</option>
+                <option value="16 Pargana">16 Pargana (૧૬ પરગણા)</option>
+                <option value="14 Pargana">14 Pargana (૧૪ પરગણા)</option>
+                <option value="Other">Other / NRI (અન્ય)</option>
               </select>
             </div>
 
@@ -327,12 +355,13 @@ function SearchContent() {
                 onChange={handleChange}
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
               >
-                <option>Ahmedabad (અમદાવાદ)</option>
-                <option>Gandhinagar (ગાંધીનગર)</option>
-                <option>Vadodara (વડોદરા)</option>
-                <option>Surat (સુરત)</option>
-                <option>Rajkot (રાજકોટ)</option>
-                <option>Mehsana (મહેસાણા)</option>
+                <option value="All">All Cities / Districts (તમામ શહેરો / જિલ્લા)</option>
+                <option value="Ahmedabad">Ahmedabad (અમદાવાદ)</option>
+                <option value="Gandhinagar">Gandhinagar (ગાંધીનગર)</option>
+                <option value="Vadodara">Vadodara (વડોદરા)</option>
+                <option value="Surat">Surat (સુરત)</option>
+                <option value="Rajkot">Rajkot (રાજકોટ)</option>
+                <option value="Mehsana">Mehsana (મહેસાણા)</option>
               </select>
             </div>
 
@@ -345,11 +374,12 @@ function SearchContent() {
                 onChange={handleChange}
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
               >
-                <option>Graduate (સ્નાતક - BA/BCom/BSc)</option>
-                <option>BE / B.Tech (એન્જિનિયર)</option>
-                <option>Post Graduate (માસ્ટર્સ - MA/MSc)</option>
-                <option>Doctor / MBBS / MD</option>
-                <option>Diploma / Higher Secondary</option>
+                <option value="All">All Education (તમામ શિક્ષણ)</option>
+                <option value="Graduate">Graduate (સ્નાતક - BA/BCom/BSc)</option>
+                <option value="Engineering">BE / B.Tech (એન્જિનિયર)</option>
+                <option value="Post Graduate">Post Graduate (માસ્ટર્સ - MA/MSc)</option>
+                <option value="Doctor">Doctor / MBBS / MD</option>
+                <option value="Diploma">Diploma / Higher Secondary</option>
               </select>
             </div>
 
@@ -362,10 +392,11 @@ function SearchContent() {
                 onChange={handleChange}
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
               >
-                <option>Private Service (ખાનગી નોકરી)</option>
-                <option>Government Job (સરકારી નોકરી)</option>
-                <option>Business / Self-Employed (વેપાર)</option>
-                <option>IT / Software Professional</option>
+                <option value="All">All Occupations (તમામ વ્યવસાય)</option>
+                <option value="Private">Private Service (ખાનગી નોકરી)</option>
+                <option value="Government">Government Job (સરકારી નોકરી)</option>
+                <option value="Business">Business / Self-Employed (વેપાર)</option>
+                <option value="IT">IT / Software Professional</option>
               </select>
             </div>
 
@@ -378,8 +409,9 @@ function SearchContent() {
                 onChange={handleChange}
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
               >
-                <option>Hindu (હિન્દુ વણકર)</option>
-                <option>Buddhist (બૌદ્ધ)</option>
+                <option value="All">All Religions (તમામ)</option>
+                <option value="Hindu">Hindu (હિન્દુ વણકર)</option>
+                <option value="Buddhist">Buddhist (બૌદ્ધ)</option>
               </select>
             </div>
 

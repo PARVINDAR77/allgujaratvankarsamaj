@@ -180,3 +180,17 @@ final candidateProfileByIdProvider = FutureProvider.family<ProfileModel, String>
   return await repository.getProfileById(id);
 });
 
+final privateProfilesProvider = FutureProvider<List<ProfileModel>>((ref) async {
+  final repository = ref.watch(profileRepositoryProvider);
+  try {
+    final result = await repository.getProfiles(
+      page: 1,
+      limit: 100,
+      occupationCategory: 'Private',
+    );
+    return result.profiles;
+  } catch (_) {
+    return [];
+  }
+});
+
