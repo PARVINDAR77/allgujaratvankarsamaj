@@ -75,6 +75,31 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   const notifRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
 
+  // Admin user data from session
+  const [adminUser, setAdminUser] = useState<{
+    name?: string;
+    email?: string;
+    role?: string;
+    id?: string;
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("adminUser");
+      if (stored) {
+        setAdminUser(JSON.parse(stored));
+      }
+    } catch (_) {}
+  }, []);
+
+  const adminDisplayName = adminUser?.name || "Admin Officer";
+  const adminDisplayEmail = adminUser?.email || "admin@vankarsamaj.org";
+  const adminDisplayRole =
+    adminUser?.role === "SUPER_ADMIN"
+      ? "Super Administrator"
+      : adminUser?.role || "Super Administrator";
+  const adminInitial = (adminDisplayName[0] || "A").toUpperCase();
+
   // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -633,18 +658,11 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
               setShowProfileMenu(!showProfileMenu);
               setShowNotifications(false);
             }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              backgroundColor: "#0B1A33",
-              border: "1px solid rgba(212, 175, 55, 0.35)",
-              borderRadius: "24px",
-              padding: "5px 14px 5px 6px",
-              cursor: "pointer",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-            }}
-            className="hover:border-[#D4AF37] transition-all hover:bg-[#0F2344]"
+            className={`flex items-center gap-2.5 bg-[#0B1A33] hover:bg-[#0F2344] border transition-all duration-200 rounded-full py-1 px-3 sm:px-3.5 cursor-pointer shadow-md ${
+              showProfileMenu
+                ? "border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.3)] bg-[#0F2344]"
+                : "border-amber-500/35 hover:border-amber-400/70"
+            }`}
           >
             <div
               style={{
@@ -652,84 +670,241 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                 boxShadow: "inset 0 1px 3px rgba(255, 255, 255, 0.4)",
                 background: "linear-gradient(135deg, #D4AF37 0%, #F3E5AB 50%, #C59B27 100%)",
               }}
-              className="flex justify-center items-center font-extrabold rounded-full text-xs w-7 h-7 shrink-0"
+              className="flex justify-center items-center font-extrabold rounded-full text-xs w-7 h-7 shrink-0 shadow-sm"
             >
-              A
+              {adminInitial}
             </div>
             <div className="hidden sm:block text-left">
               <span
                 style={{ display: "block", lineHeight: 1.1 }}
                 className="font-bold text-white text-xs truncate max-w-[120px]"
               >
-                Admin Officer
+                {adminDisplayName}
               </span>
               <span
                 style={{ display: "block", marginTop: "2px", color: "#D4AF37" }}
                 className="font-bold text-[10px]"
               >
-                Super Admin
+                {adminDisplayRole}
               </span>
             </div>
-            <span className="text-xs text-slate-400">▾</span>
+            <span
+              className={`text-xs transition-transform duration-200 ${
+                showProfileMenu ? "rotate-180 text-amber-400" : "text-slate-400"
+              }`}
+            >
+              ▾
+            </span>
           </button>
 
           {showProfileMenu && (
             <div
               style={{
-                marginTop: "10px",
-                width: "220px",
-                backgroundColor: "#071324",
-                border: "1px solid rgba(212, 175, 55, 0.35)",
-                boxShadow: "0 12px 35px rgba(0, 0, 0, 0.75)",
-                zIndex: 50,
+                width: "320px",
+                boxShadow: "0 24px 60px -10px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.2)",
+                zIndex: 60,
               }}
-              className="absolute right-0 rounded-2xl p-2.5 animate-in fade-in slide-in-from-top-2 duration-200"
+              className="absolute right-0 top-full mt-3 rounded-2xl bg-gradient-to-b from-[#0E1E38]/98 via-[#0A162B]/98 to-[#050D1A]/98 border border-amber-500/40 backdrop-blur-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
             >
-              <div
-                style={{
-                  padding: "10px 12px",
-                  borderBottom: "1px solid rgba(212, 175, 55, 0.15)",
-                  marginBottom: "6px",
-                }}
-              >
-                <p className="font-extrabold text-white text-xs">All Gujarat Vankar Samaj</p>
-                <p className="text-[11px] text-[#D4AF37] font-semibold">Super Administrator</p>
+              {/* Top Shimmer Gold Accent Strip */}
+              <div className="h-[3px] w-full bg-gradient-to-r from-amber-500 via-[#FFE899] to-amber-600 shadow-[0_0_12px_rgba(212,175,55,0.7)]" />
+
+              {/* Executive Header Identity Card */}
+              <div className="p-4 bg-gradient-to-b from-white/[0.05] via-amber-500/[0.03] to-transparent border-b border-amber-500/15">
+                <div className="flex items-center gap-3.5">
+                  {/* Glowing Metallic Avatar */}
+                  <div className="relative shrink-0">
+                    <div
+                      style={{
+                        background: "linear-gradient(135deg, #FFE899 0%, #D4AF37 50%, #996515 100%)",
+                        boxShadow: "0 0 15px rgba(212, 175, 55, 0.35), inset 0 1px 3px rgba(255, 255, 255, 0.6)",
+                      }}
+                      className="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg text-[#041026] ring-2 ring-amber-400/40"
+                    >
+                      {adminInitial}
+                    </div>
+                    {/* Live Online Ping Indicator */}
+                    <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5" title="Live Admin Session">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-500 ring-2 ring-[#0A162B]"></span>
+                    </span>
+                  </div>
+
+                  {/* Identity Info */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <h4 className="text-sm font-black text-white tracking-wide truncate">
+                        {adminDisplayName}
+                      </h4>
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        Online
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                      {adminDisplayEmail}
+                    </p>
+                    <div className="mt-1.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500/15 text-amber-300 border border-amber-400/35 shadow-[0_0_8px_rgba(212,175,55,0.15)]">
+                        <span>👑</span>
+                        <span>{adminDisplayRole}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Organization Sub-Pill */}
+                <div className="mt-3 px-2.5 py-1 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between text-[10px]">
+                  <span className="text-slate-300 font-semibold truncate flex items-center gap-1.5">
+                    <span className="text-amber-400">🏛️</span>
+                    <span>All Gujarat Vankar Samaj</span>
+                  </span>
+                  <span className="text-amber-400/90 font-mono font-bold shrink-0">
+                    Central Node
+                  </span>
+                </div>
+
+                {/* Security Telemetry Micro Strip */}
+                <div className="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-white/5 text-[10px]">
+                  <div className="flex items-center gap-1.5 text-slate-400">
+                    <span className="text-emerald-400">🛡️</span>
+                    <span>Clearance:</span>
+                    <strong className="text-slate-200">Level 1 SuperAdmin</strong>
+                  </div>
+                  <div className="flex items-center justify-end gap-1.5 text-slate-400">
+                    <span className="text-sky-400">🔒</span>
+                    <span>Session:</span>
+                    <strong className="text-slate-200">256-bit JWT</strong>
+                  </div>
+                </div>
               </div>
 
-              <div className="flex flex-col gap-1">
+              {/* Menu Section */}
+              <div className="p-2 space-y-1">
+                <div className="px-3 pt-2 pb-1 text-[10px] font-extrabold tracking-wider text-amber-400/80 uppercase flex items-center justify-between">
+                  <span>Central Controls</span>
+                  <span className="text-slate-500 font-normal">Navigation</span>
+                </div>
+
+                {/* System Settings */}
                 <Link
                   href="/admin/settings"
                   onClick={() => setShowProfileMenu(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.08] border border-transparent hover:border-amber-400/30 transition-all group cursor-pointer"
                 >
-                  <span>⚙️</span>
-                  <span>System Settings</span>
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-sm text-amber-300 group-hover:scale-105 group-hover:bg-amber-500/20 transition-all shrink-0">
+                    ⚙️
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">
+                        System Settings
+                      </span>
+                      <span className="text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all text-xs font-bold">
+                        →
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      Platform configs, maintenance & access
+                    </p>
+                  </div>
                 </Link>
+
+                {/* Audit & Analytics */}
                 <Link
                   href="/admin/reports"
                   onClick={() => setShowProfileMenu(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.08] border border-transparent hover:border-sky-400/30 transition-all group cursor-pointer"
                 >
-                  <span>📊</span>
-                  <span>Audit Reports</span>
+                  <div className="w-8 h-8 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sm text-sky-300 group-hover:scale-105 group-hover:bg-sky-500/20 transition-all shrink-0">
+                    📊
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">
+                        Audit Reports & Analytics
+                      </span>
+                      <span className="text-slate-500 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all text-xs font-bold">
+                        →
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      Activity logs, verification metrics & trends
+                    </p>
+                  </div>
                 </Link>
+
+                {/* OTP & SMS Telemetry */}
+                <Link
+                  href="/admin/otp-analytics"
+                  onClick={() => setShowProfileMenu(false)}
+                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.08] border border-transparent hover:border-emerald-400/30 transition-all group cursor-pointer"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center text-sm text-emerald-300 group-hover:scale-105 group-hover:bg-emerald-500/20 transition-all shrink-0">
+                    ⚡
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors flex items-center gap-1.5">
+                        <span>OTP & SMS Gateway</span>
+                        <span className="px-1.5 py-0.2 rounded text-[8.5px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                          Live
+                        </span>
+                      </span>
+                      <span className="text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all text-xs font-bold">
+                        →
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      DLT telemetry, delivery logs & lockouts
+                    </p>
+                  </div>
+                </Link>
+
+                {/* Broadcast Notifications */}
                 <Link
                   href="/admin/notifications"
                   onClick={() => setShowProfileMenu(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.08] border border-transparent hover:border-purple-400/30 transition-all group cursor-pointer"
                 >
-                  <span>📢</span>
-                  <span>Broadcast Notice</span>
+                  <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/25 flex items-center justify-center text-sm text-purple-300 group-hover:scale-105 group-hover:bg-purple-500/20 transition-all shrink-0">
+                    📢
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-200 group-hover:text-white transition-colors">
+                        Broadcast Notice
+                      </span>
+                      <span className="text-slate-500 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all text-xs font-bold">
+                        →
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      Dispatch push alerts to community users
+                    </p>
+                  </div>
                 </Link>
               </div>
 
-              <div
-                style={{
-                  marginTop: "6px",
-                  paddingTop: "6px",
-                  borderTop: "1px solid rgba(212, 175, 55, 0.15)",
-                }}
-              >
+              {/* Public Portal Switcher */}
+              <div className="px-2 pt-1 pb-1">
+                <Link
+                  href="/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-2 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/5 hover:border-amber-400/20 text-[11px] text-slate-300 hover:text-white transition-all group"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-400">🌐</span>
+                    <span className="font-semibold">View Public Samaj Portal</span>
+                  </div>
+                  <span className="text-slate-500 group-hover:text-amber-300 text-[10px]">
+                    ↗
+                  </span>
+                </Link>
+              </div>
+
+              {/* Executive Sign Out Footer Button */}
+              <div className="p-2 border-t border-white/10 bg-black/30">
                 <button
                   onClick={async () => {
                     localStorage.removeItem("adminUser");
@@ -739,10 +914,24 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
                     } catch (_) {}
                     router.push("/admin/login");
                   }}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-950/50 hover:text-rose-100 transition-colors cursor-pointer bg-transparent border-none text-left"
+                  className="w-full p-2.5 rounded-xl bg-gradient-to-r from-rose-950/40 via-red-950/30 to-rose-950/40 hover:from-rose-900/60 hover:to-red-900/60 border border-rose-500/35 hover:border-rose-400/60 text-rose-200 hover:text-white transition-all flex items-center justify-between group shadow-sm cursor-pointer"
                 >
-                  <span>🚪</span>
-                  <span>Sign Out</span>
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-7 h-7 rounded-lg bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-300 text-xs group-hover:scale-105 transition-transform">
+                      🚪
+                    </div>
+                    <div className="text-left">
+                      <p className="text-xs font-bold text-rose-200 group-hover:text-white leading-tight">
+                        Sign Out of Console
+                      </p>
+                      <p className="text-[9.5px] text-rose-300/70">
+                        Terminate session
+                      </p>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[10px] font-mono font-bold group-hover:bg-rose-500/30">
+                    ⎋ Exit
+                  </span>
                 </button>
               </div>
             </div>
