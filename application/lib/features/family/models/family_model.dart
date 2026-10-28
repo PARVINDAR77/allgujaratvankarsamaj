@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../../core/config/app_config.dart';
@@ -212,6 +213,39 @@ class FamilyModel {
       isLiveMember: true,
       icon: _iconForSurname(surnameEng),
     );
+  }
+
+  String get displaySiblings {
+    final s = siblings?.trim() ?? '';
+    if (s.isEmpty) return 'Not specified';
+    if (s.startsWith('{') && s.endsWith('}')) {
+      try {
+        final decoded = jsonDecode(s);
+        if (decoded is Map) {
+          final bm = int.tryParse(decoded['bm']?.toString() ?? '0') ?? 0;
+          final bu = int.tryParse(decoded['bu']?.toString() ?? '0') ?? 0;
+          final sm = int.tryParse(decoded['sm']?.toString() ?? '0') ?? 0;
+          final su = int.tryParse(decoded['su']?.toString() ?? '0') ?? 0;
+          final details = decoded['details']?.toString().trim() ?? '';
+
+          final parts = <String>[];
+          if (bm > 0 || bu > 0) {
+            parts.add('Brothers: $bm Married, $bu Unmarried');
+          }
+          if (sm > 0 || su > 0) {
+            parts.add('Sisters: $sm Married, $su Unmarried');
+          }
+          if (parts.isEmpty && (bm + bu + sm + su == 0)) {
+            parts.add('No brothers or sisters');
+          }
+          if (details.isNotEmpty) {
+            parts.add('($details)');
+          }
+          return parts.join(' | ');
+        }
+      } catch (_) {}
+    }
+    return s;
   }
 
   static IconData _iconForSurname(String surname) {

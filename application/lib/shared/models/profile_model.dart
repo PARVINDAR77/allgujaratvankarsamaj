@@ -433,10 +433,61 @@ class ProfileModel {
     return parts.join(' - ');
   }
 
-  int get brothersMarried => _extractSiblingMetric('bm', 'brothersMarried', 'brothers_married', r'(?:married\s+brothers?|brothers?\s+married|ભાઈ\s*પરિણિત|પરિણિત\s*ભાઈ)');
-  int get brothersUnmarried => _extractSiblingMetric('bu', 'brothersUnmarried', 'brothers_unmarried', r'(?:unmarried\s+brothers?|brothers?\s+unmarried|ભાઈ\s*અપરિણિત|અપરિણિત\s*ભાઈ)');
-  int get sistersMarried => _extractSiblingMetric('sm', 'sistersMarried', 'sisters_married', r'(?:married\s+sisters?|sisters?\s+married|બહેન\s*પરિણિત|પરિણિત\s*બહેન)');
-  int get sistersUnmarried => _extractSiblingMetric('su', 'sistersUnmarried', 'sisters_unmarried', r'(?:unmarried\s+sisters?|sisters?\s+unmarried|બહેન\s*અપરિણિત|અપરિણિત\s*બહેન)');
+  int get brothersMarried => _extractSiblingMetric(
+        'bm',
+        'brothersMarried',
+        'brothers_married',
+        r'(?:(?:married|વિવાહિત|પરિણિત)[\s\(\)\-:]*brothers?|brothers?[\s\(\)\-:]*(?:married|વિવાહિત|પરિણિત)|(?:married|વિવાહિત|પરિણિત)[\s\(\)\-:]*ભાઈ|ભાઈ(?:ઓ)?[\s\(\)\-:]*(?:married|વિવાહિત|પરિણિત))',
+      );
+
+  int get brothersUnmarried {
+    final direct = _extractSiblingMetric(
+      'bu',
+      'brothersUnmarried',
+      'brothers_unmarried',
+      r'(?:(?:unmarried|single|અવિવાહિત|અપરિણિત)[\s\(\)\-:]*brothers?|brothers?[\s\(\)\-:]*(?:unmarried|single|અવિવાહિત|અપરિણિત)|(?:unmarried|single|અવિવાહિત|અપરિણિત)[\s\(\)\-:]*ભાઈ|ભાઈ(?:ઓ)?[\s\(\)\-:]*(?:unmarried|single|અવિવાહિત|અપરિણિત))',
+    );
+    if (direct > 0) return direct;
+    // Fallback: If no married or unmarried qualifier was used, check for general brothers count
+    if (brothersMarried == 0) {
+      final general = _extractSiblingMetric(
+        'bu',
+        'brothers',
+        'brother_count',
+        r'(?:brothers?|ભાઈ(?:ઓ)?)',
+      );
+      if (general > 0) return general;
+    }
+    return 0;
+  }
+
+  int get sistersMarried => _extractSiblingMetric(
+        'sm',
+        'sistersMarried',
+        'sisters_married',
+        r'(?:(?:married|વિવાહિત|પરિણિત)[\s\(\)\-:]*sisters?|sisters?[\s\(\)\-:]*(?:married|વિવાહિત|પરિણિત)|(?:married|વિવાહિત|પરિણિત)[\s\(\)\-:]*બહેન|બહેન(?:ો)?[\s\(\)\-:]*(?:married|વિવાહિત|પરિણિત))',
+      );
+
+  int get sistersUnmarried {
+    final direct = _extractSiblingMetric(
+      'su',
+      'sistersUnmarried',
+      'sisters_unmarried',
+      r'(?:(?:unmarried|single|અવિવાહિત|અપરિણિત)[\s\(\)\-:]*sisters?|sisters?[\s\(\)\-:]*(?:unmarried|single|અવિવાહિત|અપરિણિત)|(?:unmarried|single|અવિવાહિત|અપરિણિત)[\s\(\)\-:]*બહેન|બહેન(?:ો)?[\s\(\)\-:]*(?:unmarried|single|અવિવાહિત|અપરિણિત))',
+    );
+    if (direct > 0) return direct;
+    // Fallback: If no married or unmarried qualifier was used, check for general sisters count
+    if (sistersMarried == 0) {
+      final general = _extractSiblingMetric(
+        'su',
+        'sisters',
+        'sister_count',
+        r'(?:sisters?|બહેન(?:ો)?)',
+      );
+      if (general > 0) return general;
+    }
+    return 0;
+  }
 
   int _extractSiblingMetric(String key1, String key2, String key3, String regexPattern) {
     final s = siblings?.trim() ?? '';
@@ -450,11 +501,24 @@ class ProfileModel {
         }
       } catch (_) {}
     }
-    var normalized = s;
+    var normalized = s.toLowerCase();
     const guj = ['૦', '૧', '૨', '૩', '૪', '૫', '૬', '૭', '૮', '૯'];
     for (int i = 0; i < 10; i++) {
       normalized = normalized.replaceAll(guj[i], i.toString());
     }
+    // Normalize word numbers to digits
+    final wordMap = {
+      'zero': '0', 'none': '0', 'no': '0',
+      'one': '1', 'a': '1', 'an': '1', 'એક': '1',
+      'two': '2', 'બે': '2',
+      'three': '3', 'ત્રણ': '3',
+      'four': '4', 'ચાર': '4',
+      'five': '5', 'પાંચ': '5',
+    };
+    for (final entry in wordMap.entries) {
+      normalized = normalized.replaceAll(RegExp('\\b${entry.key}\\b', caseSensitive: false), entry.value);
+    }
+
     final match = RegExp('(\\d+)\\s*$regexPattern', caseSensitive: false).firstMatch(normalized);
     if (match != null) {
       return int.tryParse(match.group(1)!) ?? 0;

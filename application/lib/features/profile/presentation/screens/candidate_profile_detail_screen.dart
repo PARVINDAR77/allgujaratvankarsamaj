@@ -248,9 +248,12 @@ class _CandidateProfileDetailScreenState
                           Icons.phone,
                           Colors.teal,
                         ),
-                      _buildDetailRow('ભાઈ-બહેનની વિગત (Brothers & Sisters)', profile.displaySiblings),
                       _buildDetailRow('મોસાળ / મોસાળનું ગામ (Mama\'s Village / Mosal)', profile.mamasVillage ?? 'Not specified'),
                       _buildDetailRow('મૂળ વતન / પરગણું (Native Place / Pargana)', profile.nativePlace ?? (profile.pargana.isNotEmpty ? profile.pargana : 'Not specified')),
+                      const SizedBox(height: 12),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      const SizedBox(height: 12),
+                      _buildSiblingsInfoSection(profile),
                     ],
                   ),
 
@@ -2350,7 +2353,6 @@ class _CandidateProfileDetailScreenState
               _WebGridItem('પિતાનો વ્યવસાય (Father\'s Occupation)', profile.fatherOccupation ?? 'Not specified'),
               _WebGridItem('માતાનું નામ (Mother\'s Name)', profile.motherName ?? 'Not specified'),
               _WebGridItem('માતાનો વ્યવસાય (Mother\'s Occupation)', profile.motherOccupation ?? 'Not specified'),
-              _WebGridItem('ભાઈ-બહેનની વિગત (Brothers & Sisters)', profile.displaySiblings),
               _WebGridItem('મોસાળ / મોસાળનું ગામ (Mama\'s Village / Mosal)', profile.mamasVillage ?? 'Not specified'),
               _WebGridItem('મૂળ વતન / પરગણું (Native Place / Pargana)', profile.nativePlace ?? (profile.pargana.isNotEmpty ? profile.pargana : 'Not specified')),
             ]),
@@ -2372,6 +2374,10 @@ class _CandidateProfileDetailScreenState
                 Colors.teal,
               ),
             ],
+            const SizedBox(height: 18),
+            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+            const SizedBox(height: 16),
+            _buildSiblingsInfoSection(profile),
           ],
         ),
 
@@ -2691,6 +2697,259 @@ class _CandidateProfileDetailScreenState
         ),
       ],
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Sibling Metric Counter Section & Helpers (Matching "My Profile" standard)
+  // ---------------------------------------------------------------------------
+  Widget _buildSiblingsInfoSection(ProfileModel profile) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE91E63).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: const Icon(
+                Icons.group_outlined,
+                size: 16,
+                color: Color(0xFFE91E63),
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Text(
+              'ભાઈ-બહેનની વિગત (Siblings Info)',
+              style: TextStyle(
+                fontSize: 13.5,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF334155),
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // 4 Distinct Sibling Metric Counter Boxes
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final isNarrow = constraints.maxWidth < 460;
+            if (isNarrow) {
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildSiblingCounterBox(
+                          count: profile.brothersMarried.toString(),
+                          label: 'BROTHERS\nMARRIED',
+                          gujLabel: 'પરિણિત ભાઈ',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildSiblingCounterBox(
+                          count: profile.brothersUnmarried.toString(),
+                          label: 'BROTHERS\nUNMARRIED',
+                          gujLabel: 'અપરિણિત ભાઈ',
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildSiblingCounterBox(
+                          count: profile.sistersMarried.toString(),
+                          label: 'SISTERS\nMARRIED',
+                          gujLabel: 'પરિણિત બહેન',
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _buildSiblingCounterBox(
+                          count: profile.sistersUnmarried.toString(),
+                          label: 'SISTERS\nUNMARRIED',
+                          gujLabel: 'અપરિણિત બહેન',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            }
+            return Row(
+              children: [
+                Expanded(
+                  child: _buildSiblingCounterBox(
+                    count: profile.brothersMarried.toString(),
+                    label: 'BROTHERS\nMARRIED',
+                    gujLabel: 'પરિણિત ભાઈ',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSiblingCounterBox(
+                    count: profile.brothersUnmarried.toString(),
+                    label: 'BROTHERS\nUNMARRIED',
+                    gujLabel: 'અપરિણિત ભાઈ',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSiblingCounterBox(
+                    count: profile.sistersMarried.toString(),
+                    label: 'SISTERS\nMARRIED',
+                    gujLabel: 'પરિણિત બહેન',
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildSiblingCounterBox(
+                    count: profile.sistersUnmarried.toString(),
+                    label: 'SISTERS\nUNMARRIED',
+                    gujLabel: 'અપરિણિત બહેન',
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+
+        // Live Sibling Additional Notes or Details (if provided)
+        if (_hasSiblingDetails(profile)) ...[
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.info_outline, size: 16, color: Color(0xFF64748B)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'વિગત (Details): ${_getSiblingDetailsText(profile)}',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      color: Color(0xFF334155),
+                      fontWeight: FontWeight.w500,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ] else if (profile.brothersMarried == 0 &&
+            profile.brothersUnmarried == 0 &&
+            profile.sistersMarried == 0 &&
+            profile.sistersUnmarried == 0 &&
+            (profile.siblings == null ||
+                profile.siblings!.trim().isEmpty ||
+                profile.siblings!.trim() == 'Not specified')) ...[
+          const SizedBox(height: 8),
+          const Text(
+            'ભાઈ-બહેનની વધારાની વિગત નોંધાયેલ નથી (No extra sibling details specified)',
+            style: TextStyle(
+              fontSize: 11.5,
+              color: Color(0xFF94A3B8),
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSiblingCounterBox({
+    required String count,
+    required String label,
+    String? gujLabel,
+  }) {
+    final intValue = int.tryParse(count) ?? 0;
+    final hasCount = intValue > 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      decoration: BoxDecoration(
+        color: hasCount ? const Color(0xFFF0FDF4) : const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: hasCount ? const Color(0xFF86EFAC) : const Color(0xFFE2E8F0),
+          width: hasCount ? 1.2 : 1.0,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            count,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w800,
+              color: hasCount ? const Color(0xFF15803D) : const Color(0xFF0F172A),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 9.5,
+              fontWeight: FontWeight.w700,
+              color: hasCount ? const Color(0xFF166534) : const Color(0xFF64748B),
+              height: 1.2,
+              letterSpacing: 0.3,
+            ),
+          ),
+          if (gujLabel != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              gujLabel,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: FontWeight.w600,
+                color: hasCount ? const Color(0xFF16A34A) : const Color(0xFF94A3B8),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  bool _hasSiblingDetails(ProfileModel profile) {
+    final text = _getSiblingDetailsText(profile);
+    return text.isNotEmpty &&
+        text != 'Not specified' &&
+        text != 'No brothers or sisters';
+  }
+
+  String _getSiblingDetailsText(ProfileModel profile) {
+    if (profile.displaySiblingDetails.isNotEmpty &&
+        profile.displaySiblingDetails != 'Not specified' &&
+        profile.displaySiblingDetails != 'No brothers or sisters') {
+      return profile.displaySiblingDetails;
+    }
+    final raw = profile.siblings?.trim() ?? '';
+    if (raw.isNotEmpty &&
+        !raw.startsWith('{') &&
+        raw != 'Not specified' &&
+        raw != 'No brothers or sisters') {
+      return raw;
+    }
+    return '';
   }
 
   Widget _buildWebLoadingScaffold() {

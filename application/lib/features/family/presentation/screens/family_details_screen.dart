@@ -329,7 +329,7 @@ class _FamilyDetailsScreenState extends ConsumerState<FamilyDetailsScreen> {
                                 icon: Icons.group_outlined,
                                 iconColor: const Color(0xFF673AB7),
                                 label: 'ભાઈ-બહેનની વિગત (Siblings)',
-                                value: family.siblings!,
+                                value: family.displaySiblings,
                               ),
                             ],
                           ],
