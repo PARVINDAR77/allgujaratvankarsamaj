@@ -233,6 +233,24 @@ if ($action === 'check_user') {
     }
 }
 
+if ($action === 'test_mail') {
+    $to = $_GET['to'] ?? 'parvindarpanjabi18@gmail.com';
+    $subject = "All Gujarat Vankar Samaj - Verification Code Test";
+    $otp = rand(100000, 999999);
+    $headers = "From: noreply@allgujaratvankarsamaj.com\r\n" .
+               "Reply-To: noreply@allgujaratvankarsamaj.com\r\n" .
+               "X-Mailer: PHP/" . phpversion() . "\r\n" .
+               "Content-Type: text/html; charset=UTF-8\r\n";
+    $body = "<h2>Your Verification Code is: <b>$otp</b></h2><p>Valid for 10 minutes.</p>";
+    $mailSent = @mail($to, $subject, $body, $headers);
+    $results['test_mail'] = [
+        'to' => $to,
+        'otp' => $otp,
+        'sent' => $mailSent,
+        'last_error' => error_get_last()
+    ];
+}
+
 if ($action === 'restart' || $action === 'start') {
     fix_database_genders($project_dir, $results);
     // 1. Touch trigger file for the watchdog script
