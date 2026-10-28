@@ -11,6 +11,8 @@ interface UserProfile {
   phone: string;
   fullPhotoUrl?: string | null;
   isVerified: boolean;
+  isPhoneVerified?: boolean;
+  isEmailVerified?: boolean;
   nativePlace?: string;
   pargana?: string;
   education?: string;
@@ -28,6 +30,8 @@ export default function MyProfilePage() {
     phone: "",
     fullPhotoUrl: null,
     isVerified: false,
+    isPhoneVerified: false,
+    isEmailVerified: false,
     nativePlace: "",
     pargana: "",
     education: "",
@@ -50,11 +54,45 @@ export default function MyProfilePage() {
   const [editForm, setEditForm] = useState({
     fullName: "",
     phone: "",
+    email: "",
     nativePlace: "",
     education: "",
     occupation: "",
     bio: "",
   });
+
+  // Contact OTP Verification modal state
+  const [otpModal, setOtpModal] = useState<{
+    isOpen: boolean;
+    isPhone: boolean;
+    target: string;
+    masked: string;
+    code: string;
+    cooldown: number;
+    isVerifying: boolean;
+    isResending: boolean;
+    error: string;
+  }>({
+    isOpen: false,
+    isPhone: true,
+    target: "",
+    masked: "",
+    code: "",
+    cooldown: 0,
+    isVerifying: false,
+    isResending: false,
+    error: "",
+  });
+
+  useEffect(() => {
+    let t: NodeJS.Timeout;
+    if (otpModal.isOpen && otpModal.cooldown > 0) {
+      t = setTimeout(() => {
+        setOtpModal((prev) => ({ ...prev, cooldown: Math.max(0, prev.cooldown - 1) }));
+      }, 1000);
+    }
+    return () => clearTimeout(t);
+  }, [otpModal.isOpen, otpModal.cooldown]);
 
   // Privacy settings state (retains previous options)
   const [privacySettings, setPrivacySettings] = useState({
@@ -140,6 +178,14 @@ export default function MyProfilePage() {
               isVerified:
                 data.isVerified === true ||
                 data.verificationStatus === "VERIFIED",
+              isPhoneVerified:
+                data.isPhoneVerified === true ||
+                data.user?.isPhoneVerified === true ||
+                storedUser?.isPhoneVerified === true,
+              isEmailVerified:
+                data.isEmailVerified === true ||
+                data.user?.isEmailVerified === true ||
+                storedUser?.isEmailVerified === true,
               nativePlace: data.nativePlace || data.city || data.pargana || "",
               pargana:
                 data.pargana?.name ||
@@ -160,6 +206,8 @@ export default function MyProfilePage() {
               phone: storedUser.phone || "",
               fullPhotoUrl: null,
               isVerified: false,
+              isPhoneVerified: storedUser?.isPhoneVerified === true,
+              isEmailVerified: storedUser?.isEmailVerified === true,
               nativePlace: "",
               pargana: "",
               education: "",
@@ -183,6 +231,7 @@ export default function MyProfilePage() {
     setEditForm({
       fullName: profile.fullName,
       phone: profile.phone,
+      email: profile.email,
       nativePlace: profile.nativePlace || "",
       education: profile.education || "",
       occupation: profile.occupation || "",
@@ -203,6 +252,7 @@ export default function MyProfilePage() {
       ...prev,
       fullName: editForm.fullName.trim(),
       phone: editForm.phone.trim(),
+      email: editForm.email.trim(),
       nativePlace: editForm.nativePlace.trim(),
       education: editForm.education.trim(),
       occupation: editForm.occupation.trim(),
@@ -237,6 +287,7 @@ export default function MyProfilePage() {
           about: editForm.bio,
           bio: editForm.bio,
           contactPhone: editForm.phone.trim(),
+          contactEmail: editForm.email.trim(),
         }),
       });
 
@@ -260,6 +311,7 @@ export default function MyProfilePage() {
             occupation: editForm.occupation,
             about: editForm.bio,
             contactPhone: editForm.phone.trim(),
+            contactEmail: editForm.email.trim(),
           }),
         });
       }
@@ -267,6 +319,128 @@ export default function MyProfilePage() {
 
     setIsEditOpen(false);
     showToast("પ્રોફાઇલ સફળતાપૂર્વક અપડેટ થઈ ગઈ છે! (Profile updated)");
+  };
+
+  // Dispatch Contact Verification OTP (Phone SMS or Email)
+  const handleSendContactOtp = async (isPhone: boolean) => {
+    const target = isPhone
+      ? editForm.phone.trim().replace(/\D/g, "")
+      : editForm.email.trim();
+    if (isPhone && target.length !== 10) {
+      showToast("કૃપા કરીને માન્ય 10-અંકનો મોબાઇલ નંબર દાખલ કરો");
+      return;
+    }
+    if (!isPhone && (!target.includes("@") || !target.includes("."))) {
+      showToast("કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો");
+      return;
+    }
+
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken") ||
+            localStorage.getItem("token") ||
+            localStorage.getItem("adminToken")
+          : null;
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+      const res = await fetch(`${apiBase}/auth/profile/send-contact-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          name: editForm.fullName.trim(),
+          phone: isPhone ? target : undefined,
+          email: !isPhone ? target : undefined,
+          channel: isPhone ? "SMS" : "EMAIL",
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOtpModal({
+          isOpen: true,
+          isPhone,
+          target,
+          masked: isPhone
+            ? data.maskedPhone || target
+            : data.maskedEmail || target,
+          code: "",
+          cooldown: data.resendCooldownSeconds || 60,
+          isVerifying: false,
+          isResending: false,
+          error: "",
+        });
+      } else {
+        showToast(data.message || "ચકાસણી કોડ મોકલવામાં નિષ્ફળતા");
+      }
+    } catch {
+      showToast("સર્વર સાથે કનેક્ટ કરવામાં નિષ્ફળતા");
+    }
+  };
+
+  // Verify Contact OTP Code
+  const handleVerifyContactOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (otpModal.code.trim().length !== 6) {
+      setOtpModal((prev) => ({
+        ...prev,
+        error: "કૃપા કરીને 6-અંકનો OTP કોડ દાખલ કરો",
+      }));
+      return;
+    }
+    setOtpModal((prev) => ({ ...prev, isVerifying: true, error: "" }));
+
+    try {
+      const token =
+        typeof window !== "undefined"
+          ? localStorage.getItem("accessToken") ||
+            localStorage.getItem("token") ||
+            localStorage.getItem("adminToken")
+          : null;
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+      const res = await fetch(`${apiBase}/auth/profile/verify-contact-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          phone: otpModal.isPhone ? otpModal.target : undefined,
+          email: !otpModal.isPhone ? otpModal.target : undefined,
+          phoneOtp: otpModal.isPhone ? otpModal.code.trim() : undefined,
+          emailOtp: !otpModal.isPhone ? otpModal.code.trim() : undefined,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setOtpModal((prev) => ({ ...prev, isOpen: false }));
+        setProfile((prev) => ({
+          ...prev,
+          phone: otpModal.isPhone ? otpModal.target : prev.phone,
+          email: !otpModal.isPhone ? otpModal.target : prev.email,
+          isPhoneVerified: otpModal.isPhone ? true : prev.isPhoneVerified,
+          isEmailVerified: !otpModal.isPhone ? true : prev.isEmailVerified,
+        }));
+        showToast(
+          otpModal.isPhone
+            ? "✓ મોબાઇલ નંબર સફળતાપૂર્વક ચકાસાયેલ છે! (Mobile number verified!)"
+            : "✓ ઈમેઈલ સરનામું સફળતાપૂર્વક ચકાસાયેલ છે! (Email address verified!)"
+        );
+      } else {
+        setOtpModal((prev) => ({
+          ...prev,
+          isVerifying: false,
+          error: data.message || "ખોટો OTP કોડ",
+        }));
+      }
+    } catch {
+      setOtpModal((prev) => ({
+        ...prev,
+        isVerifying: false,
+        error: "સર્વર સાથે કનેક્ટ કરવામાં નિષ્ફળતા",
+      }));
+    }
   };
 
   // Save Privacy Settings
@@ -776,15 +950,59 @@ export default function MyProfilePage() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 text-xs mb-1">
-                  મોબાઇલ નંબર (Mobile Phone)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-slate-700 text-xs">
+                    મોબાઇલ નંબર (Mobile Phone - 10 અંક) *
+                  </label>
+                  {profile.isPhoneVerified && editForm.phone.trim().replace(/\D/g, "") === profile.phone.trim().replace(/\D/g, "") ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-300">
+                      ✓ ચકાસાયેલ (Verified)
+                    </span>
+                  ) : editForm.phone.trim().replace(/\D/g, "").length === 10 ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSendContactOtp(true)}
+                      className="px-2.5 py-0.5 text-[11px] font-bold bg-[#C49B24] hover:bg-[#A8821B] text-black rounded transition-colors shadow-xs"
+                    >
+                      ચકાસો (Verify Code)
+                    </button>
+                  ) : null}
+                </div>
                 <input
                   type="text"
+                  maxLength={10}
                   value={editForm.phone}
                   onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#C49B24]"
                   placeholder="10 અંકનો મોબાઇલ નંબર"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-slate-700 text-xs">
+                    ઈમેઈલ સરનામું (Email Address)
+                  </label>
+                  {profile.isEmailVerified && editForm.email.trim().toLowerCase() === profile.email.trim().toLowerCase() ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-300">
+                      ✓ ચકાસાયેલ (Verified)
+                    </span>
+                  ) : editForm.email.trim().includes("@") ? (
+                    <button
+                      type="button"
+                      onClick={() => handleSendContactOtp(false)}
+                      className="px-2.5 py-0.5 text-[11px] font-bold bg-[#C49B24] hover:bg-[#A8821B] text-black rounded transition-colors shadow-xs"
+                    >
+                      ચકાસો (Verify Code)
+                    </button>
+                  ) : null}
+                </div>
+                <input
+                  type="email"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:border-[#C49B24]"
+                  placeholder="તમારું ઈમેઈલ સરનામું લખો"
                 />
               </div>
 
@@ -855,6 +1073,83 @@ export default function MyProfilePage() {
                   className="w-1/2 py-2.5 rounded-xl bg-[#C49B24] hover:bg-[#A8821B] text-white font-bold transition-colors shadow-xs"
                 >
                   સેવ કરો (Save)
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* CONTACT OTP VERIFICATION MODAL */}
+      {/* ========================================================= */}
+      {otpModal.isOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#041126] text-white rounded-2xl max-w-sm w-full p-6 shadow-2xl border-2 border-[#D4AF37]">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <h3 className="font-bold text-base text-[#D4AF37] font-gujarati flex items-center gap-2">
+                <span>{otpModal.isPhone ? "📱" : "✉️"}</span>
+                {otpModal.isPhone ? "મોબાઇલ ચકાસણી (Mobile Verify)" : "ઈમેઈલ ચકાસણી (Email Verify)"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setOtpModal((prev) => ({ ...prev, isOpen: false }))}
+                className="text-white/60 hover:text-white text-xl font-bold p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleVerifyContactOtp} className="space-y-4 mt-4 font-gujarati">
+              <p className="text-xs text-white/80 leading-relaxed">
+                ચકાસણી માટે <b className="text-[#FFE066]">{otpModal.masked}</b> પર 6-અંકનો OTP કોડ મોકલવામાં આવ્યો છે:
+                <br />
+                <span className="text-[11px] text-white/60">(Enter 6-digit OTP code sent to your {otpModal.isPhone ? "mobile" : "email"})</span>
+              </p>
+
+              <div>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otpModal.code}
+                  onChange={(e) => setOtpModal((prev) => ({ ...prev, code: e.target.value.replace(/\D/g, "") }))}
+                  className="w-full text-center text-2xl tracking-[0.5em] font-mono font-bold py-2.5 px-3 bg-black/40 rounded-xl border border-[#D4AF37] text-white focus:outline-none focus:border-amber-400"
+                  placeholder="123456"
+                  autoFocus
+                />
+              </div>
+
+              {otpModal.error && (
+                <div className="p-2.5 bg-red-950/60 border border-red-500 rounded-lg text-xs text-red-300">
+                  {otpModal.error}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between text-xs pt-1">
+                <button
+                  type="button"
+                  disabled={otpModal.cooldown > 0 || otpModal.isResending}
+                  onClick={() => handleSendContactOtp(otpModal.isPhone)}
+                  className={`underline ${otpModal.cooldown > 0 ? "text-white/40 cursor-not-allowed" : "text-[#D4AF37] hover:text-amber-300"}`}
+                >
+                  {otpModal.cooldown > 0 ? `Resend in ${otpModal.cooldown}s` : "Resend Code (ફરી કોડ મોકલો)"}
+                </button>
+              </div>
+
+              <div className="pt-2 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setOtpModal((prev) => ({ ...prev, isOpen: false }))}
+                  className="w-1/2 py-2 rounded-xl border border-white/20 text-white/70 hover:bg-white/5 font-semibold text-xs transition-colors"
+                >
+                  Cancel (રદ કરો)
+                </button>
+                <button
+                  type="submit"
+                  disabled={otpModal.isVerifying}
+                  className="w-1/2 py-2 rounded-xl bg-[#D4AF37] hover:bg-[#c49b24] text-black font-bold text-xs transition-colors shadow-md flex items-center justify-center gap-1"
+                >
+                  {otpModal.isVerifying ? "Verifying..." : "Verify (ચકાસો)"}
                 </button>
               </div>
             </form>
