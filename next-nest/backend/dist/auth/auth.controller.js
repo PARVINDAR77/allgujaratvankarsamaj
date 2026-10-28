@@ -23,6 +23,7 @@ const login_dto_1 = require("./dto/login.dto");
 const register_dto_1 = require("./dto/register.dto");
 const password_reset_dto_1 = require("./dto/password-reset.dto");
 const jwt_auth_guard_1 = require("./guards/jwt-auth.guard");
+const public_decorator_1 = require("./decorators/public.decorator");
 let AuthController = class AuthController {
     constructor(authService, usersService, otpService) {
         this.authService = authService;
@@ -44,11 +45,11 @@ let AuthController = class AuthController {
     }
     async sendProfileContactOtp(req, dto) {
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-        const userId = req.user?.sub || req.user?.id;
+        const userId = req.user?.sub || req.user?.id || dto.userId;
         return this.otpService.sendProfileContactOtp(userId, dto, Array.isArray(ip) ? ip[0] : ip);
     }
     async verifyProfileContactOtp(req, dto) {
-        const userId = req.user?.sub || req.user?.id;
+        const userId = req.user?.sub || req.user?.id || dto.userId;
         return this.otpService.verifyProfileContactOtp(userId, dto);
     }
     async register(dto) {
@@ -144,6 +145,7 @@ __decorate([
 ], AuthController.prototype, "verifyRegistrationCodes", null);
 __decorate([
     (0, common_1.Post)("profile/send-contact-otp"),
+    (0, public_decorator_1.Public)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Send OTP to user's mobile and email for profile contact verification" }),
@@ -155,6 +157,7 @@ __decorate([
 ], AuthController.prototype, "sendProfileContactOtp", null);
 __decorate([
     (0, common_1.Post)("profile/verify-contact-otp"),
+    (0, public_decorator_1.Public)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Verify mobile OTP and email OTP for profile contact verification" }),

@@ -195,6 +195,12 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], SendProfileContactOtpDto.prototype, "channel", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Optional user ID" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], SendProfileContactOtpDto.prototype, "userId", void 0);
 class VerifyProfileContactOtpDto {
 }
 exports.VerifyProfileContactOtpDto = VerifyProfileContactOtpDto;
@@ -222,4 +228,10 @@ __decorate([
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], VerifyProfileContactOtpDto.prototype, "emailOtp", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Optional user ID" }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], VerifyProfileContactOtpDto.prototype, "userId", void 0);
 //# sourceMappingURL=otp.dto.js.map

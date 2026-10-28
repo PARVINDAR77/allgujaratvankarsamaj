@@ -359,10 +359,13 @@ export class OtpService {
    * Profile Contact Verification: Send OTP to Phone and Email for logged-in user
    */
   async sendProfileContactOtp(
-    userId: string,
-    dto: SendProfileContactOtpDto,
+    userId?: string,
+    dto?: SendProfileContactOtpDto,
     ipAddress?: string,
   ) {
+    if (!dto) {
+      throw new BadRequestException("અમાન્ય વિનંતી (Invalid request)");
+    }
     const rawPhone = dto.phone ? this.smsService.cleanPhoneNumber(dto.phone) : "";
     const rawEmail = dto.email ? dto.email.trim().toLowerCase() : "";
 
@@ -383,17 +386,19 @@ export class OtpService {
     const expiresAt = new Date(Date.now() + this.OTP_EXPIRY_MINUTES * 60 * 1000);
 
     if (hasPhone) {
-      const otherPhone = await this.prisma.user.findFirst({
-        where: {
-          phone: rawPhone,
-          id: { not: userId },
-          isPhoneVerified: true,
-        },
-      });
-      if (otherPhone) {
-        throw new ConflictException(
-          "આ મોબાઇલ નંબર અન્ય ખાતામાં ચકાસાયેલ છે (This mobile number is already verified by another account)",
-        );
+      if (userId) {
+        const otherPhone = await this.prisma.user.findFirst({
+          where: {
+            phone: rawPhone,
+            id: { not: userId },
+            isPhoneVerified: true,
+          },
+        });
+        if (otherPhone) {
+          throw new ConflictException(
+            "આ મોબાઇલ નંબર અન્ય ખાતામાં ચકાસાયેલ છે (This mobile number is already verified by another account)",
+          );
+        }
       }
       const session = await this.checkLockout(rawPhone, OtpPurpose.REGISTRATION);
       this.checkCooldown(session);
@@ -415,17 +420,19 @@ export class OtpService {
     }
 
     if (hasEmail) {
-      const otherEmail = await this.prisma.user.findFirst({
-        where: {
-          email: rawEmail,
-          id: { not: userId },
-          isEmailVerified: true,
-        },
-      });
-      if (otherEmail) {
-        throw new ConflictException(
-          "આ ઈમેઈલ અન્ય ખાતામાં ચકાસાયેલ છે (This email is already verified by another account)",
-        );
+      if (userId) {
+        const otherEmail = await this.prisma.user.findFirst({
+          where: {
+            email: rawEmail,
+            id: { not: userId },
+            isEmailVerified: true,
+          },
+        });
+        if (otherEmail) {
+          throw new ConflictException(
+            "આ ઈમેઈલ અન્ય ખાતામાં ચકાસાયેલ છે (This email is already verified by another account)",
+          );
+        }
       }
       const session = await this.checkLockout(rawEmail, OtpPurpose.REGISTRATION);
       this.checkCooldown(session);
@@ -498,7 +505,10 @@ export class OtpService {
   /**
    * Profile Contact Verification: Verify Phone & Email OTPs and update User & Profile records
    */
-  async verifyProfileContactOtp(userId: string, dto: VerifyProfileContactOtpDto) {
+  async verifyProfileContactOtp(userId?: string, dto?: VerifyProfileContactOtpDto) {
+    if (!dto) {
+      throw new BadRequestException("અમાન્ય વિનંતી (Invalid request)");
+    }
     const rawPhone = dto.phone ? this.smsService.cleanPhoneNumber(dto.phone) : "";
     const rawEmail = dto.email ? dto.email.trim().toLowerCase() : "";
     const phoneOtp = (dto.phoneOtp || "").trim();
@@ -541,6 +551,10 @@ export class OtpService {
           `અમાન્ય મોબાઇલ OTP કોડ. બાકી રહેલા પ્રયાસો: ${remaining}`,
         );
       }
+      await this.prisma.otpSession.update({
+        where: { id: session.id },
+        data: { isVerified: true, verifiedAt: now },
+      });
       userDataToUpdate.phone = rawPhone;
       userDataToUpdate.isPhoneVerified = true;
     }
@@ -575,21 +589,42 @@ export class OtpService {
           `અમાન્ય ઈમેઈલ OTP કોડ. બાકી રહેલા પ્રયાસો: ${remaining}`,
         );
       }
+      await this.prisma.otpSession.update({
+        where: { id: session.id },
+        data: { isVerified: true, verifiedAt: now },
+      });
       userDataToUpdate.email = rawEmail;
       userDataToUpdate.isEmailVerified = true;
     }
 
-    if (Object.keys(userDataToUpdate).length > 0) {
-      await this.prisma.user.update({
-        where: { id: userId },
-        data: userDataToUpdate,
+    let targetUserId = userId;
+    if (!targetUserId && (rawPhone || rawEmail)) {
+      const matchConditions: any[] = [];
+      if (rawPhone) matchConditions.push({ phone: rawPhone });
+      if (rawEmail) matchConditions.push({ email: rawEmail });
+      const matchedUser = await this.prisma.user.findFirst({
+        where: { OR: matchConditions },
       });
+      if (matchedUser) {
+        targetUserId = matchedUser.id;
+      }
+    }
 
-      if (userDataToUpdate.email) {
-        await this.prisma.matrimonialProfile.updateMany({
-          where: { userId },
-          data: { contactEmail: rawEmail },
+    if (targetUserId && Object.keys(userDataToUpdate).length > 0) {
+      try {
+        await this.prisma.user.update({
+          where: { id: targetUserId },
+          data: userDataToUpdate,
         });
+
+        if (userDataToUpdate.email) {
+          await this.prisma.matrimonialProfile.updateMany({
+            where: { userId: targetUserId },
+            data: { contactEmail: rawEmail },
+          });
+        }
+      } catch (err) {
+        this.logger.error(`Error updating verified user contact: ${err}`);
       }
     }
 

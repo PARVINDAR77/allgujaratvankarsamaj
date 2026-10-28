@@ -31,10 +31,12 @@ export declare class SendProfileContactOtpDto {
     phone?: string;
     email?: string;
     channel?: "SMS" | "EMAIL" | "BOTH";
+    userId?: string;
 }
 export declare class VerifyProfileContactOtpDto {
     phone?: string;
     email?: string;
     phoneOtp?: string;
     emailOtp?: string;
+    userId?: string;
 }

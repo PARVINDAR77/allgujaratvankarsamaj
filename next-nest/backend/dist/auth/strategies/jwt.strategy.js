@@ -21,7 +21,11 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
             jwtFromRequest: passport_jwt_1.ExtractJwt.fromExtractors([
                 passport_jwt_1.ExtractJwt.fromAuthHeaderAsBearerToken(),
                 (request) => {
-                    return request?.cookies?.["admin_token"] || null;
+                    return (request?.cookies?.["admin_token"] ||
+                        request?.cookies?.["token"] ||
+                        request?.cookies?.["accessToken"] ||
+                        request?.cookies?.["jwt"] ||
+                        null);
                 },
             ]),
             ignoreExpiration: false,

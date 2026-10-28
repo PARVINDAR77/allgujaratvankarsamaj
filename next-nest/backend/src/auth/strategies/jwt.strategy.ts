@@ -22,7 +22,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromExtractors([
         ExtractJwt.fromAuthHeaderAsBearerToken(),
         (request: Request) => {
-          return request?.cookies?.["admin_token"] || null;
+          return (
+            request?.cookies?.["admin_token"] ||
+            request?.cookies?.["token"] ||
+            request?.cookies?.["accessToken"] ||
+            request?.cookies?.["jwt"] ||
+            null
+          );
         },
       ]),
       ignoreExpiration: false,

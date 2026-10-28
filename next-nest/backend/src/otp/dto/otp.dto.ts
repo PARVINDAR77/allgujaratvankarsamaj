@@ -163,6 +163,11 @@ export class SendProfileContactOtpDto {
   @IsOptional()
   @IsString()
   channel?: "SMS" | "EMAIL" | "BOTH";
+
+  @ApiPropertyOptional({ description: "Optional user ID" })
+  @IsOptional()
+  @IsString()
+  userId?: string;
 }
 
 export class VerifyProfileContactOtpDto {
@@ -185,4 +190,9 @@ export class VerifyProfileContactOtpDto {
   @IsOptional()
   @IsString()
   emailOtp?: string;
+
+  @ApiPropertyOptional({ description: "Optional user ID" })
+  @IsOptional()
+  @IsString()
+  userId?: string;
 }

@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 interface UserProfile {
+  id?: string;
+  userId?: string;
   fullName: string;
   email: string;
   phone: string;
@@ -344,7 +346,7 @@ export default function MyProfilePage() {
             localStorage.getItem("jwt")
           : null;
       if (!token && typeof document !== "undefined") {
-        const match = document.cookie.match(/(?:^|;\s*)(?:accessToken|token|jwt)=([^;]+)/);
+        const match = document.cookie.match(/(?:^|;\s*)(?:accessToken|token|jwt|admin_token)=([^;]+)/);
         if (match) token = match[1];
       }
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
@@ -360,6 +362,7 @@ export default function MyProfilePage() {
           phone: isPhone ? target : undefined,
           email: !isPhone ? target : undefined,
           channel: isPhone ? "SMS" : "EMAIL",
+          userId: profile?.userId || (profile as any)?.id || undefined,
         }),
       });
       const data = await res.json();
@@ -406,7 +409,7 @@ export default function MyProfilePage() {
             localStorage.getItem("jwt")
           : null;
       if (!token && typeof document !== "undefined") {
-        const match = document.cookie.match(/(?:^|;\s*)(?:accessToken|token|jwt)=([^;]+)/);
+        const match = document.cookie.match(/(?:^|;\s*)(?:accessToken|token|jwt|admin_token)=([^;]+)/);
         if (match) token = match[1];
       }
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
@@ -422,6 +425,7 @@ export default function MyProfilePage() {
           email: !otpModal.isPhone ? otpModal.target : undefined,
           phoneOtp: otpModal.isPhone ? otpModal.code.trim() : undefined,
           emailOtp: !otpModal.isPhone ? otpModal.code.trim() : undefined,
+          userId: profile?.userId || (profile as any)?.id || undefined,
         }),
       });
       const data = await res.json();
@@ -431,8 +435,8 @@ export default function MyProfilePage() {
           ...prev,
           phone: otpModal.isPhone ? otpModal.target : prev.phone,
           email: !otpModal.isPhone ? otpModal.target : prev.email,
-          isPhoneVerified: otpModal.isPhone ? true : prev.isPhoneVerified,
-          isEmailVerified: !otpModal.isPhone ? true : prev.isEmailVerified,
+          isPhoneVerified: data.isPhoneVerified ?? (otpModal.isPhone ? true : prev.isPhoneVerified),
+          isEmailVerified: data.isEmailVerified ?? (!otpModal.isPhone ? true : prev.isEmailVerified),
         }));
         showToast(
           otpModal.isPhone

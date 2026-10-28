@@ -34,6 +34,7 @@ import {
   UpdatePasswordDto,
 } from "./dto/password-reset.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
+import { Public } from "./decorators/public.decorator";
 
 import { Response } from "express";
 
@@ -91,12 +92,13 @@ export class AuthController {
   }
 
   @Post("profile/send-contact-otp")
+  @Public()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Send OTP to user's mobile and email for profile contact verification" })
   async sendProfileContactOtp(@Request() req: any, @Body() dto: SendProfileContactOtpDto) {
     const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-    const userId = req.user?.sub || req.user?.id;
+    const userId = req.user?.sub || req.user?.id || dto.userId;
     return this.otpService.sendProfileContactOtp(
       userId,
       dto,
@@ -105,11 +107,12 @@ export class AuthController {
   }
 
   @Post("profile/verify-contact-otp")
+  @Public()
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Verify mobile OTP and email OTP for profile contact verification" })
   async verifyProfileContactOtp(@Request() req: any, @Body() dto: VerifyProfileContactOtpDto) {
-    const userId = req.user?.sub || req.user?.id;
+    const userId = req.user?.sub || req.user?.id || dto.userId;
     return this.otpService.verifyProfileContactOtp(userId, dto);
   }
 

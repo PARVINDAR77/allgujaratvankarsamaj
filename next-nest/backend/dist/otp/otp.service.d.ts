@@ -34,7 +34,7 @@ export declare class OtpService {
         message: string;
         registrationToken: string;
     }>;
-    sendProfileContactOtp(userId: string, dto: SendProfileContactOtpDto, ipAddress?: string): Promise<{
+    sendProfileContactOtp(userId?: string, dto?: SendProfileContactOtpDto, ipAddress?: string): Promise<{
         success: boolean;
         message: string;
         maskedPhone: string;
@@ -46,7 +46,7 @@ export declare class OtpService {
         resendCooldownSeconds: number;
         maxAttempts: number;
     }>;
-    verifyProfileContactOtp(userId: string, dto: VerifyProfileContactOtpDto): Promise<{
+    verifyProfileContactOtp(userId?: string, dto?: VerifyProfileContactOtpDto): Promise<{
         success: boolean;
         verified: boolean;
         isPhoneVerified: boolean;

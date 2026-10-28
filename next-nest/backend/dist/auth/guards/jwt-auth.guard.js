@@ -30,11 +30,15 @@ let JwtAuthGuard = class JwtAuthGuard extends (0, passport_1.AuthGuard)("jwt") {
                 req.user = null;
             }
             try {
-                const hasAuth = req?.headers?.authorization || req?.cookies?.["admin_token"];
+                const hasAuth = req?.headers?.authorization ||
+                    req?.cookies?.["admin_token"] ||
+                    req?.cookies?.["token"] ||
+                    req?.cookies?.["accessToken"] ||
+                    req?.cookies?.["jwt"];
                 if (hasAuth) {
                     const result = super.canActivate(context);
                     if (result instanceof Promise) {
-                        await result;
+                        await result.catch(() => { });
                     }
                 }
             }
@@ -51,10 +55,16 @@ let JwtAuthGuard = class JwtAuthGuard extends (0, passport_1.AuthGuard)("jwt") {
         return super.canActivate(context);
     }
     handleRequest(err, user, info, context) {
-        const isPublic = this.reflector.getAllAndOverride(public_decorator_1.IS_PUBLIC_KEY, [
-            context?.getHandler(),
-            context?.getClass(),
-        ]);
+        let isPublic = false;
+        if (context) {
+            try {
+                isPublic = this.reflector.getAllAndOverride(public_decorator_1.IS_PUBLIC_KEY, [
+                    context.getHandler(),
+                    context.getClass(),
+                ]) ?? false;
+            }
+            catch (_) { }
+        }
         if (isPublic) {
             if (err || !user) {
                 return null;
