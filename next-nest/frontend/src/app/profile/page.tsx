@@ -336,15 +336,21 @@ export default function MyProfilePage() {
     }
 
     try {
-      const token =
+      let token =
         typeof window !== "undefined"
           ? localStorage.getItem("accessToken") ||
             localStorage.getItem("token") ||
-            localStorage.getItem("adminToken")
+            localStorage.getItem("adminToken") ||
+            localStorage.getItem("jwt")
           : null;
+      if (!token && typeof document !== "undefined") {
+        const match = document.cookie.match(/(?:^|;\s*)(?:accessToken|token|jwt)=([^;]+)/);
+        if (match) token = match[1];
+      }
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
       const res = await fetch(`${apiBase}/auth/profile/send-contact-otp`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -372,7 +378,7 @@ export default function MyProfilePage() {
           error: "",
         });
       } else {
-        showToast(data.message || "ચકાસણી કોડ મોકલવામાં નિષ્ફળતા");
+        showToast(data.message || `ચકાસણી કોડ મોકલવામાં નિષ્ફળતા (${res.status})`);
       }
     } catch {
       showToast("સર્વર સાથે કનેક્ટ કરવામાં નિષ્ફળતા");
@@ -392,15 +398,21 @@ export default function MyProfilePage() {
     setOtpModal((prev) => ({ ...prev, isVerifying: true, error: "" }));
 
     try {
-      const token =
+      let token =
         typeof window !== "undefined"
           ? localStorage.getItem("accessToken") ||
             localStorage.getItem("token") ||
-            localStorage.getItem("adminToken")
+            localStorage.getItem("adminToken") ||
+            localStorage.getItem("jwt")
           : null;
+      if (!token && typeof document !== "undefined") {
+        const match = document.cookie.match(/(?:^|;\s*)(?:accessToken|token|jwt)=([^;]+)/);
+        if (match) token = match[1];
+      }
       const apiBase = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
       const res = await fetch(`${apiBase}/auth/profile/verify-contact-otp`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
