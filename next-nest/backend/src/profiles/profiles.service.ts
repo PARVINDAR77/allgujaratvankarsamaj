@@ -651,6 +651,24 @@ export class ProfilesService {
       let profile: any = await this.prisma.matrimonialProfile.findUnique({
         where: { userId },
         include: {
+          user: {
+            select: {
+              id: true,
+              phone: true,
+              email: true,
+              name: true,
+              role: true,
+              status: true,
+              isEmailVerified: true,
+              isPhoneVerified: true,
+            },
+          },
+          governmentEmployment: {
+            include: {
+              department: true,
+              designation: true,
+            },
+          },
           verificationRequests: {
             orderBy: { createdAt: "desc" },
             take: 1,
@@ -684,6 +702,13 @@ export class ProfilesService {
       (profile as any).idProofNumber = idNumber;
       if (idType) (profile as any).idProofType = idType;
 
+      (profile as any).contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
+      (profile as any).phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
+      (profile as any).contactEmail = profile.contactEmail || profile.user?.email || null;
+      (profile as any).email = profile.contactEmail || profile.user?.email || null;
+      (profile as any).fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+      (profile as any).fullPhotoUrl = profile.fullPhotoUrl || profile.photoUrl || null;
+
       return profile;
     } catch (err: any) {
       if (err instanceof NotFoundException) throw err;
@@ -708,6 +733,14 @@ export class ProfilesService {
       viewerUser?.role === "ADMIN" ||
       viewerUser?.role === "VERIFICATION_ADMIN";
 
+    // Attach mapped contact fields before checking permissions
+    (profile as any).contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
+    (profile as any).phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
+    (profile as any).contactEmail = profile.contactEmail || profile.user?.email || null;
+    (profile as any).email = profile.contactEmail || profile.user?.email || null;
+    (profile as any).fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+    (profile as any).fullPhotoUrl = profile.fullPhotoUrl || profile.photoUrl || null;
+
     // 1. Owners and Authorized Admins receive complete data
     if (isOwner || isAdmin) {
       return profile;
@@ -731,6 +764,12 @@ export class ProfilesService {
 
     // 3. Clone profile and strip raw user account relations
     const { user: _, ...sanitized } = profile;
+    sanitized.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
+    sanitized.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
+    sanitized.contactEmail = profile.contactEmail || profile.user?.email || null;
+    sanitized.email = profile.contactEmail || profile.user?.email || null;
+    sanitized.fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+    sanitized.fullPhotoUrl = profile.fullPhotoUrl || profile.photoUrl || null;
 
     // Fail closed: Anonymous callers NEVER receive contact fields even if setting is "ALL"
     const isAuthenticated = Boolean(viewerUser?.id);
@@ -753,10 +792,12 @@ export class ProfilesService {
 
     if (!allowMobile) {
       sanitized.contactPhone = null;
+      sanitized.phone = null;
       sanitized.altPhone = null;
     }
     if (!allowEmail) {
       sanitized.contactEmail = null;
+      sanitized.email = null;
     }
     if (!allowGuardian) {
       sanitized.guardianContact = null;
@@ -795,7 +836,7 @@ export class ProfilesService {
         where: { id },
         include: {
           user: {
-            select: { phone: true, email: true },
+            select: { id: true, phone: true, email: true, name: true, role: true, status: true },
           },
           governmentEmployment: {
             include: {
@@ -817,7 +858,7 @@ export class ProfilesService {
           },
           include: {
             user: {
-              select: { phone: true, email: true },
+              select: { id: true, phone: true, email: true, name: true, role: true, status: true },
             },
             governmentEmployment: {
               include: {
@@ -832,6 +873,13 @@ export class ProfilesService {
       if (!profile) {
         throw new NotFoundException("Profile not found");
       }
+
+      (profile as any).contactPhone = (profile as any).contactPhone || profile.user?.phone || (profile as any).altPhone || null;
+      (profile as any).phone = profile.user?.phone || (profile as any).contactPhone || (profile as any).altPhone || null;
+      (profile as any).contactEmail = (profile as any).contactEmail || profile.user?.email || null;
+      (profile as any).email = (profile as any).contactEmail || profile.user?.email || null;
+      (profile as any).fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+      (profile as any).fullPhotoUrl = (profile as any).fullPhotoUrl || profile.photoUrl || null;
 
       // Check if profile is suspended or user is deactivated
       const isViewerAdmin =

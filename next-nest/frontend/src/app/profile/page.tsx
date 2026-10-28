@@ -23,16 +23,16 @@ export default function MyProfilePage() {
 
   // Profile data state
   const [profile, setProfile] = useState<UserProfile>({
-    fullName: "Parvindar Panjabi",
-    email: "parvindarpanjabi18@gmail.com",
-    phone: "9876543210",
+    fullName: "",
+    email: "",
+    phone: "",
     fullPhotoUrl: null,
-    isVerified: true,
-    nativePlace: "Patan (પાટણ)",
-    pargana: "35 Pargana",
-    education: "B.Tech Computer Engineering",
-    occupation: "Software Engineer",
-    bio: "Looking for an educated, family-oriented partner from our Vankar Samaj community.",
+    isVerified: false,
+    nativePlace: "",
+    pargana: "",
+    education: "",
+    occupation: "",
+    bio: "",
   });
 
   const [isLoading, setIsLoading] = useState(true);
@@ -89,12 +89,24 @@ export default function MyProfilePage() {
               localStorage.getItem("adminToken")
             : null;
 
+        let storedUser: any = null;
+        try {
+          const uStr =
+            typeof window !== "undefined"
+              ? localStorage.getItem("user") || localStorage.getItem("adminUser")
+              : null;
+          if (uStr) storedUser = JSON.parse(uStr);
+        } catch (_) {}
+
+        if (!token) {
+          router.replace("/login");
+          return;
+        }
+
         const headers: Record<string, string> = {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         };
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
 
         const res = await fetch("/api/v1/profiles/me", {
           headers,
@@ -104,33 +116,67 @@ export default function MyProfilePage() {
         if (res.ok) {
           const data = await res.json();
           if (data) {
-            setProfile((prev) => ({
-              ...prev,
+            setProfile({
               fullName:
                 data.fullName ||
                 (data.firstName
                   ? `${data.firstName} ${data.lastName || ""}`.trim()
-                  : prev.fullName),
-              email: data.user?.email || data.email || prev.email,
-              phone: data.user?.phone || data.phone || prev.phone,
-              fullPhotoUrl: data.fullPhotoUrl || null,
-              isVerified: data.isVerified ?? data.verificationStatus === "VERIFIED",
-              nativePlace: data.nativePlace || data.city || prev.nativePlace,
-              education: data.education || prev.education,
-              occupation: data.occupation || prev.occupation,
-              bio: data.bio || prev.bio,
-            }));
+                  : "") ||
+                storedUser?.name ||
+                "",
+              email:
+                data.contactEmail ||
+                data.email ||
+                data.user?.email ||
+                storedUser?.email ||
+                "",
+              phone:
+                data.contactPhone ||
+                data.phone ||
+                data.user?.phone ||
+                storedUser?.phone ||
+                "",
+              fullPhotoUrl: data.fullPhotoUrl || data.photoUrl || null,
+              isVerified:
+                data.isVerified === true ||
+                data.verificationStatus === "VERIFIED",
+              nativePlace: data.nativePlace || data.city || data.pargana || "",
+              pargana:
+                data.pargana?.name ||
+                data.pargana ||
+                data.nativePlace ||
+                "",
+              education: data.education || "",
+              occupation: data.occupation || "",
+              bio: data.about || data.bio || "",
+            });
+          }
+        } else if (res.status === 404) {
+          // Candidate registered but hasn't filled biodata yet
+          if (storedUser) {
+            setProfile({
+              fullName: storedUser.name || "",
+              email: storedUser.email || "",
+              phone: storedUser.phone || "",
+              fullPhotoUrl: null,
+              isVerified: false,
+              nativePlace: "",
+              pargana: "",
+              education: "",
+              occupation: "",
+              bio: "",
+            });
           }
         }
       } catch (err) {
-        console.warn("Could not fetch /profiles/me, using local profile fallback:", err);
+        console.warn("Could not fetch /profiles/me:", err);
       } finally {
         setIsLoading(false);
       }
     }
 
     loadProfile();
-  }, []);
+  }, [router]);
 
   // Open Edit Profile modal with current values
   const handleOpenEdit = () => {
@@ -175,7 +221,7 @@ export default function MyProfilePage() {
       const firstName = nameParts[0] || "";
       const lastName = nameParts.slice(1).join(" ") || "";
 
-      await fetch("/api/v1/profiles/me", {
+      const res = await fetch("/api/v1/profiles/me", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -190,8 +236,33 @@ export default function MyProfilePage() {
           occupation: editForm.occupation,
           about: editForm.bio,
           bio: editForm.bio,
+          contactPhone: editForm.phone.trim(),
         }),
       });
+
+      if (res.status === 404) {
+        // MatrimonialProfile does not exist yet; create it
+        await fetch("/api/v1/profiles", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            firstName,
+            lastName,
+            gender: "Male",
+            maritalStatus: "NEVER_MARRIED",
+            dateOfBirth: "1995-01-01T00:00:00.000Z",
+            nativePlace: editForm.nativePlace,
+            education: editForm.education,
+            occupation: editForm.occupation,
+            about: editForm.bio,
+            contactPhone: editForm.phone.trim(),
+          }),
+        });
+      }
     } catch (_) {}
 
     setIsEditOpen(false);
@@ -290,6 +361,17 @@ export default function MyProfilePage() {
     "I am getting too many notifications (વધુ પડતા નોટિફિકેશન)",
     "Other reasons (અન્ય કારણ)",
   ];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col items-center justify-center font-sans p-4">
+        <div className="w-12 h-12 border-4 border-[#C49B24] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-slate-600 font-semibold font-gujarati text-sm">
+          પ્રોફાઇલ વિગતો લોડ થઈ રહી છે... (Loading Profile...)
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col font-sans pb-24">

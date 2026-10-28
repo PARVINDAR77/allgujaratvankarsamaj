@@ -138,27 +138,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return null;
         }
 
-        // If candidate created profile but is not yet approved by admin:
-        if (!isVerified) {
-          final isAllowedUnverifiedRoute = location == '/profile' ||
-              location.startsWith('/profile') ||
-              location == '/verified-profile' ||
-              location == '/profile-under-review' ||
-              location == '/profile/create' ||
-              location == '/profile/edit' ||
-              location == '/privacy-policy' ||
-              location == '/delete-account' ||
-              location == '/privacy-contact' ||
-              isCommunityModuleRoute;
-
-          if (!isAllowedUnverifiedRoute) {
-            return '/profile-under-review';
-          }
-          return null;
+        // If candidate created profile, allow full access to candidates, posters, search, and community
+        if (isLoggingIn) {
+          return '/main-poster';
         }
 
-        // Verified member or admin attempting to visit auth pages or review page should go to /main-poster
-        if (isLoggingIn || location == '/profile-under-review') {
+        // If verified member attempts to visit profile-under-review, go to /main-poster
+        if (isVerified && location == '/profile-under-review') {
           return '/main-poster';
         }
       }

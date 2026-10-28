@@ -371,6 +371,34 @@ class _ProfileUnderReviewScreenState
               ),
               const SizedBox(height: 12),
 
+              // Button 3: Browse Candidates and Services
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    context.go('/main-poster');
+                  },
+                  icon: const Icon(Icons.people_outline_rounded, color: Colors.white, size: 20),
+                  label: const Text(
+                    'ઉમેદવારો અને સેવાઓ જુઓ (Browse Candidates & Services)',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E3A8A),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: Colors.white24),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
               // Button 3: Need Help / Contact
               TextButton.icon(
                 onPressed: () {

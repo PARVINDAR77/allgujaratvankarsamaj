@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import {
   IsEmail,
   IsEnum,
@@ -47,6 +48,14 @@ export class RegisterDto {
     example: "Male",
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (!value || typeof value !== "string") return value;
+    const lower = value.trim().toLowerCase();
+    if (lower === "male" || lower === "m" || lower === "પુરુષ" || lower === "વર") return GenderDto.Male;
+    if (lower === "female" || lower === "f" || lower === "સ્ત્રી" || lower === "કન્યા") return GenderDto.Female;
+    if (lower === "other") return GenderDto.Other;
+    return value;
+  })
   @IsEnum(GenderDto, { message: "Gender must be Male, Female, or Other" })
   gender?: GenderDto;
 

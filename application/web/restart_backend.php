@@ -126,12 +126,19 @@ if ($action === 'deploy') {
                "git pull origin main 2>&1; " .
                "cp -rf next-nest/frontend/out/_next /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf next-nest/frontend/out/admin /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/login /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/profile /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/register /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/search /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/matrimony /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/services /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -rf next-nest/frontend/out/verified-profile /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf application/build/web/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "pkill -9 -f 'dist/main.js' 2>&1; " .
                "echo 'DEPLOY_COMPLETE'";
         $deployLog = shell_exec($cmd);
         $results['deploy_log'] = $deployLog;
-        $results['actions_taken'][] = 'Pulled origin main, copied _next and admin static assets, and restarted backend';
+        $results['actions_taken'][] = 'Pulled origin main, copied web assets and static routes, and restarted backend';
     }
     @touch($trigger_file);
 }

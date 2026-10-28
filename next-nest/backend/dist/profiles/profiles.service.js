@@ -530,6 +530,24 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             let profile = await this.prisma.matrimonialProfile.findUnique({
                 where: { userId },
                 include: {
+                    user: {
+                        select: {
+                            id: true,
+                            phone: true,
+                            email: true,
+                            name: true,
+                            role: true,
+                            status: true,
+                            isEmailVerified: true,
+                            isPhoneVerified: true,
+                        },
+                    },
+                    governmentEmployment: {
+                        include: {
+                            department: true,
+                            designation: true,
+                        },
+                    },
                     verificationRequests: {
                         orderBy: { createdAt: "desc" },
                         take: 1,
@@ -565,6 +583,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             profile.idProofNumber = idNumber;
             if (idType)
                 profile.idProofType = idType;
+            profile.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
+            profile.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
+            profile.contactEmail = profile.contactEmail || profile.user?.email || null;
+            profile.email = profile.contactEmail || profile.user?.email || null;
+            profile.fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+            profile.fullPhotoUrl = profile.fullPhotoUrl || profile.photoUrl || null;
             return profile;
         }
         catch (err) {
@@ -584,6 +608,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
         const isAdmin = viewerUser?.role === "SUPER_ADMIN" ||
             viewerUser?.role === "ADMIN" ||
             viewerUser?.role === "VERIFICATION_ADMIN";
+        profile.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
+        profile.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
+        profile.contactEmail = profile.contactEmail || profile.user?.email || null;
+        profile.email = profile.contactEmail || profile.user?.email || null;
+        profile.fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+        profile.fullPhotoUrl = profile.fullPhotoUrl || profile.photoUrl || null;
         if (isOwner || isAdmin) {
             return profile;
         }
@@ -603,6 +633,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             }
         }
         const { user: _, ...sanitized } = profile;
+        sanitized.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
+        sanitized.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
+        sanitized.contactEmail = profile.contactEmail || profile.user?.email || null;
+        sanitized.email = profile.contactEmail || profile.user?.email || null;
+        sanitized.fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+        sanitized.fullPhotoUrl = profile.fullPhotoUrl || profile.photoUrl || null;
         const isAuthenticated = Boolean(viewerUser?.id);
         const isExplicitlyPublic = (val) => typeof val === "string" &&
             (val.trim() === "બધા માટે" || val.trim().toUpperCase() === "ALL");
@@ -612,10 +648,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
         const allowAddress = isMutualAccepted || (isAuthenticated && isExplicitlyPublic(privacy.address));
         if (!allowMobile) {
             sanitized.contactPhone = null;
+            sanitized.phone = null;
             sanitized.altPhone = null;
         }
         if (!allowEmail) {
             sanitized.contactEmail = null;
+            sanitized.email = null;
         }
         if (!allowGuardian) {
             sanitized.guardianContact = null;
@@ -650,7 +688,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 where: { id },
                 include: {
                     user: {
-                        select: { phone: true, email: true },
+                        select: { id: true, phone: true, email: true, name: true, role: true, status: true },
                     },
                     governmentEmployment: {
                         include: {
@@ -671,7 +709,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     },
                     include: {
                         user: {
-                            select: { phone: true, email: true },
+                            select: { id: true, phone: true, email: true, name: true, role: true, status: true },
                         },
                         governmentEmployment: {
                             include: {
@@ -685,6 +723,12 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (!profile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
+            profile.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
+            profile.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
+            profile.contactEmail = profile.contactEmail || profile.user?.email || null;
+            profile.email = profile.contactEmail || profile.user?.email || null;
+            profile.fullName = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || profile.user?.name || '';
+            profile.fullPhotoUrl = profile.fullPhotoUrl || profile.photoUrl || null;
             const isViewerAdmin = viewerUser &&
                 (viewerUser.role === "ADMIN" || viewerUser.role === "SUPER_ADMIN");
             const isOwner = viewerUser && viewerUser.id === profile.userId;

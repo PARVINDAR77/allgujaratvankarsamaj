@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RegisterDto = exports.GenderDto = void 0;
 const swagger_1 = require("@nestjs/swagger");
+const class_transformer_1 = require("class-transformer");
 const class_validator_1 = require("class-validator");
 var GenderDto;
 (function (GenderDto) {
@@ -56,6 +57,18 @@ __decorate([
         example: "Male",
     }),
     (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => {
+        if (!value || typeof value !== "string")
+            return value;
+        const lower = value.trim().toLowerCase();
+        if (lower === "male" || lower === "m" || lower === "પુરુષ" || lower === "વર")
+            return GenderDto.Male;
+        if (lower === "female" || lower === "f" || lower === "સ્ત્રી" || lower === "કન્યા")
+            return GenderDto.Female;
+        if (lower === "other")
+            return GenderDto.Other;
+        return value;
+    }),
     (0, class_validator_1.IsEnum)(GenderDto, { message: "Gender must be Male, Female, or Other" }),
     __metadata("design:type", String)
 ], RegisterDto.prototype, "gender", void 0);
