@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminApi, SamajServiceItem, SamajServicePersonItem } from "@/lib/admin-api";
 
-export interface ServiceCategoryConfig {
+interface ServiceCategoryConfig {
   id: string;
   name: string;
   gujarati: string;
@@ -15,7 +15,7 @@ export interface ServiceCategoryConfig {
   presets: { title: string; icon: string }[];
 }
 
-export const MAIN_SERVICE_CATEGORIES: ServiceCategoryConfig[] = [
+const MAIN_SERVICE_CATEGORIES: ServiceCategoryConfig[] = [
   {
     id: "wedding",
     name: "Wedding & Event Services",
