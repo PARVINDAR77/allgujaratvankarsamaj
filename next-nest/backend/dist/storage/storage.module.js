@@ -17,6 +17,7 @@ exports.StorageModule = StorageModule = __decorate([
     (0, common_1.Module)({
         controllers: [storage_controller_1.StorageController],
         providers: [storage_service_1.StorageService],
+        exports: [storage_service_1.StorageService],
     })
 ], StorageModule);
 //# sourceMappingURL=storage.module.js.map

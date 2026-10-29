@@ -20,6 +20,7 @@ import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/widgets/samaj_service_picker_sheet.dart';
 import '../../../../shared/constants/pargana_constants.dart';
 import '../widgets/update_password_dialog.dart';
+import '../../data/ai_document_verifier.dart';
 
 class CreateProfileScreen extends ConsumerStatefulWidget {
   const CreateProfileScreen({super.key});
@@ -35,6 +36,12 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String _idProofNumber = '';
   Uint8List? _idFrontBytes;
   Uint8List? _idBackBytes;
+  bool _isIdFrontAiVerified = false;
+  bool _isIdBackAiVerified = false;
+  String? _idFrontExtractedName;
+  String? _idFrontExtractedDob;
+  String? _idFrontUploadedUrl;
+  String? _idBackUploadedUrl;
   final List<String> _idProofOptions = [
     'Aadhaar Card (આધાર કાર્ડ)',
     'PAN Card (પાન કાર્ડ)',
@@ -238,50 +245,144 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   }
 
   Future<void> _pickIdFront() async {
+    final fName = _firstName.trim();
+    final lName = _lastName.trim();
+    final dobVal = _dob?.trim() ?? '';
+
+    if (fName.isEmpty || lName.isEmpty || dobVal.isEmpty) {
+      AiDocumentVerifier.showMissingDetailsDialog(context);
+      return;
+    }
+
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        final bytes = await image.readAsBytes();
-        if (bytes.length > 5 * 1024 * 1024) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ઓળખપત્રના આગળના ફોટાની સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (ID Front photo must be under 5 MB)'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
+      if (image == null) return;
+
+      final bytes = await image.readAsBytes();
+      if (bytes.length > 5 * 1024 * 1024) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ઓળખપત્રના આગળના ફોટાની સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (ID Front photo must be under 5 MB)'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final dio = ref.read(apiClientProvider);
+      final result = await AiDocumentVerifier.verifyDocument(
+        context: context,
+        dio: dio,
+        bytes: bytes,
+        firstName: fName,
+        lastName: lName,
+        dob: dobVal,
+        documentType: _idProofType,
+        documentNumber: _idProofNumber,
+        side: 'FRONT',
+      );
+
+      if (!mounted) return;
+
+      if (result.isApproved) {
         setState(() {
           _idFrontBytes = bytes;
+          _isIdFrontAiVerified = true;
+          _idFrontExtractedName = result.extractedName;
+          _idFrontExtractedDob = result.extractedDob;
+          if (result.uploadedUrl != null) _idFrontUploadedUrl = result.uploadedUrl;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ ${result.message}'),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      } else {
+        setState(() {
+          _idFrontBytes = null;
+          _isIdFrontAiVerified = false;
+          _idFrontUploadedUrl = null;
+        });
+        AiDocumentVerifier.showRejectionDialog(
+          context: context,
+          result: result,
+          expectedName: '$fName $lName',
+          expectedDob: dobVal,
+          documentType: _idProofType,
+        );
       }
     } catch (e) {
-      debugPrint('Error picking ID front image: $e');
+      debugPrint('Error picking and verifying ID front: $e');
     }
   }
 
   Future<void> _pickIdBack() async {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-      if (image != null) {
-        final bytes = await image.readAsBytes();
-        if (bytes.length > 5 * 1024 * 1024) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ઓળખપત્રના પાછળના ફોટાની સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (ID Back photo must be under 5 MB)'),
-              backgroundColor: Colors.red,
-            ),
-          );
-          return;
-        }
+      if (image == null) return;
+
+      final bytes = await image.readAsBytes();
+      if (bytes.length > 5 * 1024 * 1024) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ઓળખપત્રના પાછળના ફોટાની સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (ID Back photo must be under 5 MB)'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+
+      final dio = ref.read(apiClientProvider);
+      final result = await AiDocumentVerifier.verifyDocument(
+        context: context,
+        dio: dio,
+        bytes: bytes,
+        firstName: _firstName.trim(),
+        lastName: _lastName.trim(),
+        dob: _dob?.trim() ?? '',
+        documentType: _idProofType,
+        documentNumber: _idProofNumber,
+        side: 'BACK',
+      );
+
+      if (!mounted) return;
+
+      if (result.isApproved) {
         setState(() {
           _idBackBytes = bytes;
+          _isIdBackAiVerified = true;
+          if (result.uploadedUrl != null) _idBackUploadedUrl = result.uploadedUrl;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ ${result.message}'),
+            backgroundColor: Colors.green.shade700,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      } else {
+        setState(() {
+          _idBackBytes = null;
+          _isIdBackAiVerified = false;
+          _idBackUploadedUrl = null;
+        });
+        AiDocumentVerifier.showRejectionDialog(
+          context: context,
+          result: result,
+          expectedName: '${_firstName.trim()} ${_lastName.trim()}',
+          expectedDob: _dob?.trim() ?? '',
+          documentType: _idProofType,
+        );
       }
     } catch (e) {
-      debugPrint('Error picking ID back image: $e');
+      debugPrint('Error picking and verifying ID back: $e');
     }
   }
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -470,6 +571,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     setState(() => _isSubmitting = true);
 
     Future<String?> uploadBytes(Uint8List bytes, String filenamePrefix) async {
+      if (filenamePrefix == 'id_proof_front' && _idFrontUploadedUrl != null) return _idFrontUploadedUrl;
+      if (filenamePrefix == 'id_proof_back' && _idBackUploadedUrl != null) return _idBackUploadedUrl;
       final dio = ref.read(apiClientProvider);
       String? rawUrl;
 
@@ -593,9 +696,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       guardianContact: _guardianContact.isNotEmpty ? _guardianContact : null,
       siblings: _siblings.isNotEmpty ? _siblings : null,
       mamasVillage: _mamasVillage.isNotEmpty ? _mamasVillage : null,
-      contactPhone: _mobileNumber.isNotEmpty ? _mobileNumber : null,
+      contactPhone: _mobileNumber.isNotEmpty ? _mobileNumber : (_mobileController.text.isNotEmpty ? _mobileController.text : null),
       altPhone: _whatsappNumber.isNotEmpty ? _whatsappNumber : null,
-      contactEmail: _emailAddress.isNotEmpty ? _emailAddress : null,
+      contactEmail: _emailAddress.isNotEmpty ? _emailAddress : (_emailController.text.isNotEmpty ? _emailController.text : null),
+      isPhoneVerified: _isCurrentPhoneVerified,
+      isEmailVerified: _isCurrentEmailVerified,
       about: _aboutMe.isNotEmpty ? _aboutMe : null,
       mobilePrivacy: ProfileModel.normalizeGenderToDisplay(_gender).contains('Female') || _firstName.toLowerCase().endsWith('ben') ? 'માત્ર મને' : 'બધા માટે',
       emailPrivacy: ProfileModel.normalizeGenderToDisplay(_gender).contains('Female') || _firstName.toLowerCase().endsWith('ben') ? 'માત્ર મને' : 'બધા માટે',
@@ -808,7 +913,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     }
 
     final otpCtrl = TextEditingController();
-    int cooldown = sendRes['resendCooldownSeconds'] ?? 60;
+    int cooldown = sendRes['resendCooldownSeconds'] ?? 40;
     Timer? timer;
     bool isVerifying = false;
     bool isResending = false;
@@ -822,7 +927,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       barrierDismissible: false,
       builder: (dialogCtx) => StatefulBuilder(
         builder: (ctx, setDialogState) {
-          void startTimer([int sec = 60]) {
+          void startTimer([int sec = 40]) {
             timer?.cancel();
             cooldown = sec;
             timer = Timer.periodic(const Duration(seconds: 1), (t) {
@@ -924,7 +1029,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                                   isResending = false;
                                   if (res['success'] == true) {
                                     statusMsg = 'નવો કોડ મોકલવામાં આવ્યો છે.';
-                                    startTimer(res['resendCooldownSeconds'] ?? 60);
+                                    startTimer(res['resendCooldownSeconds'] ?? 40);
                                   } else {
                                     statusMsg = res['message'] ?? 'કોડ ફરી મોકલવામાં નિષ્ફળ';
                                   }
@@ -949,18 +1054,53 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                       ),
                     ],
                   ),
+                  if (cooldown == 0) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.amber.shade700.withOpacity(0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.info_outline, color: Colors.amber.shade300, size: 16),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'OTP કોડ નથી મળ્યો? ફરી કોડ મોકલવા માટે ઉપર "ફરી કોડ મોકલો" બટન દબાવો.\n(Didn\'t receive OTP? Tap "Resend Code" above to get a new code.)',
+                              style: TextStyle(color: Colors.amberAccent, fontSize: 11, height: 1.3),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   if (statusMsg.isNotEmpty) ...[
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.18),
+                        color: (statusMsg.contains('નવો કોડ') || statusMsg.contains('સફળ'))
+                            ? Colors.green.withOpacity(0.18)
+                            : Colors.red.withOpacity(0.18),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.redAccent, width: 1),
+                        border: Border.all(
+                          color: (statusMsg.contains('નવો કોડ') || statusMsg.contains('સફળ'))
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
+                          width: 1,
+                        ),
                       ),
                       child: Text(
                         statusMsg,
-                        style: const TextStyle(color: Colors.redAccent, fontSize: 12),
+                        style: TextStyle(
+                          color: (statusMsg.contains('નવો કોડ') || statusMsg.contains('સફળ'))
+                              ? Colors.greenAccent
+                              : Colors.redAccent,
+                          fontSize: 12,
+                        ),
                       ),
                     ),
                   ],
@@ -1064,6 +1204,20 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     final masterData = ref.watch(masterDataProvider);
     final samajServicesAsync = ref.watch(samajServicesProvider);
     final samajServicesList = samajServicesAsync.valueOrNull ?? [];
+    final authState = ref.watch(authNotifierProvider);
+    final user = authState.user;
+
+    // Auto-fill from authenticated user if fields were not yet populated
+    if (_mobileController.text.isEmpty && user?.phone != null && user!.phone!.trim().isNotEmpty) {
+      _mobileNumber = user.phone!.trim();
+      _mobileController.text = user.phone!.trim();
+      if (user.isPhoneVerified) _isPhoneVerified = true;
+    }
+    if (_emailController.text.isEmpty && user?.email != null && user!.email.trim().isNotEmpty) {
+      _emailAddress = user.email.trim();
+      _emailController.text = user.email.trim();
+      if (user.isEmailVerified) _isEmailVerified = true;
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA), // Soft Light Grey Background
@@ -1280,7 +1434,13 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 onChanged: (v) => setState(() {
                   _mobileNumber = v;
                   final user = ref.read(authNotifierProvider).user;
-                  if (v != user?.phone) _isPhoneVerified = false;
+                  final registeredDigits = (user?.phone ?? '').replaceAll(RegExp(r'\D'), '');
+                  final newDigits = v.replaceAll(RegExp(r'\D'), '');
+                  if (newDigits.isEmpty || newDigits != registeredDigits) {
+                    _isPhoneVerified = false;
+                  } else if (user?.isPhoneVerified == true) {
+                    _isPhoneVerified = true;
+                  }
                 }),
               ),
               _buildTextField(
@@ -1328,7 +1488,13 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 onChanged: (v) => setState(() {
                   _emailAddress = v;
                   final user = ref.read(authNotifierProvider).user;
-                  if (v != user?.email) _isEmailVerified = false;
+                  final registeredEmail = (user?.email ?? '').trim().toLowerCase();
+                  final newEmail = v.trim().toLowerCase();
+                  if (newEmail.isEmpty || newEmail != registeredEmail) {
+                    _isEmailVerified = false;
+                  } else if (user?.isEmailVerified == true) {
+                    _isEmailVerified = true;
+                  }
                 }),
               ),
               _buildTextField(
@@ -2363,6 +2529,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     final hasFront = _idFrontBytes != null;
     final hasBack = _idBackBytes != null;
     final isBothUploaded = hasFront && hasBack;
+    final isBothAiVerified = isBothUploaded && _isIdFrontAiVerified && _isIdBackAiVerified;
 
     return Container(
       width: double.infinity,
@@ -2371,7 +2538,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isBothUploaded ? Colors.green.shade500 : const Color(0xFF1E3A8A).withOpacity(0.35),
+          color: isBothAiVerified ? Colors.green.shade500 : (isBothUploaded ? Colors.orange.shade400 : const Color(0xFF1E3A8A).withOpacity(0.35)),
           width: 1.5,
         ),
         boxShadow: [
@@ -2391,12 +2558,12 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isBothUploaded ? Colors.green.shade50 : const Color(0xFF1E3A8A).withOpacity(0.1),
+                  color: isBothAiVerified ? Colors.green.shade50 : const Color(0xFF1E3A8A).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  isBothUploaded ? Icons.verified_user : Icons.badge_outlined,
-                  color: isBothUploaded ? Colors.green.shade700 : const Color(0xFF1E3A8A),
+                  isBothAiVerified ? Icons.verified_user : Icons.badge_outlined,
+                  color: isBothAiVerified ? Colors.green.shade700 : const Color(0xFF1E3A8A),
                   size: 22,
                 ),
               ),
@@ -2416,7 +2583,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     Text(
                       'સરકારી ઓળખપત્રના આગળ અને પાછળ બંને ફોટા ફરજિયાત છે *',
                       style: TextStyle(
-                        color: isBothUploaded ? Colors.green.shade700 : Colors.red.shade700,
+                        color: isBothAiVerified ? Colors.green.shade700 : (isBothUploaded ? Colors.orange.shade800 : Colors.red.shade700),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2427,16 +2594,16 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: isBothUploaded ? Colors.green.shade50 : (hasFront || hasBack ? Colors.orange.shade50 : Colors.red.shade50),
+                  color: isBothAiVerified ? Colors.green.shade50 : (isBothUploaded || hasFront || hasBack ? Colors.orange.shade50 : Colors.red.shade50),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isBothUploaded ? Colors.green.shade400 : (hasFront || hasBack ? Colors.orange.shade400 : Colors.red.shade300),
+                    color: isBothAiVerified ? Colors.green.shade400 : (isBothUploaded || hasFront || hasBack ? Colors.orange.shade400 : Colors.red.shade300),
                   ),
                 ),
                 child: Text(
-                  isBothUploaded ? '✓ Completed' : (hasFront || hasBack ? '⚠️ 1/2 Uploaded' : 'Required *'),
+                  isBothAiVerified ? '✓ AI Verified' : (isBothUploaded ? '⚠️ AI Checking' : (hasFront || hasBack ? '⚠️ 1/2 Uploaded' : 'Required *')),
                   style: TextStyle(
-                    color: isBothUploaded ? Colors.green.shade800 : (hasFront || hasBack ? Colors.orange.shade900 : Colors.red.shade800),
+                    color: isBothAiVerified ? Colors.green.shade800 : (isBothUploaded || hasFront || hasBack ? Colors.orange.shade900 : Colors.red.shade800),
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
                   ),
@@ -2589,16 +2756,16 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: isBothUploaded
+              color: isBothAiVerified
                   ? const Color(0xFFECFDF5)
-                  : (hasFront || hasBack)
+                  : (isBothUploaded || hasFront || hasBack)
                       ? const Color(0xFFFFFBEB)
                       : const Color(0xFFFEF2F2),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isBothUploaded
+                color: isBothAiVerified
                     ? const Color(0xFF10B981)
-                    : (hasFront || hasBack)
+                    : (isBothUploaded || hasFront || hasBack)
                         ? const Color(0xFFF59E0B)
                         : const Color(0xFFFCA5A5),
                 width: 1,
@@ -2608,14 +2775,14 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  isBothUploaded
+                  isBothAiVerified
                       ? Icons.check_circle_rounded
-                      : (hasFront || hasBack)
+                      : (isBothUploaded || hasFront || hasBack)
                           ? Icons.warning_amber_rounded
                           : Icons.info_outline_rounded,
-                  color: isBothUploaded
+                  color: isBothAiVerified
                       ? const Color(0xFF059669)
-                      : (hasFront || hasBack)
+                      : (isBothUploaded || hasFront || hasBack)
                           ? const Color(0xFFD97706)
                           : const Color(0xFFDC2626),
                   size: 20,
@@ -2626,13 +2793,15 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isBothUploaded
-                            ? '✓ ઓળખપત્ર વેરિફિકેશન પૂર્ણ (ID Proof Complete)'
-                            : (!hasFront && !hasBack)
-                                ? '⚠️ આગળ અને પાછળ બંને બાજુના ફોટા અપલોડ કરવા જરૂરી છે'
-                                : (!hasFront)
-                                    ? '⚠️ આગળનો ફોટો (Front Side) અપલોડ કરવાનો બાકી છે'
-                                    : '⚠️ પાછળનો ફોટો (Back Side) અપલોડ કરવાનો બાકી છે',
+                        isBothAiVerified
+                            ? '✓ ઓળખપત્ર AI દ્વારા ચકાસાયેલ છે (ID Proof AI Verified)'
+                            : (isBothUploaded
+                                ? '⚠️ ઓળખપત્ર AI દ્વારા ચકાસવું જરૂરી છે (AI Verification Required)'
+                                : (!hasFront && !hasBack)
+                                    ? '⚠️ આગળ અને પાછળ બંને બાજુના ફોટા અપલોડ કરવા જરૂરી છે'
+                                    : (!hasFront)
+                                        ? '⚠️ આગળનો ફોટો (Front Side) અપલોડ કરવાનો બાકી છે'
+                                        : '⚠️ પાછળનો ફોટો (Back Side) અપલોડ કરવાનો બાકી છે'),
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -2645,13 +2814,15 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        isBothUploaded
-                            ? '$_idProofType ના આગળ અને પાછળ બંને બાજુના ફોટા અપલોડ થઈ ગયા છે.'
-                            : (!hasFront && !hasBack)
-                                ? 'કૃપા કરીને $_idProofType ના બંને ફોટા સ્પષ્ટ દેખાય તે રીતે અપલોડ કરો.'
-                                : (!hasFront)
-                                    ? 'કૃપા કરીને $_idProofType નો આગળનો ભાગ (Front Side) અપલોડ કરો.'
-                                    : 'કૃપા કરીને $_idProofType નો પાછળનો ભાગ (Back Side) અપલોડ કરો.',
+                        isBothAiVerified
+                            ? '$_idProofType પરનું નામ અને જન્મ તારીખ સફળતાપૂર્વક ચકાસાઈ ગયા છે.'
+                            : (isBothUploaded
+                                ? 'કૃપા કરીને ખાતરી કરો કે દસ્તાવેજ પરનું નામ ઉમેદવાર સાથે મેળ ખાય છે.'
+                                : (!hasFront && !hasBack)
+                                    ? 'કૃપા કરીને $_idProofType ના બંને ફોટા સ્પષ્ટ દેખાય તે રીતે અપલોડ કરો.'
+                                    : (!hasFront)
+                                        ? 'કૃપા કરીને $_idProofType નો આગળનો ભાગ (Front Side) અપલોડ કરો.'
+                                        : 'કૃપા કરીને $_idProofType નો પાછળનો ભાગ (Back Side) અપલોડ કરો.'),
                         style: TextStyle(
                           fontSize: 11,
                           color: isBothUploaded
@@ -2678,8 +2849,14 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   title: 'Front Side (આગળનો ભાગ)',
                   sideLabel: 'આગળનો ફોટો (Front)',
                   imageBytes: _idFrontBytes,
+                  isAiVerified: _isIdFrontAiVerified,
+                  verifiedDetails: _idFrontExtractedName != null ? 'નામ: $_idFrontExtractedName' + (_idFrontExtractedDob != null ? ' (DOB: $_idFrontExtractedDob)' : '') : null,
                   onPick: _pickIdFront,
-                  onRemove: () => setState(() => _idFrontBytes = null),
+                  onRemove: () => setState(() {
+                    _idFrontBytes = null;
+                    _isIdFrontAiVerified = false;
+                    _idFrontUploadedUrl = null;
+                  }),
                 ),
               ),
               const SizedBox(width: 12),
@@ -2689,8 +2866,13 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   title: 'Back Side (પાછળનો ભાગ)',
                   sideLabel: 'પાછળનો ફોટો (Back)',
                   imageBytes: _idBackBytes,
+                  isAiVerified: _isIdBackAiVerified,
                   onPick: _pickIdBack,
-                  onRemove: () => setState(() => _idBackBytes = null),
+                  onRemove: () => setState(() {
+                    _idBackBytes = null;
+                    _isIdBackAiVerified = false;
+                    _idBackUploadedUrl = null;
+                  }),
                 ),
               ),
             ],
@@ -2704,6 +2886,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     required String title,
     required String sideLabel,
     required Uint8List? imageBytes,
+    bool isAiVerified = false,
+    String? verifiedDetails,
     required VoidCallback onPick,
     required VoidCallback onRemove,
   }) {
@@ -2739,13 +2923,13 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: hasImg ? Colors.green.shade100 : Colors.red.shade100,
+                  color: hasImg ? (isAiVerified ? Colors.green.shade100 : Colors.blue.shade100) : Colors.red.shade100,
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  hasImg ? '✓ Uploaded' : '* Required',
+                  hasImg ? (isAiVerified ? '✓ AI Verified' : '✓ Uploaded') : '* Required',
                   style: TextStyle(
-                    color: hasImg ? Colors.green.shade900 : Colors.red.shade900,
+                    color: hasImg ? (isAiVerified ? Colors.green.shade900 : Colors.blue.shade900) : Colors.red.shade900,
                     fontSize: 9,
                     fontWeight: FontWeight.bold,
                   ),

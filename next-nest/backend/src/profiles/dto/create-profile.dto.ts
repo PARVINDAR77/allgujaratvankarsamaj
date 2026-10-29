@@ -509,4 +509,12 @@ export class CreateProfileDto {
   @ApiPropertyOptional({ description: "Whether to include profile in matrimony listings" })
   @IsOptional()
   showInMatrimony?: any;
+
+  @ApiPropertyOptional({ description: "Whether contact phone was verified" })
+  @IsOptional()
+  isPhoneVerified?: any;
+
+  @ApiPropertyOptional({ description: "Whether contact email was verified" })
+  @IsOptional()
+  isEmailVerified?: any;
 }

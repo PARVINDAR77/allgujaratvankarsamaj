@@ -97,6 +97,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final user = _decodeToken(token);
         if (user != null) {
           state = AuthState.authenticated(user);
+          try {
+            final meRes = await _dio.get('/auth/me');
+            if (meRes.data != null && meRes.data is Map<String, dynamic>) {
+              state = AuthState.authenticated(UserModel.fromJson(meRes.data));
+            }
+          } catch (_) {}
           return;
         } else {
           // Token is invalid or expired, clean up
@@ -125,14 +131,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (token != null) {
         await _storage.saveToken(token);
         var user = _decodeToken(token);
+        final userData = response.data['user'];
+        if (userData is Map<String, dynamic>) {
+          user = UserModel.fromJson(userData);
+        }
         if (user != null) {
-          final userData = response.data['user'];
-          if (userData is Map<String, dynamic>) {
-            user = user.copyWith(
-              isVerified: userData['isVerified'] == true,
-              hasProfile: userData['hasProfile'] == true,
-            );
-          }
           state = AuthState.authenticated(user);
           return true;
         } else {
@@ -235,6 +238,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (phone != null && phone.trim().isNotEmpty) 'phone': phone.trim(),
         if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
         if (channel != null && channel.isNotEmpty) 'channel': channel,
+        if (state.user?.id != null && state.user!.id.isNotEmpty) 'userId': state.user!.id,
       };
       final res = await _dio.post('/auth/profile/send-contact-otp', data: payload);
       return {
@@ -244,7 +248,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         'maskedEmail': res.data['maskedEmail'] ?? email,
         'channel': res.data['channel'] ?? channel ?? 'BOTH',
         'expiresInSeconds': res.data['expiresInSeconds'] ?? 600,
-        'resendCooldownSeconds': res.data['resendCooldownSeconds'] ?? 60,
+        'resendCooldownSeconds': res.data['resendCooldownSeconds'] ?? 40,
         'maxAttempts': res.data['maxAttempts'] ?? 4,
         'emailConfigured': true,
         'smsDelivered': res.data['smsDelivered'] != false,
@@ -274,6 +278,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         if (email != null && email.trim().isNotEmpty) 'email': email.trim(),
         if (phoneOtp != null && phoneOtp.trim().isNotEmpty) 'phoneOtp': phoneOtp.trim(),
         if (emailOtp != null && emailOtp.trim().isNotEmpty) 'emailOtp': emailOtp.trim(),
+        if (state.user?.id != null && state.user!.id.isNotEmpty) 'userId': state.user!.id,
       };
       final res = await _dio.post('/auth/profile/verify-contact-otp', data: payload);
       final isPhVer = res.data['isPhoneVerified'] == true;
@@ -282,8 +287,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (state.user != null) {
         state = state.copyWith(
           user: state.user!.copyWith(
-            phone: phone ?? state.user!.phone,
-            email: email ?? state.user!.email,
+            phone: (phone != null && phone.trim().isNotEmpty) ? phone.trim() : state.user!.phone,
+            email: (email != null && email.trim().isNotEmpty) ? email.trim() : state.user!.email,
             isPhoneVerified: isPhVer ? true : state.user!.isPhoneVerified,
             isEmailVerified: isEmVer ? true : state.user!.isEmailVerified,
           ),

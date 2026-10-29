@@ -345,14 +345,14 @@ export declare class GovernmentEmployeesService {
                     name: string | null;
                     gender: import(".prisma/client").$Enums.Gender | null;
                     id: string;
+                    isPhoneVerified: boolean;
+                    isEmailVerified: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                     email: string | null;
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
-                    isEmailVerified: boolean;
-                    isPhoneVerified: boolean;
                 };
                 district: {
                     name: string;
@@ -487,14 +487,14 @@ export declare class GovernmentEmployeesService {
                     name: string | null;
                     gender: import(".prisma/client").$Enums.Gender | null;
                     id: string;
+                    isPhoneVerified: boolean;
+                    isEmailVerified: boolean;
                     createdAt: Date;
                     updatedAt: Date;
                     email: string | null;
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
-                    isEmailVerified: boolean;
-                    isPhoneVerified: boolean;
                 };
                 district: {
                     name: string;

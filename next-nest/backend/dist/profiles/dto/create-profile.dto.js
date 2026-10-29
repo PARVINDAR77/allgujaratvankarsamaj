@@ -571,4 +571,14 @@ __decorate([
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)
 ], CreateProfileDto.prototype, "showInMatrimony", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Whether contact phone was verified" }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProfileDto.prototype, "isPhoneVerified", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({ description: "Whether contact email was verified" }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Object)
+], CreateProfileDto.prototype, "isEmailVerified", void 0);
 //# sourceMappingURL=create-profile.dto.js.map

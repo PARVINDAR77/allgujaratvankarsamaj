@@ -833,6 +833,8 @@ class ProfileModel {
       if (altPhone != null && altPhone!.trim().isNotEmpty) 'altPhone': altPhone!.trim(),
       if (contactPhone != null && contactPhone!.trim().isNotEmpty) 'contactPhone': contactPhone!.trim(),
       if (contactEmail != null && contactEmail!.trim().isNotEmpty) 'contactEmail': contactEmail!.trim(),
+      'isPhoneVerified': isPhoneVerified,
+      'isEmailVerified': isEmailVerified,
       if (privacySettings != null) 'privacySettings': privacySettings,
       if (mobilePrivacy != null) 'mobilePrivacy': mobilePrivacy,
       if (emailPrivacy != null) 'emailPrivacy': emailPrivacy,

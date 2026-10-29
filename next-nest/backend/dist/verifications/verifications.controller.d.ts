@@ -1,9 +1,21 @@
 import { Response } from "express";
 import { VerificationsService } from "./verifications.service";
+import { AiVerificationService } from "./ai-verification.service";
+import { StorageService } from "../storage/storage.service";
 import { UpdateVerificationStatusDto } from "./dto/update-verification.dto";
 export declare class VerificationsController {
     private readonly verificationsService;
-    constructor(verificationsService: VerificationsService);
+    private readonly aiVerificationService;
+    private readonly storageService;
+    constructor(verificationsService: VerificationsService, aiVerificationService: AiVerificationService, storageService: StorageService);
+    aiVerify(file?: Express.Multer.File, body?: any): Promise<{
+        success: boolean;
+        verified: boolean;
+        url: string;
+        result: import("./ai-verification.service").AiVerificationResult;
+        reason: string;
+        message: string;
+    }>;
     submitVerification(req: any, body: {
         documentType: string;
         documentUrl: string;

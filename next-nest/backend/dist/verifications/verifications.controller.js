@@ -14,16 +14,74 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminVerificationsController = exports.VerificationsController = void 0;
 const common_1 = require("@nestjs/common");
+const platform_express_1 = require("@nestjs/platform-express");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const permissions_guard_1 = require("../auth/guards/permissions.guard");
 const permissions_decorator_1 = require("../auth/decorators/permissions.decorator");
 const permissions_1 = require("../auth/constants/permissions");
 const verifications_service_1 = require("./verifications.service");
+const ai_verification_service_1 = require("./ai-verification.service");
+const storage_service_1 = require("../storage/storage.service");
 const update_verification_dto_1 = require("./dto/update-verification.dto");
 let VerificationsController = class VerificationsController {
-    constructor(verificationsService) {
+    constructor(verificationsService, aiVerificationService, storageService) {
         this.verificationsService = verificationsService;
+        this.aiVerificationService = aiVerificationService;
+        this.storageService = storageService;
+    }
+    async aiVerify(file, body) {
+        let fileBuffer = null;
+        let mimetype = "image/jpeg";
+        let originalName = "id_doc.jpg";
+        if (file && file.buffer) {
+            fileBuffer = file.buffer;
+            mimetype = file.mimetype || "image/jpeg";
+            originalName = file.originalname || "id_doc.jpg";
+        }
+        else if (body?.base64 || body?.file) {
+            let rawBase64 = String(body.base64 || body.file).trim();
+            const dataUriMatch = rawBase64.match(/^data:([a-zA-Z0-9\/\-+.]+);base64,(.+)$/s);
+            if (dataUriMatch) {
+                mimetype = dataUriMatch[1].toLowerCase();
+                rawBase64 = dataUriMatch[2].trim();
+            }
+            fileBuffer = Buffer.from(rawBase64, "base64");
+            originalName = body?.filename || `id_doc.${mimetype.split("/")[1] || "jpg"}`;
+        }
+        if (!fileBuffer || fileBuffer.length === 0) {
+            throw new common_1.BadRequestException("કૃપા કરીને ઓળખપત્રનો ફોટો અપલોડ કરો (Please provide an ID document photo)");
+        }
+        const MAX_SIZE = 5 * 1024 * 1024;
+        if (fileBuffer.length > MAX_SIZE) {
+            throw new common_1.BadRequestException("ઓળખપત્રના ફોટાની સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (File exceeds 5 MB limit)");
+        }
+        const result = await this.aiVerificationService.verifyDocument({
+            fileBuffer,
+            mimetype,
+            expectedFirstName: String(body?.firstName || "").trim(),
+            expectedLastName: String(body?.lastName || "").trim(),
+            expectedDob: String(body?.dob || body?.dateOfBirth || "").trim(),
+            documentType: String(body?.documentType || "Aadhaar Card").trim(),
+            documentNumber: String(body?.documentNumber || body?.idProofNumber || "").trim(),
+            side: String(body?.side || "").toUpperCase() === "BACK" ? "BACK" : "FRONT",
+        });
+        let uploadedUrl = null;
+        if (result.isApproved) {
+            try {
+                uploadedUrl = await this.storageService.uploadFile(fileBuffer, mimetype, originalName, false);
+            }
+            catch (err) {
+            }
+        }
+        return {
+            success: result.isApproved,
+            verified: result.isApproved,
+            url: uploadedUrl,
+            result,
+            reason: result.rejectionReason,
+            message: result.gujaratiMessage || result.englishMessage,
+        };
     }
     async submitVerification(req, body) {
         return this.verificationsService.submitVerification(req.user.id, body.documentType, body.documentUrl);
@@ -36,6 +94,17 @@ let VerificationsController = class VerificationsController {
     }
 };
 exports.VerificationsController = VerificationsController;
+__decorate([
+    (0, common_1.Post)("ai-verify"),
+    (0, swagger_1.ApiOperation)({ summary: "AI Document Verification (verifies Name and DOB on ID card)" }),
+    (0, swagger_1.ApiConsumes)("multipart/form-data", "application/json"),
+    (0, common_1.UseInterceptors)((0, platform_express_1.FileInterceptor)("file")),
+    __param(0, (0, common_1.UploadedFile)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], VerificationsController.prototype, "aiVerify", null);
 __decorate([
     (0, common_1.Post)("submit"),
     (0, swagger_1.ApiOperation)({ summary: "Submit a verification request" }),
@@ -71,7 +140,9 @@ exports.VerificationsController = VerificationsController = __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, permissions_guard_1.PermissionsGuard),
     (0, common_1.Controller)("verifications"),
-    __metadata("design:paramtypes", [verifications_service_1.VerificationsService])
+    __metadata("design:paramtypes", [verifications_service_1.VerificationsService,
+        ai_verification_service_1.AiVerificationService,
+        storage_service_1.StorageService])
 ], VerificationsController);
 let AdminVerificationsController = class AdminVerificationsController {
     constructor(verificationsService) {

@@ -10,15 +10,18 @@ exports.VerificationsModule = void 0;
 const common_1 = require("@nestjs/common");
 const verifications_controller_1 = require("./verifications.controller");
 const verifications_service_1 = require("./verifications.service");
+const ai_verification_service_1 = require("./ai-verification.service");
 const prisma_module_1 = require("../prisma/prisma.module");
+const storage_module_1 = require("../storage/storage.module");
 let VerificationsModule = class VerificationsModule {
 };
 exports.VerificationsModule = VerificationsModule;
 exports.VerificationsModule = VerificationsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule],
+        imports: [prisma_module_1.PrismaModule, storage_module_1.StorageModule],
         controllers: [verifications_controller_1.VerificationsController, verifications_controller_1.AdminVerificationsController],
-        providers: [verifications_service_1.VerificationsService],
+        providers: [verifications_service_1.VerificationsService, ai_verification_service_1.AiVerificationService],
+        exports: [verifications_service_1.VerificationsService, ai_verification_service_1.AiVerificationService],
     })
 ], VerificationsModule);
 //# sourceMappingURL=verifications.module.js.map

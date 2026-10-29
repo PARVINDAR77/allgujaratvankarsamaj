@@ -4,36 +4,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
-import '../../../home/presentation/providers/views_provider.dart';
-import '../../../home/presentation/providers/view_badge.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
-  final int initialPage;
-  const LoginScreen({super.key, this.initialPage = 0});
+  const LoginScreen({super.key});
 
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends ConsumerState<LoginScreen> {
-  late final PageController _pageController;
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
-  int _currentPage = 0;
   bool _obscureDesktopPassword = true;
   bool _rememberMe = true;
 
   @override
   void initState() {
     super.initState();
-    _currentPage = widget.initialPage;
-    _pageController = PageController(initialPage: widget.initialPage);
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -1331,65 +1323,72 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _buildMobileLoginView(Size size, double availableHeight) {
     final isMobile = size.width < 600;
 
+    if (isMobile) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF020B18),
+        resizeToAvoidBottomInset: false,
+        body: SafeArea(
+          child: SizedBox.expand(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return _buildMobileLoginStack(constraints.maxWidth, constraints.maxHeight);
+              },
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF020B18),
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
-            physics: isMobile ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
+            physics: const BouncingScrollPhysics(),
             child: Container(
-              width: isMobile ? size.width : 500,
-              height: isMobile ? availableHeight : (500 * (1000 / 685)),
-              margin: isMobile ? EdgeInsets.zero : const EdgeInsets.all(6),
+              width: 500,
+              height: 500 * (1000 / 685),
+              margin: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(16),
-                border: isMobile ? null : Border.all(color: const Color(0xFFD4AF37), width: 2),
-                boxShadow: isMobile
-                    ? []
-                    : [
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                          blurRadius: 14,
-                        ),
-                      ],
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                    blurRadius: 14,
+                  ),
+                ],
               ),
               child: ClipRRect(
-                borderRadius: isMobile ? BorderRadius.zero : BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(14),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                      final w = constraints.maxWidth;
-                      final h = constraints.maxHeight;
+                    return _buildMobileLoginStack(constraints.maxWidth, constraints.maxHeight);
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
-                      return Stack(
-                        children: [
-                          // 1. Poster Image Carousel (Page 0: Login Poster -> Page 1: Buddha Layout)
-                          Positioned.fill(
-                            child: PageView(
-                              physics: const NeverScrollableScrollPhysics(),
-                              controller: _pageController,
-                              onPageChanged: (page) {
-                                setState(() => _currentPage = page);
-                              },
-                              children: [
-                                Image.asset(
-                                  'assets/images/login_poster_2.jpg',
-                                  fit: BoxFit.fill,
-                                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                                    'assets/images/1 (2).jpeg',
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                                Image.asset(
-                                  'assets/images/buddha_home_poster.jpeg',
-                                  fit: BoxFit.fill,
-                                  errorBuilder: (context, error, stackTrace) => Image.asset(
-                                    'assets/images/1 (1).jpeg',
-                                    fit: BoxFit.fill,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+  Widget _buildMobileLoginStack(double w, double h) {
+    return Stack(
+      children: [
+        // 1. Fixed Pre-Login Graphic (Login Poster)
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/login_poster_2.jpg',
+            fit: BoxFit.fill,
+            errorBuilder: (context, error, stackTrace) => Image.asset(
+              'assets/images/1 (2).jpeg',
+              fit: BoxFit.fill,
+            ),
+          ),
+        ),
 
                           // Loading indicator overlay if processing login
                           if (_isLoading)
@@ -1402,8 +1401,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               ),
                             ),
 
-                          if (_currentPage == 0) ...[
-                            // Page 0 Hotspots
+                          // Login Page Hotspots
                             Positioned(
                               left: w * 0.02,
                               top: h * 0.56,
@@ -1507,257 +1505,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 ),
                               ),
                             ),
-                          ] else ...[
-                            // Page 1 Hotspots (Buddha layout)
-                            // --- Row 1: 5 Circular Icons ---
-                            // 1. Govt Employees
-                            Positioned(
-                              left: w * 0.00,
-                              top: h * 0.47,
-                              width: w * 0.20,
-                              height: h * 0.16,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(50),
-                                  onTap: () => context.push('/government-employees'),
-                                ),
-                              ),
-                            ),
-                            // 2. Matrimony
-                            Positioned(
-                              left: w * 0.20,
-                              top: h * 0.47,
-                              width: w * 0.20,
-                              height: h * 0.16,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(50),
-                                  onTap: () => context.push('/search'),
-                                ),
-                              ),
-                            ),
-                            // 3. Private Job
-                            Positioned(
-                              left: w * 0.40,
-                              top: h * 0.47,
-                              width: w * 0.20,
-                              height: h * 0.16,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(50),
-                                  onTap: () => _showCategoryInfo(
-                                    'Private Job (ખાનગી નોકરી અને વેપાર)',
-                                    'Business | Professional | Self Employed | Career Opportunities',
-                                    Icons.business_center,
-                                    const Color(0xFF1565C0),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // 4. Samaj Services
-                            Positioned(
-                              left: w * 0.60,
-                              top: h * 0.47,
-                              width: w * 0.20,
-                              height: h * 0.16,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(50),
-                                  onTap: () => context.push('/samaj-services'),
-                                ),
-                              ),
-                            ),
-                            // 5. Samaj Ratna
-                            Positioned(
-                              left: w * 0.80,
-                              top: h * 0.47,
-                              width: w * 0.20,
-                              height: h * 0.16,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(50),
-                                  onTap: () {
-                                    context.push('/samaj-ratna');
-                                  },
-                                ),
-                              ),
-                            ),
-
-                            // --- Row 2: 3 Gold Buttons ---
-                            // 1. Pavan Prernadata
-                            Positioned(
-                              left: w * 0.02,
-                              top: h * 0.77,
-                              width: w * 0.30,
-                              height: h * 0.09,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(30),
-                                  onTap: () => context.push('/pavan-prernadata'),
-                                ),
-                              ),
-                            ),
-                            // 2. Samaj Super Stars
-                            Positioned(
-                              left: w * 0.35,
-                              top: h * 0.77,
-                              width: w * 0.30,
-                              height: h * 0.09,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(30),
-                                  onTap: () => context.push('/samaj-super-stars'),
-                                ),
-                              ),
-                            ),
-                            // 3. Family Directory
-                            Positioned(
-                              left: w * 0.68,
-                              top: h * 0.77,
-                              width: w * 0.30,
-                              height: h * 0.09,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(30),
-                                  onTap: () => context.push('/family-details'),
-                                ),
-                              ),
-                            ),
-
-                            // --- Row 3: 5 Bottom Icons ---
-                            // Education
-                            Positioned(
-                              left: w * 0.0,
-                              top: h * 0.88,
-                              width: w * 0.20,
-                              height: h * 0.12,
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          ref.read(incrementViewProvider)('HOME_EDUCATION');
-                                          _showCategoryInfo('Education', 'For Better Tomorrow', Icons.menu_book, const Color(0xFF1565C0));
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const Align(alignment: Alignment.bottomCenter, child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_EDUCATION'))),
-                                ],
-                              ),
-                            ),
-                            // Unity
-                            Positioned(
-                              left: w * 0.2,
-                              top: h * 0.88,
-                              width: w * 0.20,
-                              height: h * 0.12,
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          ref.read(incrementViewProvider)('HOME_UNITY');
-                                          _showCategoryInfo('Unity', 'In Diversity', Icons.groups, const Color(0xFFD84315));
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const Align(alignment: Alignment.bottomCenter, child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_UNITY'))),
-                                ],
-                              ),
-                            ),
-                            // Progress
-                            Positioned(
-                              left: w * 0.4,
-                              top: h * 0.88,
-                              width: w * 0.20,
-                              height: h * 0.12,
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          ref.read(incrementViewProvider)('HOME_PROGRESS');
-                                          _showCategoryInfo('Progress', 'Through Support', Icons.trending_up, const Color(0xFF2E7D32));
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const Align(alignment: Alignment.bottomCenter, child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_PROGRESS'))),
-                                ],
-                              ),
-                            ),
-                            // Service
-                            Positioned(
-                              left: w * 0.6,
-                              top: h * 0.88,
-                              width: w * 0.20,
-                              height: h * 0.12,
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          ref.read(incrementViewProvider)('HOME_SERVICE');
-                                          _showCategoryInfo('Service', 'To Society', Icons.volunteer_activism, const Color(0xFFC62828));
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const Align(alignment: Alignment.bottomCenter, child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_SERVICE'))),
-                                ],
-                              ),
-                            ),
-                            // Strong Roots
-                            Positioned(
-                              left: w * 0.8,
-                              top: h * 0.88,
-                              width: w * 0.20,
-                              height: h * 0.12,
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: InkWell(
-                                        onTap: () {
-                                          ref.read(incrementViewProvider)('HOME_STRONG_ROOTS');
-                                          _showCategoryInfo('Strong Roots', 'Bright Future', Icons.nature, const Color(0xFF1565C0));
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  const Align(alignment: Alignment.bottomCenter, child: IgnorePointer(child: ViewBadge(sectionName: 'HOME_STRONG_ROOTS'))),
-                                ],
-                              ),
-                            ),
                           ],
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
+                        );
   }
 }

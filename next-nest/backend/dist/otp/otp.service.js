@@ -25,7 +25,7 @@ let OtpService = OtpService_1 = class OtpService {
         this.logger = new common_1.Logger(OtpService_1.name);
         this.MAX_ATTEMPTS = 4;
         this.LOCKOUT_MINUTES = 10;
-        this.RESEND_COOLDOWN_SECONDS = 60;
+        this.RESEND_COOLDOWN_SECONDS = 40;
         this.OTP_EXPIRY_MINUTES = 10;
     }
     generate6DigitOtp() {
@@ -67,7 +67,7 @@ let OtpService = OtpService_1 = class OtpService {
         return session;
     }
     checkCooldown(session) {
-        if (session) {
+        if (session && !session.isVerified) {
             const elapsedSeconds = (Date.now() - new Date(session.updatedAt || session.createdAt).getTime()) /
                 1000;
             if (elapsedSeconds < this.RESEND_COOLDOWN_SECONDS) {
@@ -291,7 +291,10 @@ let OtpService = OtpService_1 = class OtpService {
                     throw new common_1.ConflictException("આ મોબાઇલ નંબર અન્ય ખાતામાં ચકાસાયેલ છે (This mobile number is already verified by another account)");
                 }
             }
-            const session = await this.checkLockout(rawPhone, client_1.OtpPurpose.REGISTRATION);
+            const session = await this.prisma.otpSession.findFirst({
+                where: { target: rawPhone, purpose: client_1.OtpPurpose.REGISTRATION, isVerified: false },
+                orderBy: { createdAt: "desc" },
+            });
             this.checkCooldown(session);
             phoneOtp = this.generate6DigitOtp();
             await this.prisma.otpSession.deleteMany({
@@ -322,7 +325,10 @@ let OtpService = OtpService_1 = class OtpService {
                     throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ખાતામાં ચકાસાયેલ છે (This email is already verified by another account)");
                 }
             }
-            const session = await this.checkLockout(rawEmail, client_1.OtpPurpose.REGISTRATION);
+            const session = await this.prisma.otpSession.findFirst({
+                where: { target: rawEmail, purpose: client_1.OtpPurpose.REGISTRATION, isVerified: false },
+                orderBy: { createdAt: "desc" },
+            });
             this.checkCooldown(session);
             emailOtp = this.generate6DigitOtp();
             await this.prisma.otpSession.deleteMany({

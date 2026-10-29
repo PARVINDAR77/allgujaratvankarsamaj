@@ -27,7 +27,7 @@ export class OtpService {
   private readonly logger = new Logger(OtpService.name);
   private readonly MAX_ATTEMPTS = 4;
   private readonly LOCKOUT_MINUTES = 10;
-  private readonly RESEND_COOLDOWN_SECONDS = 60;
+  private readonly RESEND_COOLDOWN_SECONDS = 40;
   private readonly OTP_EXPIRY_MINUTES = 10;
 
   constructor(
@@ -89,10 +89,10 @@ export class OtpService {
   }
 
   /**
-   * Check 60s resend cooldown
+   * Check 40s resend cooldown for active, unverified sessions
    */
   private checkCooldown(session: any) {
-    if (session) {
+    if (session && !session.isVerified) {
       const elapsedSeconds =
         (Date.now() - new Date(session.updatedAt || session.createdAt).getTime()) /
         1000;
@@ -400,7 +400,10 @@ export class OtpService {
           );
         }
       }
-      const session = await this.checkLockout(rawPhone, OtpPurpose.REGISTRATION);
+      const session = await this.prisma.otpSession.findFirst({
+        where: { target: rawPhone, purpose: OtpPurpose.REGISTRATION, isVerified: false },
+        orderBy: { createdAt: "desc" },
+      });
       this.checkCooldown(session);
       phoneOtp = this.generate6DigitOtp();
       await this.prisma.otpSession.deleteMany({
@@ -434,7 +437,10 @@ export class OtpService {
           );
         }
       }
-      const session = await this.checkLockout(rawEmail, OtpPurpose.REGISTRATION);
+      const session = await this.prisma.otpSession.findFirst({
+        where: { target: rawEmail, purpose: OtpPurpose.REGISTRATION, isVerified: false },
+        orderBy: { createdAt: "desc" },
+      });
       this.checkCooldown(session);
       emailOtp = this.generate6DigitOtp();
       await this.prisma.otpSession.deleteMany({

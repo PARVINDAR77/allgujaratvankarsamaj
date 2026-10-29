@@ -57,4 +57,6 @@ export declare class CreateProfileDto {
     guardianPrivacy?: string;
     shareClassGroup?: any;
     showInMatrimony?: any;
+    isPhoneVerified?: any;
+    isEmailVerified?: any;
 }

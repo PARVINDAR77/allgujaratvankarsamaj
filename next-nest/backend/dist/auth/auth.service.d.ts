@@ -25,13 +25,13 @@ export declare class AuthService {
             name: string | null;
             gender: import(".prisma/client").$Enums.Gender | null;
             id: string;
+            isPhoneVerified: boolean;
+            isEmailVerified: boolean;
             createdAt: Date;
             updatedAt: Date;
             email: string | null;
             phone: string | null;
             role: import(".prisma/client").$Enums.Role;
-            isEmailVerified: boolean;
-            isPhoneVerified: boolean;
         };
         tokenType: string;
         expiresIn: string;

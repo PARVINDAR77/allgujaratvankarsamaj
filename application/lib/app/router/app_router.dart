@@ -63,15 +63,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final location = state.uri.toString();
       final isLoggingIn = location == '/login' || location == '/register';
 
-      // Public routes for unauthenticated visitors (Legal, Auth, Public Community Home & Portals)
+      // Public routes for unauthenticated visitors (Legal, Auth, Public Community Portals)
       final isPublicRoute = isLoggingIn ||
           location == '/' ||
           location == '/privacy-policy' ||
           location == '/delete-account' ||
           location == '/privacy-contact' ||
-          location.startsWith('/main-poster') ||
-          location.startsWith('/main_poster') ||
-          location.startsWith('/home') ||
           location.startsWith('/samaj-services') ||
           location.startsWith('/government-employees') ||
           location.startsWith('/private-employees') ||
@@ -165,11 +162,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         name: 'login',
-        builder: (context, state) {
-          final pageParam = state.uri.queryParameters['page'];
-          final initialPage = (pageParam != null && pageParam == '1') ? 1 : 0;
-          return LoginScreen(initialPage: initialPage);
-        },
+        builder: (context, state) => const LoginScreen(),
       ),
       GoRoute(
         path: '/register',
