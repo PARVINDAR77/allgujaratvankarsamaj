@@ -2048,6 +2048,110 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
+  
+  static const List<String> _categorySortOrder = [
+    'Wedding',
+    'Home & Daily Life Services',
+    'Vehicle & Transport',
+    'Computer & Digital Services',
+    'Education Services',
+    'Job & Business Services',
+    'Legal & Financial Services',
+    'Health & Emergency',
+    'Business & Local Shops',
+    'Skilled Professionals',
+    'Agriculture & Farming',
+    'Trolley, Caster Wheel & Cane Products',
+    'Government & Samaj Public Services',
+    'Art, Culture & Entertainment',
+  ];
+
+  String _normalizeCategory(String raw) {
+    final lower = raw.trim().toLowerCase();
+    if (lower.contains('wedding') ||
+        lower.contains('event') ||
+        lower.contains('લગ્ન') ||
+        lower.contains('safav') ||
+        lower.contains('સાફા')) {
+      return 'Wedding';
+    }
+    if (lower.contains('home') || lower.contains('daily life') || lower.contains('ઘર')) {
+      return 'Home & Daily Life Services';
+    }
+    if (lower.contains('vehicle') || lower.contains('transport') || lower.contains('વાહન')) {
+      return 'Vehicle & Transport';
+    }
+    if (lower.contains('computer') || lower.contains('digital') || lower.contains('કમ્પ્યુટર') || lower.contains('it')) {
+      return 'Computer & Digital Services';
+    }
+    if (lower.contains('education') || lower.contains('coaching') || lower.contains('શિક્ષણ')) {
+      return 'Education Services';
+    }
+    if (lower.contains('job') || lower.contains('career') || lower.contains('નોકરી')) {
+      return 'Job & Business Services';
+    }
+    if (lower.contains('legal') || lower.contains('financial') || lower.contains('કાનૂની') || lower.contains('નાણાકીય')) {
+      return 'Legal & Financial Services';
+    }
+    if (lower.contains('health') || lower.contains('emergency') || lower.contains('doctor') || lower.contains('આરોગ્ય') || lower.contains('physio')) {
+      return 'Health & Emergency';
+    }
+    if (lower.contains('shop') || lower.contains('store') || lower.contains('દુકાન') || lower.contains('textile') || lower.contains('વેપાર')) {
+      return 'Business & Local Shops';
+    }
+    if (lower.contains('skilled') || lower.contains('technician') || lower.contains('કારીગર')) {
+      return 'Skilled Professionals';
+    }
+    if (lower.contains('agri') || lower.contains('farm') || lower.contains('ખેતી')) {
+      return 'Agriculture & Farming';
+    }
+    if (lower.contains('trolley') || lower.contains('caster') || lower.contains('cane') || lower.contains('ટ્રોલી')) {
+      return 'Trolley, Caster Wheel & Cane Products';
+    }
+    if (lower.contains('govt') || lower.contains('government') || lower.contains('સરકારી') || lower.contains('સમાજ')) {
+      return 'Government & Samaj Public Services';
+    }
+    if (lower.contains('art') || lower.contains('culture') || lower.contains('media') || lower.contains('કલા')) {
+      return 'Art, Culture & Entertainment';
+    }
+    return raw.trim();
+  }
+
+  String _getCategoryDisplayTitle(String cat) {
+    switch (cat) {
+      case 'Wedding':
+        return 'Wedding Services (લગ્ન પ્રસંગ સેવાઓ)';
+      case 'Home & Daily Life Services':
+        return 'Home & Daily Life Services (ઘર અને દૈનિક જીવનની સેવાઓ)';
+      case 'Vehicle & Transport':
+        return 'Vehicle & Transport Services (વાહન અને પરિવહન સેવાઓ)';
+      case 'Computer & Digital Services':
+        return 'Computer & Digital Services (કમ્પ્યુટર અને ડિજિટલ સેવાઓ)';
+      case 'Education Services':
+        return 'Education Services (શિક્ષણ સેવાઓ)';
+      case 'Job & Business Services':
+        return 'Job & Business Services (નોકરી અને કારકિર્દી સેવાઓ)';
+      case 'Legal & Financial Services':
+        return 'Legal & Financial Services (કાનૂની અને નાણાકીય સેવાઓ)';
+      case 'Health & Emergency':
+        return 'Health & Emergency (આરોગ્ય અને કટોકટી સેવાઓ)';
+      case 'Business & Local Shops':
+        return 'Business & Local Shops (વેપાર અને સ્થાનિક દુકાનો)';
+      case 'Skilled Professionals':
+        return 'Skilled Professionals (કુશળ કારીગરો અને ટેકનિશિયન)';
+      case 'Agriculture & Farming':
+        return 'Agriculture & Farming (ખેતીવાડી અને પશુપાલન સેવાઓ)';
+      case 'Trolley, Caster Wheel & Cane Products':
+        return 'Trolley, Caster Wheel & Cane Products (ટ્રોલી અને વાંસ-કેન ઉદ્યોગ)';
+      case 'Government & Samaj Public Services':
+        return 'Government & Samaj Public Services (સરકારી અને સમાજ સહાયક સેવાઓ)';
+      case 'Art, Culture & Entertainment':
+        return 'Art, Culture & Entertainment (કલા, સંસ્કૃતિ અને મનોરંજન)';
+      default:
+        return cat;
+    }
+  }
+
   Widget _buildCategoriesView(BuildContext context, bool isDesktop) {
     return ref.watch(samajServicesProvider).when(
       data: (services) {
@@ -2123,15 +2227,24 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
           );
         }
 
-        // Group filtered services by category
+        // Group filtered services by normalized category
         final Map<String, List<SamajService>> groupedServices = {};
         for (final service in filteredServices) {
+          final catKey = _normalizeCategory(service.category);
           groupedServices
-              .putIfAbsent(service.category, () => [])
+              .putIfAbsent(catKey, () => [])
               .add(service);
         }
 
-        final categories = groupedServices.keys.toList()..sort();
+        final categories = groupedServices.keys.toList()
+          ..sort((a, b) {
+            final idxA = _categorySortOrder.indexOf(a);
+            final idxB = _categorySortOrder.indexOf(b);
+            if (idxA != -1 && idxB != -1) return idxA.compareTo(idxB);
+            if (idxA != -1) return -1;
+            if (idxB != -1) return 1;
+            return a.compareTo(b);
+          });
 
         return Column(
           children: [
@@ -2182,18 +2295,13 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                 final categoryName = categories[index];
                 final List<SamajService> items =
                     groupedServices[categoryName]!;
-                final bool isWedding =
-                    categoryName.toLowerCase().contains('wedding');
+                final bool isWedding = categoryName == 'Wedding';
                 final Color themeColor = isWedding
                     ? const Color(0xFFA4143D)
                     : const Color(0xFF101B36);
                 final IconData iconData =
                     isWedding ? Icons.celebration_rounded : Icons.category_rounded;
-                final String displayCategoryTitle = isWedding
-                    ? (categoryName == 'Wedding'
-                        ? 'Wedding Services (લગ્ન પ્રસંગ સેવાઓ)'
-                        : categoryName)
-                    : categoryName;
+                final String displayCategoryTitle = _getCategoryDisplayTitle(categoryName);
 
                 return Container(
                   margin: const EdgeInsets.only(bottom: 20),

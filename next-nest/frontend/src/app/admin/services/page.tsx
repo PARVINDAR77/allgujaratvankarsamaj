@@ -21,7 +21,7 @@ const MAIN_SERVICE_CATEGORIES: ServiceCategoryConfig[] = [
     name: "Wedding & Event Services",
     gujarati: "લગ્ન પ્રસંગ અને ઇવેન્ટ સેવાઓ",
     icon: "🎉",
-    dbCategory: "Event & Wedding Planning",
+    dbCategory: "Wedding",
     color: "#EC4899",
     iconsPalette: ["🎪", "📸", "🍲", "🚗", "🎵", "🥁", "💄", "🎨", "🏰", "💌", "🌸", "🎥", "🚌", "💍", "🚘", "👔", "⛺", "🖨️", "✨", "🚁", "🤹", "💁‍♀️", "🕯️", "🎆"],
     presets: [
@@ -296,7 +296,7 @@ export default function AdminServicesPage() {
   const [editingService, setEditingService] = useState<SamajServiceItem | null>(null);
   const [selectedMainCatId, setSelectedMainCatId] = useState<string>("wedding");
   const [svcTitle, setSvcTitle] = useState("");
-  const [svcCategory, setSvcCategory] = useState("Event & Wedding Planning");
+  const [svcCategory, setSvcCategory] = useState("Wedding");
   const [svcIcon, setSvcIcon] = useState("🎪");
   const [svcPerson, setSvcPerson] = useState("");
   const [svcPhone, setSvcPhone] = useState("");

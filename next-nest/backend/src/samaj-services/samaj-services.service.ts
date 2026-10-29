@@ -281,6 +281,34 @@ export class SamajServicesService {
             }
           }
         }
+
+        // Consolidate accidental/fragmented categories in DB into canonical categories
+        await this.prisma.samajService.updateMany({
+          where: {
+            OR: [
+              { category: "Event & Wedding Planning" },
+              { title: { contains: "safavada" } },
+              { title: { contains: "Safavara" } },
+              { title: { contains: "સાફાવાળા" } },
+            ],
+          },
+          data: { category: "Wedding" },
+        });
+
+        await this.prisma.samajService.updateMany({
+          where: { category: { contains: "Business & Services" } },
+          data: { category: "Business & Local Shops" },
+        });
+
+        await this.prisma.samajService.updateMany({
+          where: { category: "વ્યવસાય અને સેવાઓ (Business)" },
+          data: { category: "Health & Emergency" },
+        });
+
+        await this.prisma.samajService.updateMany({
+          where: { category: { contains: "IT & Computer" } },
+          data: { category: "Computer & Digital Services" },
+        });
       } catch (_) {}
 
       // 1. Ensure core Education Services exist in DB
@@ -805,7 +833,27 @@ export class SamajServicesService {
           },
         },
       });
-      return res;
+
+      // Auto-normalize categories on read so Flutter never receives duplicate/fragmented boxes
+      const normalized = res.map((s) => {
+        let cat = s.category;
+        const lowerCat = (cat || "").toLowerCase();
+        const lowerTitle = (s.title || "").toLowerCase();
+        if (
+          lowerCat.includes("wedding") ||
+          lowerCat.includes("event") ||
+          lowerTitle.includes("safav") ||
+          lowerTitle.includes("સાફા")
+        ) {
+          cat = "Wedding";
+        }
+        return {
+          ...s,
+          category: cat,
+        };
+      });
+
+      return normalized;
     } catch (error) {
       this.logger.warn("DB unavailable, returning hardcoded fallback services");
       let fallback = this.defaultServices;
