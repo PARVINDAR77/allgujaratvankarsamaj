@@ -1,5 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+let GoogleGenerativeAIClass: any = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const genAiModule = require("@google/generative-ai");
+  GoogleGenerativeAIClass = genAiModule?.GoogleGenerativeAI || null;
+} catch (_err) {
+  GoogleGenerativeAIClass = null;
+}
 
 export interface AiVerifyDocOptions {
   fileBuffer: Buffer;
@@ -30,17 +37,19 @@ export interface AiVerificationResult {
 @Injectable()
 export class AiVerificationService {
   private readonly logger = new Logger(AiVerificationService.name);
-  private genAI: GoogleGenerativeAI | null = null;
+  private genAI: any = null;
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY?.trim();
-    if (apiKey && apiKey.length > 5) {
-      this.genAI = new GoogleGenerativeAI(apiKey);
+    if (apiKey && apiKey.length > 5 && GoogleGenerativeAIClass) {
+      this.genAI = new GoogleGenerativeAIClass(apiKey);
       this.logger.log("Google Gemini AI client initialized for document verification.");
     } else {
-      this.logger.warn(
-        "GEMINI_API_KEY is not set in environment or .env. Running AI document verification in development fallback mode.",
-      );
+      if (!GoogleGenerativeAIClass) {
+        this.logger.warn("@google/generative-ai is not installed. Running AI document verification in safe fallback mode.");
+      } else {
+        this.logger.warn("GEMINI_API_KEY is not set in environment or .env. Running AI document verification in development fallback mode.");
+      }
     }
   }
 

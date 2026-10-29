@@ -12,18 +12,27 @@ var AiVerificationService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AiVerificationService = void 0;
 const common_1 = require("@nestjs/common");
-const generative_ai_1 = require("@google/generative-ai");
+let GoogleGenerativeAI = null;
+try {
+    GoogleGenerativeAI = require("@google/generative-ai").GoogleGenerativeAI;
+} catch (_err) {
+    GoogleGenerativeAI = null;
+}
 let AiVerificationService = AiVerificationService_1 = class AiVerificationService {
     constructor() {
         this.logger = new common_1.Logger(AiVerificationService_1.name);
         this.genAI = null;
         const apiKey = process.env.GEMINI_API_KEY?.trim();
-        if (apiKey && apiKey.length > 5) {
-            this.genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
+        if (apiKey && apiKey.length > 5 && GoogleGenerativeAI) {
+            this.genAI = new GoogleGenerativeAI(apiKey);
             this.logger.log("Google Gemini AI client initialized for document verification.");
         }
         else {
-            this.logger.warn("GEMINI_API_KEY is not set in environment or .env. Running AI document verification in development fallback mode.");
+            if (!GoogleGenerativeAI) {
+                this.logger.warn("@google/generative-ai package is not installed. Running AI document verification in safe fallback mode.");
+            } else {
+                this.logger.warn("GEMINI_API_KEY is not set in environment or .env. Running AI document verification in development fallback mode.");
+            }
         }
     }
     async verifyDocument(options) {

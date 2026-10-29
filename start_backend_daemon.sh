@@ -39,6 +39,12 @@ rm -f "$SOCKET_FILE"
 
 echo "[$(date)] Supervisor daemon started (PID: $$)" >> "$LOG_FILE"
 
+# Auto-install missing @google/generative-ai package in background if absent
+if [ ! -d "$BACKEND_DIR/node_modules/@google/generative-ai" ]; then
+    echo "[$(date)] Installing missing @google/generative-ai package in background..." >> "$LOG_FILE"
+    (cd "$BACKEND_DIR" && npm install --no-audit --no-fund --omit=dev @google/generative-ai >> "$LOG_FILE" 2>&1) &
+fi
+
 cleanup() {
     echo "[$(date)] Supervisor daemon exiting..." >> "$LOG_FILE"
     rm -f "$PID_FILE"
