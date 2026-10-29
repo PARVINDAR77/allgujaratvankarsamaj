@@ -4,6 +4,284 @@ import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { adminApi, SamajServiceItem, SamajServicePersonItem } from "@/lib/admin-api";
 
+export interface ServiceCategoryConfig {
+  id: string;
+  name: string;
+  gujarati: string;
+  icon: string;
+  dbCategory: string;
+  color: string;
+  iconsPalette: string[];
+  presets: { title: string; icon: string }[];
+}
+
+export const MAIN_SERVICE_CATEGORIES: ServiceCategoryConfig[] = [
+  {
+    id: "wedding",
+    name: "Wedding & Event Services",
+    gujarati: "લગ્ન પ્રસંગ અને ઇવેન્ટ સેવાઓ",
+    icon: "🎉",
+    dbCategory: "Event & Wedding Planning",
+    color: "#EC4899",
+    iconsPalette: ["🎪", "📸", "🍲", "🚗", "🎵", "🥁", "💄", "🎨", "🏰", "💌", "🌸", "🎥", "🚌", "💍", "🚘", "👔", "⛺", "🖨️", "✨", "🚁", "🤹", "💁‍♀️", "🕯️", "🎆"],
+    presets: [
+      { title: "મંડપ ડેકોરેશન (Mandap & Shamiana)", icon: "🎪" },
+      { title: "ફોટોગ્રાફી & વિડિયોગ્રાફી (Photography & Video)", icon: "📸" },
+      { title: "કેટરિંગ અને રસોઈ (Catering & Halwai)", icon: "🍲" },
+      { title: "ડીજે અને સાઉન્ડ સિસ્ટમ (DJ Sound System)", icon: "🎵" },
+      { title: "બેન્ડ-વાજા અને ઢોલ (Brass Band & Dhol)", icon: "🥁" },
+      { title: "બ્રાઇડલ મેકઅપ & બ્યુટી પાર્લર (Bridal Makeup)", icon: "💄" },
+      { title: "મહેંદી ડિઝાઇનર (Mehendi Artist)", icon: "🎨" },
+      { title: "વાડી અને પાર્ટી પ્લોટ બુકિંગ (Banquet Hall)", icon: "🏰" },
+      { title: "કંકોતરી પ્રિન્ટિંગ (Kankotri Printing)", icon: "💌" },
+      { title: "વરરાજા બગી & લક્ઝરી કાર (Groom Buggy & Car)", icon: "🚘" },
+      { title: "સ્ટેજ & ફ્લાવર ડેકોરેશન (Flower & Stage Decor)", icon: "🌸" },
+      { title: "શેરવાની & જ્વેલરી રેન્ટલ (Jewelry & Sherwani Rental)", icon: "💍" },
+    ],
+  },
+  {
+    id: "home",
+    name: "Home & Daily Life Services",
+    gujarati: "ઘર અને દૈનિક જીવનની સેવાઓ",
+    icon: "🏠",
+    dbCategory: "Home & Daily Life Services",
+    color: "#F59E0B",
+    iconsPalette: ["🏠", "🧱", "🎨", "🔧", "⚡", "❄️", "🪚", "🪟", "🚪", "🧹", "🐜", "🚚", "💡", "🛠️", "🚰", "🪑", "🪵", "🔩"],
+    presets: [
+      { title: "પ્લમ્બર સર્વિસ (Plumber)", icon: "🔧" },
+      { title: "ઇલેક્ટ્રિશિયન & વાયરિંગ (Electrician)", icon: "⚡" },
+      { title: "કલરકામ & પેઇન્ટિંગ (Painter)", icon: "🎨" },
+      { title: "સુથારીકામ & ફર્નિચર (Carpenter)", icon: "🪚" },
+      { title: "ઘર બાંધકામ & રાજ મિસ્ત્રી (Mason / Raj Mistri)", icon: "🧱" },
+      { title: "એસી & ફ્રિજ રીપેર (AC / Fridge Repair)", icon: "❄️" },
+      { title: "એલ્યુમિનિયમ & ગ્લાસ વર્ક (Aluminium & Glass)", icon: "🪟" },
+      { title: "હાઉસ ક્લિનિંગ (House Cleaning)", icon: "🧹" },
+      { title: "પેસ્ટ કંટ્રોલ (Pest Control)", icon: "🐜" },
+      { title: "પેકર્સ એન્ડ મૂવર્સ (Packers & Movers)", icon: "🚚" },
+    ],
+  },
+  {
+    id: "vehicle",
+    name: "Vehicle & Transport Services",
+    gujarati: "વાહન અને પરિવહન સેવાઓ",
+    icon: "🚗",
+    dbCategory: "Vehicle & Transport",
+    color: "#3B82F6",
+    iconsPalette: ["🚗", "🛵", "🚘", "🛞", "🔋", "🚕", "🚌", "🚛", "🅿️", "⛽", "🧼", "🚲", "🔧", "🛢️"],
+    presets: [
+      { title: "કાર રેન્ટલ & બુકિંગ (Car Rental)", icon: "🚗" },
+      { title: "ટેક્સી & કેબ સર્વિસ (Taxi / Cab)", icon: "🚕" },
+      { title: "ટુ-વ્હીલર ગેરેજ (Bike / Scooter Repair)", icon: "🛵" },
+      { title: "કાર રીપેર & ગેરેજ (Car Repair / Garage)", icon: "🚘" },
+      { title: "ટાયર પંચર સર્વિસ (Tyre & Puncture)", icon: "🛞" },
+      { title: "કાર બેટરી સર્વિસ (Battery Service)", icon: "🔋" },
+      { title: "માલસામાન ટ્રાન્સપોર્ટ (Goods Transport)", icon: "🚛" },
+      { title: "બસ અને ટેમ્પો બુકિંગ (Bus / Tempo)", icon: "🚌" },
+      { title: "ડ્રાઇવર સર્વિસ (Driver Service)", icon: "🚗" },
+    ],
+  },
+  {
+    id: "digital",
+    name: "Computer & Digital Services",
+    gujarati: "કમ્પ્યુટર અને ડિજિટલ સેવાઓ",
+    icon: "💻",
+    dbCategory: "Computer & Digital Services",
+    color: "#06B6D4",
+    iconsPalette: ["💻", "🖨️", "📱", "🌐", "🎨", "📸", "🪪", "📄", "💳", "🖥️", "⌨️", "💾", "📡", "🖱️"],
+    presets: [
+      { title: "લેપટોપ & કમ્પ્યુટર રીપેર (Computer Repair)", icon: "💻" },
+      { title: "મોબાઇલ રીપેરિંગ (Mobile Repair)", icon: "📱" },
+      { title: "પ્રિન્ટર સર્વિસ & કાર્ટ્રેજ (Printer Repair)", icon: "🖨️" },
+      { title: "ઓનલાઇન સરકારી ફોર્મ (Online Form Filling)", icon: "🪪" },
+      { title: "ઝેરોક્ષ & પ્રિન્ટિંગ પ્રેસ (Printing / Xerox)", icon: "🖨️" },
+      { title: "ફોટો સ્ટુડિયો (Photo Studio)", icon: "📸" },
+      { title: "વેબસાઇટ ડેવલપમેન્ટ (Website Development)", icon: "🌐" },
+      { title: "ગ્રાફિક ડિઝાઇનિંગ & બેનર (Graphic Design)", icon: "🎨" },
+      { title: "દસ્તાવેજ સ્કેનિંગ & PDF (Document Scanning)", icon: "📄" },
+    ],
+  },
+  {
+    id: "education",
+    name: "Education & Coaching Services",
+    gujarati: "શિક્ષણ અને કોચિંગ સેવાઓ",
+    icon: "📚",
+    dbCategory: "Education Services",
+    color: "#8B5CF6",
+    iconsPalette: ["📚", "👨‍🏫", "🏫", "🎓", "📝", "💼", "🌍", "📖", "🗣️", "🏆", "✏️", "🎒", "🔬", "📐"],
+    presets: [
+      { title: "ટ્યુશન & કોચિંગ ક્લાસીસ (Tuition Classes)", icon: "👨‍🏫" },
+      { title: "નર્સિંગ એકેડેમી (Nursing Academy)", icon: "🎓" },
+      { title: "સ્પર્ધાત્મક પરીક્ષા કોચિંગ (GPSC / TET / TAT)", icon: "📝" },
+      { title: "સ્કૂલ & કોલેજ એડમિશન ગાઇડન્સ", icon: "🏫" },
+      { title: "વિદેશ અભ્યાસ માર્ગદર્શન (Foreign Study)", icon: "🌍" },
+      { title: "પુસ્તકો અને સ્ટેશનરી (Books & Stationery)", icon: "📖" },
+      { title: "કમ્પ્યુટર તાલીમ કેન્દ્ર (Computer Training)", icon: "💻" },
+      { title: "સ્પોકન ઇંગ્લિશ ક્લાસ (English Speaking)", icon: "🗣️" },
+    ],
+  },
+  {
+    id: "jobs",
+    name: "Job, Career & Business Services",
+    gujarati: "નોકરી અને વ્યવસાય સેવાઓ",
+    icon: "💼",
+    dbCategory: "Job & Business Services",
+    color: "#10B981",
+    iconsPalette: ["💼", "👷", "🏢", "🏛️", "📄", "🏪", "🤝", "📈", "🧾", "👔", "📊", "🎯"],
+    presets: [
+      { title: "જોબ પ્લેસમેન્ટ માહિતી (Job Placement)", icon: "💼" },
+      { title: "કુશળ કારીગર જોબ્સ (Skilled Worker Jobs)", icon: "👷" },
+      { title: "સરકારી નોકરી માર્ગદર્શન (Govt Job Guidance)", icon: "🏛️" },
+      { title: "રિઝ્યુમ / બાયોડેટા બનાવટ (Resume / CV)", icon: "📄" },
+      { title: "ઇન્ટરવ્યુ તૈયારી (Interview Preparation)", icon: "💼" },
+      { title: "સમાજ બિઝનેસ નેટવર્કિંગ (Business Networking)", icon: "🤝" },
+      { title: "જીએસટી & ટેક્સ કન્સલ્ટન્ટ (GST & Tax)", icon: "🧾" },
+    ],
+  },
+  {
+    id: "legal",
+    name: "Legal & Financial Services",
+    gujarati: "કાનૂની અને નાણાકીય સેવાઓ",
+    icon: "⚖️",
+    dbCategory: "Legal & Financial Services",
+    color: "#6366F1",
+    iconsPalette: ["⚖️", "📑", "🏦", "💰", "🧾", "🏠", "📜", "💳", "🏢", "🪙", "🖊️", "💼"],
+    presets: [
+      { title: "એડવોકેટ / વકીલ કાનૂની સલાહ (Advocate)", icon: "⚖️" },
+      { title: "દસ્તાવેજ લેખક & સોગંદનામા (Document Writer)", icon: "📑" },
+      { title: "બેંક લોન સહાય (Bank Loan Assistance)", icon: "🏦" },
+      { title: "જમીન-મિલકત રજીસ્ટ્રી (Property Registry)", icon: "🏠" },
+      { title: "ઇન્કમ ટેક્સ & જીએસટી ફાઇલિંગ", icon: "🧾" },
+      { title: "લાઇફ / મેડીક્લેમ ઇન્સ્યોરન્સ એજન્ટ", icon: "📜" },
+      { title: "નાણાકીય સલાહકાર (Financial Consultant)", icon: "💰" },
+    ],
+  },
+  {
+    id: "health",
+    name: "Health & Emergency Services",
+    gujarati: "આરોગ્ય અને કટોકટી સેવાઓ",
+    icon: "🏥",
+    dbCategory: "Health & Emergency",
+    color: "#EF4444",
+    iconsPalette: ["🏥", "👨‍⚕️", "🦷", "👓", "💊", "🚑", "🩸", "🧪", "🧑‍⚕️", "♿", "🩺", "💉", "🩻"],
+    presets: [
+      { title: "હોસ્પિટલ અને ક્લિનિક (Hospital)", icon: "🏥" },
+      { title: "સમાજ ડૉક્ટર્સ પેનલ (Doctor Panel)", icon: "👨‍⚕️" },
+      { title: "દાંતના ડૉક્ટર (Dentist)", icon: "🦷" },
+      { title: "આંખના ડૉક્ટર & ચશ્માઘર (Eye Care)", icon: "👓" },
+      { title: "મેડિકલ સ્ટોર (Medical Store)", icon: "💊" },
+      { title: "૨૪x૭ એમ્બ્યુલન્સ સેવા (Ambulance 24x7)", icon: "🚑" },
+      { title: "બ્લડ ડોનર ડિરેક્ટરી (Blood Donor Directory)", icon: "🩸" },
+      { title: "લેબોરેટરી & પેથોલોજી (Diagnostic Lab)", icon: "🧪" },
+      { title: "ઘરબેઠા નર્સિંગ સેવા (Home Nursing)", icon: "🧑‍⚕️" },
+    ],
+  },
+  {
+    id: "shops",
+    name: "Business, Trade & Local Shops",
+    gujarati: "વેપાર અને સ્થાનિક દુકાનો",
+    icon: "🏪",
+    dbCategory: "Business & Local Shops",
+    color: "#F97316",
+    iconsPalette: ["🏪", "🛒", "👗", "👟", "📱", "💻", "🪑", "💎", "🍰", "🍽️", "🛍️", "🍕", "🧁", "🧵"],
+    presets: [
+      { title: "કરિયાણું અને પ્રોવિઝન (Grocery / Kirana)", icon: "🛒" },
+      { title: "કાપડ અને રેડીમેડ ગારમેન્ટ્સ (Clothes)", icon: "👗" },
+      { title: "શૂઝ અને ચંપલ (Footwear Shop)", icon: "👟" },
+      { title: "સોના-ચાંદી જ્વેલર્સ (Jewellery)", icon: "💎" },
+      { title: "મોબાઇલ & ઇલેક્ટ્રોનિક્સ શોપ", icon: "📱" },
+      { title: "ફર્નિચર શોપ (Furniture Shop)", icon: "🪑" },
+      { title: "બેકરી & સ્વીટ્સ (Bakery & Sweets)", icon: "🍰" },
+      { title: "રેસ્ટોરન્ટ & ફૂડ ઝોન (Restaurant)", icon: "🍽️" },
+    ],
+  },
+  {
+    id: "skilled",
+    name: "Skilled Technical Professionals",
+    gujarati: "કુશળ કારીગરો અને ટેકનિશિયન",
+    icon: "🧑‍🔧",
+    dbCategory: "Skilled Professionals",
+    color: "#14B8A6",
+    iconsPalette: ["🧑‍🔧", "👨‍🔧", "🔧", "🪚", "🔨", "🧱", "🎨", "👨‍💻", "🚗", "📺", "❄️", "🛠️", "🪛", "🧰"],
+    presets: [
+      { title: "ઇલેક્ટ્રિશિયન ટેકનિશિયન (Electrician)", icon: "👨‍🔧" },
+      { title: "પ્લમ્બર ટેકનિશિયન (Plumber)", icon: "🔧" },
+      { title: "સુથાર કારીગર (Carpenter)", icon: "🪚" },
+      { title: "વેલ્ડર & ફેબ્રિકેશન વર્ક (Welder)", icon: "🔨" },
+      { title: "રાજ મિસ્ત્રી (Mason Trade)", icon: "🧱" },
+      { title: "પેઇન્ટર કારીગર (Painter)", icon: "🎨" },
+      { title: "એસી / રેફ્રિજરેશન ટેકનિશિયન (AC Tech)", icon: "❄️" },
+      { title: "ટીવી & હોમ એપ્લાયન્સ ટેકનિશિયન", icon: "📺" },
+    ],
+  },
+  {
+    id: "agri",
+    name: "Agriculture & Farming Services",
+    gujarati: "ખેતીવાડી અને પશુપાલન સેવાઓ",
+    icon: "🌾",
+    dbCategory: "Agriculture & Farming",
+    color: "#84CC16",
+    iconsPalette: ["🌾", "🌱", "🧪", "🐛", "🌿", "🚜", "⚙️", "💧", "💦", "🐄", "🌳", "🥬", "🧑‍🌾", "🌻", "🍎"],
+    presets: [
+      { title: "બીયારણની દુકાન (Seed Shop)", icon: "🌱" },
+      { title: "ખાતર અને જંતુનાશક દવા (Fertilizer & Agro Chem)", icon: "🧪" },
+      { title: "ટ્રેક્ટર & ખેતીનાં સાધનો (Tractor & Farm Equipment)", icon: "🚜" },
+      { title: "ડ્રિપ અને સિંચાઈ સાધનો (Drip Irrigation)", icon: "💧" },
+      { title: "પશુ આહાર & ડેરી સાધનો (Cattle Feed & Dairy)", icon: "🐄" },
+      { title: "પ્લાન્ટ નર્સરી (Plant Nursery)", icon: "🌳" },
+      { title: "અનાજ ખરીદ-વેચાણ (Grain Trading)", icon: "🌾" },
+    ],
+  },
+  {
+    id: "trolley",
+    name: "Trolley, Caster Wheel & Cane Products",
+    gujarati: "ટ્રોલી, વ્હીલ અને વાંસ-કેન ઉદ્યોગ",
+    icon: "🛒",
+    dbCategory: "Trolley, Caster Wheel & Cane Products",
+    color: "#EAB308",
+    iconsPalette: ["🛒", "⚙️", "🔘", "🏭", "🧺", "🔧", "🚚", "🛍️", "🪑", "📦", "🧱", "🛠️"],
+    presets: [
+      { title: "ટ્રોલી ઉત્પાદક (Trolley Manufacturer)", icon: "🛒" },
+      { title: "કાસ્ટર વ્હીલ સપ્લાયર (Caster Wheel)", icon: "⚙️" },
+      { title: "ઇન્ડસ્ટ્રિયલ ટ્રોલી (Industrial Trolley)", icon: "🏭" },
+      { title: "વાંસ & કેન પ્રોડક્ટ્સ (Cane Basket & Furniture)", icon: "🧺" },
+      { title: "મટિરિયલ હેન્ડલિંગ સાધનો", icon: "🚚" },
+      { title: "શોપિંગ & હોસ્પિટલ ટ્રોલી", icon: "🛍️" },
+    ],
+  },
+  {
+    id: "govt",
+    name: "Government & Samaj Public Welfare",
+    gujarati: "સરકારી અને સમાજ સહાયક સેવાઓ",
+    icon: "🏛️",
+    dbCategory: "Government & Samaj Public Services",
+    color: "#64748B",
+    iconsPalette: ["🏛️", "🪪", "📜", "🛡️", "📋", "🤝", "🌐", "🏢", "⚖️", "🇮🇳", "🗳️", "🕊️"],
+    presets: [
+      { title: "સરકારી યોજના માહિતી & સહાય (Govt Schemes)", icon: "🏛️" },
+      { title: "જાતિ / આવક પ્રમાણપત્ર સહાય (Caste Certificate)", icon: "🪪" },
+      { title: "રેશન કાર્ડ & આધાર કાર્ડ સહાય", icon: "📜" },
+      { title: "સમાજવાડી & ટ્રસ્ટ હોલ બુકિંગ (Samaj Hall)", icon: "🏢" },
+      { title: "વરિષ્ઠ નાગરિક સહાય (Senior Citizen Help)", icon: "🛡️" },
+    ],
+  },
+  {
+    id: "culture",
+    name: "Art, Culture, Media & Entertainment",
+    gujarati: "કલા, સંસ્કૃતિ અને મનોરંજન",
+    icon: "🎨",
+    dbCategory: "Art, Culture & Entertainment",
+    color: "#A855F7",
+    iconsPalette: ["🎨", "🎭", "🎬", "🎙️", "🎻", "📖", "✍️", "📸", "🎪", "📻", "🪕", "🎺", "🎸"],
+    presets: [
+      { title: "લોક કલાકારો & ભજન મંડળી (Folk Artists)", icon: "🎙️" },
+      { title: "નાટક & સ્ટેજ કલાકારો (Drama & Stage)", icon: "🎭" },
+      { title: "સમાજ લેખકો અને કવિઓ (Authors & Poets)", icon: "✍️" },
+      { title: "સાંસ્કૃતિક કાર્યક્રમ આયોજક (Cultural Event)", icon: "🎪" },
+      { title: "ઓડિયો & મ્યુઝિક રેકોર્ડિંગ સ્ટુડિયો", icon: "🎻" },
+    ],
+  },
+];
+
 export default function AdminServicesPage() {
   const [activeTab, setActiveTab] = useState<"services" | "persons">("services");
   
@@ -16,8 +294,9 @@ export default function AdminServicesPage() {
   // Service Modal state
   const [showServiceModal, setShowServiceModal] = useState(false);
   const [editingService, setEditingService] = useState<SamajServiceItem | null>(null);
+  const [selectedMainCatId, setSelectedMainCatId] = useState<string>("wedding");
   const [svcTitle, setSvcTitle] = useState("");
-  const [svcCategory, setSvcCategory] = useState("Mandap");
+  const [svcCategory, setSvcCategory] = useState("Event & Wedding Planning");
   const [svcIcon, setSvcIcon] = useState("🎪");
   const [svcPerson, setSvcPerson] = useState("");
   const [svcPhone, setSvcPhone] = useState("");
@@ -42,8 +321,9 @@ export default function AdminServicesPage() {
   const [serviceToDelete, setServiceToDelete] = useState<SamajServiceItem | null>(null);
   const [personToDelete, setPersonToDelete] = useState<SamajServicePersonItem | null>(null);
 
-  // Search filter
+  // Search and Category filters
   const [searchQuery, setSearchQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
 
   const loadServices = async () => {
     try {
@@ -78,11 +358,31 @@ export default function AdminServicesPage() {
   }, []);
 
   // --- SERVICE ACTIONS ---
+  const handleMainCatChange = (catId: string) => {
+    setSelectedMainCatId(catId);
+    const cat = MAIN_SERVICE_CATEGORIES.find((c) => c.id === catId);
+    if (cat) {
+      setSvcCategory(cat.dbCategory);
+      setSvcIcon(cat.icon);
+    }
+  };
+
+  const handleSelectPreset = (preset: { title: string; icon: string }) => {
+    setSvcTitle(preset.title);
+    setSvcIcon(preset.icon);
+  };
+
+  const handleSelectIcon = (icon: string) => {
+    setSvcIcon(icon);
+  };
+
   const openCreateService = () => {
     setEditingService(null);
+    const defaultCat = MAIN_SERVICE_CATEGORIES[0];
+    setSelectedMainCatId(defaultCat.id);
+    setSvcCategory(defaultCat.dbCategory);
     setSvcTitle("");
-    setSvcCategory("E – Electrical Works & Lighting");
-    setSvcIcon("⚡");
+    setSvcIcon(defaultCat.presets[0]?.icon || defaultCat.icon);
     setSvcPerson("");
     setSvcPhone("");
     setSvcDesc("");
@@ -99,6 +399,20 @@ export default function AdminServicesPage() {
     setSvcPhone(s.contactPhone || "");
     setSvcDesc(s.description || "");
     setSvcActive(s.isActive);
+
+    const sCatLower = (s.category || "").toLowerCase();
+    const matched = MAIN_SERVICE_CATEGORIES.find(
+      (c) =>
+        c.dbCategory.toLowerCase() === sCatLower ||
+        c.name.toLowerCase() === sCatLower ||
+        sCatLower.includes(c.id) ||
+        c.dbCategory.toLowerCase().includes(sCatLower)
+    );
+    if (matched) {
+      setSelectedMainCatId(matched.id);
+    } else {
+      setSelectedMainCatId(MAIN_SERVICE_CATEGORIES[0].id);
+    }
     setShowServiceModal(true);
   };
 
@@ -255,11 +569,20 @@ export default function AdminServicesPage() {
     }
   };
 
-  const filteredServices = services.filter(
-    (s) =>
+  const filteredServices = services.filter((s) => {
+    const matchesSearch =
       s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.category && s.category.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+      (s.category && s.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (categoryFilter === "ALL") return matchesSearch;
+    const catLower = categoryFilter.toLowerCase();
+    const sCatLower = (s.category || "").toLowerCase();
+    const matchesCat =
+      sCatLower === catLower ||
+      sCatLower.includes(catLower) ||
+      catLower.includes(sCatLower);
+    return matchesSearch && matchesCat;
+  });
 
   const filteredPersons = persons.filter(
     (p) =>
@@ -268,6 +591,12 @@ export default function AdminServicesPage() {
       (p.phone && p.phone.includes(searchQuery)) ||
       (p.service?.title && p.service.title.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const currentMainCat = MAIN_SERVICE_CATEGORIES.find((c) => c.id === selectedMainCatId) || MAIN_SERVICE_CATEGORIES[0];
+  const activePalette = Array.from(new Set([
+    ...(currentMainCat?.iconsPalette || []),
+    "🎪", "📸", "🍲", "🎵", "🥁", "💄", "🎨", "🏰", "💌", "🌸", "🚗", "⚡", "🔧", "🪚", "💻", "📱", "📚", "💼", "⚖️", "🏥", "🛒", "🌾", "🏛️", "🤝"
+  ]));
 
   return (
     <AdminLayout title="Samaj Services" subtitle="Manage Vankar Samaj service categories & contact persons">
@@ -355,24 +684,68 @@ export default function AdminServicesPage() {
         {/* SECTION 1: SERVICES TAB */}
         {activeTab === "services" && (
           <div  style={{ backgroundColor: "#061224", border: "1.5px solid rgba(212, 175, 55, 0.3)", padding: "20px" }} className="rounded-2xl">
-            <div  style={{ marginBottom: "16px" }} className="flex justify-between items-center">
-              <input
-                type="text"
-                placeholder="Search services by title or category..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{
-                  width: "100%",
-                  maxWidth: "400px",
-                  padding: "10px 16px",
-                  borderRadius: "10px",
-                  backgroundColor: "#041026",
-                  border: "1px solid rgba(212, 175, 55, 0.4)",
-                  color: "#FFF",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
-              />
+            <div  style={{ marginBottom: "16px" }} className="flex justify-between items-center flex-wrap gap-3">
+              <div className="flex items-center gap-3 flex-1 flex-wrap">
+                <input
+                  type="text"
+                  placeholder="Search services by title or category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    maxWidth: "360px",
+                    padding: "10px 16px",
+                    borderRadius: "10px",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.4)",
+                    color: "#FFF",
+                    fontSize: "14px",
+                    outline: "none",
+                  }}
+                />
+
+                <select
+                  value={categoryFilter}
+                  onChange={(e) => setCategoryFilter(e.target.value)}
+                  style={{
+                    padding: "10px 14px",
+                    borderRadius: "10px",
+                    backgroundColor: "#041026",
+                    border: "1px solid rgba(212, 175, 55, 0.4)",
+                    color: "#F3E5AB",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    outline: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="ALL">🌟 All Categories (બધી કેટેગરીઝ)</option>
+                  {MAIN_SERVICE_CATEGORIES.map((c) => (
+                    <option key={c.id} value={c.dbCategory}>
+                      {c.icon} {c.name} ({c.gujarati})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {categoryFilter !== "ALL" && (
+                <button
+                  type="button"
+                  onClick={() => setCategoryFilter("ALL")}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: "8px",
+                    backgroundColor: "rgba(212, 175, 55, 0.15)",
+                    border: "1px solid #D4AF37",
+                    color: "#F3E5AB",
+                    fontSize: "12px",
+                    cursor: "pointer",
+                    fontWeight: 700,
+                  }}
+                >
+                  Clear Filter (સાફ કરો)
+                </button>
+              )}
             </div>
 
             {loadingServices ? (
@@ -586,230 +959,447 @@ export default function AdminServicesPage() {
 
         {/* MODAL: ADD / EDIT SAMAJ SERVICE */}
         {showServiceModal && (
-          <div  style={{ inset: 0, backgroundColor: "rgba(0, 0, 0, 0.85)", zIndex: 100, padding: "20px" }} className="flex justify-center items-center fixed">
-            <div  style={{ backgroundColor: "#061224", border: "2px solid #D4AF37", maxWidth: "520px", color: "#FFF", boxShadow: "0 0 30px rgba(212, 175, 55, 0.3)" }} className="w-full p-6 rounded-2xl">
-              <h2  style={{ fontSize: "18px", margin: "0 0 16px 0" }} className="font-extrabold text-admin-gold">
-                {editingService ? "Edit Samaj Service Category" : "Add New Samaj Service Category"}
-              </h2>
-
-              <form onSubmit={handleServiceSubmit}  className="flex flex-col gap-[14px]">
+          <div
+            style={{
+              inset: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.88)",
+              zIndex: 100,
+              padding: "16px",
+              backdropFilter: "blur(4px)",
+            }}
+            className="flex justify-center items-center fixed overflow-y-auto"
+          >
+            <div
+              style={{
+                backgroundColor: "#061224",
+                border: "2px solid #D4AF37",
+                maxWidth: "650px",
+                color: "#FFF",
+                boxShadow: "0 0 35px rgba(212, 175, 55, 0.35)",
+                maxHeight: "92vh",
+                overflowY: "auto",
+              }}
+              className="w-full p-6 rounded-2xl flex flex-col gap-4"
+            >
+              {/* Modal Header */}
+              <div
+                style={{
+                  borderBottom: "1px solid rgba(212, 175, 55, 0.3)",
+                  paddingBottom: "12px",
+                }}
+                className="flex justify-between items-center"
+              >
                 <div>
-                  <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
-                    Service Title (e.g. Electrician / મંડપ ડેકોરેશન) *
+                  <h2
+                    style={{ fontSize: "19px", margin: 0 }}
+                    className="font-extrabold text-admin-gold"
+                  >
+                    {editingService
+                      ? "✏️ Edit Samaj Service Category"
+                      : "✨ Add New Samaj Service Category"}
+                  </h2>
+                  <p
+                    style={{
+                      color: "rgba(255, 255, 255, 0.7)",
+                      fontSize: "12px",
+                      margin: "4px 0 0 0",
+                    }}
+                  >
+                    Select main category, enter sub-service title, pick logo & save.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowServiceModal(false)}
+                  style={{
+                    backgroundColor: "transparent",
+                    border: "none",
+                    color: "rgba(255, 255, 255, 0.6)",
+                    fontSize: "22px",
+                    cursor: "pointer",
+                    padding: "4px 8px",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <form onSubmit={handleServiceSubmit} className="flex flex-col gap-4">
+                {/* BOX 1: MAIN SERVICE CATEGORY (14 CATEGORIES) */}
+                <div
+                  style={{
+                    backgroundColor: "#081938",
+                    border: "1.5px solid rgba(212, 175, 55, 0.5)",
+                    borderRadius: "12px",
+                    padding: "14px",
+                  }}
+                >
+                  <label
+                    style={{
+                      color: "#F3E5AB",
+                      display: "block",
+                      marginBottom: "6px",
+                    }}
+                    className="font-bold text-xs uppercase tracking-wide"
+                  >
+                    ૧. મુખ્ય સેવા કેટેગરી પસંદ કરો (Box 1: Main Service Category - 14 Categories) *
+                  </label>
+                  <select
+                    value={selectedMainCatId}
+                    onChange={(e) => handleMainCatChange(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      backgroundColor: "#041026",
+                      border: "1.5px solid #D4AF37",
+                      color: "#FFF",
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      outline: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {MAIN_SERVICE_CATEGORIES.map((cat, idx) => (
+                      <option key={cat.id} value={cat.id}>
+                        {cat.icon} {idx + 1}. {cat.name} ({cat.gujarati})
+                      </option>
+                    ))}
+                  </select>
+                  <div
+                    style={{
+                      color: "rgba(255,255,255,0.6)",
+                      fontSize: "11px",
+                      marginTop: "6px",
+                    }}
+                  >
+                    📍 Database Mapping Category:{" "}
+                    <span style={{ color: "#D4AF37", fontWeight: 700 }}>
+                      {svcCategory}
+                    </span>
+                  </div>
+                </div>
+
+                {/* BOX 2: SUB-SERVICE TITLE / NAME */}
+                <div
+                  style={{
+                    backgroundColor: "#081938",
+                    border: "1.5px solid rgba(212, 175, 55, 0.5)",
+                    borderRadius: "12px",
+                    padding: "14px",
+                  }}
+                >
+                  <label
+                    style={{
+                      color: "#F3E5AB",
+                      display: "block",
+                      marginBottom: "6px",
+                    }}
+                    className="font-bold text-xs uppercase tracking-wide"
+                  >
+                    ૨. નવી સેવાનું નામ (Box 2: Sub-Service Title / Name) *
                   </label>
                   <input
                     type="text"
                     required
                     value={svcTitle}
                     onChange={(e) => setSvcTitle(e.target.value)}
-                    placeholder="e.g. Electrical Works & Lighting"
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(212, 175, 55, 0.4)", color: "#FFF" }}
+                    placeholder={
+                      currentMainCat?.presets[0]?.title
+                        ? `દા.ત. ${currentMainCat.presets[0].title}`
+                        : "દા.ત. Mandap & Decoration / મંડપ ડેકોરેશન"
+                    }
+                    style={{
+                      width: "100%",
+                      padding: "11px 14px",
+                      borderRadius: "8px",
+                      backgroundColor: "#041026",
+                      border: "1px solid rgba(212, 175, 55, 0.4)",
+                      color: "#FFF",
+                      fontSize: "14px",
+                      outline: "none",
+                    }}
                   />
+
+                  {/* Preset quick suggestion chips */}
+                  {currentMainCat?.presets && currentMainCat.presets.length > 0 && (
+                    <div style={{ marginTop: "10px" }}>
+                      <div
+                        style={{
+                          color: "rgba(255, 255, 255, 0.7)",
+                          fontSize: "11px",
+                          marginBottom: "6px",
+                        }}
+                      >
+                        💡 ઝડપી પસંદગી માટે ક્લિક કરો (Quick Presets):
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                        {currentMainCat.presets.map((preset) => {
+                          const isSelected = svcTitle === preset.title;
+                          return (
+                            <button
+                              key={preset.title}
+                              type="button"
+                              onClick={() => handleSelectPreset(preset)}
+                              style={{
+                                padding: "4px 10px",
+                                borderRadius: "14px",
+                                backgroundColor: isSelected
+                                  ? "rgba(212, 175, 55, 0.3)"
+                                  : "rgba(255, 255, 255, 0.08)",
+                                border: isSelected
+                                  ? "1.5px solid #D4AF37"
+                                  : "1px solid rgba(255, 255, 255, 0.15)",
+                                color: isSelected
+                                  ? "#F3E5AB"
+                                  : "rgba(255, 255, 255, 0.85)",
+                                fontSize: "11.5px",
+                                cursor: "pointer",
+                                transition: "all 0.15s ease",
+                              }}
+                            >
+                              <span>{preset.icon}</span> {preset.title}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-                  <div>
-                    <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
-                      Category Mapping
-                    </label>
-                    <select
-                      value={svcCategory}
-                      onChange={(e) => setSvcCategory(e.target.value)}
-                      style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(212, 175, 55, 0.4)", color: "#FFF" }}
+                {/* BOX 3: VISUAL LOGO / ICON SELECTION BOX */}
+                <div
+                  style={{
+                    backgroundColor: "#081938",
+                    border: "1.5px solid rgba(212, 175, 55, 0.5)",
+                    borderRadius: "12px",
+                    padding: "14px",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    <label
+                      style={{ color: "#F3E5AB", margin: 0 }}
+                      className="font-bold text-xs uppercase tracking-wide"
                     >
-                      <optgroup label="🎉 10. લગ્ન પ્રસંગ સેવાઓ (Wedding & Events)">
-                        <option value="Wedding">🎉 Wedding (Main Category - લગ્ન પ્રસંગ સેવાઓ)</option>
-                        <option value="Mandap & Decoration">🎪 Mandap & Decoration (મંડપ ડેકોરેશન)</option>
-                        <option value="Photography & Cinematography">📸 Photography & Video (ફોટોગ્રાફી & શૂટિંગ)</option>
-                        <option value="Catering & Halwai">🍲 Catering & Halwai (કેટરિંગ & રસોઈ)</option>
-                        <option value="Wedding Car Rental">🚗 Wedding Car Rental (લગ્ન કાર રેન્ટલ)</option>
-                        <option value="DJ & Sound System">🎵 DJ & Sound System (ડીજે સાઉન્ડ)</option>
-                        <option value="Brass Band & Dhol">🥁 Brass Band & Dhol (બેન્ડ-વાજા & ઢોલ)</option>
-                        <option value="Bridal Makeup">💄 Bridal Makeup (બ્રાઇડલ મેકઅપ)</option>
-                        <option value="Mehendi Artist">🎨 Mehendi Artist (મહેંદી ડિઝાઇનર)</option>
-                        <option value="Banquet Hall & Party Plot">🏰 Banquet Hall (વાડી & હોલ બુકિંગ)</option>
-                        <option value="Kankotri Printing">💌 Kankotri Printing (કંકોતરી પ્રિન્ટિંગ)</option>
-                        <option value="Stage & Flower Decor">🌸 Stage & Flower Decor (સ્ટેજ ડેકોર)</option>
-                        <option value="Live YouTube Streaming">🎥 Live Streaming (યુટ્યુબ લાઇવ)</option>
-                        <option value="Jan Transport">🚌 Jan / Barat Transport (જાન બસ)</option>
-                        <option value="Jewelry & Attire Rental">💍 Jewelry & Attire Rental (દાગીના રેન્ટલ)</option>
-                        <option value="Groom Buggy & Vintage Car">🚘 Groom Buggy (વરરાજા બગી)</option>
-                      </optgroup>
-                      <optgroup label="🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Home & Daily Life)">
-                        <option value="Home & Daily Life Services">🏠 1. ઘર અને દૈનિક જીવનની સેવાઓ (Main Category)</option>
-                        <option value="Construction">🏠 ઘર બાંધકામ / Construction</option>
-                        <option value="Mason Work">🧱 Mason / Raj Mistri (રાજ મિસ્ત્રી)</option>
-                        <option value="Painter">🎨 Painter (કલરકામ & પેઇન્ટિંગ)</option>
-                        <option value="Plumber">🔧 Plumber (પ્લમ્બિંગ & ગીઝર)</option>
-                        <option value="Electrician">⚡ Electrician (ઇલેક્ટ્રિશિયન & વાયરિંગ)</option>
-                        <option value="AC & Fridge Repair">❄️ AC / Fridge Repair (એસી & ફ્રિજ રીપેર)</option>
-                        <option value="Carpenter">🪚 Carpenter (સુથારીકામ & ફર્નિચર)</option>
-                        <option value="Aluminium & Glass">🪟 Aluminium / Glass Work</option>
-                        <option value="Furniture & Interior">🚪 Furniture / Interior Design</option>
-                        <option value="House Cleaning">🧹 House Cleaning & Housekeeping</option>
-                        <option value="Pest Control">🐜 Pest Control (ઉધઇ & જંતુનાશક)</option>
-                        <option value="Packers & Movers">🚚 Packers & Movers (શિફ્ટિંગ)</option>
-                      </optgroup>
-                      <optgroup label="🚗 2. Vehicle & Transport">
-                        <option value="Vehicle & Transport">🚗 2. Vehicle & Transport (Main Category)</option>
-                        <option value="Car Rental">🚗 Car Rental (કાર રેન્ટલ & બુકિંગ)</option>
-                        <option value="Bike Repair">🛵 Bike / Scooter Repair</option>
-                        <option value="Car Garage">🚘 Car Repair / Garage</option>
-                        <option value="Tyre & Puncture">🛞 Tyre & Puncture (પંચર સર્વિસ)</option>
-                        <option value="Battery Service">🔋 Battery Service</option>
-                        <option value="Taxi Service">🚕 Taxi / Cab Service</option>
-                        <option value="Bus & Tempo">🚌 Bus / Tempo Transport</option>
-                        <option value="Goods Transport">🚛 Goods Transport (માલસામાન)</option>
-                        <option value="Driver Service">🚗 Driver Service (ડ્રાઇવર)</option>
-                        <option value="Parking Service">🅿️ Parking Service</option>
-                      </optgroup>
-                      <optgroup label="💻 3. Computer & Digital Services">
-                        <option value="Computer & Digital Services">💻 3. Computer & Digital Services (Main Category)</option>
-                        <option value="Computer Repair">💻 Computer / Laptop Repair</option>
-                        <option value="Printer Repair">🖨️ Printer Repair & Cartridge</option>
-                        <option value="Mobile Repair">📱 Mobile Repair (મોબાઇલ સર્વિસ)</option>
-                        <option value="Website Development">🌐 Website Development</option>
-                        <option value="App Development">📱 App Development</option>
-                        <option value="Graphic Design">🎨 Graphic Design & Banner</option>
-                        <option value="Printing & Xerox">🖨️ Printing / Xerox Press</option>
-                        <option value="Photo Studio">📸 Photo Studio & Photography</option>
-                        <option value="Online Form Filling">🪪 Online Form Filling (સરકારી ફોર્મ)</option>
-                        <option value="Document Scanning">📄 Document Scanning & PDF</option>
-                        <option value="Digital Payment">💳 Digital Payment Assistance</option>
-                      </optgroup>
-                      <optgroup label="📚 4. Education Services">
-                        <option value="Education Services">📚 4. Education Services (Main Category)</option>
-                        <option value="Tuition & Coaching">👨🏫 Tuition / Coaching Classes</option>
-                        <option value="School Admission">🏫 School Admission Guidance</option>
-                        <option value="College Admission">🎓 College Admission Guidance</option>
-                        <option value="Competitive Exams">📝 Competitive Exam Coaching (GPSC/TET)</option>
-                        <option value="Career Guidance">💼 Career Guidance & Mentorship</option>
-                        <option value="Foreign Study">🌍 Foreign Study Guidance (વિદેશ અભ્યાસ)</option>
-                        <option value="Books & Stationery">📖 Books / Stationery Shop</option>
-                        <option value="Computer Training">💻 Computer Training Institute</option>
-                        <option value="English Speaking">🗣️ English Speaking Course</option>
-                        <option value="Scholarship Info">🏆 Scholarship Information</option>
-                      </optgroup>
-                      <optgroup label="💼 5. Job & Business Services">
-                        <option value="Job & Business Services">💼 5. Job & Business Services (Main Category)</option>
-                        <option value="Job Placement">💼 Job Placement (નોકરી માહિતી)</option>
-                        <option value="Skilled Jobs">👷 Skilled Worker Jobs</option>
-                        <option value="Private Jobs">🏢 Private Job Information</option>
-                        <option value="Government Jobs">🏛️ Government Job Guidance</option>
-                        <option value="Resume & CV">📄 Resume / CV Making</option>
-                        <option value="Interview Prep">💼 Interview Preparation</option>
-                        <option value="Business Directory">🏪 Business Directory (વેપારી ડિરેક્ટરી)</option>
-                        <option value="Business Networking">🤝 Business Networking</option>
-                        <option value="Business Consultant">📈 Business Consultant</option>
-                        <option value="GST & Tax">🧾 GST / Tax Consultant</option>
-                      </optgroup>
-                      <optgroup label="⚖️ 6. Legal & Financial Services">
-                        <option value="Legal & Financial Services">⚖️ 6. Legal & Financial Services (Main Category)</option>
-                        <option value="Advocate & Legal">⚖️ Advocate / Legal Advice (વકીલ સલાહ)</option>
-                        <option value="Document Writer">📑 Document Writer (દસ્તાવેજ લેખક)</option>
-                        <option value="Bank Loan">🏦 Bank Loan Assistance (હોમ/બિઝનેસ લોન)</option>
-                        <option value="Financial Consultant">💰 Financial Consultant</option>
-                        <option value="Income Tax">🧾 Income Tax / GST Filing</option>
-                        <option value="Property Docs">🏠 Property Documents & Registry</option>
-                        <option value="Insurance Agent">📜 Insurance Agent (લાઇફ/મેડીક્લેમ)</option>
-                        <option value="Finance Services">💳 Loan / Finance Services</option>
-                        <option value="Banking Assistance">🏦 Banking Assistance</option>
-                      </optgroup>
-                      <optgroup label="🏥 7. Health & Emergency">
-                        <option value="Health & Emergency">🏥 7. Health & Emergency (Main Category)</option>
-                        <option value="Hospital">🏥 Hospital (હોસ્પિટલ)</option>
-                        <option value="Doctor">👨⚕️ Doctor (ડૉક્ટર પેનલ)</option>
-                        <option value="Dentist">🦷 Dentist (દાંતના ડૉક્ટર)</option>
-                        <option value="Eye Care">👓 Eye Care (આંખના ડૉક્ટર/ચશ્મા)</option>
-                        <option value="Medical Store">💊 Medical Store (દવાની દુકાન)</option>
-                        <option value="Ambulance">🚑 Ambulance (એમ્બ્યુલન્સ ૨૪x૭)</option>
-                        <option value="Blood Bank">🩸 Blood Donor Directory (રક્તદાતા)</option>
-                        <option value="Diagnostic Lab">🧪 Laboratory / Diagnostic</option>
-                        <option value="Home Nursing">🧑⚕️ Home Nursing Care</option>
-                        <option value="Elderly Assistance">♿ Elderly Assistance (વરિષ્ઠ સહાય)</option>
-                      </optgroup>
-                      <optgroup label="🏪 8. Business & Local Shops">
-                        <option value="Business & Local Shops">🏪 8. Business & Local Shops (Main Category)</option>
-                        <option value="Grocery Shop">🛒 Grocery (કરિયાણું)</option>
-                        <option value="Garments">👗 Clothes / Garments (કપડાં)</option>
-                        <option value="Footwear">👟 Footwear (શૂઝ/ચંપલ)</option>
-                        <option value="Mobile Shop">📱 Mobile Shop (મોબાઇલ દુકાન)</option>
-                        <option value="Electronics">💻 Electronics Shop</option>
-                        <option value="Furniture Shop">🪑 Furniture Shop</option>
-                        <option value="Jewellery">💎 Jewellery (સોના-ચાંદી જ્વેલર્સ)</option>
-                        <option value="Bakery">🍰 Bakery & Sweets</option>
-                        <option value="Restaurant">🍽️ Restaurant / Food Zone</option>
-                        <option value="Printing Press">🖨️ Printing Press</option>
-                      </optgroup>
-                      <optgroup label="🧑🔧 9. Skilled Professionals">
-                        <option value="Skilled Professionals">🧑🔧 9. Skilled Professionals (Main Category)</option>
-                        <option value="Electrician Trade">👨🔧 Electrician (ઇલેક્ટ્રિશિયન)</option>
-                        <option value="Plumber Trade">🔧 Plumber (પ્લમ્બર)</option>
-                        <option value="Carpenter Trade">🪚 Carpenter (સુથાર)</option>
-                        <option value="Welder">🔨 Welder (વેલ્ડર)</option>
-                        <option value="Mason Trade">🧱 Mason (રાજ મિસ્ત્રી)</option>
-                        <option value="Painter Trade">🎨 Painter (પેઇન્ટર)</option>
-                        <option value="Computer Tech">👨💻 Computer Technician</option>
-                        <option value="Mobile Tech">📱 Mobile Technician</option>
-                        <option value="Mechanic">🚗 Mechanic (કાર/મોટર ગેરેજ)</option>
-                        <option value="AC Tech">❄️ AC Technician</option>
-                        <option value="TV Tech">📺 TV Technician</option>
-                      </optgroup>
-                    </select>
+                      ૩. સર્વિસ લોગો / આઇકોન પસંદ કરો (Box 3: Service Logo Grid) *
+                    </label>
+                    <div
+                      style={{
+                        padding: "3px 10px",
+                        borderRadius: "12px",
+                        backgroundColor: "rgba(212, 175, 55, 0.2)",
+                        border: "1px solid #D4AF37",
+                        color: "#F3E5AB",
+                        fontSize: "12px",
+                        fontWeight: 700,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}
+                    >
+                      <span>Selected Logo:</span>
+                      <span style={{ fontSize: "16px" }}>{svcIcon || "🤝"}</span>
+                    </div>
                   </div>
 
-                  <div>
-                    <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
-                      Icon / Emoji
-                    </label>
+                  <div
+                    style={{
+                      color: "rgba(255, 255, 255, 0.6)",
+                      fontSize: "11px",
+                      marginBottom: "8px",
+                    }}
+                  >
+                    નીચેના લોગોમાંથી કોઈપણ પર ક્લિક કરો (Click any logo below to select):
+                  </div>
+
+                  {/* Logo Picker Grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fill, minmax(42px, 1fr))",
+                      gap: "8px",
+                      backgroundColor: "#041026",
+                      padding: "10px",
+                      borderRadius: "8px",
+                      border: "1px solid rgba(212, 175, 55, 0.3)",
+                      maxHeight: "150px",
+                      overflowY: "auto",
+                    }}
+                  >
+                    {activePalette.map((icon, idx) => {
+                      const isPicked = svcIcon === icon;
+                      return (
+                        <button
+                          key={`${icon}-${idx}`}
+                          type="button"
+                          onClick={() => handleSelectIcon(icon)}
+                          style={{
+                            width: "42px",
+                            height: "42px",
+                            borderRadius: "8px",
+                            backgroundColor: isPicked
+                              ? "rgba(212, 175, 55, 0.35)"
+                              : "rgba(255, 255, 255, 0.05)",
+                            border: isPicked
+                              ? "2px solid #D4AF37"
+                              : "1px solid rgba(255, 255, 255, 0.1)",
+                            fontSize: "20px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            boxShadow: isPicked
+                              ? "0 0 10px rgba(212, 175, 55, 0.5)"
+                              : "none",
+                            transform: isPicked ? "scale(1.08)" : "scale(1)",
+                            transition: "all 0.15s ease",
+                          }}
+                          title={`Select ${icon}`}
+                        >
+                          {icon}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Custom emoji/icon text input */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px",
+                      marginTop: "10px",
+                    }}
+                  >
+                    <span
+                      style={{
+                        color: "rgba(255, 255, 255, 0.7)",
+                        fontSize: "11px",
+                      }}
+                    >
+                      અથવા કસ્ટમ ઇમોજી/ટેક્સ્ટ લખો:
+                    </span>
                     <input
                       type="text"
                       value={svcIcon}
                       onChange={(e) => setSvcIcon(e.target.value)}
-                      placeholder="⚡"
-                      style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(212, 175, 55, 0.4)", color: "#FFF" }}
+                      placeholder="e.g. 🎪"
+                      style={{
+                        width: "80px",
+                        padding: "6px 10px",
+                        borderRadius: "6px",
+                        backgroundColor: "#041026",
+                        border: "1px solid rgba(212, 175, 55, 0.4)",
+                        color: "#FFF",
+                        fontSize: "14px",
+                        textAlign: "center",
+                      }}
                     />
                   </div>
                 </div>
 
-                <div>
-                  <label  style={{ color: "rgba(212, 175, 55, 0.9)", display: "block", marginBottom: "4px" }} className="font-bold text-xs">
-                    Service Description
+                {/* BOX 4: SERVICE DESCRIPTION & APP STATUS */}
+                <div
+                  style={{
+                    backgroundColor: "#081938",
+                    border: "1.5px solid rgba(212, 175, 55, 0.5)",
+                    borderRadius: "12px",
+                    padding: "14px",
+                  }}
+                >
+                  <label
+                    style={{
+                      color: "#F3E5AB",
+                      display: "block",
+                      marginBottom: "6px",
+                    }}
+                    className="font-bold text-xs uppercase tracking-wide"
+                  >
+                    ૪. સર્વિસ વિગત અને એપ્લિકેશન સક્રિયતા (Box 4: Details & Visibility)
                   </label>
                   <textarea
                     rows={3}
                     value={svcDesc}
                     onChange={(e) => setSvcDesc(e.target.value)}
-                    placeholder="Describe the service details..."
-                    style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(212, 175, 55, 0.4)", color: "#FFF" }}
+                    placeholder="આ સર્વિસ વિશે ટૂંકી વિગત લખો (દા.ત. લગ્ન પ્રસંગ માટે મંડપ, લાઇટિંગ અને સ્ટેજ ડેકોરેશન સેવા)..."
+                    style={{
+                      width: "100%",
+                      padding: "10px 14px",
+                      borderRadius: "8px",
+                      backgroundColor: "#041026",
+                      border: "1px solid rgba(212, 175, 55, 0.4)",
+                      color: "#FFF",
+                      fontSize: "13px",
+                      outline: "none",
+                      resize: "vertical",
+                    }}
                   />
+
+                  <div
+                    style={{ marginTop: "10px" }}
+                    className="flex items-center gap-2"
+                  >
+                    <input
+                      type="checkbox"
+                      id="svcActiveCheck"
+                      checked={svcActive}
+                      onChange={(e) => setSvcActive(e.target.checked)}
+                      style={{
+                        width: "16px",
+                        height: "16px",
+                        cursor: "pointer",
+                        accentColor: "#D4AF37",
+                      }}
+                    />
+                    <label
+                      htmlFor="svcActiveCheck"
+                      style={{ color: "#FFF", cursor: "pointer" }}
+                      className="text-[13px] font-semibold"
+                    >
+                      Make Active in Flutter Mobile App (મોબાઇલ એપ્લિકેશનમાં લાઇવ બતાવો)
+                    </label>
+                  </div>
                 </div>
 
-                <div  className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="svcActiveCheck"
-                    checked={svcActive}
-                    onChange={(e) => setSvcActive(e.target.checked)}
-                  />
-                  <label htmlFor="svcActiveCheck"  style={{ color: "#FFF" }} className="text-[13px]">
-                    Make Active in Flutter Mobile App
-                  </label>
-                </div>
-
-                <div  style={{ marginTop: "12px" }} className="flex justify-end gap-[10px]">
+                {/* SUBMIT BUTTONS */}
+                <div
+                  style={{ marginTop: "6px" }}
+                  className="flex justify-end gap-[10px]"
+                >
                   <button
                     type="button"
                     onClick={() => setShowServiceModal(false)}
-                    style={{ padding: "10px 18px", borderRadius: "8px", backgroundColor: "transparent", border: "1px solid rgba(255,255,255,0.3)", color: "#FFF", cursor: "pointer" }}
+                    style={{
+                      padding: "10px 20px",
+                      borderRadius: "8px",
+                      backgroundColor: "transparent",
+                      border: "1px solid rgba(255,255,255,0.3)",
+                      color: "#FFF",
+                      cursor: "pointer",
+                      fontWeight: 600,
+                    }}
                   >
-                    Cancel
+                    Cancel (રદ કરો)
                   </button>
                   <button
                     type="submit"
-                      style={{ backgroundColor: "#D4AF37", color: "#000" }} className="font-extrabold cursor-pointer rounded-lg border-none py-2.5 px-[22px]" 
+                    style={{
+                      backgroundColor: "#D4AF37",
+                      color: "#000",
+                      boxShadow: "0 0 15px rgba(212, 175, 55, 0.4)",
+                    }}
+                    className="font-extrabold cursor-pointer rounded-lg border-none py-2.5 px-[24px] text-sm"
                   >
-                    {editingService ? "Save Changes" : "Create Service"}
+                    {editingService
+                      ? "💾 Save Changes (સાચવો)"
+                      : "✨ Create Service (સેવા બનાવો)"}
                   </button>
                 </div>
               </form>
