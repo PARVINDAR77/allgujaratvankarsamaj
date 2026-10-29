@@ -94,6 +94,13 @@ export class UsersService {
     });
   }
 
+  async findByIdWithProfile(id: string) {
+    return await this.prisma.user.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
+  }
+
   async createUser(data: {
     email?: string;
     phone?: string;

@@ -199,7 +199,8 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: "Unauthorized access" })
   async getProfile(@Request() req: any) {
-    return req.user;
+    const userId = req.user?.sub || req.user?.id;
+    return this.authService.getMe(userId);
   }
 
   @Post("forgot-password")

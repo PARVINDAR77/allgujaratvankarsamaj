@@ -76,7 +76,8 @@ let AuthController = class AuthController {
         return { message: "Logout successful" };
     }
     async getProfile(req) {
-        return req.user;
+        const userId = req.user?.sub || req.user?.id;
+        return this.authService.getMe(userId);
     }
     async forgotPassword(req, dto) {
         const ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;

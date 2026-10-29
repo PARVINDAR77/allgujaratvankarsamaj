@@ -65,10 +65,16 @@ class UserModel {
       name: json['name'] as String?,
       role: json['role'] as String? ?? 'USER',
       status: json['status'] as String? ?? 'ACTIVE',
-      isVerified: json['isVerified'] == true,
+      isVerified: json['isVerified'] == true ||
+          json['isVerified'] == 1 ||
+          json['isVerified'] == 'true',
       isPhoneVerified: json['isPhoneVerified'] == true || json['is_phone_verified'] == 1 || json['is_phone_verified'] == true,
       isEmailVerified: json['isEmailVerified'] == true || json['is_email_verified'] == 1 || json['is_email_verified'] == true,
-      hasProfile: json['hasProfile'] == true,
+      hasProfile: json['hasProfile'] == true ||
+          json['hasProfile'] == 1 ||
+          json['hasProfile'] == 'true' ||
+          (json['profileId'] != null && json['profileId'].toString().trim().isNotEmpty) ||
+          (json['profile'] != null && json['profile'] is Map && (json['profile'] as Map)['id'] != null),
       createdAt: json['createdAt'] != null ? DateTime.tryParse(json['createdAt'].toString()) : null,
       updatedAt: json['updatedAt'] != null ? DateTime.tryParse(json['updatedAt'].toString()) : null,
     );

@@ -204,6 +204,42 @@ export class AuthService {
     };
   }
 
+  async getMe(userId: string) {
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException("User not found");
+    }
+
+    const profile = await this.prisma.matrimonialProfile.findUnique({
+      where: { userId: user.id },
+    });
+
+    const isStub =
+      profile &&
+      profile.firstName === "User" &&
+      profile.lastName === "Member" &&
+      !profile.religion &&
+      !profile.education &&
+      !profile.caste;
+
+    const hasProfile = profile !== null && !isStub;
+
+    const isVerified =
+      hasProfile &&
+      profile?.isVerified === true &&
+      profile?.status === ProfileStatus.APPROVED;
+
+    const { passwordHash: _, ...safeUser } = user;
+
+    return {
+      ...safeUser,
+      isVerified,
+      hasProfile,
+      profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),
+      profileId: profile?.id ?? null,
+    };
+  }
+
   async forgotPassword(dto: ForgotPasswordDto, ipAddress?: string) {
     return this.otpService.sendForgotPasswordOtp(
       { identifier: dto.identifier },

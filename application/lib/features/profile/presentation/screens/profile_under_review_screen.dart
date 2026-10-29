@@ -40,16 +40,17 @@ class _ProfileUnderReviewScreenState
           _isLoadingStatus = false;
         });
 
-        // If candidate does NOT have a profile yet, guide them directly to profile creation
-        if (_statusData?['hasProfile'] == false) {
-          if (mounted) {
-            context.go('/profile/create');
-            return;
-          }
-        }
+        final bool isVerified = _statusData?['isVerified'] == true ||
+            _statusData?['isVerified'] == 1 ||
+            _statusData?['isVerified'] == 'true';
 
-        // If backend already marked profile as verified, update auth and go home!
-        if (_statusData?['isVerified'] == true) {
+        final bool hasProfile = _statusData?['hasProfile'] == true ||
+            _statusData?['hasProfile'] == 1 ||
+            _statusData?['hasProfile'] == 'true' ||
+            isVerified;
+
+        // If backend already marked profile as verified, update auth and go to main poster!
+        if (isVerified) {
           await ref
               .read(authNotifierProvider.notifier)
               .checkVerificationStatus();
@@ -61,7 +62,16 @@ class _ProfileUnderReviewScreenState
                 backgroundColor: Colors.green,
               ),
             );
-            context.go('/home');
+            context.go('/main-poster');
+            return;
+          }
+        }
+
+        // If candidate does NOT have a profile yet, guide them directly to profile creation
+        if (!hasProfile) {
+          if (mounted) {
+            context.go('/profile/create');
+            return;
           }
         }
       }
@@ -92,7 +102,7 @@ class _ProfileUnderReviewScreenState
             backgroundColor: Colors.green,
           ),
         );
-        context.go('/home');
+        context.go('/main-poster');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

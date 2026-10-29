@@ -82,6 +82,12 @@ let UsersService = UsersService_1 = class UsersService {
             where: { id },
         });
     }
+    async findByIdWithProfile(id) {
+        return await this.prisma.user.findUnique({
+            where: { id },
+            include: { profile: true },
+        });
+    }
     async createUser(data) {
         const normalizedEmail = data.email?.toLowerCase().trim() || `${(0, uuid_1.v4)()}@vankar.org`;
         const resolvedGender = (0, normalize_profile_helper_1.normalizeGender)(data.gender);

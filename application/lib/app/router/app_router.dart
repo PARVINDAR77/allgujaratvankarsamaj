@@ -116,8 +116,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       if (authState.isAuthenticated) {
         final user = authState.user;
-        final hasProfile = user?.hasProfile ?? false;
         final isVerified = user?.isVerified ?? false;
+        // If user is verified, they DEFINITELY have a profile (fail-safe)
+        final hasProfile = (user?.hasProfile ?? false) || isVerified;
 
         // If candidate has not yet created their profile:
         if (!hasProfile) {
@@ -140,8 +141,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           return '/main-poster';
         }
 
-        // If verified member attempts to visit profile-under-review, go to /main-poster
-        if (isVerified && location == '/profile-under-review') {
+        // If verified member attempts to visit profile-under-review or profile/create, go to /main-poster
+        if (isVerified && (location == '/profile-under-review' || location == '/profile/create')) {
           return '/main-poster';
         }
       }

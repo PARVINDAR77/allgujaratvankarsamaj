@@ -90,7 +90,23 @@ export declare class AuthController {
     logout(res: Response): Promise<{
         message: string;
     }>;
-    getProfile(req: any): Promise<any>;
+    getProfile(req: any): Promise<{
+        isVerified: boolean;
+        hasProfile: boolean;
+        profileStatus: string;
+        profileId: string;
+        status: import(".prisma/client").$Enums.Status;
+        name: string | null;
+        gender: import(".prisma/client").$Enums.Gender | null;
+        id: string;
+        isPhoneVerified: boolean;
+        isEmailVerified: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string | null;
+        phone: string | null;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
     forgotPassword(req: any, dto: ForgotPasswordDto): Promise<{
         success: boolean;
         message: string;

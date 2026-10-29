@@ -100,9 +100,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
           try {
             final meRes = await _dio.get('/auth/me');
             if (meRes.data != null && meRes.data is Map<String, dynamic>) {
-              state = AuthState.authenticated(UserModel.fromJson(meRes.data));
+              final meUser = UserModel.fromJson(meRes.data);
+              // Preserve hasProfile: true or isVerified: true if already true
+              final effectiveHasProfile = meUser.hasProfile || user.hasProfile;
+              final effectiveIsVerified = meUser.isVerified || user.isVerified;
+              state = AuthState.authenticated(meUser.copyWith(
+                hasProfile: effectiveHasProfile,
+                isVerified: effectiveIsVerified,
+              ));
             }
           } catch (_) {}
+
+          // If still not verified or no profile according to local state, cross-check verification endpoint
+          if (state.user != null && (!state.user!.isVerified || !state.user!.hasProfile)) {
+            try {
+              await checkVerificationStatus();
+            } catch (_) {}
+          }
           return;
         } else {
           // Token is invalid or expired, clean up
@@ -350,8 +364,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       final res = await _dio.get('/verifications/my-status');
       if (res.data != null && res.data is Map<String, dynamic>) {
-        final isVerified = res.data['isVerified'] == true;
-        final hasProfile = res.data['hasProfile'] == true;
+        final isVerified = res.data['isVerified'] == true ||
+            res.data['isVerified'] == 1 ||
+            res.data['isVerified'] == 'true';
+        final hasProfile = res.data['hasProfile'] == true ||
+            res.data['hasProfile'] == 1 ||
+            res.data['hasProfile'] == 'true' ||
+            (res.data['profileStatus'] != null && res.data['profileStatus'] != 'NOT_CREATED') ||
+            res.data['latestRequest'] != null ||
+            isVerified;
         if (state.user!.isVerified != isVerified || state.user!.hasProfile != hasProfile) {
           state = AuthState.authenticated(state.user!.copyWith(
             isVerified: isVerified,
@@ -364,8 +385,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       try {
         final res = await _dio.get('/profiles/me');
         if (res.data != null && res.data is Map<String, dynamic>) {
-          final isVerified = res.data['isVerified'] == true;
-          final hasProfile = res.data['id'] != null;
+          final isVerified = res.data['isVerified'] == true ||
+              res.data['isVerified'] == 1 ||
+              res.data['isVerified'] == 'true';
+          final hasProfile = (res.data['id'] != null && res.data['id'].toString().isNotEmpty) || isVerified;
           if (state.user!.isVerified != isVerified || state.user!.hasProfile != hasProfile) {
             state = AuthState.authenticated(state.user!.copyWith(
               isVerified: isVerified,

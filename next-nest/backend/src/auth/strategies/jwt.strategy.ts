@@ -37,12 +37,33 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.usersService.findById(payload.sub);
-    if (!user || user.status !== "ACTIVE") {
+    const userWithProfile = await this.usersService.findByIdWithProfile(payload.sub);
+    if (!userWithProfile || userWithProfile.status !== "ACTIVE") {
       throw new UnauthorizedException("Unauthorized access");
     }
-    // Return sanitized user object (omitting passwordHash)
-    const { passwordHash: _, ...result } = user;
-    return result;
+
+    const { passwordHash: _, profile, ...result } = userWithProfile;
+
+    const isStub =
+      profile &&
+      profile.firstName === "User" &&
+      profile.lastName === "Member" &&
+      !profile.religion &&
+      !profile.education &&
+      !profile.caste;
+
+    const hasProfile = profile !== null && !isStub;
+    const isVerified =
+      hasProfile &&
+      profile?.isVerified === true &&
+      (profile?.status === "APPROVED" || (profile?.status as string) === "APPROVED");
+
+    return {
+      ...result,
+      hasProfile,
+      isVerified,
+      profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),
+      profileId: profile?.id ?? null,
+    };
   }
 }

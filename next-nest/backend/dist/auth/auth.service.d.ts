@@ -36,6 +36,23 @@ export declare class AuthService {
         tokenType: string;
         expiresIn: string;
     }>;
+    getMe(userId: string): Promise<{
+        isVerified: boolean;
+        hasProfile: boolean;
+        profileStatus: string;
+        profileId: string;
+        status: import(".prisma/client").$Enums.Status;
+        name: string | null;
+        gender: import(".prisma/client").$Enums.Gender | null;
+        id: string;
+        isPhoneVerified: boolean;
+        isEmailVerified: boolean;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string | null;
+        phone: string | null;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
     forgotPassword(dto: ForgotPasswordDto, ipAddress?: string): Promise<{
         success: boolean;
         message: string;
