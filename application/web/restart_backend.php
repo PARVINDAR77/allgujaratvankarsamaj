@@ -166,6 +166,14 @@ if ($action === 'clean_restart' || $action === 'kill_stale') {
     }
 }
 
+if ($action === 'install_pkg') {
+    if (function_exists('shell_exec')) {
+        $installLog = shell_exec("cd " . escapeshellarg($backend_dir) . " 2>&1; export PATH='/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH'; npm install --no-audit --no-fund --omit=dev @google/generative-ai 2>&1");
+        $results['install_log'] = $installLog;
+        $results['actions_taken'][] = 'Executed npm install @google/generative-ai';
+    }
+}
+
 if ($action === 'fix_db') {
     fix_database_genders($project_dir, $results);
 }
