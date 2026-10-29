@@ -35,25 +35,117 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
 
   Future<void> _makePhoneCall(String phone) async {
     final clean = phone.replaceAll(RegExp(r'[^0-9+]'), '');
-    if (clean.isEmpty) return;
+    if (clean.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('ફોન નંબર ઉપલબ્ધ નથી.'),
+            backgroundColor: Color(0xFFA4143D),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
     final uri = Uri.parse('tel:$clean');
     try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
       }
-    } catch (_) {}
+    } catch (_) {
+      try {
+        await launchUrl(uri);
+      } catch (_) {}
+    }
   }
 
   Future<void> _openWhatsApp(String phone, String name, String serviceName) async {
-    var clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (clean.length == 10) clean = '91$clean';
-    final text = Uri.encodeComponent('નમસ્તે $name, મેં વણકર સમાજ ડિરેક્ટરીમાંથી તમારી સેવા ($serviceName) જોઈ સંપર્ક કર્યો છે.');
-    final uri = Uri.parse('https://wa.me/$clean?text=$text');
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
+    String clean = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (clean.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('આ વ્યવસાયકારનો ફોન નંબર ઉપલબ્ધ નથી.'),
+            backgroundColor: Color(0xFFA4143D),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
-    } catch (_) {}
+      return;
+    }
+
+    // Strip leading zero(s) if any
+    while (clean.startsWith('0')) {
+      clean = clean.substring(1);
+    }
+
+    // Prepend India country code 91 if exactly 10 digits
+    if (clean.length == 10) {
+      clean = '91$clean';
+    }
+
+    final displayName = name.trim().isNotEmpty ? name.trim() : 'વ્યવસાયકાર';
+    final displayService = serviceName.trim().isNotEmpty ? serviceName.trim() : 'સમાજ સેવા';
+    final rawMessage = 'નમસ્તે $displayName, મેં ઓલ ગુજરાત વણકર સમાજ ડિરેક્ટરીમાંથી તમારી સેવા ($displayService) જોઈ સંપર્ક કર્યો છે.';
+    final encodedMessage = Uri.encodeComponent(rawMessage);
+
+    final nativeUri = Uri.parse('whatsapp://send?phone=$clean&text=$encodedMessage');
+    final apiUri = Uri.parse('https://api.whatsapp.com/send?phone=$clean&text=$encodedMessage');
+    final waMeUri = Uri.parse('https://wa.me/$clean?text=$encodedMessage');
+
+    bool launched = false;
+
+    // Strategy 1: Direct native WhatsApp app
+    try {
+      launched = await launchUrl(nativeUri, mode: LaunchMode.externalNonBrowserApplication);
+    } catch (_) {
+      launched = false;
+    }
+
+    // Strategy 2: Universal api.whatsapp.com
+    if (!launched) {
+      try {
+        launched = await launchUrl(apiUri, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        launched = false;
+      }
+    }
+
+    // Strategy 3: Standard wa.me via external application
+    if (!launched) {
+      try {
+        launched = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
+      } catch (_) {
+        launched = false;
+      }
+    }
+
+    // Strategy 4: Platform default fallback (useful for mobile & web)
+    if (!launched) {
+      try {
+        launched = await launchUrl(waMeUri, mode: LaunchMode.platformDefault);
+      } catch (_) {
+        launched = false;
+      }
+    }
+
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'WhatsApp ખોલવામાં અસમર્થ. કૃપા કરીને તપાસો કે WhatsApp ઇન્સ્ટોલ કરેલું છે ($clean).',
+          ),
+          backgroundColor: const Color(0xFFA4143D),
+          behavior: SnackBarBehavior.floating,
+          action: SnackBarAction(
+            label: 'Call Now',
+            textColor: const Color(0xFFFFDF7A),
+            onPressed: () => _makePhoneCall(phone),
+          ),
+        ),
+      );
+    }
   }
 
   void _performSearch() {
@@ -809,68 +901,43 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
               Row(
                 children: [
                   Expanded(
-                    child: Container(
+                    child: SizedBox(
                       height: 34,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF101B36), Color(0xFF1D2D52)],
+                      child: ElevatedButton.icon(
+                        onPressed: () => _makePhoneCall(person.phone),
+                        icon: const Icon(Icons.call, size: 13, color: Color(0xFFFFDF7A)),
+                        label: const Text(
+                          'Call Now',
+                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
                         ),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: const Color(0xFFD6A34A), width: 0.9),
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => _makePhoneCall(person.phone),
-                          borderRadius: BorderRadius.circular(8),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.call, size: 13, color: Color(0xFFFFDF7A)),
-                              SizedBox(width: 4),
-                              Text(
-                                'Call Now',
-                                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
-                              ),
-                            ],
-                          ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF101B36),
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Color(0xFFD6A34A), width: 0.9),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 1,
                         ),
                       ),
                     ),
                   ),
                   const SizedBox(width: 6),
                   Expanded(
-                    child: Container(
+                    child: SizedBox(
                       height: 34,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF128C7E), Color(0xFF25D366)],
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openWhatsApp(person.phone, person.name, effectiveServiceName),
+                        icon: const WhatsAppIcon(size: 14, color: Colors.white),
+                        label: const Text(
+                          'WhatsApp',
+                          style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold),
                         ),
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF25D366).withValues(alpha: 0.25),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          onTap: () => _openWhatsApp(person.phone, person.name, effectiveServiceName),
-                          borderRadius: BorderRadius.circular(8),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              WhatsAppIcon(size: 14, color: Colors.white),
-                              SizedBox(width: 4),
-                              Text(
-                                'WhatsApp',
-                                style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: Colors.white),
-                              ),
-                            ],
-                          ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 1,
                         ),
                       ),
                     ),

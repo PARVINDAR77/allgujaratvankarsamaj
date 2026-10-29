@@ -43,7 +43,14 @@
 					<string>$(PRODUCT_MODULE_NAME).SceneDelegate</string>
 					<key>UISceneStoryboardFile</key>
 					<string>Main</string>
-				</dict>
+					<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>whatsapp</string>
+		<string>tel</string>
+		<string>https</string>
+		<string>http</string>
+	</array>
+</dict>
 			</array>
 		</dict>
 	</dict>

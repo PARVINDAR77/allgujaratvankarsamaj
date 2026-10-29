@@ -1036,29 +1036,26 @@ class _CandidateProfileDetailScreenState
                 ),
                 InkWell(
                   onTap: () async {
-                    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
-                    final uri = Uri.parse('tel:$cleanPhone');
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri);
+                    String cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
+                    while (cleanPhone.startsWith('0')) {
+                      cleanPhone = cleanPhone.substring(1);
                     }
-                  },
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    padding: const EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Colors.green.shade50,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.call, size: 14, color: Colors.green),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                InkWell(
-                  onTap: () async {
-                    final cleanPhone = phone.replaceAll(RegExp(r'\D'), '');
-                    final uri = Uri.parse('https://wa.me/91$cleanPhone');
-                    if (await canLaunchUrl(uri)) {
-                      await launchUrl(uri, mode: LaunchMode.externalApplication);
+                    if (cleanPhone.length == 10) cleanPhone = '91$cleanPhone';
+                    final nativeUri = Uri.parse('whatsapp://send?phone=$cleanPhone');
+                    final waMeUri = Uri.parse('https://wa.me/$cleanPhone');
+                    bool ok = false;
+                    try {
+                      ok = await launchUrl(nativeUri, mode: LaunchMode.externalNonBrowserApplication);
+                    } catch (_) {}
+                    if (!ok) {
+                      try {
+                        ok = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
+                      } catch (_) {}
+                    }
+                    if (!ok) {
+                      try {
+                        await launchUrl(waMeUri, mode: LaunchMode.platformDefault);
+                      } catch (_) {}
                     }
                   },
                   borderRadius: BorderRadius.circular(16),
