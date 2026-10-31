@@ -153,6 +153,8 @@ ALTER TABLE matrimonial_profiles ADD COLUMN id_proof_number VARCHAR(191) NULL;
 ALTER TABLE verification_requests ADD COLUMN document_number VARCHAR(191) NULL;
 UPDATE \`pavan_prernadata\` SET \`name\` = 'Pavan Prernadata', \`gujarati_name\` = 'પાવન પ્રેરણાદાતા' WHERE LOWER(\`name\`) LIKE '%prendata%' OR LOWER(\`name\`) LIKE '%prandata%';
 UPDATE matrimonial_profiles SET show_in_matrimony = 0 WHERE marital_status = 'MARRIED';
+UPDATE matrimonial_profiles SET photo_url = 'https://allgujaratvankarsamaj.com/uploads/1c78955dd78bc081ef359f17d5da6fc7.jpg', photos = '[\"https://allgujaratvankarsamaj.com/uploads/1c78955dd78bc081ef359f17d5da6fc7.jpg\"]' WHERE id = 'VNK79799' AND (photo_url LIKE '%590c4f23%' OR photo_url IS NULL);
+UPDATE matrimonial_profiles SET photo_url = 'https://allgujaratvankarsamaj.com/uploads/3a0726e1ba540f020534593ec872ab5e.jpg', photos = '[\"https://allgujaratvankarsamaj.com/uploads/3a0726e1ba540f020534593ec872ab5e.jpg\",\"https://allgujaratvankarsamaj.com/uploads/839537e92f80b5a198b5df8841ab03f1.jpg\"]' WHERE id = 'VNK30695' AND (photo_url LIKE '%7fffb7fb%' OR photo_url IS NULL);
 " || true
 
 echo "Purging private, business, and non-government profiles from government_employments in Database..."

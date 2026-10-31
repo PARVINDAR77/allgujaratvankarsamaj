@@ -355,8 +355,26 @@ class ProfileModel {
   }
 
   String? get fullPhotoUrl {
-    if (photoUrl == null || photoUrl!.trim().isEmpty) return null;
-    final clean = photoUrl!.trim();
+    String? raw = photoUrl?.trim();
+    // Fallback if photoUrl is missing or points to known orphaned test UUIDs that 404
+    if (raw == null ||
+        raw.isEmpty ||
+        raw.contains('7fffb7fb-d807-46e0-8590-495b0ca74029') ||
+        raw.contains('590c4f23-83f5-4bbf-ab97-9dadaa6d8760')) {
+      if (photos != null && photos!.isNotEmpty) {
+        for (final p in photos!) {
+          final clean = p.trim();
+          if (clean.isNotEmpty &&
+              !clean.contains('7fffb7fb') &&
+              !clean.contains('590c4f23')) {
+            raw = clean;
+            break;
+          }
+        }
+      }
+    }
+    if (raw == null || raw.isEmpty) return null;
+    final clean = raw.trim();
     if (clean.startsWith('http://') || clean.startsWith('https://')) return clean;
     final relative = clean.startsWith('/') ? clean : '/$clean';
     return 'https://allgujaratvankarsamaj.com$relative';
@@ -364,19 +382,28 @@ class ProfileModel {
 
   List<String> get allPhotoUrls {
     final list = <String>[];
-    if (fullPhotoUrl != null && fullPhotoUrl!.trim().isNotEmpty) {
-      list.add(fullPhotoUrl!.trim());
+
+    void addUrl(String? u) {
+      if (u == null) return;
+      final clean = u.trim();
+      if (clean.isEmpty || clean == 'null' || clean == 'undefined') return;
+      // Filter out known deleted/orphaned test filenames that return 404
+      if (clean.contains('7fffb7fb-d807-46e0-8590-495b0ca74029') ||
+          clean.contains('590c4f23-83f5-4bbf-ab97-9dadaa6d8760')) {
+        return;
+      }
+      final url = (clean.startsWith('http://') || clean.startsWith('https://'))
+          ? clean
+          : 'https://allgujaratvankarsamaj.com${clean.startsWith('/') ? clean : '/$clean'}';
+      if (!list.contains(url)) {
+        list.add(url);
+      }
     }
+
+    addUrl(fullPhotoUrl);
     if (photos != null && photos!.isNotEmpty) {
       for (final p in photos!) {
-        final clean = p.trim();
-        if (clean.isEmpty) continue;
-        final url = (clean.startsWith('http://') || clean.startsWith('https://'))
-            ? clean
-            : 'https://allgujaratvankarsamaj.com${clean.startsWith('/') ? clean : '/$clean'}';
-        if (!list.contains(url)) {
-          list.add(url);
-        }
+        addUrl(p);
       }
     }
     return list;

@@ -204,29 +204,106 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                           },
                           errorBuilder: (context, error, stackTrace) {
                             return Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.broken_image_rounded,
-                                    size: 64,
-                                    color: Colors.redAccent,
+                              child: Container(
+                                padding: const EdgeInsets.all(24),
+                                margin: const EdgeInsets.symmetric(horizontal: 24),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0E172C),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                                    width: 1.2,
                                   ),
-                                  const SizedBox(height: 12),
-                                  const Text(
-                                    'Failed to load full photo',
-                                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  TextButton.icon(
-                                    onPressed: () => setState(() {}),
-                                    icon: const Icon(Icons.refresh, color: Color(0xFFFFD700), size: 18),
-                                    label: const Text(
-                                      'Retry (ફરી પ્રયાસ કરો)',
-                                      style: TextStyle(color: Color(0xFFFFD700)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.5),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 4),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1E293B),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                                          width: 1.5,
+                                        ),
+                                      ),
+                                      child: const Icon(
+                                        Icons.person_outline_rounded,
+                                        size: 48,
+                                        color: Color(0xFFFFD700),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 16),
+                                    if (widget.title != null && widget.title!.isNotEmpty) ...[
+                                      Text(
+                                        widget.title!,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 6),
+                                    ],
+                                    const Text(
+                                      'Photo not found on server (સર્વર પર ફોટો મળ્યો નથી)',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(color: Colors.white70, fontSize: 13),
+                                    ),
+                                    const SizedBox(height: 18),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        if (hasMultiple && _currentIndex < widget.images.length - 1)
+                                          ElevatedButton.icon(
+                                            onPressed: _goToNext,
+                                            icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                                            label: const Text('Next Photo (આગળનો ફોટો)'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF0056D2),
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                          )
+                                        else if (hasMultiple && _currentIndex > 0)
+                                          ElevatedButton.icon(
+                                            onPressed: _goToPrevious,
+                                            icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                                            label: const Text('Previous Photo (પાછળનો ફોટો)'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFF0056D2),
+                                              foregroundColor: Colors.white,
+                                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                          )
+                                        else
+                                          OutlinedButton.icon(
+                                            onPressed: () => Navigator.of(context).pop(),
+                                            icon: const Icon(Icons.close_rounded, size: 16, color: Color(0xFFFFD700)),
+                                            label: const Text(
+                                              'Close (બંધ કરો)',
+                                              style: TextStyle(color: Color(0xFFFFD700)),
+                                            ),
+                                            style: OutlinedButton.styleFrom(
+                                              side: const BorderSide(color: Color(0xFFFFD700)),
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
@@ -291,92 +368,106 @@ class _FullScreenImageViewerState extends State<FullScreenImageViewer> {
                   ),
               ],
 
-              // 3. Top Header Bar
+              // 3. Top Header Bar (Pinned to top with gradient shadow)
               Positioned(
-                top: 10,
-                left: 12,
-                right: 12,
-                child: Row(
-                  children: [
-                    // Back / Close Button
-                    Material(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        customBorder: const CircleBorder(),
-                        onTap: () => Navigator.of(context).pop(),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Icon(
-                            Icons.close_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
-                      ),
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.85),
+                        Colors.black.withValues(alpha: 0.0),
+                      ],
                     ),
-                    const SizedBox(width: 14),
-
-                    // Title & Counter
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (widget.title != null && widget.title!.isNotEmpty)
-                            Text(
-                              widget.title!,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.3,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          Text(
-                            hasMultiple
-                                ? 'Photo ${_currentIndex + 1} of ${widget.images.length} (ફોટો ${_currentIndex + 1} / ${widget.images.length})'
-                                : 'Full Photo View (મોટો ફોટો)',
-                            style: const TextStyle(
+                  ),
+                  child: Row(
+                    children: [
+                      // Back / Close Button
+                      Material(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        shape: const CircleBorder(),
+                        child: InkWell(
+                          customBorder: const CircleBorder(),
+                          onTap: () => Navigator.of(context).pop(),
+                          hoverColor: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Icon(
+                              Icons.close_rounded,
                               color: Color(0xFFFFD700),
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
+                              size: 26,
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Reset Zoom Button
-                    Material(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(20),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(20),
-                        onTap: () => _resetZoom(_currentIndex),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: const [
-                              Icon(Icons.zoom_out_map_rounded, color: Color(0xFFFFD700), size: 16),
-                              SizedBox(width: 6),
-                              Text(
-                                'Reset',
-                                style: TextStyle(
-                                  color: Color(0xFFFFD700),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 14),
+
+                      // Title & Counter
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (widget.title != null && widget.title!.isNotEmpty)
+                              Text(
+                                widget.title!,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.3,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            Text(
+                              hasMultiple
+                                  ? 'Photo ${_currentIndex + 1} of ${widget.images.length} (ફોટો ${_currentIndex + 1} / ${widget.images.length})'
+                                  : 'Full Photo View (મોટો ફોટો)',
+                              style: const TextStyle(
+                                color: Color(0xFFFFD700),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Reset Zoom Button
+                      Material(
+                        color: Colors.black.withValues(alpha: 0.7),
+                        borderRadius: BorderRadius.circular(20),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(20),
+                          onTap: () => _resetZoom(_currentIndex),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.zoom_out_map_rounded, color: Color(0xFFFFD700), size: 16),
+                                SizedBox(width: 6),
+                                Text(
+                                  'Reset',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
 
