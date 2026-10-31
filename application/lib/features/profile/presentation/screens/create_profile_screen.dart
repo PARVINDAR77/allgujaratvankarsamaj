@@ -1,3 +1,5 @@
+import '../../../../shared/widgets/gov_class_picker_sheet.dart';
+import '../../../../shared/widgets/work_district_picker_sheet.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -86,6 +88,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   String _department = '';
   String _govCategory = 'Select Category';
   String _customGovCategory = '';
+  String _govClass = 'Select Officer / Employee Class';
+  String _workDistrict = 'Select Work District';
   String _businessIndustry = 'Select Industry';
   String _businessService = 'Select Service';
   String _designation = '';
@@ -675,6 +679,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           : _department,
       designation: _designation.isNotEmpty ? _designation : 'Employee',
       annualIncome: _yearlyIncome != 'Select Income' ? _yearlyIncome : null,
+      govClass: _govClass != 'Select Officer / Employee Class' ? _govClass : null,
+      workDistrict: _workDistrict != 'Select Work District' ? _workDistrict : null,
       district: _district.isNotEmpty ? _district : 'Ahmedabad',
       taluka: _taluka.isNotEmpty ? _taluka : 'Ahmedabad City',
       pargana: _pargana != 'Select Pargana' ? _pargana : (_nativePlace.isNotEmpty ? _nativePlace : 'Not Specified'),
@@ -716,6 +722,12 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       final created = await repository.createProfile(newProfile);
       finalProfileId = created.id.isNotEmpty ? created.id : uniqueId;
       ref.invalidate(myProfileProvider);
+      if (ref.read(authNotifierProvider).user != null) {
+        final currentUser = ref.read(authNotifierProvider).user!;
+        await ref.read(authNotifierProvider.notifier).updateUser(
+          currentUser.copyWith(hasProfile: true),
+        );
+      }
       await ref.read(authNotifierProvider.notifier).checkVerificationStatus();
       ref.read(profileNotifierProvider.notifier).fetchFirstPage();
     } catch (e) {
@@ -861,340 +873,248 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     );
   }
 
-  void _openContactOtpDialog({required bool isPhone}) async {
-    final targetValue = isPhone
-        ? (_mobileNumber.isNotEmpty ? _mobileNumber : _mobileController.text).trim().replaceAll(RegExp(r'\D'), '')
-        : (_emailAddress.isNotEmpty ? _emailAddress : _emailController.text).trim();
-
-    if (isPhone && targetValue.length != 10) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('કૃપા કરીને માન્ય 10-અંકનો મોબાઇલ નંબર દાખલ કરો (Please enter valid 10-digit mobile number)'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    if (!isPhone && (!targetValue.contains('@') || !targetValue.contains('.'))) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('કૃપા કરીને માન્ય ઈમેઈલ સરનામું દાખલ કરો (Please enter valid email address)'),
-          backgroundColor: Colors.redAccent,
-        ),
-      );
-      return;
-    }
-
-    showDialog(
+  void _openGovClassPicker(BuildContext context) {
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
-      builder: (_) => const Center(
-        child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => GovClassPickerSheet(
+        initialClass: _govClass,
+        onSelected: (val) {
+          setState(() => _govClass = val);
+        },
       ),
     );
+  }
 
-    final sendRes = await ref.read(authNotifierProvider.notifier).sendProfileContactOtp(
-      name: '${_firstName.trim()} ${_lastName.trim()}'.trim(),
-      phone: isPhone ? targetValue : null,
-      email: !isPhone ? targetValue : null,
-      channel: isPhone ? 'SMS' : 'EMAIL',
-    );
-
-    if (!mounted) return;
-    Navigator.of(context, rootNavigator: true).pop();
-
-    if (sendRes['success'] != true) {
-      final err = sendRes['message'] ?? 'ચકાસણી કોડ મોકલવામાં નિષ્ફળતા';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(err), backgroundColor: Colors.redAccent),
-      );
-      return;
-    }
-
-    final otpCtrl = TextEditingController();
-    int cooldown = sendRes['resendCooldownSeconds'] ?? 40;
-    Timer? timer;
-    bool isVerifying = false;
-    bool isResending = false;
-    String statusMsg = '';
-    final masked = isPhone
-        ? (sendRes['maskedPhone'] ?? targetValue)
-        : (sendRes['maskedEmail'] ?? targetValue);
-
-    await showDialog(
+  void _openWorkDistrictPicker(BuildContext context) {
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) => StatefulBuilder(
-        builder: (ctx, setDialogState) {
-          void startTimer([int sec = 40]) {
-            timer?.cancel();
-            cooldown = sec;
-            timer = Timer.periodic(const Duration(seconds: 1), (t) {
-              if (cooldown <= 1) {
-                t.cancel();
-                setDialogState(() => cooldown = 0);
-              } else {
-                setDialogState(() => cooldown--);
-              }
-            });
-          }
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => WorkDistrictPickerSheet(
+        initialDistrict: _workDistrict,
+        onSelected: (val) {
+          setState(() => _workDistrict = val);
+        },
+      ),
+    );
+  }
 
-          if (timer == null && cooldown > 0) {
-            startTimer(cooldown);
-          }
-
-          return AlertDialog(
-            backgroundColor: const Color(0xFF041126),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(18),
-              side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+  Widget _buildGovClassBox() {
+    final hasSelection = _govClass.isNotEmpty &&
+        _govClass != 'Select Officer / Employee Class';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Government Officer / Employee Class (સરકારી વર્ગ / કેડર) *',
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
             ),
-            title: Row(
-              children: [
-                Icon(
-                  isPhone ? Icons.phone_android_rounded : Icons.mark_email_read_rounded,
-                  color: const Color(0xFFD4AF37),
-                  size: 26,
+          ),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () => _openGovClassPicker(context),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: hasSelection
+                      ? const Color(0xFF1D4ED8)
+                      : Colors.grey.shade300,
+                  width: hasSelection ? 1.5 : 1,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    isPhone
-                        ? 'મોબાઇલ ચકાસણી (Number Verification)'
-                        : 'ઈમેઈલ ચકાસણી (Email Verification)',
-                    style: const TextStyle(
-                      color: Color(0xFFD4AF37),
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
                   ),
-                ),
-              ],
-            ),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                ],
+              ),
+              child: Row(
                 children: [
-                  Text(
-                    'ચકાસણી માટે $masked પર 6-અંકનો OTP કોડ મોકલવામાં આવ્યો છે:\n(Enter 6-digit OTP code sent to $masked)',
-                    style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
-                  ),
-                  const SizedBox(height: 18),
-                  TextField(
-                    controller: otpCtrl,
-                    keyboardType: TextInputType.number,
-                    maxLength: 6,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      letterSpacing: 6,
-                      fontWeight: FontWeight.bold,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: hasSelection
+                          ? const Color(0xFFFEF3C7)
+                          : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    decoration: const InputDecoration(
-                      counterText: '',
-                      prefixIcon: Icon(Icons.pin, color: Color(0xFFD4AF37)),
-                      labelText: 'Verification OTP (6-અંકનો કોડ)',
-                      labelStyle: TextStyle(color: Colors.white70, fontSize: 13, letterSpacing: 0),
-                      hintText: '123456',
-                      hintStyle: TextStyle(color: Colors.white30, letterSpacing: 6),
-                      enabledBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                      ),
-                      focusedBorder: UnderlineInputBorder(
-                        borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-                      ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.military_tech_rounded,
+                      color: Color(0xFFD4AF37),
+                      size: 26,
                     ),
                   ),
-                  const SizedBox(height: 14),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      TextButton.icon(
-                        onPressed: (cooldown > 0 || isResending)
-                            ? null
-                            : () async {
-                                setDialogState(() {
-                                  isResending = true;
-                                  statusMsg = '';
-                                });
-                                final res = await ref.read(authNotifierProvider.notifier).sendProfileContactOtp(
-                                  name: '${_firstName.trim()} ${_lastName.trim()}'.trim(),
-                                  phone: isPhone ? targetValue : null,
-                                  email: !isPhone ? targetValue : null,
-                                  channel: isPhone ? 'SMS' : 'EMAIL',
-                                );
-                                setDialogState(() {
-                                  isResending = false;
-                                  if (res['success'] == true) {
-                                    statusMsg = 'નવો કોડ મોકલવામાં આવ્યો છે.';
-                                    startTimer(res['resendCooldownSeconds'] ?? 40);
-                                  } else {
-                                    statusMsg = res['message'] ?? 'કોડ ફરી મોકલવામાં નિષ્ફળ';
-                                  }
-                                });
-                              },
-                        icon: isResending
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4AF37)),
-                              )
-                            : const Icon(Icons.refresh, size: 16, color: Color(0xFFD4AF37)),
-                        label: Text(
-                          cooldown > 0
-                              ? 'Resend in ${cooldown}s'
-                              : 'Resend Code (ફરી કોડ મોકલો)',
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hasSelection
+                              ? _govClass
+                              : 'સરકારી વર્ગ / કેડર પસંદ કરો (Select Officer Class)',
                           style: TextStyle(
-                            color: (cooldown > 0 || isResending) ? Colors.white38 : const Color(0xFFD4AF37),
-                            fontSize: 12,
+                            color: hasSelection ? Colors.black87 : Colors.black45,
+                            fontSize: 14,
+                            fontWeight:
+                                hasSelection ? FontWeight.bold : FontWeight.w500,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 2),
+                        Text(
+                          'વર્ગ-૧, વર્ગ-૨, વર્ગ-૩ અથવા વર્ગ-૪ અધિકારી / કર્મચારી',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  if (cooldown == 0) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.amber.withOpacity(0.12),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.amber.shade700.withOpacity(0.4)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.amber.shade300, size: 16),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text(
-                              'OTP કોડ નથી મળ્યો? ફરી કોડ મોકલવા માટે ઉપર "ફરી કોડ મોકલો" બટન દબાવો.\n(Didn\'t receive OTP? Tap "Resend Code" above to get a new code.)',
-                              style: TextStyle(color: Colors.amberAccent, fontSize: 11, height: 1.3),
-                            ),
-                          ),
-                        ],
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      hasSelection ? 'બદલો (Change)' : 'પસંદ કરો (Select)',
+                      style: const TextStyle(
+                        color: Color(0xFF1D4ED8),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
-                  ],
-                  if (statusMsg.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: (statusMsg.contains('નવો કોડ') || statusMsg.contains('સફળ'))
-                            ? Colors.green.withOpacity(0.18)
-                            : Colors.red.withOpacity(0.18),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: (statusMsg.contains('નવો કોડ') || statusMsg.contains('સફળ'))
-                              ? Colors.greenAccent
-                              : Colors.redAccent,
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        statusMsg,
-                        style: TextStyle(
-                          color: (statusMsg.contains('નવો કોડ') || statusMsg.contains('સફળ'))
-                              ? Colors.greenAccent
-                              : Colors.redAccent,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: isVerifying
-                    ? null
-                    : () {
-                        timer?.cancel();
-                        otpCtrl.dispose();
-                        Navigator.pop(dialogCtx);
-                      },
-                child: const Text('Cancel (રદ કરો)', style: TextStyle(color: Colors.white60)),
-              ),
-              ElevatedButton(
-                onPressed: isVerifying
-                    ? null
-                    : () async {
-                        final code = otpCtrl.text.trim();
-                        if (code.length != 6) {
-                          setDialogState(() {
-                            statusMsg = 'કૃપા કરીને 6-અંકનો OTP કોડ દાખલ કરો';
-                          });
-                          return;
-                        }
-                        setDialogState(() {
-                          isVerifying = true;
-                          statusMsg = '';
-                        });
+          ),
+        ],
+      ),
+    );
+  }
 
-                        final verifyRes = await ref.read(authNotifierProvider.notifier).verifyProfileContactOtp(
-                          phone: isPhone ? targetValue : null,
-                          email: !isPhone ? targetValue : null,
-                          phoneOtp: isPhone ? code : null,
-                          emailOtp: !isPhone ? code : null,
-                        );
-
-                        if (verifyRes['success'] == true) {
-                          timer?.cancel();
-                          otpCtrl.dispose();
-                          if (dialogCtx.mounted) {
-                            Navigator.pop(dialogCtx);
-                          }
-                          setState(() {
-                            if (isPhone) {
-                              _isPhoneVerified = true;
-                              _mobileNumber = targetValue;
-                              _mobileController.text = targetValue;
-                            } else {
-                              _isEmailVerified = true;
-                              _emailAddress = targetValue;
-                              _emailController.text = targetValue;
-                            }
-                          });
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  isPhone
-                                      ? '✓ મોબાઇલ નંબર સફળતાપૂર્વક ચકાસાયેલ છે! (Mobile number verified!)'
-                                      : '✓ ઈમેઈલ સરનામું સફળતાપૂર્વક ચકાસાયેલ છે! (Email address verified!)',
-                                ),
-                                backgroundColor: Colors.green,
-                                duration: const Duration(seconds: 4),
-                              ),
-                            );
-                          }
-                        } else {
-                          setDialogState(() {
-                            isVerifying = false;
-                            statusMsg = verifyRes['message'] ?? 'ચકાસણી નિષ્ફળ થઈ';
-                          });
-                        }
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFD4AF37),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  Widget _buildWorkDistrictBox() {
+    final hasSelection = _workDistrict.isNotEmpty &&
+        _workDistrict != 'Select Work District';
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Work / Job / Business District (નોકરી / વ્યવસાયનો જિલ્લો) *',
+            style: TextStyle(
+              color: Colors.black87,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: () => _openWorkDistrictPicker(context),
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: hasSelection
+                      ? const Color(0xFF1D4ED8)
+                      : Colors.grey.shade300,
+                  width: hasSelection ? 1.5 : 1,
                 ),
-                child: isVerifying
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
-                      )
-                    : const Text('Verify (ચકાસો)', style: TextStyle(fontWeight: FontWeight.bold)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-            ],
-          );
-        },
+              child: Row(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: hasSelection
+                          ? const Color(0xFFEFF6FF)
+                          : const Color(0xFFF3F4F6),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(
+                      Icons.location_city_rounded,
+                      color: Color(0xFF1D4ED8),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          hasSelection
+                              ? _workDistrict
+                              : 'નોકરી / વ્યવસાયનો જિલ્લો પસંદ કરો (Select District)',
+                          style: TextStyle(
+                            color: hasSelection ? Colors.black87 : Colors.black45,
+                            fontSize: 14,
+                            fontWeight:
+                                hasSelection ? FontWeight.bold : FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'તમારી ઓફિસ, પેઢી કે નોકરી કયા જિલ્લામાં છે તે',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFEFF6FF),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      hasSelection ? 'બદલો (Change)' : 'પસંદ કરો (Select)',
+                      style: const TextStyle(
+                        color: Color(0xFF1D4ED8),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1244,7 +1164,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.lock_reset_rounded, color: Color(0xFFA4143D)),
-            tooltip: 'પાસવર્ડ બદલો (Update Password)',
+            tooltip: 'પાસવર્ડ બદલો (Change Password)',
             onPressed: () => showUpdatePasswordDialog(context, ref),
           ),
           const SizedBox(width: 8),
@@ -1395,53 +1315,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   FilteringTextInputFormatter.digitsOnly,
                   LengthLimitingTextInputFormatter(10),
                 ],
-                suffix: _isCurrentPhoneVerified
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.green.shade400),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
-                            SizedBox(width: 4),
-                            Text('✓ ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      )
-                    : ((_mobileNumber.isNotEmpty ? _mobileNumber : _mobileController.text).trim().length == 10)
-                        ? Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            child: ElevatedButton.icon(
-                              onPressed: () => _openContactOtpDialog(isPhone: true),
-                              icon: const Icon(Icons.verified_outlined, size: 14),
-                              label: const Text('ચકાસો (Verify Code)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD4AF37),
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                              ),
-                            ),
-                          )
-                        : null,
-                onChanged: (v) => setState(() {
-                  _mobileNumber = v;
-                  final user = ref.read(authNotifierProvider).user;
-                  final registeredDigits = (user?.phone ?? '').replaceAll(RegExp(r'\D'), '');
-                  final newDigits = v.replaceAll(RegExp(r'\D'), '');
-                  if (newDigits.isEmpty || newDigits != registeredDigits) {
-                    _isPhoneVerified = false;
-                  } else if (user?.isPhoneVerified == true) {
-                    _isPhoneVerified = true;
-                  }
-                }),
+                onChanged: (v) => setState(() => _mobileNumber = v),
               ),
               _buildTextField(
                 'Email Address (ઈમેઈલ સરનામું)',
@@ -1449,53 +1323,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 Icons.email_outlined,
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
-                suffix: _isCurrentEmailVerified
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE8F5E9),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: Colors.green.shade400),
-                        ),
-                        child: const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.check_circle_rounded, color: Colors.green, size: 14),
-                            SizedBox(width: 4),
-                            Text('✓ ચકાસાયેલ (Verified)', style: TextStyle(color: Colors.green, fontSize: 11, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                      )
-                    : ((_emailAddress.isNotEmpty ? _emailAddress : _emailController.text).trim().contains('@'))
-                        ? Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            child: ElevatedButton.icon(
-                              onPressed: () => _openContactOtpDialog(isPhone: false),
-                              icon: const Icon(Icons.mark_email_read_outlined, size: 14),
-                              label: const Text('ચકાસો (Verify Code)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFFD4AF37),
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                minimumSize: Size.zero,
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                              ),
-                            ),
-                          )
-                        : null,
-                onChanged: (v) => setState(() {
-                  _emailAddress = v;
-                  final user = ref.read(authNotifierProvider).user;
-                  final registeredEmail = (user?.email ?? '').trim().toLowerCase();
-                  final newEmail = v.trim().toLowerCase();
-                  if (newEmail.isEmpty || newEmail != registeredEmail) {
-                    _isEmailVerified = false;
-                  } else if (user?.isEmailVerified == true) {
-                    _isEmailVerified = true;
-                  }
-                }),
+                onChanged: (v) => setState(() => _emailAddress = v),
               ),
               _buildTextField(
                 'WhatsApp / Alt Phone (વોટ્સએપ નંબર - 10 અંક)',
@@ -1590,6 +1418,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                     _govCategory = 'Select Category';
                   }),
                 ),
+                _buildGovClassBox(),
                 if (_department == 'State Government (રાજ્ય સરકાર)')
                   _buildDropdownField(
                     'Gujarat Government Category',
@@ -1783,6 +1612,8 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                   ),
                 ),
               ],
+              if (!_employmentType.contains('Not Working'))
+                _buildWorkDistrictBox(),
               _buildTextField('Designation / Detailed Occupation (હોદ્દો / વ્યવસાય વિગત) *', 'Enter Designation / Detailed Occupation...', Icons.badge_outlined, onChanged: (v) => setState(() => _designation = v)),
               _buildDropdownField(
                 'Yearly Income (વાર્ષિક આવક - રૂ.)',
@@ -1810,7 +1641,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 ],
                 onChanged: (v) => setState(() => _fatherContact = v),
               ),
-              _buildTextField('Mother\'s Name (માતાનું નામ) *', 'Enter Mother\'s Name (માતાનું નામ)', Icons.face_3_outlined, onChanged: (v) => setState(() => _motherName = v)),
+              _buildTextField('Mother\'s Name (માતાનું નામ) (મરજિયાત / Optional)', 'Enter Mother\'s Name (જો ઉપલબ્ધ હોય તો)...', Icons.face_3_outlined, onChanged: (v) => setState(() => _motherName = v)),
               _buildTextField('Mother\'s Occupation (માતાનો વ્યવસાય)', 'Enter Mother\'s Occupation (માતાનો વ્યવસાય)', Icons.work_outline, onChanged: (v) => setState(() => _motherOccupation = v)),
               _buildTextField(
                 'Guardian Contact Number (વાલીનો સંપર્ક નંબર - 10 અંક)',
@@ -1979,6 +1810,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
   }
 
   Widget _buildDropdownField(String label, String hint, IconData prefixIcon, List<String> items, {String? value, Function(String?)? onChanged}) {
+    final effectiveValue = (value != null && items.contains(value)) ? value : null;
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
@@ -1999,7 +1831,7 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
               ],
             ),
             child: DropdownButtonFormField<String>(
-              value: value,
+              value: effectiveValue,
               decoration: InputDecoration(
                 prefixIcon: Icon(prefixIcon, color: const Color(0xFFD4AF37), size: 20),
                 border: InputBorder.none,

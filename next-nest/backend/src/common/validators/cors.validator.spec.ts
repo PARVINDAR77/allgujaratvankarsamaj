@@ -37,13 +37,15 @@ describe("CORS Allowed Origins Validator", () => {
       expect(result).toEqual(["https://staging.allgujaratvankarsamaj.com"]);
     });
 
-    it("should reject empty or missing ALLOWED_ORIGINS in staging", () => {
-      expect(() => validateAndNormalizeAllowedOrigins("", "staging")).toThrow(
-        /ALLOWED_ORIGINS must be explicitly configured/,
-      );
-      expect(() => validateAndNormalizeAllowedOrigins(undefined, "staging")).toThrow(
-        /ALLOWED_ORIGINS must be explicitly configured/,
-      );
+    it("should fallback to default production domains when ALLOWED_ORIGINS is empty or undefined in staging", () => {
+      expect(validateAndNormalizeAllowedOrigins("", "staging")).toEqual([
+        "https://allgujaratvankarsamaj.com",
+        "https://www.allgujaratvankarsamaj.com",
+      ]);
+      expect(validateAndNormalizeAllowedOrigins(undefined, "staging")).toEqual([
+        "https://allgujaratvankarsamaj.com",
+        "https://www.allgujaratvankarsamaj.com",
+      ]);
       expect(() => validateAndNormalizeAllowedOrigins("   ,   ", "staging")).toThrow(
         /No valid origins parsed/,
       );

@@ -1269,7 +1269,7 @@ class CommunityNavigationMenu extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'પાસવર્ડ બદલો (Update Password)',
+                        'પાસવર્ડ બદલો (Change Password)',
                         style: TextStyle(
                           color: Color(0xFFFFDF7A),
                           fontSize: 13.5,

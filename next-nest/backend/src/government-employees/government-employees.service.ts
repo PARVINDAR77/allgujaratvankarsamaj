@@ -557,108 +557,317 @@ export class GovernmentEmployeesService {
   // SYNC MISSING GOVT EMPLOYEES FROM PROFILES
   // ==========================================
 
-  async syncMissingGovtEmployees() {
-    try {
-      // 0. Direct MySQL purge to ensure 100% deletion regardless of casing or schema variations
-      try {
-        await this.prisma.$executeRawUnsafe(`
-          DELETE ge FROM government_employments ge
-          INNER JOIN matrimonial_profiles p ON ge.profile_id = p.id
-          WHERE LOWER(COALESCE(p.occupation, '')) LIKE '%private%'
-             OR LOWER(COALESCE(p.occupation, '')) LIKE '%business%'
-             OR LOWER(COALESCE(p.occupation, '')) LIKE '%વેપાર%'
-             OR LOWER(COALESCE(p.occupation, '')) LIKE '%સ્વરોજગાર%'
-             OR LOWER(COALESCE(p.occupation, '')) LIKE '%not working%'
-             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%it company%'
-             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%pvt%'
-             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%private%'
-             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%ltd%'
-             OR LOWER(COALESCE(p.organization_name, '')) LIKE '%llp%'
-             OR LOWER(COALESCE(p.designation, '')) LIKE '%it company%'
-             OR LOWER(COALESCE(p.first_name, '')) LIKE '%parvindar%'
-             OR LOWER(COALESCE(ge.office_location, '')) LIKE '%it company%';
-        `);
-      } catch (_) {}
+  private isSyncRunning = false;
+  private lastSyncResult = {
+    status: "idle" as "idle" | "running" | "success" | "failed",
+    lastRunAt: null as string | null,
+    durationMs: 0,
+    syncedCount: 0,
+    hasMore: false,
+    error: undefined as string | undefined,
+  };
 
-      // 1. Purge any governmentEmployment records linked to private or business profiles
-      await this.prisma.governmentEmployment.deleteMany({
-        where: {
+  /**
+   * Observable status of government employee background / admin synchronization
+   */
+  getSyncStatus() {
+    return {
+      ...this.lastSyncResult,
+      isRunning: this.isSyncRunning,
+    };
+  }
+
+  /**
+   * Controlled Administrative / Maintenance Synchronization with Concurrency Lock.
+   *
+   * SAFEGUARD 1: Connection-Scoped Distributed Lock via Prisma Interactive Transaction.
+   * SAFEGUARD 2: Non-Destructive Soft-Deactivation & Strict Rejection/Manual Review Preservation.
+   * SAFEGUARD 3: Deterministic Bounded Batch Progression (up to 250 profiles) & Unique profile_id Upsert.
+   */
+  async triggerAdminSync(): Promise<{
+    success: boolean;
+    message: string;
+    durationMs: number;
+    syncedCount: number;
+    updatedCount: number;
+    deactivatedCount: number;
+    hasMore: boolean;
+  }> {
+    if (this.isSyncRunning) {
+      this.logger.warn(
+        "Government employee sync already in progress (in-process). Concurrent invocation suppressed.",
+      );
+      throw new ConflictException(
+        "Government profile synchronization is already in progress.",
+      );
+    }
+
+    this.isSyncRunning = true;
+    this.lastSyncResult.status = "running";
+    const startTime = Date.now();
+    this.logger.log("Administrative government profile synchronization started...");
+
+    try {
+      // Execute within an interactive transaction to guarantee GET_LOCK and RELEASE_LOCK
+      // are pinned to the exact same dedicated database connection.
+      const result = await this.prisma.$transaction(
+        async (tx) => {
+          let lockAcquired = false;
+          try {
+            const lockRows = await tx.$queryRawUnsafe<any[]>(
+              `SELECT GET_LOCK('govt_employee_sync_lock', 0) AS acquired`,
+            );
+            const val = lockRows?.[0]?.acquired;
+            lockAcquired = val === 1 || val === 1n || val === "1";
+          } catch (lockErr: any) {
+            // In unit tests or non-MySQL environments where GET_LOCK is unsupported,
+            // fall back to the in-memory process lock.
+            this.logger.debug(
+              `Advisory lock check skipped/unsupported: ${lockErr?.message || lockErr}`,
+            );
+            lockAcquired = true;
+          }
+
+          if (!lockAcquired) {
+            throw new ConflictException(
+              "Government profile synchronization is already running in another process.",
+            );
+          }
+
+          try {
+            return await this.executeSyncSafelyOnTx(tx);
+          } finally {
+            try {
+              if (lockAcquired) {
+                await tx.$queryRawUnsafe(
+                  `SELECT RELEASE_LOCK('govt_employee_sync_lock')`,
+                );
+              }
+            } catch (_) {}
+          }
+        },
+        { timeout: 60000 },
+      );
+
+      const durationMs = Date.now() - startTime;
+      const isComplete = !result.hasMore;
+      this.lastSyncResult = {
+        status: "success",
+        lastRunAt: new Date().toISOString(),
+        durationMs,
+        syncedCount: result.syncedCount,
+        hasMore: result.hasMore,
+        error: undefined,
+      };
+      this.logger.log(
+        `Government profile synchronization ${isComplete ? "completed" : "reached batch limit"} in ${durationMs}ms. Created: ${result.syncedCount}, Updated: ${result.updatedCount}, Soft-Deactivated: ${result.deactivatedCount}, HasMore: ${result.hasMore}.`,
+      );
+      return {
+        success: true,
+        message: isComplete
+          ? `Synchronization fully completed in ${durationMs}ms.`
+          : `Synchronization processed batch limit (${result.syncedCount} created). Additional eligible profiles remain to be processed.`,
+        durationMs,
+        syncedCount: result.syncedCount,
+        updatedCount: result.updatedCount,
+        deactivatedCount: result.deactivatedCount,
+        hasMore: result.hasMore,
+      };
+    } catch (err: any) {
+      const durationMs = Date.now() - startTime;
+      if (!(err instanceof ConflictException)) {
+        this.lastSyncResult = {
+          status: "failed",
+          lastRunAt: new Date().toISOString(),
+          durationMs,
+          syncedCount: 0,
+          hasMore: false,
+          error: err?.message || String(err),
+        };
+        this.logger.error(
+          `Government profile synchronization failed after ${durationMs}ms: ${err?.message || err}`,
+          err?.stack,
+        );
+      }
+      throw err;
+    } finally {
+      this.isSyncRunning = false;
+    }
+  }
+
+  /**
+   * Backwards-compatible delegation to controlled synchronization
+   */
+  async syncMissingGovtEmployees() {
+    return this.triggerAdminSync();
+  }
+
+  private async executeSyncSafelyOnTx(tx: any): Promise<{
+    syncedCount: number;
+    updatedCount: number;
+    deactivatedCount: number;
+    hasMore: boolean;
+  }> {
+    let syncedCount = 0;
+    let updatedCount = 0;
+    let deactivatedCount = 0;
+
+    // =========================================================================
+    // SAFEGUARD 2: NON-DESTRUCTIVE SOFT DEACTIVATION & SAFE REACTIVATION
+    // - Never execute destructive DELETE operations.
+    // - Never touch records that have manual admin reviews (departmentId, designationId,
+    //   verifiedBy, or attached verification documents).
+    // - Soft-deactivate (isActive = false) only unreviewed records where source profile
+    //   explicitly lost government eligibility.
+    // - Reactivate (isActive = true) only unreviewed records that are confirmed eligible.
+    // =========================================================================
+    const unreviewedActiveGovt = await tx.governmentEmployment.findMany({
+      where: {
+        isActive: true,
+        departmentId: null,
+        designationId: null,
+        verifiedBy: null,
+        verifications: { none: {} },
+        profile: {
           OR: [
-            {
-              profile: {
-                OR: [
-                  { occupation: { contains: "Private" } },
-                  { occupation: { contains: "ખાનગી" } },
-                  { occupation: { contains: "Business" } },
-                  { occupation: { contains: "વેપાર" } },
-                  { occupation: { contains: "સ્વરોજગાર" } },
-                  { occupation: { contains: "Not Working" } },
-                  { occupation: { contains: "કોઈ નોકરી નથી" } },
-                  { organizationName: { contains: "it company" } },
-                  { organizationName: { contains: "pvt" } },
-                  { organizationName: { contains: "private" } },
-                  { organizationName: { contains: "ખાનગી" } },
-                  { organizationName: { contains: "ltd" } },
-                  { organizationName: { contains: "llp" } },
-                  { designation: { contains: "it company" } },
-                  { firstName: { contains: "Parvindar" } },
-                  { firstName: { contains: "parvindar" } },
-                ],
-              },
-            },
-            { officeLocation: { contains: "it company" } },
-            { officeLocation: { contains: "pvt" } },
-            { officeLocation: { contains: "private" } },
+            { status: ProfileStatus.REJECTED },
+            { status: ProfileStatus.SUSPENDED },
+            { occupation: { contains: "Private" } },
+            { occupation: { contains: "ખાનગી" } },
+            { occupation: { contains: "Business" } },
+            { occupation: { contains: "વેપાર" } },
+            { occupation: { contains: "સ્વરોજગાર" } },
+            { occupation: { contains: "Not Working" } },
+            { occupation: { contains: "કોઈ નોકરી નથી" } },
+            { organizationName: { contains: "it company" } },
+            { organizationName: { contains: "pvt ltd" } },
+            { organizationName: { contains: "private limited" } },
+            { designation: { contains: "it company" } },
           ],
         },
-      });
+      },
+      select: { id: true },
+      take: 50,
+    });
 
-      // 2. Find eligible profiles that are truly government
-      const govtProfiles = await this.prisma.matrimonialProfile.findMany({
+    for (const record of unreviewedActiveGovt) {
+      await tx.governmentEmployment.update({
+        where: { id: record.id },
+        data: { isActive: false },
+      });
+      deactivatedCount++;
+    }
+
+    const isDisqualified = (occ: string, org: string, desig: string, fn: string) => {
+      return (
+        occ.includes("private") ||
+        occ.includes("ખાનગી") ||
+        occ.includes("business") ||
+        occ.includes("વેપાર") ||
+        occ.includes("સ્વરોજગાર") ||
+        occ.includes("not working") ||
+        occ.includes("કોઈ નોકરી નથી") ||
+        org.includes("it company") ||
+        org.includes("pvt ltd") ||
+        org.includes("private limited") ||
+        org.includes("ખાનગી") ||
+        desig.includes("it company") ||
+        fn.includes("parvindar")
+      );
+    };
+
+    const qualifyingKeywords = [
+      { occupation: { contains: "Gov" } },
+      { occupation: { contains: "સરકારી" } },
+      { organizationName: { contains: "Gov" } },
+      { organizationName: { contains: "સરકારી" } },
+      { occupation: { contains: "State Govt" } },
+      { occupation: { contains: "Central Govt" } },
+      { organizationName: { contains: "State Govt" } },
+      { organizationName: { contains: "Central Govt" } },
+      { designation: { contains: "Teacher" } },
+      { designation: { contains: "શિક્ષક" } },
+      { designation: { contains: "Police" } },
+      { designation: { contains: "પોલીસ" } },
+      { designation: { contains: "Talati" } },
+      { designation: { contains: "તલાટી" } },
+    ];
+
+    // Safe reactivation for unreviewed inactive records whose profile is now verified government
+    const reactivatableGovt = await tx.governmentEmployment.findMany({
+      where: {
+        isActive: false,
+        departmentId: null,
+        designationId: null,
+        verifiedBy: null,
+        verificationStatus: { not: GovtVerificationStatus.REJECTED },
+        rejectionReason: null,
+        verifications: { none: {} },
+        profile: {
+          status: { notIn: [ProfileStatus.REJECTED, ProfileStatus.SUSPENDED] },
+          OR: qualifyingKeywords,
+        },
+      },
+      include: {
+        profile: true,
+      },
+      take: 50,
+    });
+
+    for (const record of reactivatableGovt) {
+      const p = record.profile;
+      if (!p) continue;
+      const occ = (p.occupation || "").toLowerCase();
+      const org = (p.organizationName || "").toLowerCase();
+      const desig = (p.designation || "").toLowerCase();
+      const fn = (p.firstName || "").toLowerCase();
+
+      if (!isDisqualified(occ, org, desig, fn)) {
+        await tx.governmentEmployment.update({
+          where: { id: record.id },
+          data: { isActive: true },
+        });
+        updatedCount++;
+      }
+    }
+
+    // =========================================================================
+    // SAFEGUARD 3: DETERMINISTIC BOUNDED BATCH PROGRESSION & UNIQUE UPSERT
+    // - Targets UNLINKED profiles (governmentEmployment == null) so batches advance deterministically.
+    // - Bounded to up to 5 batches of 50 (max 250 profiles per execution) to respect memory & timeout limits.
+    // - Unique profile_id check.
+    // - Never overwrite manual admin departmentId, designationId, or verificationStatus.
+    // =========================================================================
+    const BATCH_SIZE = 50;
+    const MAX_BATCHES = 5;
+    let batchIteration = 0;
+    let hasMoreUnlinked = true;
+
+    while (hasMoreUnlinked && batchIteration < MAX_BATCHES) {
+      batchIteration++;
+      const unlinkedBatch = await tx.matrimonialProfile.findMany({
+        take: BATCH_SIZE,
+        orderBy: { id: "asc" },
         where: {
           governmentEmployment: null,
-          status: { not: ProfileStatus.REJECTED },
-          OR: [
-            { occupation: { contains: "Gov" } },
-            { occupation: { contains: "સરકારી" } },
-            { organizationName: { contains: "Gov" } },
-            { organizationName: { contains: "સરકારી" } },
-            { occupation: { contains: "State Govt" } },
-            { occupation: { contains: "Central Govt" } },
-            { organizationName: { contains: "State Govt" } },
-            { organizationName: { contains: "Central Govt" } },
-            { designation: { contains: "Teacher" } },
-            { designation: { contains: "શિક્ષક" } },
-            { designation: { contains: "Police" } },
-            { designation: { contains: "પોલીસ" } },
-            { designation: { contains: "Talati" } },
-            { designation: { contains: "તલાટી" } },
-          ],
+          status: { notIn: [ProfileStatus.REJECTED, ProfileStatus.SUSPENDED] },
+          OR: qualifyingKeywords,
         },
       });
 
-      for (const p of govtProfiles) {
+      if (!unlinkedBatch || unlinkedBatch.length === 0) {
+        hasMoreUnlinked = false;
+        break;
+      }
+
+      for (const p of unlinkedBatch) {
         const occ = (p.occupation || "").toLowerCase();
         const org = (p.organizationName || "").toLowerCase();
         const desig = (p.designation || "").toLowerCase();
         const fn = (p.firstName || "").toLowerCase();
 
-        // Safely exclude private or business profiles in JS without breaking on null DB fields
-        if (
-          occ.includes("private") ||
-          occ.includes("ખાનગી") ||
-          occ.includes("business") ||
-          occ.includes("વેપાર") ||
-          occ.includes("સ્વરોજગાર") ||
-          occ.includes("not working") ||
-          occ.includes("કોઈ નોકરી નથી") ||
-          org.includes("it company") ||
-          org.includes("pvt ltd") ||
-          org.includes("private limited") ||
-          org.includes("ખાનગી") ||
-          desig.includes("it company") ||
-          fn.includes("parvindar")
-        ) {
+        // Explicit exclusion check
+        if (isDisqualified(occ, org, desig, fn)) {
           continue;
         }
 
@@ -682,25 +891,41 @@ export class GovernmentEmployeesService {
         const officeLoc =
           p.city || p.state || p.nativePlace || p.organizationName || "Gujarat";
 
-        await this.prisma.governmentEmployment.create({
-          data: {
-            profileId: p.id,
-            employmentType: empType,
-            officeLocation: officeLoc,
-            verificationStatus: GovtVerificationStatus.VERIFIED,
-            isActive: true,
-            isFeatured: p.isFeatured || false,
-          },
+        // Double-check existing record by unique profileId to be 100% concurrency-safe
+        const existing = await tx.governmentEmployment.findUnique({
+          where: { profileId: p.id },
         });
-        this.logger.log(
-          `Auto-synced government profile: ${p.firstName} ${p.lastName} (${p.id})`,
-        );
+
+        if (!existing) {
+          // Create new auto-synced record
+          await tx.governmentEmployment.create({
+            data: {
+              profileId: p.id,
+              employmentType: empType,
+              officeLocation: officeLoc,
+              verificationStatus: GovtVerificationStatus.VERIFIED,
+              isActive: true,
+              isFeatured: Boolean(p.isFeatured),
+            },
+          });
+          syncedCount++;
+          this.logger.log(
+            `Auto-synced government profile: ${p.firstName} ${p.lastName} (${p.id})`,
+          );
+        }
       }
-    } catch (err: any) {
-      this.logger.warn(
-        `syncMissingGovtEmployees warning: ${err?.message || err}`,
-      );
+
+      if (unlinkedBatch.length < BATCH_SIZE) {
+        hasMoreUnlinked = false;
+      }
     }
+
+    return {
+      syncedCount,
+      updatedCount,
+      deactivatedCount,
+      hasMore: hasMoreUnlinked,
+    };
   }
 
   // ==========================================
@@ -708,8 +933,6 @@ export class GovernmentEmployeesService {
   // ==========================================
 
   async searchPublicGovtEmployees(query: GovtEmployeeSearchQueryDto) {
-    await this.syncMissingGovtEmployees();
-
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.min(50, Math.max(1, Number(query.limit) || 20));
     const skip = (page - 1) * limit;
@@ -922,7 +1145,6 @@ export class GovernmentEmployeesService {
   }
 
   async getFeaturedGovtEmployees() {
-    await this.syncMissingGovtEmployees();
     try {
       const items = await this.prisma.governmentEmployment.findMany({
         where: {
@@ -1010,8 +1232,15 @@ export class GovernmentEmployeesService {
   // ADMIN PANEL APIs
   // ==========================================
 
-  async getAdminGovtEmployees(page = 1, limit = 20, status?: string) {
-    await this.syncMissingGovtEmployees();
+  async getAdminGovtEmployees(
+    page = 1,
+    limit = 20,
+    status?: string,
+    forceSync = false,
+  ) {
+    if (forceSync) {
+      await this.triggerAdminSync();
+    }
     const whereCondition: any = {
       profile: {
         status: { not: ProfileStatus.REJECTED },

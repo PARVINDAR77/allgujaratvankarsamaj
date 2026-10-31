@@ -275,7 +275,7 @@ export declare class GovernmentEmployeesController {
         featured: number;
         active: number;
     }>;
-    getAdminProfiles(page?: number, limit?: number, status?: string): Promise<{
+    getAdminProfiles(req: any, page?: number, limit?: number, status?: string, sync?: string): Promise<{
         data: ({
             designation: {
                 name: string;
@@ -569,6 +569,24 @@ export declare class GovernmentEmployeesController {
             hasPreviousPage: boolean;
         };
     }>;
+    triggerAdminSync(req: any): Promise<{
+        success: boolean;
+        message: string;
+        durationMs: number;
+        syncedCount: number;
+        updatedCount: number;
+        deactivatedCount: number;
+        hasMore: boolean;
+    }>;
+    getAdminSyncStatus(req: any): {
+        isRunning: boolean;
+        status: "idle" | "running" | "success" | "failed";
+        lastRunAt: string | null;
+        durationMs: number;
+        syncedCount: number;
+        hasMore: boolean;
+        error: string | undefined;
+    };
     verifyProfile(req: any, id: string, dto: AdminVerifyGovtEmpDto): Promise<{
         designation: {
             name: string;

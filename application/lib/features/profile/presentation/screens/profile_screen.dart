@@ -889,6 +889,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ? profile.annualIncome!
                     : '₹75,000',
               ),
+              if (profile.govClass != null && profile.govClass!.isNotEmpty && !profile.govClass!.contains('Select')) ...[
+                const SizedBox(height: 20),
+                _buildGridField(
+                  label: 'સરકારી વર્ગ / કેડર (OFFICER CLASS)',
+                  value: profile.govClass!,
+                ),
+              ],
+              if (profile.workDistrict != null && profile.workDistrict!.isNotEmpty && !profile.workDistrict!.contains('Select')) ...[
+                const SizedBox(height: 20),
+                _buildGridField(
+                  label: 'નોકરી / વ્યવસાયનો જિલ્લો (WORK DISTRICT)',
+                  value: profile.workDistrict!,
+                ),
+              ],
 
               const SizedBox(height: 20),
 

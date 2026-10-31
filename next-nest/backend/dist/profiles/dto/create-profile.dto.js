@@ -251,6 +251,26 @@ __decorate([
 ], CreateProfileDto.prototype, "designation", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
+        description: "Government Officer / Employee Class (Class 1, Class 2, Class 3, Class 4)",
+        example: "Class 1 Officer (વર્ગ-૧ ગેઝેટેડ અધિકારી)",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "govClass", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
+        description: "Work / Job / Business District",
+        example: "Gandhinagar (ગાંધીનગર)",
+    }),
+    (0, class_validator_1.IsOptional)(),
+    (0, class_transformer_1.Transform)(({ value }) => (typeof value === "string" ? value.trim() : value)),
+    (0, class_validator_1.IsString)(),
+    __metadata("design:type", String)
+], CreateProfileDto.prototype, "workDistrict", void 0);
+__decorate([
+    (0, swagger_1.ApiPropertyOptional)({
         description: "Profile photo URL or base64 data URI",
     }),
     (0, class_validator_1.IsOptional)(),

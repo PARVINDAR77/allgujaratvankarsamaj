@@ -67,6 +67,8 @@ export declare class ProfilesController {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            govClass: any;
+            workDistrict: any;
             showInMatrimony: boolean;
             privacySettings: any;
             user: any;
@@ -131,6 +133,8 @@ export declare class ProfilesController {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            govClass: any;
+            workDistrict: any;
             showInMatrimony: boolean;
             privacySettings: any;
             user: any;

@@ -218,7 +218,7 @@ describe("AuthService Security & Regression Tests", () => {
 
   describe("Registration Flow Security", () => {
     it("MUST reject registration with ConflictException if email is already registered", async () => {
-      (usersService.findByEmail as jest.Mock).mockResolvedValue({ id: "existing-user" });
+      (usersService.findByEmail as jest.Mock).mockResolvedValue({ id: "existing-user", isEmailVerified: true });
 
       await expect(
         authService.register({
@@ -247,7 +247,7 @@ describe("AuthService Security & Regression Tests", () => {
     it("MUST reject registration with ConflictException if phone number is already registered", async () => {
       (usersService.findByEmail as jest.Mock).mockResolvedValue(null);
       (prismaService.matrimonialProfile.findFirst as jest.Mock).mockResolvedValue(null);
-      (usersService.findByPhone as jest.Mock).mockResolvedValue({ id: "existing-phone-user" });
+      (usersService.findByPhone as jest.Mock).mockResolvedValue({ id: "existing-phone-user", isPhoneVerified: true });
 
       await expect(
         authService.register({

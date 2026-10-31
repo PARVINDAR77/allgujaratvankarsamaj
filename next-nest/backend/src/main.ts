@@ -7,6 +7,7 @@ import { AllExceptionsFilter } from "./common/filters/http-exception.filter";
 import { validateAndNormalizeAllowedOrigins } from "./common/validators/cors.validator";
 import { isAllowedStaticMediaPath } from "./common/validators/static-media.validator";
 import { servePublicStaticMedia } from "./common/middleware/static-media.middleware";
+import { GovernmentEmployeesService } from "./government-employees/government-employees.service";
 import helmet from "helmet";
 import * as morgan from "morgan";
 
@@ -20,8 +21,11 @@ import * as cookieParser from "cookie-parser";
 
 
 async function bootstrap() {
+  const bootstrapStartTime = Date.now();
   const logger = new Logger("Bootstrap");
+  logger.log("Starting NestJS application bootstrap...");
   const app = await NestFactory.create(AppModule);
+  logger.log(`Nest application instance initialized in ${Date.now() - bootstrapStartTime}ms`);
 
   // Read config early for bootstrap dependencies
   const configService = app.get(ConfigService);
@@ -138,7 +142,8 @@ async function bootstrap() {
     } catch (e) {
       logger.warn(`Failed to chmod socket: ${e}`);
     }
-    logger.log(`Application is running on Unix Socket: ${socketPath}`);
+    const elapsed = Date.now() - bootstrapStartTime;
+    logger.log(`Application is running on Unix Socket: ${socketPath} (Bootstrap ready in ${elapsed}ms)`);
 
     const gracefulShutdown = () => {
       try {
@@ -153,7 +158,22 @@ async function bootstrap() {
   } else {
     const port = process.env.PORT || configService.get<number>("PORT", 3000);
     await app.listen(port, '127.0.0.1');
-    logger.log(`Application is running on: http://127.0.0.1:${port}/api/v1`);
+    const elapsed = Date.now() - bootstrapStartTime;
+    logger.log(`Application is running on: http://127.0.0.1:${port}/api/v1 (Bootstrap ready in ${elapsed}ms)`);
+  }
+
+  // Safe post-listen background sync hook (optional, disabled by default)
+  if (process.env.SYNC_GOVT_ON_STARTUP === "true") {
+    setImmediate(async () => {
+      try {
+        const govtEmployeesService = app.get(GovernmentEmployeesService);
+        logger.log("Background startup synchronization of government employees initiated...");
+        const result = await govtEmployeesService.triggerAdminSync();
+        logger.log(`Background startup synchronization finished: ${JSON.stringify(result)}`);
+      } catch (err: any) {
+        logger.warn(`Background startup synchronization skipped or error: ${err?.message || err}`);
+      }
+    });
   }
 
   process.on("unhandledRejection", (reason: any) => {

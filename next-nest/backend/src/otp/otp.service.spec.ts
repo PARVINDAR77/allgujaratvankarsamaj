@@ -38,6 +38,7 @@ describe("OtpService - Security, Throttling & Verification Tests", () => {
     };
 
     mailService = {
+      isConfigured: jest.fn().mockReturnValue(true),
       sendOtpEmail: jest.fn().mockResolvedValue({ success: true, messageId: "email_123" }),
     };
 
@@ -55,7 +56,11 @@ describe("OtpService - Security, Throttling & Verification Tests", () => {
 
   describe("Registration Flow (Dual Verification)", () => {
     it("MUST reject registration OTP request if phone is already registered", async () => {
-      prisma.user.findFirst.mockResolvedValueOnce({ id: "user-1", phone: "9876543210" });
+      prisma.user.findFirst.mockResolvedValueOnce({
+        id: "user-1",
+        phone: "9876543210",
+        isPhoneVerified: true,
+      });
 
       await expect(
         service.sendRegistrationOtp({

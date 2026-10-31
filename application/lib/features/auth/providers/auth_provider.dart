@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,40 +94,115 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> _checkAuth() async {
     try {
       final token = await _storage.getToken();
-      if (token != null && token.trim().isNotEmpty) {
-        final user = _decodeToken(token);
-        if (user != null) {
-          state = AuthState.authenticated(user);
-          try {
-            final meRes = await _dio.get('/auth/me');
-            if (meRes.data != null && meRes.data is Map<String, dynamic>) {
-              final meUser = UserModel.fromJson(meRes.data);
-              // Preserve hasProfile: true or isVerified: true if already true
-              final effectiveHasProfile = meUser.hasProfile || user.hasProfile;
-              final effectiveIsVerified = meUser.isVerified || user.isVerified;
-              state = AuthState.authenticated(meUser.copyWith(
-                hasProfile: effectiveHasProfile,
-                isVerified: effectiveIsVerified,
-              ));
-            }
-          } catch (_) {}
-
-          // If still not verified or no profile according to local state, cross-check verification endpoint
-          if (state.user != null && (!state.user!.isVerified || !state.user!.hasProfile)) {
-            try {
-              await checkVerificationStatus();
-            } catch (_) {}
-          }
-          return;
-        } else {
-          // Token is invalid or expired, clean up
-          await _storage.deleteToken();
-        }
+      if (token == null || token.trim().isEmpty) {
+        await _storage.deleteUserData();
+        state = AuthState.unauthenticated();
+        return;
       }
+
+      final decodedUser = _decodeToken(token);
+      if (decodedUser == null) {
+        // Token is invalid or expired, clean up
+        await _storage.deleteToken();
+        await _storage.deleteUserData();
+        state = AuthState.unauthenticated();
+        return;
+      }
+
+      // Check for cached user data in localStorage (0ms latency on browser refresh)
+      UserModel? resolvedUser;
+      try {
+        final cachedData = await _storage.getUserData();
+        if (cachedData != null) {
+          final cachedUser = UserModel.fromJson(cachedData);
+          if (cachedUser.id == decodedUser.id || cachedUser.email == decodedUser.email) {
+            resolvedUser = cachedUser;
+            // If cached user already has a profile or is verified, immediately set authenticated
+            if (resolvedUser.hasProfile || resolvedUser.isVerified) {
+              state = AuthState.authenticated(resolvedUser);
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('[Auth] Error reading cached user: $e');
+      }
+
+      // If state is not yet authenticated, keep it in loading (never emit unverified authenticated)
+      if (!state.isAuthenticated) {
+        state = AuthState.loading();
+      }
+
+      // Fetch fresh user profile details from /auth/me
+      try {
+        final meRes = await _dio.get('/auth/me');
+        if (meRes.data != null && meRes.data is Map<String, dynamic>) {
+          final meUser = UserModel.fromJson(meRes.data);
+          final effectiveHasProfile = meUser.hasProfile || (resolvedUser?.hasProfile ?? false) || decodedUser.hasProfile;
+          final effectiveIsVerified = meUser.isVerified || (resolvedUser?.isVerified ?? false) || decodedUser.isVerified;
+          resolvedUser = meUser.copyWith(
+            hasProfile: effectiveHasProfile,
+            isVerified: effectiveIsVerified,
+          );
+        }
+      } catch (e) {
+        debugPrint('[Auth] /auth/me fetch error: $e');
+      }
+
+      // If still not verified or hasProfile is false, cross-check /verifications/my-status
+      if (resolvedUser == null || !resolvedUser.isVerified || !resolvedUser.hasProfile) {
+        try {
+          final vRes = await _dio.get('/verifications/my-status');
+          if (vRes.data != null && vRes.data is Map<String, dynamic>) {
+            final isVer = vRes.data['isVerified'] == true ||
+                vRes.data['isVerified'] == 1 ||
+                vRes.data['isVerified'] == 'true';
+            final hasProf = vRes.data['hasProfile'] == true ||
+                vRes.data['hasProfile'] == 1 ||
+                vRes.data['hasProfile'] == 'true' ||
+                (vRes.data['profileStatus'] != null && vRes.data['profileStatus'] != 'NOT_CREATED') ||
+                vRes.data['latestRequest'] != null ||
+                isVer;
+
+            resolvedUser = (resolvedUser ?? decodedUser).copyWith(
+              isVerified: isVer || (resolvedUser?.isVerified ?? false),
+              hasProfile: hasProf || (resolvedUser?.hasProfile ?? false),
+            );
+          }
+        } catch (_) {}
+      }
+
+      // Fallback check to /profiles/me
+      if (resolvedUser == null || !resolvedUser.hasProfile) {
+        try {
+          final pRes = await _dio.get('/profiles/me');
+          if (pRes.data != null && pRes.data is Map<String, dynamic>) {
+            final isVer = pRes.data['isVerified'] == true || pRes.data['isVerified'] == 1 || pRes.data['isVerified'] == 'true';
+            final hasProf = (pRes.data['id'] != null && pRes.data['id'].toString().isNotEmpty) || isVer;
+            resolvedUser = (resolvedUser ?? decodedUser).copyWith(
+              isVerified: isVer || (resolvedUser?.isVerified ?? false),
+              hasProfile: hasProf || (resolvedUser?.hasProfile ?? false),
+            );
+          }
+        } catch (_) {}
+      }
+
+      final finalUser = resolvedUser ?? decodedUser;
+      state = AuthState.authenticated(finalUser);
+      await _storage.saveUserData(finalUser.toJson());
+      return;
     } catch (e) {
-      print('JWT auth check error: $e');
+      debugPrint('[Auth] JWT auth check error: $e');
     }
     state = AuthState.unauthenticated();
+  }
+
+  Future<void> updateUser(UserModel user) async {
+    state = AuthState.authenticated(user);
+    try {
+      await _storage.saveUserData(user.toJson());
+    } catch (e) {
+      debugPrint('[Auth] Error saving updated user: $e');
+    }
   }
 
   Future<bool> login(String email, String password) async {
@@ -151,6 +227,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
         if (user != null) {
           state = AuthState.authenticated(user);
+          await _storage.saveUserData(user.toJson());
+          checkVerificationStatus();
           return true;
         } else {
           state = AuthState.error('Failed to decode user token. Invalid token format.');
@@ -374,10 +452,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
             res.data['latestRequest'] != null ||
             isVerified;
         if (state.user!.isVerified != isVerified || state.user!.hasProfile != hasProfile) {
-          state = AuthState.authenticated(state.user!.copyWith(
+          final updated = state.user!.copyWith(
             isVerified: isVerified,
             hasProfile: hasProfile,
-          ));
+          );
+          state = AuthState.authenticated(updated);
+          await _storage.saveUserData(updated.toJson());
         }
         return isVerified;
       }
@@ -390,10 +470,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
               res.data['isVerified'] == 'true';
           final hasProfile = (res.data['id'] != null && res.data['id'].toString().isNotEmpty) || isVerified;
           if (state.user!.isVerified != isVerified || state.user!.hasProfile != hasProfile) {
-            state = AuthState.authenticated(state.user!.copyWith(
+            final updated = state.user!.copyWith(
               isVerified: isVerified,
               hasProfile: hasProfile,
-            ));
+            );
+            state = AuthState.authenticated(updated);
+            await _storage.saveUserData(updated.toJson());
           }
           return isVerified;
         }
@@ -404,6 +486,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout() async {
     await _storage.deleteToken();
+    await _storage.deleteUserData();
     state = AuthState.unauthenticated();
   }
 

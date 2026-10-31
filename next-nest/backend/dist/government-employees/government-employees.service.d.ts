@@ -253,7 +253,36 @@ export declare class GovernmentEmployeesService {
         verifiedBy: string | null;
         isActive: boolean;
     }>;
-    syncMissingGovtEmployees(): Promise<void>;
+    private isSyncRunning;
+    private lastSyncResult;
+    getSyncStatus(): {
+        isRunning: boolean;
+        status: "idle" | "running" | "success" | "failed";
+        lastRunAt: string | null;
+        durationMs: number;
+        syncedCount: number;
+        hasMore: boolean;
+        error: string | undefined;
+    };
+    triggerAdminSync(): Promise<{
+        success: boolean;
+        message: string;
+        durationMs: number;
+        syncedCount: number;
+        updatedCount: number;
+        deactivatedCount: number;
+        hasMore: boolean;
+    }>;
+    syncMissingGovtEmployees(): Promise<{
+        success: boolean;
+        message: string;
+        durationMs: number;
+        syncedCount: number;
+        updatedCount: number;
+        deactivatedCount: number;
+        hasMore: boolean;
+    }>;
+    private executeSyncSafelyOnTx;
     searchPublicGovtEmployees(query: GovtEmployeeSearchQueryDto): Promise<{
         data: {
             id: any;
@@ -327,7 +356,7 @@ export declare class GovernmentEmployeesService {
         isVerified: boolean;
         isFeatured: any;
     }>;
-    getAdminGovtEmployees(page?: number, limit?: number, status?: string): Promise<{
+    getAdminGovtEmployees(page?: number, limit?: number, status?: string, forceSync?: boolean): Promise<{
         data: ({
             designation: {
                 name: string;

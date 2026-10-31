@@ -273,10 +273,20 @@ class _CandidateProfileDetailScreenState
                         'રોજગારી પ્રકાર (Employment Type)',
                         profile.employmentType.isNotEmpty ? profile.employmentType : 'Not specified',
                       ),
+                      if (profile.govClass != null && profile.govClass!.isNotEmpty && !profile.govClass!.contains('Select'))
+                        _buildDetailRow(
+                          'સરકારી વર્ગ / કેડર (Officer Class)',
+                          profile.govClass!,
+                        ),
                       _buildDetailRow(
                         'હોદ્દો / પદ (Designation / Role)',
                         profile.designation.isNotEmpty ? profile.designation : 'Not specified',
                       ),
+                      if (profile.workDistrict != null && profile.workDistrict!.isNotEmpty && !profile.workDistrict!.contains('Select'))
+                        _buildDetailRow(
+                          'નોકરી / વ્યવસાયનો જિલ્લો (Work District)',
+                          profile.workDistrict!,
+                        ),
                       _buildDetailRow(
                         'ખાતું / સંસ્થા / કંપની (Organization / Dept)',
                         profile.department.isNotEmpty ? profile.department : 'Not specified',
@@ -2390,7 +2400,11 @@ class _CandidateProfileDetailScreenState
             _buildWebGrid([
               _WebGridItem('શિક્ષણ / ડિગ્રી (Education)', profile.education.isNotEmpty ? profile.education : 'Not specified'),
               _WebGridItem('રોજગારી પ્રકાર (Employment Type)', profile.employmentType.isNotEmpty ? profile.employmentType : 'Not specified'),
+              if (profile.govClass != null && profile.govClass!.isNotEmpty && !profile.govClass!.contains('Select'))
+                _WebGridItem('સરકારી વર્ગ / કેડર (Officer Class)', profile.govClass!),
               _WebGridItem('હોદ્દો / પદ (Designation / Role)', profile.designation.isNotEmpty ? profile.designation : 'Not specified'),
+              if (profile.workDistrict != null && profile.workDistrict!.isNotEmpty && !profile.workDistrict!.contains('Select'))
+                _WebGridItem('નોકરી / વ્યવસાયનો જિલ્લો (Work District)', profile.workDistrict!),
               _WebGridItem('ખાતું / સંસ્થા / કંપની (Organization / Dept)', profile.department.isNotEmpty ? profile.department : 'Not specified'),
               _WebGridItem('વાર્ષિક આવક (Annual Income)', profile.annualIncome != null && profile.annualIncome!.isNotEmpty ? profile.annualIncome! : 'Not specified'),
               if (profile.businessIndustry != null && profile.businessIndustry!.isNotEmpty)

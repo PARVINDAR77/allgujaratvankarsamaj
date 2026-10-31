@@ -14,6 +14,14 @@ export class HealthService {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  checkLiveness(): { status: string; service: string; timestamp: string } {
+    return {
+      status: "ok",
+      service: "backend",
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   async checkHealth(): Promise<HealthStatusResponse> {
     let dbStatus = "disconnected";
     try {

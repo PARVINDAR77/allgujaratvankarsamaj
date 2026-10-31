@@ -8,12 +8,16 @@ const app_module_1 = require("./app.module");
 const http_exception_filter_1 = require("./common/filters/http-exception.filter");
 const cors_validator_1 = require("./common/validators/cors.validator");
 const static_media_middleware_1 = require("./common/middleware/static-media.middleware");
+const government_employees_service_1 = require("./government-employees/government-employees.service");
 const helmet_1 = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 async function bootstrap() {
+    const bootstrapStartTime = Date.now();
     const logger = new common_1.Logger("Bootstrap");
+    logger.log("Starting NestJS application bootstrap...");
     const app = await core_1.NestFactory.create(app_module_1.AppModule);
+    logger.log(`Nest application instance initialized in ${Date.now() - bootstrapStartTime}ms`);
     const configService = app.get(config_1.ConfigService);
     app.use(cookieParser());
     app.use((0, helmet_1.default)({
@@ -84,7 +88,8 @@ async function bootstrap() {
         catch (e) {
             logger.warn(`Failed to chmod socket: ${e}`);
         }
-        logger.log(`Application is running on Unix Socket: ${socketPath}`);
+        const elapsed = Date.now() - bootstrapStartTime;
+        logger.log(`Application is running on Unix Socket: ${socketPath} (Bootstrap ready in ${elapsed}ms)`);
         const gracefulShutdown = () => {
             try {
                 if (fs.existsSync(socketPath)) {
@@ -100,7 +105,21 @@ async function bootstrap() {
     else {
         const port = process.env.PORT || configService.get("PORT", 3000);
         await app.listen(port, '127.0.0.1');
-        logger.log(`Application is running on: http://127.0.0.1:${port}/api/v1`);
+        const elapsed = Date.now() - bootstrapStartTime;
+        logger.log(`Application is running on: http://127.0.0.1:${port}/api/v1 (Bootstrap ready in ${elapsed}ms)`);
+    }
+    if (process.env.SYNC_GOVT_ON_STARTUP === "true") {
+        setImmediate(async () => {
+            try {
+                const govtEmployeesService = app.get(government_employees_service_1.GovernmentEmployeesService);
+                logger.log("Background startup synchronization of government employees initiated...");
+                const result = await govtEmployeesService.triggerAdminSync();
+                logger.log(`Background startup synchronization finished: ${JSON.stringify(result)}`);
+            }
+            catch (err) {
+                logger.warn(`Background startup synchronization skipped or error: ${err?.message || err}`);
+            }
+        });
     }
     process.on("unhandledRejection", (reason) => {
         logger.error("Unhandled Rejection in background process:", reason?.stack || reason);

@@ -9,5 +9,10 @@ export declare class HealthService {
     private readonly prisma;
     private readonly logger;
     constructor(prisma: PrismaService);
+    checkLiveness(): {
+        status: string;
+        service: string;
+        timestamp: string;
+    };
     checkHealth(): Promise<HealthStatusResponse>;
 }

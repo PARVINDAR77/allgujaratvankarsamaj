@@ -226,6 +226,24 @@ export class CreateProfileDto {
   designation?: string;
 
   @ApiPropertyOptional({
+    description: "Government Officer / Employee Class (Class 1, Class 2, Class 3, Class 4)",
+    example: "Class 1 Officer (વર્ગ-૧ ગેઝેટેડ અધિકારી)",
+  })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  govClass?: string;
+
+  @ApiPropertyOptional({
+    description: "Work / Job / Business District",
+    example: "Gandhinagar (ગાંધીનગર)",
+  })
+  @IsOptional()
+  @Transform(({ value }) => (typeof value === "string" ? value.trim() : value))
+  @IsString()
+  workDistrict?: string;
+
+  @ApiPropertyOptional({
     description: "Profile photo URL or base64 data URI",
   })
   @IsOptional()

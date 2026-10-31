@@ -18,6 +18,7 @@ describe("HealthController - Staging Test Route Gating", () => {
           provide: HealthService,
           useValue: {
             checkHealth: jest.fn().mockResolvedValue({ status: "ok", service: "backend" }),
+            checkLiveness: jest.fn().mockReturnValue({ status: "ok", service: "backend", timestamp: "2026-10-29T11:30:00.000Z" }),
           },
         },
       ],
@@ -79,6 +80,16 @@ describe("HealthController - Staging Test Route Gating", () => {
       "stg_test_b",
       "val_beta",
       expect.objectContaining({ httpOnly: true, secure: true, sameSite: "lax", path: "/" }),
+    );
+  });
+
+  it("should return liveness status successfully without DB access", () => {
+    const result = controller.getLiveness();
+    expect(result).toEqual(
+      expect.objectContaining({
+        status: "ok",
+        service: "backend",
+      }),
     );
   });
 });

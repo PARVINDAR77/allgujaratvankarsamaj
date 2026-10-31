@@ -3,6 +3,11 @@ import { Response } from "express";
 export declare class HealthController {
     private readonly healthService;
     constructor(healthService: HealthService);
+    getLiveness(): {
+        status: string;
+        service: string;
+        timestamp: string;
+    };
     getHealth(): Promise<HealthStatusResponse>;
     cookieTest(res: Response): Promise<{
         status: string;

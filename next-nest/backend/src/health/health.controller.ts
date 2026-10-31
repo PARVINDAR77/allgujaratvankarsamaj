@@ -8,6 +8,23 @@ import { Response } from "express";
 export class HealthController {
   constructor(private readonly healthService: HealthService) {}
 
+  @Get("liveness")
+  @ApiOperation({ summary: "Ultra-fast process liveness check (no DB dependency)" })
+  @ApiResponse({
+    status: 200,
+    description: "Process liveness status",
+    schema: {
+      example: {
+        status: "ok",
+        service: "backend",
+        timestamp: "2026-10-29T11:30:00.000Z",
+      },
+    },
+  })
+  getLiveness(): { status: string; service: string; timestamp: string } {
+    return this.healthService.checkLiveness();
+  }
+
   @Get()
   @ApiOperation({ summary: "Backend and Database Health Check" })
   @ApiResponse({

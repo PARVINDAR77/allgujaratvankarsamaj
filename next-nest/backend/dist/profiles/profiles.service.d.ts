@@ -273,6 +273,8 @@ export declare class ProfilesService {
             abroadCountry: any;
             businessIndustry: any;
             businessService: any;
+            govClass: any;
+            workDistrict: any;
             showInMatrimony: boolean;
             privacySettings: any;
             user: any;

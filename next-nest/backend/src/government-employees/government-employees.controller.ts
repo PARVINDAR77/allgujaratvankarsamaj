@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
   Req,
+  ForbiddenException,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
@@ -129,15 +130,48 @@ export class GovernmentEmployeesController {
     summary: "Get all government employee profiles for Admin review",
   })
   getAdminProfiles(
+    @Req() req: any,
     @Query("page") page?: number,
     @Query("limit") limit?: number,
     @Query("status") status?: string,
+    @Query("sync") sync?: string,
   ) {
+    if (req.user?.role !== Role.ADMIN && req.user?.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException("Administrative access required");
+    }
+    const forceSync = sync === "true" || sync === "1";
     return this.govtEmployeesService.getAdminGovtEmployees(
       Number(page) || 1,
       Number(limit) || 20,
       status,
+      forceSync,
     );
+  }
+
+  @Post("admin/government-employees/sync")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Explicitly trigger background government employee synchronization",
+  })
+  triggerAdminSync(@Req() req: any) {
+    if (req.user?.role !== Role.ADMIN && req.user?.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException("Administrative access required");
+    }
+    return this.govtEmployeesService.triggerAdminSync();
+  }
+
+  @Get("admin/government-employees/sync-status")
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: "Check observable status of government employee synchronization",
+  })
+  getAdminSyncStatus(@Req() req: any) {
+    if (req.user?.role !== Role.ADMIN && req.user?.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException("Administrative access required");
+    }
+    return this.govtEmployeesService.getSyncStatus();
   }
 
   @Patch("admin/government-employees/:id/verify")

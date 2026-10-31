@@ -79,6 +79,8 @@ describe("UsersService - Phone Normalization & Ambiguity Detection", () => {
       status: Status.ACTIVE,
       name: "User One",
       gender: null,
+      isEmailVerified: true,
+      isPhoneVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -92,6 +94,8 @@ describe("UsersService - Phone Normalization & Ambiguity Detection", () => {
       status: Status.ACTIVE,
       name: "User Two",
       gender: null,
+      isEmailVerified: true,
+      isPhoneVerified: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

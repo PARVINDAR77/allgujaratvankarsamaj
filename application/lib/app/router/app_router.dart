@@ -105,7 +105,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           location.startsWith('/family-directory-poster') ||
           location.startsWith('/samaj-super-stars-poster');
 
-      if (authState.status == AuthStatus.initial) {
+      if (authState.status == AuthStatus.initial || authState.status == AuthStatus.loading) {
         return null;
       }
 
@@ -119,6 +119,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final isVerified = user?.isVerified ?? false;
         // If user is verified, they DEFINITELY have a profile (fail-safe)
         final hasProfile = (user?.hasProfile ?? false) || isVerified;
+
+        // Fail-safe 1: If candidate ALREADY has a profile, they MUST NEVER be on /profile/create!
+        if (hasProfile && location == '/profile/create') {
+          return isVerified ? '/main-poster' : '/profile-under-review';
+        }
+
+        // Fail-safe 2: If candidate is verified, they should not be on review or login
+        if (isVerified && (location == '/profile-under-review' || isLoggingIn)) {
+          return '/main-poster';
+        }
+
+        // Fail-safe 3: If candidate has a profile and is on login/register:
+        if (isLoggingIn) {
+          return isVerified ? '/main-poster' : '/profile-under-review';
+        }
 
         // If candidate has not yet created their profile:
         if (!hasProfile) {
@@ -135,16 +150,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           }
           return null;
         }
-
-        // If candidate created profile, allow full access to candidates, posters, search, and community
-        if (isLoggingIn) {
-          return '/main-poster';
-        }
-
-        // If verified member attempts to visit profile-under-review or profile/create, go to /main-poster
-        if (isVerified && (location == '/profile-under-review' || location == '/profile/create')) {
-          return '/main-poster';
-        }
       }
 
       return null;
@@ -154,8 +159,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/',
         redirect: (context, state) {
           final authState = ref.read(authNotifierProvider);
+          if (authState.status == AuthStatus.initial || authState.status == AuthStatus.loading) {
+            return null;
+          }
           if (authState.isAuthenticated) {
-            return '/main-poster';
+            final user = authState.user;
+            final isVerified = user?.isVerified ?? false;
+            final hasProfile = (user?.hasProfile ?? false) || isVerified;
+            if (!hasProfile) return '/profile/create';
+            return isVerified ? '/main-poster' : '/profile-under-review';
           }
           return '/login';
         },

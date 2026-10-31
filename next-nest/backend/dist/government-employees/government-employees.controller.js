@@ -16,6 +16,7 @@ exports.GovernmentEmployeesController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
+const client_1 = require("@prisma/client");
 const government_employees_service_1 = require("./government-employees.service");
 const government_employees_dto_1 = require("./dto/government-employees.dto");
 let GovernmentEmployeesController = class GovernmentEmployeesController {
@@ -49,8 +50,24 @@ let GovernmentEmployeesController = class GovernmentEmployeesController {
     getAdminStats() {
         return this.govtEmployeesService.getAdminStats();
     }
-    getAdminProfiles(page, limit, status) {
-        return this.govtEmployeesService.getAdminGovtEmployees(Number(page) || 1, Number(limit) || 20, status);
+    getAdminProfiles(req, page, limit, status, sync) {
+        if (req.user?.role !== client_1.Role.ADMIN && req.user?.role !== client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("Administrative access required");
+        }
+        const forceSync = sync === "true" || sync === "1";
+        return this.govtEmployeesService.getAdminGovtEmployees(Number(page) || 1, Number(limit) || 20, status, forceSync);
+    }
+    triggerAdminSync(req) {
+        if (req.user?.role !== client_1.Role.ADMIN && req.user?.role !== client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("Administrative access required");
+        }
+        return this.govtEmployeesService.triggerAdminSync();
+    }
+    getAdminSyncStatus(req) {
+        if (req.user?.role !== client_1.Role.ADMIN && req.user?.role !== client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("Administrative access required");
+        }
+        return this.govtEmployeesService.getSyncStatus();
     }
     verifyProfile(req, id, dto) {
         return this.govtEmployeesService.verifyGovtEmployee(id, dto, req.user.id);
@@ -182,13 +199,39 @@ __decorate([
     (0, swagger_1.ApiOperation)({
         summary: "Get all government employee profiles for Admin review",
     }),
-    __param(0, (0, common_1.Query)("page")),
-    __param(1, (0, common_1.Query)("limit")),
-    __param(2, (0, common_1.Query)("status")),
+    __param(0, (0, common_1.Req)()),
+    __param(1, (0, common_1.Query)("page")),
+    __param(2, (0, common_1.Query)("limit")),
+    __param(3, (0, common_1.Query)("status")),
+    __param(4, (0, common_1.Query)("sync")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Number, Number, String]),
+    __metadata("design:paramtypes", [Object, Number, Number, String, String]),
     __metadata("design:returntype", void 0)
 ], GovernmentEmployeesController.prototype, "getAdminProfiles", null);
+__decorate([
+    (0, common_1.Post)("admin/government-employees/sync"),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({
+        summary: "Explicitly trigger background government employee synchronization",
+    }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], GovernmentEmployeesController.prototype, "triggerAdminSync", null);
+__decorate([
+    (0, common_1.Get)("admin/government-employees/sync-status"),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOperation)({
+        summary: "Check observable status of government employee synchronization",
+    }),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", void 0)
+], GovernmentEmployeesController.prototype, "getAdminSyncStatus", null);
 __decorate([
     (0, common_1.Patch)("admin/government-employees/:id/verify"),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),

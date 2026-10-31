@@ -20,6 +20,9 @@ let HealthController = class HealthController {
     constructor(healthService) {
         this.healthService = healthService;
     }
+    getLiveness() {
+        return this.healthService.checkLiveness();
+    }
     async getHealth() {
         return this.healthService.checkHealth();
     }
@@ -43,6 +46,24 @@ let HealthController = class HealthController {
     }
 };
 exports.HealthController = HealthController;
+__decorate([
+    (0, common_1.Get)("liveness"),
+    (0, swagger_1.ApiOperation)({ summary: "Ultra-fast process liveness check (no DB dependency)" }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: "Process liveness status",
+        schema: {
+            example: {
+                status: "ok",
+                service: "backend",
+                timestamp: "2026-10-29T11:30:00.000Z",
+            },
+        },
+    }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Object)
+], HealthController.prototype, "getLiveness", null);
 __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: "Backend and Database Health Check" }),

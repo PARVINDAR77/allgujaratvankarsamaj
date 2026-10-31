@@ -2,6 +2,8 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { ForbiddenException, NotFoundException, BadRequestException } from "@nestjs/common";
 import { VerificationsController, AdminVerificationsController } from "./verifications.controller";
 import { VerificationsService } from "./verifications.service";
+import { AiVerificationService } from "./ai-verification.service";
+import { StorageService } from "../storage/storage.service";
 import { PrismaService } from "../prisma/prisma.service";
 import { Response } from "express";
 
@@ -44,6 +46,18 @@ describe("VerificationsController & Private Document RBAC Tests", () => {
       controllers: [VerificationsController, AdminVerificationsController],
       providers: [
         VerificationsService,
+        {
+          provide: AiVerificationService,
+          useValue: {
+            verifyDocumentWithAi: jest.fn(),
+          },
+        },
+        {
+          provide: StorageService,
+          useValue: {
+            uploadFile: jest.fn(),
+          },
+        },
         {
           provide: PrismaService,
           useValue: mockPrismaService,

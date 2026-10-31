@@ -20,6 +20,8 @@ export declare class CreateProfileDto {
     nativePlace?: string;
     organizationName?: string;
     designation?: string;
+    govClass?: string;
+    workDistrict?: string;
     photoUrl?: string;
     photos?: string[] | string;
     idProofType?: string;

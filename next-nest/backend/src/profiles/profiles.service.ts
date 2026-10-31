@@ -378,19 +378,27 @@ export class ProfilesService {
       ));
 
     let resolvedPrivacySettings: string;
+    let privacyObj: any = {};
     if (dto.privacySettings) {
-      resolvedPrivacySettings = typeof dto.privacySettings === 'string'
-        ? dto.privacySettings
-        : JSON.stringify(dto.privacySettings);
+      try {
+        privacyObj = typeof dto.privacySettings === 'string'
+          ? JSON.parse(dto.privacySettings)
+          : { ...dto.privacySettings };
+      } catch (_) {
+        privacyObj = {};
+      }
     } else {
-      resolvedPrivacySettings = JSON.stringify({
+      privacyObj = {
         mobile: isGirlCandidate ? "માત્ર મને" : (dto.mobilePrivacy || "બધા માટે"),
         email: isGirlCandidate ? "માત્ર મને" : (dto.emailPrivacy || "બધા માટે"),
         address: dto.addressPrivacy || "પરિવારજનો",
         guardian: dto.guardianPrivacy || "બધા માટે",
         shareClassGroup: dto.shareClassGroup === true || dto.shareClassGroup === 'true',
-      });
+      };
     }
+    if (dto.govClass !== undefined && dto.govClass !== null) privacyObj.govClass = dto.govClass;
+    if (dto.workDistrict !== undefined && dto.workDistrict !== null) privacyObj.workDistrict = dto.workDistrict;
+    resolvedPrivacySettings = JSON.stringify(privacyObj);
 
     try {
       const existingProfile = await this.prisma.matrimonialProfile.findUnique({
@@ -582,6 +590,10 @@ export class ProfilesService {
       } catch (err: any) {
         this.logger.warn("syncGovernmentEmployment error:", err?.message || err);
       }
+      if (profile) {
+        (profile as any).govClass = privacyObj?.govClass || null;
+        (profile as any).workDistrict = privacyObj?.workDistrict || null;
+      }
       return profile;
     } catch (err: any) {
       if (err instanceof ConflictException || err instanceof BadRequestException) throw err;
@@ -712,10 +724,15 @@ export class ProfilesService {
           const parsed = typeof profile.privacySettings === 'string' ? JSON.parse(profile.privacySettings) : profile.privacySettings;
           if (parsed.idProofNumber) idNumber = parsed.idProofNumber;
           if (parsed.idProofType) idType = parsed.idProofType;
+          if (parsed.govClass && !(profile as any).govClass) (profile as any).govClass = parsed.govClass;
+          if (parsed.workDistrict && !(profile as any).workDistrict) (profile as any).workDistrict = parsed.workDistrict;
         } catch (_) {}
       }
       (profile as any).idProofNumber = idNumber;
       if (idType) (profile as any).idProofType = idType;
+      if (!(profile as any).workDistrict && (profile as any).governmentEmployment?.officeLocation) {
+        (profile as any).workDistrict = (profile as any).governmentEmployment.officeLocation;
+      }
 
       (profile as any).contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
       (profile as any).phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
@@ -779,6 +796,14 @@ export class ProfilesService {
 
     // 3. Clone profile and strip raw user account relations
     const { user: _, ...sanitized } = profile;
+    if (privacy.govClass && !sanitized.govClass) {
+      sanitized.govClass = privacy.govClass;
+    }
+    if (privacy.workDistrict && !sanitized.workDistrict) {
+      sanitized.workDistrict = privacy.workDistrict;
+    } else if (!sanitized.workDistrict && sanitized.governmentEmployment?.officeLocation) {
+      sanitized.workDistrict = sanitized.governmentEmployment.officeLocation;
+    }
     sanitized.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
     sanitized.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
     sanitized.contactEmail = profile.contactEmail || profile.user?.email || null;
@@ -832,9 +857,19 @@ export class ProfilesService {
 
   private sanitizeProfileForListing(profile: any) {
     if (!profile) return profile;
+    let listPrivacy: any = {};
+    if (profile.privacySettings) {
+      try {
+        listPrivacy = typeof profile.privacySettings === 'string'
+          ? JSON.parse(profile.privacySettings)
+          : profile.privacySettings;
+      } catch (_) {}
+    }
     const { user: _, ...rest } = profile;
     return {
       ...rest,
+      govClass: rest.govClass || listPrivacy?.govClass || null,
+      workDistrict: rest.workDistrict || listPrivacy?.workDistrict || rest.governmentEmployment?.officeLocation || null,
       contactPhone: null,
       contactEmail: null,
       altPhone: null,
@@ -1126,15 +1161,23 @@ export class ProfilesService {
         updateData.motherTongue = dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)";
 
       if (dto.privacySettings !== undefined) {
-        updateData.privacySettings = typeof dto.privacySettings === 'string'
-          ? dto.privacySettings
-          : JSON.stringify(dto.privacySettings);
+        let currentPrivacy: any = {};
+        try {
+          currentPrivacy = typeof dto.privacySettings === 'string'
+            ? JSON.parse(dto.privacySettings)
+            : { ...dto.privacySettings };
+        } catch (_) {}
+        if (dto.govClass !== undefined) currentPrivacy.govClass = dto.govClass;
+        if (dto.workDistrict !== undefined) currentPrivacy.workDistrict = dto.workDistrict;
+        updateData.privacySettings = JSON.stringify(currentPrivacy);
       } else if (
         dto.mobilePrivacy !== undefined ||
         dto.emailPrivacy !== undefined ||
         dto.addressPrivacy !== undefined ||
         dto.guardianPrivacy !== undefined ||
-        dto.shareClassGroup !== undefined
+        dto.shareClassGroup !== undefined ||
+        dto.govClass !== undefined ||
+        dto.workDistrict !== undefined
       ) {
         let currentPrivacy: any = {};
         try {
@@ -1147,6 +1190,8 @@ export class ProfilesService {
         if (dto.addressPrivacy !== undefined) currentPrivacy.address = dto.addressPrivacy;
         if (dto.guardianPrivacy !== undefined) currentPrivacy.guardian = dto.guardianPrivacy;
         if (dto.shareClassGroup !== undefined) currentPrivacy.shareClassGroup = dto.shareClassGroup === true || dto.shareClassGroup === 'true';
+        if (dto.govClass !== undefined) currentPrivacy.govClass = dto.govClass;
+        if (dto.workDistrict !== undefined) currentPrivacy.workDistrict = dto.workDistrict;
         updateData.privacySettings = JSON.stringify(currentPrivacy);
       }
 
@@ -1257,6 +1302,16 @@ export class ProfilesService {
 
       await this.syncSamajServicePerson(userId, updatedProfile);
       await this.syncGovernmentEmployment(updatedProfile);
+      if (updatedProfile) {
+        let retPrivacy: any = {};
+        try {
+          retPrivacy = typeof updatedProfile.privacySettings === 'string'
+            ? JSON.parse(updatedProfile.privacySettings)
+            : (updatedProfile.privacySettings || {});
+        } catch (_) {}
+        (updatedProfile as any).govClass = retPrivacy.govClass || (updatedProfile as any).govClass || null;
+        (updatedProfile as any).workDistrict = retPrivacy.workDistrict || (updatedProfile as any).workDistrict || (updatedProfile as any).governmentEmployment?.officeLocation || null;
+      }
       return updatedProfile;
     } catch (err: any) {
       if (
@@ -2017,6 +2072,18 @@ export class ProfilesService {
         abroadCountry: p.abroadCountry,
         businessIndustry: p.businessIndustry,
         businessService: p.businessService,
+        govClass: p.govClass || (() => {
+          try {
+            const priv = typeof p.privacySettings === 'string' ? JSON.parse(p.privacySettings) : p.privacySettings;
+            return priv?.govClass || null;
+          } catch (_) { return null; }
+        })(),
+        workDistrict: p.workDistrict || (() => {
+          try {
+            const priv = typeof p.privacySettings === 'string' ? JSON.parse(p.privacySettings) : p.privacySettings;
+            return priv?.workDistrict || p.governmentEmployment?.officeLocation || null;
+          } catch (_) { return null; }
+        })(),
         showInMatrimony: p.showInMatrimony !== false,
         privacySettings: p.privacySettings,
         user: undefined,
@@ -2417,7 +2484,18 @@ export class ProfilesService {
           empType = GovtEmploymentType.PSU;
         }
 
-        const officeLoc =
+        let officeLoc = "Gujarat";
+        let govPriv: any = {};
+        if (profile.privacySettings) {
+          try {
+            govPriv = typeof profile.privacySettings === 'string'
+              ? JSON.parse(profile.privacySettings)
+              : profile.privacySettings;
+          } catch (_) {}
+        }
+        officeLoc =
+          profile.workDistrict ||
+          govPriv?.workDistrict ||
           profile.city ||
           profile.state ||
           profile.nativePlace ||

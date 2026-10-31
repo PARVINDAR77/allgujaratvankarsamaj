@@ -18,6 +18,13 @@ let HealthService = HealthService_1 = class HealthService {
         this.prisma = prisma;
         this.logger = new common_1.Logger(HealthService_1.name);
     }
+    checkLiveness() {
+        return {
+            status: "ok",
+            service: "backend",
+            timestamp: new Date().toISOString(),
+        };
+    }
     async checkHealth() {
         let dbStatus = "disconnected";
         try {

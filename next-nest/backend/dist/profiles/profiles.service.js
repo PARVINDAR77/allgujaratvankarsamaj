@@ -270,20 +270,31 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 dto.firstName.includes("બેન") ||
                 dto.firstName.includes("બહેન")));
         let resolvedPrivacySettings;
+        let privacyObj = {};
         if (dto.privacySettings) {
-            resolvedPrivacySettings = typeof dto.privacySettings === 'string'
-                ? dto.privacySettings
-                : JSON.stringify(dto.privacySettings);
+            try {
+                privacyObj = typeof dto.privacySettings === 'string'
+                    ? JSON.parse(dto.privacySettings)
+                    : { ...dto.privacySettings };
+            }
+            catch (_) {
+                privacyObj = {};
+            }
         }
         else {
-            resolvedPrivacySettings = JSON.stringify({
+            privacyObj = {
                 mobile: isGirlCandidate ? "માત્ર મને" : (dto.mobilePrivacy || "બધા માટે"),
                 email: isGirlCandidate ? "માત્ર મને" : (dto.emailPrivacy || "બધા માટે"),
                 address: dto.addressPrivacy || "પરિવારજનો",
                 guardian: dto.guardianPrivacy || "બધા માટે",
                 shareClassGroup: dto.shareClassGroup === true || dto.shareClassGroup === 'true',
-            });
+            };
         }
+        if (dto.govClass !== undefined && dto.govClass !== null)
+            privacyObj.govClass = dto.govClass;
+        if (dto.workDistrict !== undefined && dto.workDistrict !== null)
+            privacyObj.workDistrict = dto.workDistrict;
+        resolvedPrivacySettings = JSON.stringify(privacyObj);
         try {
             const existingProfile = await this.prisma.matrimonialProfile.findUnique({
                 where: { userId },
@@ -463,6 +474,10 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             catch (err) {
                 this.logger.warn("syncGovernmentEmployment error:", err?.message || err);
             }
+            if (profile) {
+                profile.govClass = privacyObj?.govClass || null;
+                profile.workDistrict = privacyObj?.workDistrict || null;
+            }
             return profile;
         }
         catch (err) {
@@ -593,12 +608,19 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         idNumber = parsed.idProofNumber;
                     if (parsed.idProofType)
                         idType = parsed.idProofType;
+                    if (parsed.govClass && !profile.govClass)
+                        profile.govClass = parsed.govClass;
+                    if (parsed.workDistrict && !profile.workDistrict)
+                        profile.workDistrict = parsed.workDistrict;
                 }
                 catch (_) { }
             }
             profile.idProofNumber = idNumber;
             if (idType)
                 profile.idProofType = idType;
+            if (!profile.workDistrict && profile.governmentEmployment?.officeLocation) {
+                profile.workDistrict = profile.governmentEmployment.officeLocation;
+            }
             profile.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
             profile.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
             profile.contactEmail = profile.contactEmail || profile.user?.email || null;
@@ -649,6 +671,15 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             }
         }
         const { user: _, ...sanitized } = profile;
+        if (privacy.govClass && !sanitized.govClass) {
+            sanitized.govClass = privacy.govClass;
+        }
+        if (privacy.workDistrict && !sanitized.workDistrict) {
+            sanitized.workDistrict = privacy.workDistrict;
+        }
+        else if (!sanitized.workDistrict && sanitized.governmentEmployment?.officeLocation) {
+            sanitized.workDistrict = sanitized.governmentEmployment.officeLocation;
+        }
         sanitized.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;
         sanitized.phone = profile.user?.phone || profile.contactPhone || profile.altPhone || null;
         sanitized.contactEmail = profile.contactEmail || profile.user?.email || null;
@@ -686,9 +717,20 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
     sanitizeProfileForListing(profile) {
         if (!profile)
             return profile;
+        let listPrivacy = {};
+        if (profile.privacySettings) {
+            try {
+                listPrivacy = typeof profile.privacySettings === 'string'
+                    ? JSON.parse(profile.privacySettings)
+                    : profile.privacySettings;
+            }
+            catch (_) { }
+        }
         const { user: _, ...rest } = profile;
         return {
             ...rest,
+            govClass: rest.govClass || listPrivacy?.govClass || null,
+            workDistrict: rest.workDistrict || listPrivacy?.workDistrict || rest.governmentEmployment?.officeLocation || null,
             contactPhone: null,
             contactEmail: null,
             altPhone: null,
@@ -940,15 +982,26 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             if (dto.motherTongue !== undefined)
                 updateData.motherTongue = dto.motherTongue ? dto.motherTongue.trim() : "Gujarati (ગુજરાતી)";
             if (dto.privacySettings !== undefined) {
-                updateData.privacySettings = typeof dto.privacySettings === 'string'
-                    ? dto.privacySettings
-                    : JSON.stringify(dto.privacySettings);
+                let currentPrivacy = {};
+                try {
+                    currentPrivacy = typeof dto.privacySettings === 'string'
+                        ? JSON.parse(dto.privacySettings)
+                        : { ...dto.privacySettings };
+                }
+                catch (_) { }
+                if (dto.govClass !== undefined)
+                    currentPrivacy.govClass = dto.govClass;
+                if (dto.workDistrict !== undefined)
+                    currentPrivacy.workDistrict = dto.workDistrict;
+                updateData.privacySettings = JSON.stringify(currentPrivacy);
             }
             else if (dto.mobilePrivacy !== undefined ||
                 dto.emailPrivacy !== undefined ||
                 dto.addressPrivacy !== undefined ||
                 dto.guardianPrivacy !== undefined ||
-                dto.shareClassGroup !== undefined) {
+                dto.shareClassGroup !== undefined ||
+                dto.govClass !== undefined ||
+                dto.workDistrict !== undefined) {
                 let currentPrivacy = {};
                 try {
                     if (existingProfile.privacySettings) {
@@ -966,6 +1019,10 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     currentPrivacy.guardian = dto.guardianPrivacy;
                 if (dto.shareClassGroup !== undefined)
                     currentPrivacy.shareClassGroup = dto.shareClassGroup === true || dto.shareClassGroup === 'true';
+                if (dto.govClass !== undefined)
+                    currentPrivacy.govClass = dto.govClass;
+                if (dto.workDistrict !== undefined)
+                    currentPrivacy.workDistrict = dto.workDistrict;
                 updateData.privacySettings = JSON.stringify(currentPrivacy);
             }
             const resolvedMarital = updateData.maritalStatus || existingProfile.maritalStatus;
@@ -1073,6 +1130,17 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             }
             await this.syncSamajServicePerson(userId, updatedProfile);
             await this.syncGovernmentEmployment(updatedProfile);
+            if (updatedProfile) {
+                let retPrivacy = {};
+                try {
+                    retPrivacy = typeof updatedProfile.privacySettings === 'string'
+                        ? JSON.parse(updatedProfile.privacySettings)
+                        : (updatedProfile.privacySettings || {});
+                }
+                catch (_) { }
+                updatedProfile.govClass = retPrivacy.govClass || updatedProfile.govClass || null;
+                updatedProfile.workDistrict = retPrivacy.workDistrict || updatedProfile.workDistrict || updatedProfile.governmentEmployment?.officeLocation || null;
+            }
             return updatedProfile;
         }
         catch (err) {
@@ -1719,6 +1787,24 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 abroadCountry: p.abroadCountry,
                 businessIndustry: p.businessIndustry,
                 businessService: p.businessService,
+                govClass: p.govClass || (() => {
+                    try {
+                        const priv = typeof p.privacySettings === 'string' ? JSON.parse(p.privacySettings) : p.privacySettings;
+                        return priv?.govClass || null;
+                    }
+                    catch (_) {
+                        return null;
+                    }
+                })(),
+                workDistrict: p.workDistrict || (() => {
+                    try {
+                        const priv = typeof p.privacySettings === 'string' ? JSON.parse(p.privacySettings) : p.privacySettings;
+                        return priv?.workDistrict || p.governmentEmployment?.officeLocation || null;
+                    }
+                    catch (_) {
+                        return null;
+                    }
+                })(),
                 showInMatrimony: p.showInMatrimony !== false,
                 privacySettings: p.privacySettings,
                 user: undefined,
@@ -2066,11 +2152,24 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                     occ.includes("psu")) {
                     empType = client_1.GovtEmploymentType.PSU;
                 }
-                const officeLoc = profile.city ||
-                    profile.state ||
-                    profile.nativePlace ||
-                    profile.organizationName ||
-                    "Gujarat";
+                let officeLoc = "Gujarat";
+                let govPriv = {};
+                if (profile.privacySettings) {
+                    try {
+                        govPriv = typeof profile.privacySettings === 'string'
+                            ? JSON.parse(profile.privacySettings)
+                            : profile.privacySettings;
+                    }
+                    catch (_) { }
+                }
+                officeLoc =
+                    profile.workDistrict ||
+                        govPriv?.workDistrict ||
+                        profile.city ||
+                        profile.state ||
+                        profile.nativePlace ||
+                        profile.organizationName ||
+                        "Gujarat";
                 const existingGov = await this.prisma.governmentEmployment.findUnique({
                     where: { profileId: profile.id },
                 });

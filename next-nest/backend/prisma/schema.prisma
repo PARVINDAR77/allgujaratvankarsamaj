@@ -156,6 +156,9 @@ model MatrimonialProfile {
   governmentEmployment GovernmentEmployment?
   verificationRequests VerificationRequest[]
 
+  @@index([status, showInMatrimony, gender, createdAt], map: "idx_matrimonial_profiles_search_composite")
+  @@index([districtId, talukaId], map: "idx_matrimonial_profiles_district_taluka")
+  @@index([dateOfBirth], map: "idx_matrimonial_profiles_date_of_birth")
   @@map("matrimonial_profiles")
 }
 
@@ -294,6 +297,8 @@ model VerificationRequest {
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("updated_at")
 
+  @@index([profileId, createdAt], map: "idx_verification_requests_profile_created")
+  @@index([status, createdAt], map: "idx_verification_requests_status_created")
   @@map("verification_requests")
 }
 
@@ -304,6 +309,8 @@ model MatchInterest {
   status            InterestStatus @default(PENDING)
   createdAt         DateTime       @default(now()) @map("created_at")
 
+  @@index([receiverProfileId, createdAt], map: "idx_match_interests_receiver_created")
+  @@index([senderProfileId, createdAt], map: "idx_match_interests_sender_created")
   @@map("match_interests")
 }
 
@@ -463,6 +470,9 @@ model GovernmentEmployment {
 
   @@index([departmentId])
   @@index([designationId])
+  @@index([isActive, verificationStatus, createdAt], map: "idx_govt_emp_active_status_created")
+  @@index([isFeatured, isActive, updatedAt], map: "idx_govt_emp_featured_active_updated")
+  @@index([employmentType], map: "idx_govt_emp_employment_type")
   @@map("government_employments")
 }
 

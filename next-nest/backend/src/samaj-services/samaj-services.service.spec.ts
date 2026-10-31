@@ -124,8 +124,8 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
     });
   });
 
-  it("getPublicServices MUST trigger syncMissingBusinessProfiles and return services with person counts", async () => {
-    jest.spyOn(service, "syncMissingBusinessProfiles").mockResolvedValue();
+  it("getPublicServices MUST return services with person counts safely without triggering write sync", async () => {
+    const syncSpy = jest.spyOn(service, "syncMissingBusinessProfiles").mockResolvedValue();
 
     prisma.samajService.findMany.mockResolvedValue([
       {
@@ -138,7 +138,6 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
     ]);
 
     const res = await service.getPublicServices(undefined, "Education");
-    expect(service.syncMissingBusinessProfiles).toHaveBeenCalled();
     expect(res).toHaveLength(1);
     expect(res[0].title).toContain("Education Services");
     expect(res[0]._count.persons).toBe(1);

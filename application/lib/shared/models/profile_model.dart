@@ -25,6 +25,8 @@ class ProfileModel {
   final String department;
   final String designation;
   final String? annualIncome;
+  final String? govClass;
+  final String? workDistrict;
 
   // Location
   final String district;
@@ -105,6 +107,8 @@ class ProfileModel {
     required this.department,
     required this.designation,
     this.annualIncome,
+    this.govClass,
+    this.workDistrict,
     required this.district,
     required this.taluka,
     required this.pargana,
@@ -424,9 +428,15 @@ class ProfileModel {
         parts.add(p.trim());
       }
     }
+    if (govClass != null && govClass!.trim().isNotEmpty && !govClass!.contains('Select')) {
+      addPart(govClass);
+    }
     addPart(designation);
     addPart(employmentType);
     addPart(department);
+    if (workDistrict != null && workDistrict!.trim().isNotEmpty && !workDistrict!.contains('Select')) {
+      addPart(workDistrict);
+    }
     if (parts.isEmpty) {
       return isFemale ? 'ગૃહકાર્ય / અભ્યાસ' : 'ખાનગી / વ્યવસાય';
     }
@@ -681,6 +691,8 @@ class ProfileModel {
     String? guardPriv = json['guardianPrivacy']?.toString();
     bool shareClass = json['shareClassGroup'] == true;
 
+    String? privGovClass;
+    String? privWorkDistrict;
     if (rawPrivacy != null && rawPrivacy.trim().isNotEmpty) {
       try {
         final decoded = jsonDecode(rawPrivacy);
@@ -692,6 +704,8 @@ class ProfileModel {
           if (decoded['shareClassGroup'] != null) {
             shareClass = decoded['shareClassGroup'] == true;
           }
+          privGovClass = decoded['govClass']?.toString() ?? decoded['gov_class']?.toString();
+          privWorkDistrict = decoded['workDistrict']?.toString() ?? decoded['work_district']?.toString();
         }
       } catch (_) {}
     }
@@ -736,6 +750,8 @@ class ProfileModel {
       department: rawDepartment,
       designation: rawDesignation,
       annualIncome: (json['annualIncome'] ?? json['annual_income'] ?? json['yearlyIncome'] ?? json['income'])?.toString(),
+      govClass: extractString(json['govClass'] ?? json['gov_class'] ?? privGovClass),
+      workDistrict: extractString(json['workDistrict'] ?? json['work_district'] ?? json['officeLocation'] ?? json['office_location'] ?? (json['governmentEmployment'] is Map ? json['governmentEmployment']['officeLocation'] : null) ?? privWorkDistrict),
       district: rawDistrict,
       taluka: rawTaluka,
       pargana: rawPargana,
@@ -802,6 +818,8 @@ class ProfileModel {
       if (employmentType.trim().isNotEmpty) 'occupation': employmentType.trim(),
       if (department.trim().isNotEmpty && !isBusinessGovPlaceholder) 'organizationName': department.trim(),
       if (designation.trim().isNotEmpty) 'designation': designation.trim(),
+      if (govClass != null && govClass!.trim().isNotEmpty && !govClass!.contains('Select')) 'govClass': govClass!.trim(),
+      if (workDistrict != null && workDistrict!.trim().isNotEmpty && !workDistrict!.contains('Select')) 'workDistrict': workDistrict!.trim(),
       if (annualIncome != null && annualIncome!.trim().isNotEmpty && annualIncome != 'Select Income') 'annualIncome': annualIncome!.trim(),
       if (pargana.trim().isNotEmpty && pargana != 'Select Pargana') 'nativePlace': pargana.trim() else if (nativePlace != null && nativePlace!.trim().isNotEmpty) 'nativePlace': nativePlace!.trim(),
       if (taluka.trim().isNotEmpty) 'city': taluka.trim() else if (city != null && city!.trim().isNotEmpty) 'city': city!.trim(),

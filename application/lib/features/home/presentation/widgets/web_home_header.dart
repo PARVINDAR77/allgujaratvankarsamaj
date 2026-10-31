@@ -85,7 +85,7 @@ class WebHomeHeader extends ConsumerWidget implements PreferredSizeWidget {
                   const SizedBox(width: 6),
                   IconButton(
                     icon: const Icon(Icons.lock_reset_rounded, color: Color(0xFFA4143D), size: 24),
-                    tooltip: 'પાસવર્ડ બદલો (Update Password)',
+                    tooltip: 'પાસવર્ડ બદલો (Change Password)',
                     onPressed: () => showUpdatePasswordDialog(context, ref),
                   ),
                   const SizedBox(width: 6),
