@@ -74,7 +74,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
       setState(() => _isLoading = false);
       if (regSuccess) {
         if (kIsWeb) {
-          context.go('/profile/create');
+          context.go('/main-poster');
         } else {
           _showMandatoryProfileDialog();
         }
