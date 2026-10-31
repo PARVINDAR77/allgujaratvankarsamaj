@@ -362,6 +362,26 @@ class ProfileModel {
     return 'https://allgujaratvankarsamaj.com$relative';
   }
 
+  List<String> get allPhotoUrls {
+    final list = <String>[];
+    if (fullPhotoUrl != null && fullPhotoUrl!.trim().isNotEmpty) {
+      list.add(fullPhotoUrl!.trim());
+    }
+    if (photos != null && photos!.isNotEmpty) {
+      for (final p in photos!) {
+        final clean = p.trim();
+        if (clean.isEmpty) continue;
+        final url = (clean.startsWith('http://') || clean.startsWith('https://'))
+            ? clean
+            : 'https://allgujaratvankarsamaj.com${clean.startsWith('/') ? clean : '/$clean'}';
+        if (!list.contains(url)) {
+          list.add(url);
+        }
+      }
+    }
+    return list;
+  }
+
   int? get age {
     if (dateOfBirth.isEmpty) return null;
     try {

@@ -9,6 +9,7 @@ import '../../../profile/providers/liked_profiles_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 import '../../../home/presentation/widgets/web_home_footer.dart';
+import '../../../../shared/widgets/full_screen_image_viewer.dart';
 
 class SearchResultsScreen extends ConsumerStatefulWidget {
   final String? initialGender;
@@ -1137,56 +1138,74 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar with Gold Frame & Verified Badge
-                  Stack(
-                    children: [
-                      Container(
-                        width: 66,
-                        height: 66,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFD6A34A),
-                            width: 2.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFD6A34A).withValues(alpha: 0.25),
-                              blurRadius: 6,
-                              offset: const Offset(0, 2),
+                  // Avatar with Gold Frame & Verified Badge (Clickable to full-screen photo)
+                  MouseRegion(
+                    cursor: hasPhoto ? SystemMouseCursors.click : SystemMouseCursors.basic,
+                    child: GestureDetector(
+                      onTap: hasPhoto
+                          ? () => FullScreenImageViewer.show(
+                                context,
+                                images: profile.allPhotoUrls,
+                                initialIndex: 0,
+                                title: profile.fullName,
+                              )
+                          : null,
+                      child: Tooltip(
+                        message: hasPhoto
+                            ? 'Click to view full photo (મોટો ફોટો જુઓ)'
+                            : profile.fullName,
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: 66,
+                              height: 66,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: const Color(0xFFD6A34A),
+                                  width: 2.2,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFD6A34A).withValues(alpha: 0.25),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: ClipOval(
+                                child: hasPhoto
+                                    ? Image.network(
+                                        profile.fullPhotoUrl!,
+                                        fit: BoxFit.cover,
+                                        width: 66,
+                                        height: 66,
+                                        errorBuilder: (context, error, stackTrace) =>
+                                            _buildAvatarFallback(isGirl, profile.fullName),
+                                      )
+                                    : _buildAvatarFallback(isGirl, profile.fullName),
+                              ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                padding: const EdgeInsets.all(2.5),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF00695C),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check_rounded,
+                                  color: Colors.white,
+                                  size: 13,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        child: ClipOval(
-                          child: hasPhoto
-                              ? Image.network(
-                                  profile.fullPhotoUrl!,
-                                  fit: BoxFit.cover,
-                                  width: 66,
-                                  height: 66,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      _buildAvatarFallback(isGirl, profile.fullName),
-                                )
-                              : _buildAvatarFallback(isGirl, profile.fullName),
-                        ),
                       ),
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(2.5),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF00695C),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check_rounded,
-                            color: Colors.white,
-                            size: 13,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                   const SizedBox(width: 14),
 
@@ -2390,16 +2409,26 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
                                       ),
                                     ],
                                   ),
-                                  child: ClipOval(
-                                    child: hasPhoto
-                                        ? Image.network(
-                                            profile.fullPhotoUrl!,
-                                            fit: BoxFit.cover,
-                                            width: avatarDiameter,
-                                            height: avatarDiameter,
-                                            errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(isGirl, profile.fullName),
-                                          )
-                                        : _buildAvatarFallback(isGirl, profile.fullName),
+                                  child: GestureDetector(
+                                    onTap: hasPhoto
+                                        ? () => FullScreenImageViewer.show(
+                                              context,
+                                              images: profile.allPhotoUrls,
+                                              initialIndex: 0,
+                                              title: profile.fullName,
+                                            )
+                                        : null,
+                                    child: ClipOval(
+                                      child: hasPhoto
+                                          ? Image.network(
+                                              profile.fullPhotoUrl!,
+                                              fit: BoxFit.cover,
+                                              width: avatarDiameter,
+                                              height: avatarDiameter,
+                                              errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(isGirl, profile.fullName),
+                                            )
+                                          : _buildAvatarFallback(isGirl, profile.fullName),
+                                    ),
                                   ),
                                 ),
                               ),

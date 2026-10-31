@@ -13,6 +13,7 @@ import '../../providers/liked_profiles_provider.dart';
 import '../../../chat/providers/chat_provider.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 import '../../../home/presentation/widgets/web_home_footer.dart';
+import '../../../../shared/widgets/full_screen_image_viewer.dart';
 
 class CandidateProfileDetailScreen extends ConsumerStatefulWidget {
   final ProfileModel? profile;
@@ -195,6 +196,11 @@ class _CandidateProfileDetailScreenState
 
             // 4 Highlights Cards (Age, Marital Status, Education, Location)
             _buildHighlightsRow(profile),
+
+            if (profile.allPhotoUrls.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              _buildMobilePhotoGallerySection(context, profile),
+            ],
 
             const SizedBox(height: 12),
 
@@ -485,32 +491,71 @@ class _CandidateProfileDetailScreenState
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
       child: Column(
         children: [
-          // Avatar
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                  blurRadius: 12,
-                  spreadRadius: 2,
+          // Avatar (Clickable to Full-Screen Lightbox)
+          GestureDetector(
+            onTap: profile.allPhotoUrls.isNotEmpty
+                ? () => FullScreenImageViewer.show(
+                      context,
+                      images: profile.allPhotoUrls,
+                      initialIndex: 0,
+                      title: profile.fullName,
+                    )
+                : null,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: CircleAvatar(
+                    radius: 50,
+                    backgroundColor: const Color(0xFF0D1B3E),
+                    backgroundImage: profile.fullPhotoUrl != null
+                        ? NetworkImage(profile.fullPhotoUrl!)
+                        : null,
+                    onBackgroundImageError: profile.fullPhotoUrl != null
+                        ? (e, s) {}
+                        : null,
+                    child: profile.fullPhotoUrl == null
+                        ? const Icon(Icons.person, size: 55, color: Color(0xFFFFD700))
+                        : null,
+                  ),
                 ),
+                if (profile.allPhotoUrls.isNotEmpty)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D1B3E),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.fullscreen_rounded,
+                        color: Color(0xFFFFD700),
+                        size: 16,
+                      ),
+                    ),
+                  ),
               ],
-            ),
-            child: CircleAvatar(
-              radius: 50,
-              backgroundColor: const Color(0xFF0D1B3E),
-              backgroundImage: profile.fullPhotoUrl != null
-                  ? NetworkImage(profile.fullPhotoUrl!)
-                  : null,
-              onBackgroundImageError: profile.fullPhotoUrl != null
-                  ? (e, s) {}
-                  : null,
-              child: profile.fullPhotoUrl == null
-                  ? const Icon(Icons.person, size: 55, color: Color(0xFFFFD700))
-                  : null,
             ),
           ),
           const SizedBox(height: 14),
@@ -744,6 +789,156 @@ class _CandidateProfileDetailScreenState
             overflow: TextOverflow.ellipsis,
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMobilePhotoGallerySection(BuildContext context, ProfileModel profile) {
+    final photos = profile.allPhotoUrls;
+    if (photos.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0E172C),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.photo_library_outlined, color: Color(0xFFFFD700), size: 20),
+                const SizedBox(width: 8),
+                const Text(
+                  'ફોટો ગેલેરી (Photo Gallery)',
+                  style: TextStyle(
+                    color: Color(0xFFFFD700),
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    '${photos.length} Photos',
+                    style: const TextStyle(
+                      color: Color(0xFFFFD700),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 120,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                itemCount: photos.length,
+                separatorBuilder: (context, index) => const SizedBox(width: 10),
+                itemBuilder: (context, idx) {
+                  final url = photos[idx];
+                  return GestureDetector(
+                    onTap: () => FullScreenImageViewer.show(
+                      context,
+                      images: photos,
+                      initialIndex: idx,
+                      title: profile.fullName,
+                    ),
+                    child: Container(
+                      width: 95,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                          width: 1,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(9),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.network(
+                              url,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: const Color(0xFF1E293B),
+                                child: const Icon(
+                                  Icons.broken_image_rounded,
+                                  color: Colors.white54,
+                                  size: 24,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 4,
+                              right: 4,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.65),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.fullscreen_rounded,
+                                  color: Color(0xFFFFD700),
+                                  size: 14,
+                                ),
+                              ),
+                            ),
+                            if (idx == 0)
+                              Positioned(
+                                bottom: 4,
+                                left: 4,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0056D2).withValues(alpha: 0.85),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'Main',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1794,32 +1989,81 @@ class _CandidateProfileDetailScreenState
             ),
             child: Column(
               children: [
-                // Circular Medallion Avatar with gold ring
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: const Color(0xFFFFD700), width: 3),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                        blurRadius: 16,
-                        spreadRadius: 2,
+                // Circular Medallion Avatar with gold ring (Clickable to Full-Screen Lightbox)
+                MouseRegion(
+                  cursor: profile.allPhotoUrls.isNotEmpty
+                      ? SystemMouseCursors.click
+                      : SystemMouseCursors.basic,
+                  child: GestureDetector(
+                    onTap: profile.allPhotoUrls.isNotEmpty
+                        ? () => FullScreenImageViewer.show(
+                              context,
+                              images: profile.allPhotoUrls,
+                              initialIndex: 0,
+                              title: profile.fullName,
+                            )
+                        : null,
+                    child: Tooltip(
+                      message: profile.allPhotoUrls.isNotEmpty
+                          ? 'Click to view full photo (મોટો ફોટો જુઓ)'
+                          : profile.fullName,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFFFD700), width: 3),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                  blurRadius: 16,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 54,
+                              backgroundColor: const Color(0xFF0D1B3E),
+                              backgroundImage: profile.fullPhotoUrl != null
+                                  ? NetworkImage(profile.fullPhotoUrl!)
+                                  : null,
+                              onBackgroundImageError: profile.fullPhotoUrl != null
+                                  ? (e, s) {}
+                                  : null,
+                              child: profile.fullPhotoUrl == null
+                                  ? const Icon(Icons.person, size: 56, color: Color(0xFFFFD700))
+                                  : null,
+                            ),
+                          ),
+                          if (profile.allPhotoUrls.isNotEmpty)
+                            Positioned(
+                              bottom: 2,
+                              right: 2,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0D1B3E),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.4),
+                                      blurRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Icons.fullscreen_rounded,
+                                  color: Color(0xFFFFD700),
+                                  size: 18,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 54,
-                    backgroundColor: const Color(0xFF0D1B3E),
-                    backgroundImage: profile.fullPhotoUrl != null
-                        ? NetworkImage(profile.fullPhotoUrl!)
-                        : null,
-                    onBackgroundImageError: profile.fullPhotoUrl != null
-                        ? (e, s) {}
-                        : null,
-                    child: profile.fullPhotoUrl == null
-                        ? const Icon(Icons.person, size: 56, color: Color(0xFFFFD700))
-                        : null,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -2314,6 +2558,118 @@ class _CandidateProfileDetailScreenState
     );
   }
 
+  Widget _buildWebPhotoGalleryCard(BuildContext context, ProfileModel profile) {
+    final photos = profile.allPhotoUrls;
+    if (photos.isEmpty) return const SizedBox.shrink();
+
+    return _buildWebCard(
+      titleGuj: 'ફોટો ગેલેરી',
+      titleEng: 'Candidate Photos (${photos.length})',
+      icon: Icons.photo_library_outlined,
+      iconColor: const Color(0xFFFFD700),
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 6.0, bottom: 4.0),
+          child: Wrap(
+            spacing: 14,
+            runSpacing: 14,
+            children: List.generate(photos.length, (idx) {
+              final url = photos[idx];
+              return MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () => FullScreenImageViewer.show(
+                    context,
+                    images: photos,
+                    initialIndex: idx,
+                    title: profile.fullName,
+                  ),
+                  child: Tooltip(
+                    message: 'Click to view full photo (મોટો ફોટો જુઓ)',
+                    child: Container(
+                      width: 140,
+                      height: 175,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(11),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Image.network(
+                              url,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                color: const Color(0xFF0F172A),
+                                child: const Icon(
+                                  Icons.broken_image_rounded,
+                                  color: Colors.white54,
+                                  size: 32,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.fullscreen_rounded,
+                                  color: Color(0xFFFFD700),
+                                  size: 16,
+                                ),
+                              ),
+                            ),
+                            if (idx == 0)
+                              Positioned(
+                                bottom: 8,
+                                left: 8,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0056D2).withValues(alpha: 0.85),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: const Text(
+                                    'Main Photo',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildWebDetailsColumn(
     BuildContext context,
     ProfileModel profile,
@@ -2324,6 +2680,10 @@ class _CandidateProfileDetailScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        if (profile.allPhotoUrls.isNotEmpty) ...[
+          _buildWebPhotoGalleryCard(context, profile),
+          const SizedBox(height: 16),
+        ],
         // 1. Personal Details
         _buildWebCard(
           titleGuj: 'વ્યક્તિગત વિગતો',

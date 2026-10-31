@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/profile/providers/liked_profiles_provider.dart';
 import '../../shared/models/profile_model.dart';
+import 'full_screen_image_viewer.dart';
 
 class ProfileCard extends ConsumerWidget {
   final ProfileModel profile;
@@ -35,40 +36,67 @@ class ProfileCard extends ConsumerWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Avatar with Verified badge
-                  Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 35,
-                        backgroundColor: const Color(0xFF0056D2).withValues(alpha: 0.1),
-                        backgroundImage: profile.fullPhotoUrl != null
-                            ? NetworkImage(profile.fullPhotoUrl!)
-                            : null,
-                        onBackgroundImageError: profile.fullPhotoUrl != null
-                            ? (_, _) {}
-                            : null,
-                        child: profile.fullPhotoUrl == null
-                            ? const Icon(Icons.person, size: 40, color: Color(0xFF0056D2))
-                            : null,
-                      ),
-                      if (profile.isVerified == true)
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: Container(
-                            padding: const EdgeInsets.all(2),
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
+                  // Avatar with Verified badge (Tap to view full screen)
+                  GestureDetector(
+                    onTap: profile.allPhotoUrls.isNotEmpty
+                        ? () => FullScreenImageViewer.show(
+                              context,
+                              images: profile.allPhotoUrls,
+                              initialIndex: 0,
+                              title: profile.fullName,
+                            )
+                        : null,
+                    child: Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 35,
+                          backgroundColor: const Color(0xFF0056D2).withValues(alpha: 0.1),
+                          backgroundImage: profile.fullPhotoUrl != null
+                              ? NetworkImage(profile.fullPhotoUrl!)
+                              : null,
+                          onBackgroundImageError: profile.fullPhotoUrl != null
+                              ? (_, _) {}
+                              : null,
+                          child: profile.fullPhotoUrl == null
+                              ? const Icon(Icons.person, size: 40, color: Color(0xFF0056D2))
+                              : null,
+                        ),
+                        if (profile.allPhotoUrls.isNotEmpty)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(3),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF0D1B3E),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.fullscreen_rounded,
+                                color: Color(0xFFFFD700),
+                                size: 12,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.verified,
-                              color: Color(0xFF0056D2),
-                              size: 16,
+                          )
+                        else if (profile.isVerified == true)
+                          Positioned(
+                            bottom: 0,
+                            right: 0,
+                            child: Container(
+                              padding: const EdgeInsets.all(2),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.verified,
+                                color: Color(0xFF0056D2),
+                                size: 16,
+                              ),
                             ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
                   const SizedBox(width: 14),
                   // Details

@@ -10,6 +10,7 @@ import '../../../home/presentation/widgets/web_home_header.dart';
 import '../../../home/presentation/widgets/web_home_footer.dart';
 import '../../providers/profile_provider.dart';
 import '../widgets/update_password_dialog.dart';
+import '../../../../shared/widgets/full_screen_image_viewer.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -397,24 +398,34 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ),
                           ],
                         ),
-                        child: ClipOval(
-                          child: profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty
-                              ? Image.network(
-                                  profile.fullPhotoUrl!,
-                                  width: 108,
-                                  height: 108,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) => const Icon(
+                        child: GestureDetector(
+                          onTap: profile.allPhotoUrls.isNotEmpty
+                              ? () => FullScreenImageViewer.show(
+                                    context,
+                                    images: profile.allPhotoUrls,
+                                    initialIndex: 0,
+                                    title: profile.fullName,
+                                  )
+                              : null,
+                          child: ClipOval(
+                            child: profile.fullPhotoUrl != null && profile.fullPhotoUrl!.isNotEmpty
+                                ? Image.network(
+                                    profile.fullPhotoUrl!,
+                                    width: 108,
+                                    height: 108,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.person_rounded,
+                                      size: 64,
+                                      color: Color(0xFF1E3A5F),
+                                    ),
+                                  )
+                                : const Icon(
                                     Icons.person_rounded,
                                     size: 64,
                                     color: Color(0xFF1E3A5F),
                                   ),
-                                )
-                              : const Icon(
-                                  Icons.person_rounded,
-                                  size: 64,
-                                  color: Color(0xFF1E3A5F),
-                                ),
+                          ),
                         ),
                       ),
                     ),
@@ -1144,22 +1155,53 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
-                  children: photoUrls.map((url) {
-                    return Container(
-                      width: 110,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
+                  children: photoUrls.asMap().entries.map((entry) {
+                    final idx = entry.key;
+                    final url = entry.value;
+                    return GestureDetector(
+                      onTap: () => FullScreenImageViewer.show(
+                        context,
+                        images: photoUrls,
+                        initialIndex: idx,
+                        title: profile.fullName,
                       ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(9),
-                        child: Image.network(
-                          url,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Container(
-                            color: const Color(0xFFF1F5F9),
-                            child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                      child: Container(
+                        width: 110,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFE2E8F0)),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(9),
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.network(
+                                url,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: const Color(0xFFF1F5F9),
+                                  child: const Icon(Icons.broken_image_rounded, color: Colors.grey),
+                                ),
+                              ),
+                              Positioned(
+                                top: 6,
+                                right: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.all(3),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.6),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.fullscreen_rounded,
+                                    color: Color(0xFFFFD700),
+                                    size: 14,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
