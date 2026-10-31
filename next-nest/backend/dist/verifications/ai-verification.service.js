@@ -77,7 +77,7 @@ let AiVerificationService = AiVerificationService_1 = class AiVerificationServic
         });
         const isFront = side === "FRONT";
         const prompt = isFront
-            ? `You are an expert document verification AI specialized in Indian identification documents: Voter ID / EPIC Card, Driving License, Government Employee Job Card / Service ID, and Passport.
+            ? `You are an expert document verification AI specialized in Indian identification documents: Voter ID / EPIC Card, Driving License, Ayushman Bharat (PMJAY) Card, Job Card (MGNREGA / Employment ID), Government Employee Service ID, and Passport.
 
 Task:
 1. Examine the attached document image thoroughly.
@@ -125,7 +125,7 @@ Return ONLY JSON matching this exact structure:
   "englishMessage": string,
   "gujaratiMessage": string
 }`
-            : `You are an expert document verification AI specialized in Indian identification documents (Voter ID, Driving License, Govt Employee Job Card, Passport).
+            : `You are an expert document verification AI specialized in Indian identification documents (Voter ID, Driving License, Ayushman Bharat Card, Job Card, Govt Employee Job Card, Passport).
 
 Task:
 1. Examine the attached document image to determine if it is the genuine BACK side of the requested document type: "${documentType}".

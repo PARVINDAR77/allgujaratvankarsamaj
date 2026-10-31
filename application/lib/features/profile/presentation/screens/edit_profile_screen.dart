@@ -48,7 +48,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final List<String> _idProofOptions = [
     'Voter ID Card (ચૂંટણી કાર્ડ)',
     'Driving License (ડ્રાઇવિંગ લાઇસન્સ)',
-    'Govt Job Card / Service ID (સરકારી નોકરી ઓળખપત્ર / જોબ કાર્ડ)',
+    'Ayushman Card (આયુષ્માન ભારત / PMJAY કાર્ડ)',
+    'Job Card (જોબ કાર્ડ / મનરેગા ઓળખપત્ર)',
+    'Govt Job Card / Service ID (સરકારી નોકરી ઓળખપત્ર)',
     'Passport (પાસપોર્ટ)',
   ];
 
@@ -838,7 +840,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _existingIdFrontUrl = profile.idProofFrontUrl;
               _existingIdBackUrl = profile.idProofBackUrl;
               if (profile.idProofType != null && profile.idProofType!.isNotEmpty) {
-                _idProofType = profile.idProofType!;
+                final loadedType = profile.idProofType!;
+                if (loadedType.toLowerCase().contains('aadhaar') || loadedType.toLowerCase().contains('pan')) {
+                  _idProofType = _idProofOptions.first;
+                } else if (_idProofOptions.contains(loadedType)) {
+                  _idProofType = loadedType;
+                } else {
+                  _idProofType = _idProofOptions.first;
+                }
               }
               _idProofNumber ??= profile.idProofNumber;
             }
@@ -2630,9 +2639,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                                 ? Icons.how_to_vote_outlined
                                 : opt.contains('License')
                                     ? Icons.directions_car_outlined
-                                    : opt.contains('Job') || opt.contains('Govt')
-                                        ? Icons.badge_outlined
-                                        : Icons.flight_takeoff_outlined,
+                                    : opt.contains('Ayushman')
+                                        ? Icons.health_and_safety_outlined
+                                        : opt.contains('Job')
+                                            ? Icons.work_outline_rounded
+                                            : opt.contains('Govt')
+                                                ? Icons.badge_outlined
+                                                : Icons.flight_takeoff_outlined,
                             size: 18,
                             color: isSelected ? const Color(0xFF1E3A8A) : Colors.black87,
                           ),
@@ -2671,14 +2684,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           TextFormField(
             initialValue: _idProofNumber,
             textCapitalization: TextCapitalization.characters,
+            style: const TextStyle(
+              color: Color(0xFF0F172A),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
             decoration: InputDecoration(
               hintText: _idProofType.contains('Voter')
                   ? 'દા.ત. WOF2635298 / ABC1234567 (10-char Voter ID/EPIC No)'
                   : _idProofType.contains('License')
                       ? 'દા.ત. GJ01 20200012345 (Driving License No)'
-                      : _idProofType.contains('Job') || _idProofType.contains('Govt')
-                          ? 'દા.ત. EMP123456 / Service ID (સરકારી કર્મચારી ઓળખપત્ર નંબર)'
-                          : 'દા.ત. A1234567 (Passport Number)',
+                      : _idProofType.contains('Ayushman')
+                          ? 'દા.ત. PMJAY-1234567890 / ABHA ID (આયુષ્માન કાર્ડ નંબર)'
+                          : _idProofType.contains('Job')
+                              ? 'દા.ત. GJ-01-001-002/12345 (જોબ કાર્ડ નંબર)'
+                              : _idProofType.contains('Govt')
+                                  ? 'દા.ત. EMP123456 / Service ID (સરકારી કર્મચારી ઓળખપત્ર નંબર)'
+                                  : 'દા.ત. A1234567 (Passport Number)',
               hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400),
               prefixIcon: const Icon(Icons.numbers_outlined, color: Color(0xFF1E3A8A), size: 20),
               filled: true,
