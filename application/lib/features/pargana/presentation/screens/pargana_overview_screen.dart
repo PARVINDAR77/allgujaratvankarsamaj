@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,7 +48,20 @@ class _ParganaOverviewScreenState extends ConsumerState<ParganaOverviewScreen> {
       clean = '91$clean';
     }
     final uri = Uri.parse('https://wa.me/$clean');
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (kIsWeb) {
+      await launchUrl(uri, webOnlyWindowName: '_blank');
+      return;
+    }
+    try {
+      final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!ok) {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (_) {
+      try {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      } catch (_) {}
+    }
   }
 
   void _showParganaDetailsModal(BuildContext context, ParganaModel pargana) {

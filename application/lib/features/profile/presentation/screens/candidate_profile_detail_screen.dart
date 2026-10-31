@@ -1246,15 +1246,19 @@ class _CandidateProfileDetailScreenState
                       cleanPhone = cleanPhone.substring(1);
                     }
                     if (cleanPhone.length == 10) cleanPhone = '91$cleanPhone';
-                    final nativeUri = Uri.parse('whatsapp://send?phone=$cleanPhone');
                     final waMeUri = Uri.parse('https://wa.me/$cleanPhone');
+                    if (kIsWeb) {
+                      await launchUrl(waMeUri, webOnlyWindowName: '_blank');
+                      return;
+                    }
+                    final nativeUri = Uri.parse('whatsapp://send?phone=$cleanPhone');
                     bool ok = false;
                     try {
-                      ok = await launchUrl(nativeUri, mode: LaunchMode.externalNonBrowserApplication);
+                      ok = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
                     } catch (_) {}
                     if (!ok) {
                       try {
-                        ok = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
+                        ok = await launchUrl(nativeUri, mode: LaunchMode.externalNonBrowserApplication);
                       } catch (_) {}
                     }
                     if (!ok) {

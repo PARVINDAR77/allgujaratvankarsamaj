@@ -45,6 +45,11 @@
         <!-- Package visibility for WhatsApp and WhatsApp Business -->
         <package android:name="com.whatsapp" />
         <package android:name="com.whatsapp.w4b" />
+        <!-- WhatsApp intent scheme -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="whatsapp" />
+        </intent>
         <!-- Web browsers & HTTPS deep links -->
         <intent>
             <action android:name="android.intent.action.VIEW" />

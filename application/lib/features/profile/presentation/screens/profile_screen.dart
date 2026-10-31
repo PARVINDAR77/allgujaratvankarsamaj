@@ -70,9 +70,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     const phone = "919426000000"; // Samaj official support number
     const text = "નમસ્તે, હું ઓલ ગુજરાત વણકર સમાજ પોર્ટલ અંગે સહાય મેળવવા સંપર્ક કરું છું.";
     final uri = Uri.parse("https://wa.me/$phone?text=${Uri.encodeComponent(text)}");
-    if (await canLaunchUrl(uri)) {
+    try {
+      if (kIsWeb) {
+        await launchUrl(uri, webOnlyWindowName: '_blank');
+        return;
+      }
       await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    } catch (_) {}
   }
 
   @override

@@ -91,20 +91,41 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     final rawMessage = 'નમસ્તે $displayName, મેં ઓલ ગુજરાત વણકર સમાજ ડિરેક્ટરીમાંથી તમારી સેવા ($displayService) જોઈ સંપર્ક કર્યો છે.';
     final encodedMessage = Uri.encodeComponent(rawMessage);
 
+    // 1. Direct web launch in new tab (avoids browser popup blocker on web)
+    if (kIsWeb) {
+      final waWebUri = Uri.parse('https://wa.me/$clean?text=$encodedMessage');
+      try {
+        final ok = await launchUrl(waWebUri, webOnlyWindowName: '_blank');
+        if (ok) return;
+      } catch (e) {
+        debugPrint('Web WhatsApp launch error: $e');
+      }
+    }
+
+    // 2. Mobile (Android / iOS) Launch Strategies
+    final waMeUri = Uri.parse('https://wa.me/$clean?text=$encodedMessage');
     final nativeUri = Uri.parse('whatsapp://send?phone=$clean&text=$encodedMessage');
     final apiUri = Uri.parse('https://api.whatsapp.com/send?phone=$clean&text=$encodedMessage');
-    final waMeUri = Uri.parse('https://wa.me/$clean?text=$encodedMessage');
 
     bool launched = false;
 
-    // Strategy 1: Direct native WhatsApp app
+    // Strategy 1: wa.me with externalApplication (Android App Link / iOS Universal Link directly opens WhatsApp app)
     try {
-      launched = await launchUrl(nativeUri, mode: LaunchMode.externalNonBrowserApplication);
+      launched = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
     } catch (_) {
       launched = false;
     }
 
-    // Strategy 2: Universal api.whatsapp.com
+    // Strategy 2: Direct native WhatsApp app scheme
+    if (!launched) {
+      try {
+        launched = await launchUrl(nativeUri, mode: LaunchMode.externalNonBrowserApplication);
+      } catch (_) {
+        launched = false;
+      }
+    }
+
+    // Strategy 3: Universal api.whatsapp.com
     if (!launched) {
       try {
         launched = await launchUrl(apiUri, mode: LaunchMode.externalApplication);
@@ -113,16 +134,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
       }
     }
 
-    // Strategy 3: Standard wa.me via external application
-    if (!launched) {
-      try {
-        launched = await launchUrl(waMeUri, mode: LaunchMode.externalApplication);
-      } catch (_) {
-        launched = false;
-      }
-    }
-
-    // Strategy 4: Platform default fallback (useful for mobile & web)
+    // Strategy 4: Platform default fallback
     if (!launched) {
       try {
         launched = await launchUrl(waMeUri, mode: LaunchMode.platformDefault);

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -712,9 +713,11 @@ class WebHomeFooter extends StatelessWidget {
     const text = 'નમસ્તે, મને અખિલ ગુજરાત વણકર સમાજ પોર્ટલ વિશે સહાયની જરૂર છે.';
     final url = Uri.parse('https://wa.me/$phone?text=${Uri.encodeComponent(text)}');
     try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(url, mode: LaunchMode.externalApplication);
+      if (kIsWeb) {
+        await launchUrl(url, webOnlyWindowName: '_blank');
+        return;
       }
+      await launchUrl(url, mode: LaunchMode.externalApplication);
     } catch (_) {}
   }
 
