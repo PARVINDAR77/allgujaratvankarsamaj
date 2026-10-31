@@ -21,17 +21,15 @@ class VerifiedProfileScreen extends ConsumerStatefulWidget {
 class _VerifiedProfileScreenState
     extends ConsumerState<VerifiedProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _documentType = 'Aadhar Card';
+  String _documentType = 'Voter ID';
   final _docUrlController = TextEditingController();
   bool _isUploadingFile = false;
 
   static const _documentTypes = [
-    'Aadhar Card',
-    'PAN Card',
-    'Driving License',
-    'Passport',
     'Voter ID',
-    'Government ID',
+    'Driving License',
+    'Govt Job Card / Service ID',
+    'Passport',
   ];
 
   @override

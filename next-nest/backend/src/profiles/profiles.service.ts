@@ -174,7 +174,7 @@ export class ProfilesService {
     }
 
     // Rule 2: Another person cannot add the same ID that was used previously.
-    // A) Check ID Proof Number (e.g. Aadhaar Number, Voter ID, PAN, Driving License)
+    // A) Check ID Proof Number (e.g. Voter ID, Driving License, Govt Job Card, Passport)
     const rawNumber = dto.idProofNumber?.trim();
     if (rawNumber && rawNumber.length > 0) {
       const cleanNumber = rawNumber.replace(/[\s\-_]/g, "").toUpperCase();
@@ -529,7 +529,7 @@ export class ProfilesService {
       }
 
       // Automatically register a VerificationRequest for Admin Review queue
-      const docType = dto.idProofType?.trim() || "Aadhaar Card";
+      const docType = dto.idProofType?.trim() || "Voter ID Card";
       const cleanNum = dto.idProofNumber ? dto.idProofNumber.replace(/[\s\-_]/g, "").toUpperCase() : null;
       const fullDocType = cleanNum ? `${docType} [ID: ${cleanNum}]` : docType;
       const docFront = dto.idProofFrontUrl?.trim() || profile.photoUrl || dto.photoUrl || "/uploads/default-id.png";
@@ -1243,7 +1243,7 @@ export class ProfilesService {
 
       if (dto.idProofFrontUrl || dto.idProofBackUrl || dto.idProofNumber) {
         try {
-          const docType = dto.idProofType?.trim() || "Aadhaar Card";
+          const docType = dto.idProofType?.trim() || "Voter ID Card";
           const cleanNum = dto.idProofNumber ? dto.idProofNumber.replace(/[\s\-_]/g, "").toUpperCase() : null;
           const fullDocType = cleanNum ? `${docType} [ID: ${cleanNum}]` : docType;
           const docFront =

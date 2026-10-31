@@ -287,8 +287,8 @@ __decorate([
 ], CreateProfileDto.prototype, "photos", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "ID Proof Document Type (Aadhaar Card, PAN Card, Voter ID, etc.)",
-        example: "Aadhaar Card",
+        description: "ID Proof Document Type (Voter ID Card, Driving License, Govt Job Card, Passport)",
+        example: "Voter ID Card",
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
@@ -312,7 +312,7 @@ __decorate([
 ], CreateProfileDto.prototype, "idProofBackUrl", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "ID Proof Document / Card Number (Aadhaar / PAN / Voter ID / License number)",
+        description: "ID Proof Document / Card Number (Voter ID / DL / Govt Job Card / Passport number)",
         example: "1234 5678 9012",
     }),
     (0, class_validator_1.IsOptional)(),

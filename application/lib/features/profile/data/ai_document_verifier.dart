@@ -242,8 +242,9 @@ class AiDocumentVerifier {
       final base64Image = base64Encode(bytes);
 
       final prompt = isFront
-          ? 'You are an expert document verification AI specialized in Indian identification documents (Aadhaar Card, PAN Card, Voter ID, Driving License, Passport).\n'
+          ? 'You are an expert document verification AI specialized in Indian identification documents: Voter ID (EPIC Card), Driving License, Government Employee Job Card / Service ID, and Passport.\n'
             'Examine the attached image. Determine if it is a genuine, clear, and valid ID document matching "$documentType".\n'
+            'CRITICAL: If the image is NOT an official government ID card (e.g. if it is a random photo, selfie, animal, landscape, wallpaper, meme, vehicle, furniture, food, or screenshot), you MUST set isValidDocument = false and isApproved = false.\n'
             'Extract:\n'
             '1. Full Name\n'
             '2. Date of Birth (DOB) or Year of Birth\n'

@@ -33,7 +33,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Uint8List? _profileImageBytes;
   List<String> _existingPhotoUrls = [];
   final List<Uint8List> _newGalleryPhotosBytes = [];
-  String _idProofType = 'Aadhaar Card (આધાર કાર્ડ)';
+  String _idProofType = 'Voter ID Card (ચૂંટણી કાર્ડ)';
   String? _idProofNumber;
   String? _existingIdFrontUrl;
   String? _existingIdBackUrl;
@@ -46,12 +46,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _idFrontUploadedUrl;
   String? _idBackUploadedUrl;
   final List<String> _idProofOptions = [
-    'Aadhaar Card (આધાર કાર્ડ)',
-    'PAN Card (પાન કાર્ડ)',
     'Voter ID Card (ચૂંટણી કાર્ડ)',
     'Driving License (ડ્રાઇવિંગ લાઇસન્સ)',
+    'Govt Job Card / Service ID (સરકારી નોકરી ઓળખપત્ર / જોબ કાર્ડ)',
     'Passport (પાસપોર્ટ)',
-    'Other Govt ID (અન્ય સરકારી ઓળખપત્ર)',
   ];
 
   final ImagePicker _picker = ImagePicker();
@@ -2628,17 +2626,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
-                            opt.contains('Aadhaar')
-                                ? Icons.badge_outlined
-                                : opt.contains('PAN')
-                                    ? Icons.credit_card
-                                    : opt.contains('Voter')
-                                        ? Icons.how_to_vote_outlined
-                                        : opt.contains('License')
-                                            ? Icons.directions_car_outlined
-                                            : opt.contains('Passport')
-                                                ? Icons.flight_takeoff_outlined
-                                                : Icons.assignment_ind_outlined,
+                            opt.contains('Voter')
+                                ? Icons.how_to_vote_outlined
+                                : opt.contains('License')
+                                    ? Icons.directions_car_outlined
+                                    : opt.contains('Job') || opt.contains('Govt')
+                                        ? Icons.badge_outlined
+                                        : Icons.flight_takeoff_outlined,
                             size: 18,
                             color: isSelected ? const Color(0xFF1E3A8A) : Colors.black87,
                           ),
@@ -2678,13 +2672,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             initialValue: _idProofNumber,
             textCapitalization: TextCapitalization.characters,
             decoration: InputDecoration(
-              hintText: _idProofType.contains('Aadhaar')
-                  ? 'દા.ત. 1234 5678 9012 (12-digit Aadhaar No)'
-                  : _idProofType.contains('PAN')
-                      ? 'દા.ત. ABCDE1234F (10-char PAN)'
-                      : _idProofType.contains('Voter')
-                          ? 'દા.ત. ABC1234567 (Voter ID No)'
-                          : 'Enter ${_idProofType.split('(').first.trim()} Number',
+              hintText: _idProofType.contains('Voter')
+                  ? 'દા.ત. WOF2635298 / ABC1234567 (10-char Voter ID/EPIC No)'
+                  : _idProofType.contains('License')
+                      ? 'દા.ત. GJ01 20200012345 (Driving License No)'
+                      : _idProofType.contains('Job') || _idProofType.contains('Govt')
+                          ? 'દા.ત. EMP123456 / Service ID (સરકારી કર્મચારી ઓળખપત્ર નંબર)'
+                          : 'દા.ત. A1234567 (Passport Number)',
               hintStyle: TextStyle(fontSize: 12, color: Colors.grey.shade400),
               prefixIcon: const Icon(Icons.numbers_outlined, color: Color(0xFF1E3A8A), size: 20),
               filled: true,

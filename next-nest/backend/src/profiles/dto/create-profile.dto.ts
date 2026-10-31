@@ -258,8 +258,8 @@ export class CreateProfileDto {
   photos?: string[] | string;
 
   @ApiPropertyOptional({
-    description: "ID Proof Document Type (Aadhaar Card, PAN Card, Voter ID, etc.)",
-    example: "Aadhaar Card",
+    description: "ID Proof Document Type (Voter ID Card, Driving License, Govt Job Card, Passport)",
+    example: "Voter ID Card",
   })
   @IsOptional()
   @IsString()
@@ -280,7 +280,7 @@ export class CreateProfileDto {
   idProofBackUrl?: string;
 
   @ApiPropertyOptional({
-    description: "ID Proof Document / Card Number (Aadhaar / PAN / Voter ID / License number)",
+    description: "ID Proof Document / Card Number (Voter ID / DL / Govt Job Card / Passport number)",
     example: "1234 5678 9012",
   })
   @IsOptional()

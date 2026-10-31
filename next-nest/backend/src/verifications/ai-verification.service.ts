@@ -14,7 +14,7 @@ export interface AiVerifyDocOptions {
   expectedFirstName: string;
   expectedLastName: string;
   expectedDob: string; // YYYY-MM-DD
-  documentType: string; // e.g. "Aadhaar Card", "PAN Card", "Voter ID", "Driving License"
+  documentType: string; // e.g. "Voter ID Card", "Driving License", "Govt Job Card / Service ID", "Passport"
   documentNumber?: string;
   side: "FRONT" | "BACK";
 }
@@ -126,16 +126,17 @@ export class AiVerificationService {
     const isFront = side === "FRONT";
 
     const prompt = isFront
-      ? `You are an expert document verification AI specialized in Indian identification documents (Aadhaar Card, PAN Card, Voter ID / EPIC Card, Driving License, Passport).
+      ? `You are an expert document verification AI specialized in Indian identification documents: Voter ID / EPIC Card, Driving License, Government Employee Job Card / Service ID, and Passport.
 
 Task:
 1. Examine the attached document image thoroughly.
 2. Determine if it is a genuine, clear, and valid identification document matching the requested document type: "${documentType}".
-   - If the image is blurry, unreadable, obscured, corrupted, or NOT an ID document (such as a random photo, selfie, animal, scenery, utility bill, or screenshot of something unrelated), mark isValidDocument as false.
+   - CRITICAL: If the image is NOT an official government ID card (such as a random photo, selfie, personal portrait, animal, landscape, wallpaper, meme, vehicle, furniture, food, or screenshot of something unrelated), you MUST mark isValidDocument as false, isApproved as false, and rejectionReason as "INVALID_DOCUMENT". Under NO circumstances should any random or non-ID image be approved.
+   - If the image is blurry, unreadable, obscured, or corrupted, mark isValidDocument as false.
 3. Extract the following details:
    - Full Name (in English and/or Gujarati / Hindi if printed).
    - Date of Birth (DOB) or Year of Birth (YOB).
-   - Document ID Number (e.g. 12-digit Aadhaar, 10-char PAN, etc.).
+   - Document ID Number (e.g. 10-char Voter ID/EPIC No, DL No, Employee ID, or Passport No).
 4. Compare extracted details with the expected candidate details:
    - Expected First Name: "${expectedFirstName.trim()}"
    - Expected Last Name: "${expectedLastName.trim()}"
@@ -151,12 +152,12 @@ Comparison Guidelines:
   * Allow minor transliteration differences between Gujarati and English (e.g., "Vankar" vs "Vankaar", "Patel" vs "Pateel").
 - Date of Birth Matching:
   * If full DOB is visible (e.g., 15/05/1995 or 1995-05-15), compare day, month, and year against "${expectedDob}".
-  * If the document only shows Year of Birth (common on certain Aadhaar cards, e.g., "Year of Birth: 1995"), check if the birth year matches the year in "${expectedDob}". If the birth year matches, consider dobMatched = true.
+  * If the document only shows Year of Birth (e.g., "Year of Birth: 1995"), check if the birth year matches the year in "${expectedDob}". If the birth year matches, consider dobMatched = true.
 - Approval Condition:
   * isApproved MUST be true ONLY IF isValidDocument is true AND nameMatched is true AND dobMatched is true.
   * If name does not match, set isApproved = false, rejectionReason = "NAME_MISMATCH".
   * If DOB does not match, set isApproved = false, rejectionReason = "DOB_MISMATCH".
-  * If document is invalid/unreadable/blurry, set isApproved = false, rejectionReason = "INVALID_DOCUMENT".
+  * If document is invalid/unreadable/blurry/random-photo, set isApproved = false, rejectionReason = "INVALID_DOCUMENT".
 
 Return ONLY JSON matching this exact structure:
 {
@@ -173,15 +174,16 @@ Return ONLY JSON matching this exact structure:
   "englishMessage": string,
   "gujaratiMessage": string
 }`
-      : `You are an expert document verification AI specialized in Indian identification documents.
+      : `You are an expert document verification AI specialized in Indian identification documents (Voter ID, Driving License, Govt Employee Job Card, Passport).
 
 Task:
 1. Examine the attached document image to determine if it is the genuine BACK side of the requested document type: "${documentType}".
 2. Check for typical features of the back of this document:
-   - Aadhaar Back: address in English and regional script (Gujarati/Hindi), Care of (C/O or S/O or W/O), barcode/QR code, Aadhaar number.
-   - PAN Back: magnetic stripe, QR code, or NSDL/UTIITSL contact details.
+   - Voter ID Back: electoral registration officer details, assembly constituency, address.
    - Driving License Back: vehicle category endorsements, issuing authority, address.
-   - Voter ID Back: electoral officer details, address.
+   - Govt Job Card Back: department instructions, emergency contact, issuing authority seal/signature.
+   - Passport Back: parents' names, address, file number, barcode.
+   - CRITICAL: If the image is a selfie, random photo, animal, landscape, wallpaper, or non-ID image, mark isValidDocument as false and isApproved as false.
 3. Determine if the image is clear and valid.
 
 Return ONLY JSON matching this exact structure:
@@ -199,6 +201,7 @@ Return ONLY JSON matching this exact structure:
   "englishMessage": string,
   "gujaratiMessage": string
 }`;
+  
 
     const normalizedMime = ["image/jpeg", "image/png", "image/webp"].includes(mimetype.toLowerCase())
       ? mimetype.toLowerCase()
@@ -408,30 +411,30 @@ Return ONLY JSON matching this exact structure:
    * Graceful fallback when GEMINI_API_KEY is not configured in local development.
    */
   private fallbackVerification(options: AiVerifyDocOptions): AiVerificationResult {
-    const { expectedFirstName, expectedLastName, expectedDob, documentType, side } = options;
+    const { documentType, side } = options;
     const isFront = side === "FRONT";
 
     this.logger.warn(
-      `Running AI Document Verification in fallback mode for ${documentType} (${side}). Set GEMINI_API_KEY in .env for live vision scanning.`,
+      `Running AI Document Verification in fallback mode for ${documentType} (${side}). Live Gemini vision is unavailable or image cannot be automatically approved.`,
     );
 
     return {
-      isValidDocument: true,
-      detectedDocumentType: documentType,
-      extractedName: `${expectedFirstName} ${expectedLastName}`.trim(),
-      extractedDob: expectedDob,
+      isValidDocument: false,
+      detectedDocumentType: "UNKNOWN",
+      extractedName: null,
+      extractedDob: null,
       extractedDocNumber: options.documentNumber || null,
-      nameMatched: true,
-      dobMatched: true,
-      confidence: 0.88,
-      isApproved: true,
-      rejectionReason: null,
+      nameMatched: false,
+      dobMatched: false,
+      confidence: 0.0,
+      isApproved: false,
+      rejectionReason: "MANUAL_ADMIN_REVIEW_REQUIRED",
       englishMessage: isFront
-        ? "AI Verification Successful (Dev Mode): Document verified."
-        : "AI Verification Successful (Dev Mode): Back side verified.",
+        ? "This image could not be verified as a valid ID document (Voter ID, Driving License, or Govt Job Card). A genuine government ID must be uploaded for verification."
+        : "The back side of this document could not be verified as a valid government ID. Please upload a clear photo of the ID back side.",
       gujaratiMessage: isFront
-        ? "AI ચકાસણી સફળ (Dev Mode): દસ્તાવેજ ચકાસાયેલ છે."
-        : "AI ચકાસણી સફળ (Dev Mode): પાછળનો ભાગ ચકાસાયેલ છે.",
+        ? "આ ફોટો માન્ય સરકારી ઓળખપત્ર (ચૂંટણી કાર્ડ, ડ્રાઇવિંગ લાયસન્સ અથવા સરકારી જોબ કાર્ડ) તરીકે ઓળખાયો નથી. કૃપા કરીને અસલ ઓળખપત્રનો સ્પષ્ટ ફોટો અપલોડ કરો."
+        : "આ ફોટો ઓળખપત્રના પાછળના ભાગ તરીકે ઓળખાયો નથી. કૃપા કરીને ઓળખપત્રના પાછળના ભાગનો સ્પષ્ટ ફોટો અપલોડ કરો.",
     };
   }
 }

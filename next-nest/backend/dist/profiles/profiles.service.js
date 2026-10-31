@@ -415,7 +415,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 }
                 catch (_) { }
             }
-            const docType = dto.idProofType?.trim() || "Aadhaar Card";
+            const docType = dto.idProofType?.trim() || "Voter ID Card";
             const cleanNum = dto.idProofNumber ? dto.idProofNumber.replace(/[\s\-_]/g, "").toUpperCase() : null;
             const fullDocType = cleanNum ? `${docType} [ID: ${cleanNum}]` : docType;
             const docFront = dto.idProofFrontUrl?.trim() || profile.photoUrl || dto.photoUrl || "/uploads/default-id.png";
@@ -1072,7 +1072,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
             }
             if (dto.idProofFrontUrl || dto.idProofBackUrl || dto.idProofNumber) {
                 try {
-                    const docType = dto.idProofType?.trim() || "Aadhaar Card";
+                    const docType = dto.idProofType?.trim() || "Voter ID Card";
                     const cleanNum = dto.idProofNumber ? dto.idProofNumber.replace(/[\s\-_]/g, "").toUpperCase() : null;
                     const fullDocType = cleanNum ? `${docType} [ID: ${cleanNum}]` : docType;
                     const docFront = dto.idProofFrontUrl?.trim() ||

@@ -62,7 +62,7 @@ let VerificationsController = class VerificationsController {
             expectedFirstName: String(body?.firstName || "").trim(),
             expectedLastName: String(body?.lastName || "").trim(),
             expectedDob: String(body?.dob || body?.dateOfBirth || "").trim(),
-            documentType: String(body?.documentType || "Aadhaar Card").trim(),
+            documentType: String(body?.documentType || "Voter ID Card").trim(),
             documentNumber: String(body?.documentNumber || body?.idProofNumber || "").trim(),
             side: String(body?.side || "").toUpperCase() === "BACK" ? "BACK" : "FRONT",
         });
