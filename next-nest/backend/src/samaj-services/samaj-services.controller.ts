@@ -71,6 +71,15 @@ export class SamajServicesController {
     });
   }
 
+  @Public()
+  @Post("samaj-services/register-person")
+  @ApiOperation({
+    summary: "Register a business/service person from Flutter App or Public Web",
+  })
+  async registerPublicServicePerson(@Body() dto: CreateServicePersonDto) {
+    return this.samajServicesService.createServicePerson(dto);
+  }
+
   // ==========================================
   // PROTECTED ADMIN PANEL ENDPOINTS (JWT Required)
   // ==========================================

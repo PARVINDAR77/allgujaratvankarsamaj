@@ -8,6 +8,7 @@ import '../../../../shared/models/samaj_service_person.dart';
 import '../../../../shared/widgets/whatsapp_icon.dart';
 
 import '../../providers/samaj_services_provider.dart';
+import '../../../../shared/repositories/samaj_services_repository.dart';
 import '../../../profile/providers/master_data_provider.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 
@@ -162,6 +163,46 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
       selectedTaluka = null;
       _searchQuery = '';
     });
+  }
+
+    void _showAddBusinessModal(BuildContext context, {SamajService? defaultService}) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (modalCtx) => Dialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        elevation: 24,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        clipBehavior: Clip.antiAlias,
+        insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640, maxHeight: 780),
+          child: _AddBusinessDialogContent(
+            defaultService: defaultService,
+            onSuccess: () {
+              ref.invalidate(samajServicesProvider);
+              ref.invalidate(allSamajServicePersonsProvider);
+              if (defaultService != null) {
+                ref.invalidate(samajServicePersonsProvider(defaultService.id));
+              }
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'તમારો વ્યવસાય સફળતાપૂર્વક નોંધાઈ ગયો છે! (Business Registered Successfully)',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    backgroundColor: Color(0xFF108A44),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
+            },
+          ),
+        ),
+      ),
+    );
   }
 
   void _showServiceProviders(BuildContext context, SamajService service) {
@@ -449,7 +490,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                                             ElevatedButton.icon(
                                               onPressed: () {
                                                 Navigator.pop(ctx);
-                                                context.push('/profile/edit');
+                                                _showAddBusinessModal(context, defaultService: service);
                                               },
                                               icon: const Icon(Icons.add_business_rounded, size: 16),
                                               label: const Text('+ તમારો વ્યવસાય ઉમેરો (+ Add Business)'),
@@ -539,7 +580,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
               ElevatedButton.icon(
                 onPressed: () {
                   Navigator.pop(ctx);
-                  context.push('/profile/edit');
+                  _showAddBusinessModal(context, defaultService: service);
                 },
                 icon: const Icon(Icons.add_business_rounded, size: 15),
                 label: const Text('+ વ્યવસાય ઉમેરો', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
@@ -1669,7 +1710,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
           const SizedBox(width: 10),
           ElevatedButton.icon(
             onPressed: () {
-              context.push('/profile/edit');
+              _showAddBusinessModal(context);
             },
             icon: const Icon(Icons.add_business_rounded, size: 16),
             label: Text(
@@ -2556,6 +2597,628 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
           ),
         ),
       ),
+    );
+  }
+}
+
+
+class _AddBusinessDialogContent extends ConsumerStatefulWidget {
+  final SamajService? defaultService;
+  final VoidCallback onSuccess;
+
+  const _AddBusinessDialogContent({
+    this.defaultService,
+    required this.onSuccess,
+  });
+
+  @override
+  ConsumerState<_AddBusinessDialogContent> createState() =>
+      _AddBusinessDialogContentState();
+}
+
+class _AddBusinessDialogContentState
+    extends ConsumerState<_AddBusinessDialogContent> {
+  final _formKey = GlobalKey<FormState>();
+  String? _selectedServiceId;
+  final _nameController = TextEditingController();
+  final _gujaratiNameController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _addressController = TextEditingController();
+  final _descController = TextEditingController();
+  final _expController = TextEditingController();
+  bool _isSubmitting = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedServiceId = widget.defaultService?.id;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _gujaratiNameController.dispose();
+    _phoneController.dispose();
+    _cityController.dispose();
+    _addressController.dispose();
+    _descController.dispose();
+    _expController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    final serviceId = _selectedServiceId ?? widget.defaultService?.id;
+    if (serviceId == null || serviceId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('કૃપા કરીને સેવાનો પ્રકાર પસંદ કરો (Please select service category).'),
+          backgroundColor: Color(0xFFA4143D),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isSubmitting = true);
+    try {
+      final repo = ref.read(samajServiceRepositoryProvider);
+      final success = await repo.registerServicePerson(
+        serviceId: serviceId,
+        name: _nameController.text.trim(),
+        gujaratiName: _gujaratiNameController.text.trim().isNotEmpty
+            ? _gujaratiNameController.text.trim()
+            : null,
+        phone: _phoneController.text.trim(),
+        city: _cityController.text.trim().isNotEmpty
+            ? _cityController.text.trim()
+            : null,
+        address: _addressController.text.trim().isNotEmpty
+            ? _addressController.text.trim()
+            : null,
+        description: _descController.text.trim().isNotEmpty
+            ? _descController.text.trim()
+            : null,
+        experience: _expController.text.trim().isNotEmpty
+            ? _expController.text.trim()
+            : null,
+      );
+
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+
+      if (success) {
+        Navigator.pop(context);
+        widget.onSuccess();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('નોંધણી દરમિયાન ખામી સર્જાઈ. કૃપા કરીને ફરી પ્રયાસ કરો.'),
+            backgroundColor: Color(0xFFA4143D),
+          ),
+        );
+      }
+    } catch (err) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ખામી: $err'),
+            backgroundColor: const Color(0xFFA4143D),
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final allServicesAsync = ref.watch(samajServicesProvider);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1. Executive Navy/Gold Header
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF041126), Color(0xFF0B2146)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border(
+              bottom: BorderSide(color: Color(0xFFD6A34A), width: 1.5),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD6A34A).withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFFD6A34A), width: 1),
+                ),
+                child: const Icon(
+                  Icons.add_business_rounded,
+                  color: Color(0xFFD6A34A),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'તમારો વ્યવસાય ઉમેરો (Add Business)',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    SizedBox(height: 2),
+                    Text(
+                      'સમાજના પરિવારો સુધી તમારી સેવાઓ પહોંચાડો',
+                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.white70),
+                onPressed: () => Navigator.pop(context),
+                tooltip: 'Close',
+              ),
+            ],
+          ),
+        ),
+
+        // 2. Scrollable Form Body
+        Flexible(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Service Selection Card
+                  if (widget.defaultService != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFAF5E8),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFE5D5BA)),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(
+                            widget.defaultService!.icon,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  widget.defaultService!.title,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF101B36),
+                                  ),
+                                ),
+                                Text(
+                                  'કેટેગરી: ${widget.defaultService!.category}',
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    color: Color(0xFF64748B),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF108A44).withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'પસંદિત સેવા',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF108A44),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ] else ...[
+                    allServicesAsync.when(
+                      data: (services) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'સેવાનો પ્રકાર / કેટેગરી પસંદ કરો *',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            DropdownButtonFormField<String>(
+                              value: _selectedServiceId,
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                prefixIcon: const Icon(
+                                  Icons.category_outlined,
+                                  color: Color(0xFFA4143D),
+                                  size: 20,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide:
+                                      const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide:
+                                      const BorderSide(color: Color(0xFFCBD5E1)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                              ),
+                              hint: const Text(
+                                'સેવા પસંદ કરો (Select Service)',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              items: services.map((s) {
+                                return DropdownMenuItem<String>(
+                                  value: s.id,
+                                  child: Text(
+                                    '${s.icon} ${s.title}',
+                                    style: const TextStyle(fontSize: 13),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                setState(() => _selectedServiceId = val);
+                              },
+                              validator: (val) => val == null || val.isEmpty
+                                  ? 'કૃપા કરીને સેવા પસંદ કરો'
+                                  : null,
+                            ),
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      },
+                      loading: () => const LinearProgressIndicator(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
+
+                  // Business / Owner Name
+                  const Text(
+                    'વ્યવસાય અથવા માલિકનું નામ (Business / Owner Name) *',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      hintText: 'દા.ત. શ્રી ગણેશ પ્રિન્ટિંગ / રમેશભાઈ વણકર',
+                      hintStyle:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                      prefixIcon: const Icon(Icons.badge_outlined,
+                          color: Color(0xFFA4143D), size: 20),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                    ),
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'કૃપા કરીને નામ દાખલ કરો'
+                        : null,
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Contact / Mobile Number
+                  const Text(
+                    'સંપર્ક નંબર / મોબાઇલ (Phone Number) *',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: InputDecoration(
+                      hintText: 'દા.ત. 9876543210 (10 Digits)',
+                      hintStyle:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                      prefixIcon: const Icon(Icons.phone_outlined,
+                          color: Color(0xFFA4143D), size: 20),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'કૃપા કરીને મોબાઇલ નંબર દાખલ કરો';
+                      }
+                      final digits = val.replaceAll(RegExp(r'[^0-9]'), '');
+                      if (digits.length < 10) {
+                        return 'કૃપા કરીને ૧૦ અંકનો સાચો મોબાઇલ નંબર દાખલ કરો';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+
+                  // City / Village & Experience (Row)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'શહેર / ગામ (City / Village) *',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: _cityController,
+                              decoration: InputDecoration(
+                                hintText: 'દા.ત. અમદાવાદ / મહેસાણા',
+                                hintStyle: TextStyle(
+                                    fontSize: 12, color: Colors.grey.shade400),
+                                prefixIcon: const Icon(
+                                    Icons.location_city_outlined,
+                                    color: Color(0xFFA4143D),
+                                    size: 20),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFFCBD5E1)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFFCBD5E1)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                              ),
+                              validator: (val) => val == null || val.trim().isEmpty
+                                  ? 'શહેર/ગામ દાખલ કરો'
+                                  : null,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'અનુભવ (Experience)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            TextFormField(
+                              controller: _expController,
+                              decoration: InputDecoration(
+                                hintText: 'દા.ત. ૫ વર્ષ (5 Years)',
+                                hintStyle: TextStyle(
+                                    fontSize: 12, color: Colors.grey.shade400),
+                                prefixIcon: const Icon(
+                                    Icons.work_history_outlined,
+                                    color: Color(0xFFA4143D),
+                                    size: 20),
+                                filled: true,
+                                fillColor: const Color(0xFFF8FAFC),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFFCBD5E1)),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFFCBD5E1)),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Office / Shop Address
+                  const Text(
+                    'દુકાન / ઓફિસનું સરનામું (Address)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _addressController,
+                    decoration: InputDecoration(
+                      hintText: 'દા.ત. ૨૦૪, શિવમ કોમ્પ્લેક્સ, સ્ટેશન રોડ',
+                      hintStyle:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                      prefixIcon: const Icon(Icons.place_outlined,
+                          color: Color(0xFFA4143D), size: 20),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Description / Specialties
+                  const Text(
+                    'સેવા વિશે વિગતો (Description & Services Offered)',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextFormField(
+                    controller: _descController,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText:
+                          'દા.ત. કંકોતરી, કાર્ડ પ્રિન્ટિંગ, ફ્લેક્સ બેનર, વિઝિટિંગ કાર્ડ વગેરેનું કામ કરી આપવામાં આવે છે.',
+                      hintStyle:
+                          TextStyle(fontSize: 12, color: Colors.grey.shade400),
+                      prefixIcon: const Padding(
+                        padding: EdgeInsets.only(bottom: 40),
+                        child: Icon(Icons.description_outlined,
+                            color: Color(0xFFA4143D), size: 20),
+                      ),
+                      filled: true,
+                      fillColor: const Color(0xFFF8FAFC),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+                      ),
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // 3. Dialog Footer
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: const BoxDecoration(
+            color: Color(0xFFFAF8F5),
+            border: Border(
+              top: BorderSide(color: Color(0xFFE5D5BA), width: 1),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              OutlinedButton(
+                onPressed: _isSubmitting ? null : () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF475569),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                child: const Text('રદ કરો (Cancel)'),
+              ),
+              ElevatedButton.icon(
+                onPressed: _isSubmitting ? null : _submit,
+                icon: _isSubmitting
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.check_circle_outline, size: 16),
+                label: Text(
+                  _isSubmitting ? 'નોંધણી થઈ રહી છે...' : '+ વ્યવસાય ઉમેરો (Submit)',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFA4143D),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

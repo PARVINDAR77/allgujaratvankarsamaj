@@ -178,6 +178,31 @@ export declare class SamajServicesController {
             icon: string;
         };
     }[]>;
+    registerPublicServicePerson(dto: CreateServicePersonDto): Promise<{
+        service: {
+            title: string;
+            id: string;
+            category: string;
+        };
+    } & {
+        description: string | null;
+        name: string;
+        city: string | null;
+        photoUrl: string | null;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        districtId: string | null;
+        talukaId: string | null;
+        userId: string | null;
+        villageId: string | null;
+        phone: string;
+        isActive: boolean;
+        gujaratiName: string | null;
+        serviceId: string;
+        address: string | null;
+        experience: string | null;
+    }>;
     getAdminServices(): Promise<{
         id: string;
         title: string;

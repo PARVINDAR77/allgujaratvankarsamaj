@@ -82,6 +82,39 @@ class SamajServiceRepository {
       return [];
     }
   }
+
+  Future<bool> registerServicePerson({
+    required String serviceId,
+    required String name,
+    required String phone,
+    String? gujaratiName,
+    String? city,
+    String? address,
+    String? description,
+    String? experience,
+    String? photoUrl,
+  }) async {
+    try {
+      final response = await _dio.post(
+        '/samaj-services/register-person',
+        data: {
+          'serviceId': serviceId,
+          'name': name.trim(),
+          'phone': phone.trim(),
+          if (gujaratiName != null && gujaratiName.trim().isNotEmpty) 'gujaratiName': gujaratiName.trim(),
+          if (city != null && city.trim().isNotEmpty) 'city': city.trim(),
+          if (address != null && address.trim().isNotEmpty) 'address': address.trim(),
+          if (description != null && description.trim().isNotEmpty) 'description': description.trim(),
+          if (experience != null && experience.trim().isNotEmpty) 'experience': experience.trim(),
+          if (photoUrl != null && photoUrl.trim().isNotEmpty) 'photoUrl': photoUrl.trim(),
+          'isActive': true,
+        },
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (_) {
+      return false;
+    }
+  }
 }
 
 final samajServiceRepositoryProvider = Provider<SamajServiceRepository>((ref) {

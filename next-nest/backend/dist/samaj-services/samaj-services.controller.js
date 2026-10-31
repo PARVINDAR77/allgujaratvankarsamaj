@@ -40,6 +40,9 @@ let SamajServicesController = class SamajServicesController {
             search,
         });
     }
+    async registerPublicServicePerson(dto) {
+        return this.samajServicesService.createServicePerson(dto);
+    }
     async getAdminServices() {
         return this.samajServicesService.getAllAdminServices();
     }
@@ -112,6 +115,17 @@ __decorate([
     __metadata("design:paramtypes", [String, String, String, String, String]),
     __metadata("design:returntype", Promise)
 ], SamajServicesController.prototype, "getPublicPersonsByServiceId", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Post)("samaj-services/register-person"),
+    (0, swagger_1.ApiOperation)({
+        summary: "Register a business/service person from Flutter App or Public Web",
+    }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [create_service_person_dto_1.CreateServicePersonDto]),
+    __metadata("design:returntype", Promise)
+], SamajServicesController.prototype, "registerPublicServicePerson", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Get)("admin/samaj-services"),
