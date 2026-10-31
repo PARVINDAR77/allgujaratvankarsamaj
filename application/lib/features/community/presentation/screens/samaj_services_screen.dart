@@ -2715,7 +2715,23 @@ class _AddBusinessDialogContentState
   Widget build(BuildContext context) {
     final allServicesAsync = ref.watch(samajServicesProvider);
 
-    return Column(
+    return Theme(
+      data: ThemeData.light().copyWith(
+        scaffoldBackgroundColor: Colors.white,
+        canvasColor: Colors.white,
+        colorScheme: const ColorScheme.light(
+          primary: Color(0xFFA4143D),
+          secondary: Color(0xFFD6A34A),
+          surface: Colors.white,
+          onSurface: Color(0xFF0F172A),
+        ),
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Color(0xFF0F172A)),
+          bodyMedium: TextStyle(color: Color(0xFF0F172A)),
+          titleMedium: TextStyle(color: Color(0xFF0F172A)),
+        ),
+      ),
+      child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -2862,6 +2878,12 @@ class _AddBusinessDialogContentState
                             const SizedBox(height: 6),
                             DropdownButtonFormField<String>(
                               value: _selectedServiceId,
+                              dropdownColor: Colors.white,
+                              style: const TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                              ),
                               decoration: InputDecoration(
                                 filled: true,
                                 fillColor: const Color(0xFFF8FAFC),
@@ -2892,7 +2914,11 @@ class _AddBusinessDialogContentState
                                   value: s.id,
                                   child: Text(
                                     '${s.icon} ${s.title}',
-                                    style: const TextStyle(fontSize: 13),
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      color: Color(0xFF0F172A),
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
                                 );
                               }).toList(),
@@ -2924,6 +2950,12 @@ class _AddBusinessDialogContentState
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _nameController,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    cursorColor: const Color(0xFFA4143D),
                     decoration: InputDecoration(
                       hintText: 'દા.ત. શ્રી ગણેશ પ્રિન્ટિંગ / રમેશભાઈ વણકર',
                       hintStyle:
@@ -2962,6 +2994,12 @@ class _AddBusinessDialogContentState
                   TextFormField(
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    cursorColor: const Color(0xFFA4143D),
                     decoration: InputDecoration(
                       hintText: 'દા.ત. 9876543210 (10 Digits)',
                       hintStyle:
@@ -3013,6 +3051,12 @@ class _AddBusinessDialogContentState
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _cityController,
+                              style: const TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              cursorColor: const Color(0xFFA4143D),
                               decoration: InputDecoration(
                                 hintText: 'દા.ત. અમદાવાદ / મહેસાણા',
                                 hintStyle: TextStyle(
@@ -3059,6 +3103,12 @@ class _AddBusinessDialogContentState
                             const SizedBox(height: 6),
                             TextFormField(
                               controller: _expController,
+                              style: const TextStyle(
+                                color: Color(0xFF0F172A),
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              cursorColor: const Color(0xFFA4143D),
                               decoration: InputDecoration(
                                 hintText: 'દા.ત. ૫ વર્ષ (5 Years)',
                                 hintStyle: TextStyle(
@@ -3102,6 +3152,12 @@ class _AddBusinessDialogContentState
                   const SizedBox(height: 6),
                   TextFormField(
                     controller: _addressController,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    cursorColor: const Color(0xFFA4143D),
                     decoration: InputDecoration(
                       hintText: 'દા.ત. ૨૦૪, શિવમ કોમ્પ્લેક્સ, સ્ટેશન રોડ',
                       hintStyle:
@@ -3137,6 +3193,12 @@ class _AddBusinessDialogContentState
                   TextFormField(
                     controller: _descController,
                     maxLines: 3,
+                    style: const TextStyle(
+                      color: Color(0xFF0F172A),
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    cursorColor: const Color(0xFFA4143D),
                     decoration: InputDecoration(
                       hintText:
                           'દા.ત. કંકોતરી, કાર્ડ પ્રિન્ટિંગ, ફ્લેક્સ બેનર, વિઝિટિંગ કાર્ડ વગેરેનું કામ કરી આપવામાં આવે છે.',
@@ -3219,6 +3281,7 @@ class _AddBusinessDialogContentState
           ),
         ),
       ],
+    ),
     );
   }
 }
