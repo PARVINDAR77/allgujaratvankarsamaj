@@ -29,30 +29,25 @@ let AuthService = AuthService_1 = class AuthService {
         this.logger = new common_1.Logger(AuthService_1.name);
     }
     async register(dto) {
-        let isEmailVerified = false;
-        let isPhoneVerified = false;
+        let isEmailVerified = true;
+        let isPhoneVerified = true;
         if (dto.registrationToken) {
             const isValid = await this.otpService.consumeRegistrationToken(dto.registrationToken, dto.phone || "", dto.email || "");
             if (!isValid) {
                 throw new common_1.BadRequestException("અમાન્ય અથવા સમાપ્ત થયેલ ચકાસણી ટોકન. કૃપા કરીને ફરીથી ચકાસણી કરો (Invalid or expired verification token. Please verify again.)");
             }
-            isEmailVerified = true;
-            isPhoneVerified = true;
         }
         let existingUnverifiedUser = null;
         if (dto.email) {
             const cleanEmail = dto.email.trim().toLowerCase();
             const existingByEmail = await this.usersService.findByEmail(cleanEmail);
             if (existingByEmail) {
-                if (existingByEmail.isEmailVerified || existingByEmail.isPhoneVerified) {
-                    throw new common_1.ConflictException("આ ઈમેઈલ સરનામું પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already registered. Candidates can use their email only once.)");
-                }
-                existingUnverifiedUser = existingByEmail;
+                throw new common_1.ConflictException("આ ઈમેઈલ સરનામું પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already registered. Candidates can use their email only once.)");
             }
             const existingProfileEmail = await this.prisma.matrimonialProfile.findFirst({
                 where: { contactEmail: cleanEmail },
             });
-            if (existingProfileEmail && (!existingUnverifiedUser || existingProfileEmail.userId !== existingUnverifiedUser.id)) {
+            if (existingProfileEmail) {
                 throw new common_1.ConflictException("આ ઈમેઈલ અન્ય ઉમેદવાર દ્વારા પહેલેથી જ વપરાયેલ છે. ઉમેદવાર માત્ર એક જ વાર ઈમેઈલનો ઉપયોગ કરી શકે છે. (This email is already in use by another candidate. Candidates can use their email only once.)");
             }
         }
@@ -60,10 +55,7 @@ let AuthService = AuthService_1 = class AuthService {
             const cleanPhone = dto.phone.trim();
             const existingByPhone = await this.usersService.findByPhone(cleanPhone);
             if (existingByPhone) {
-                if (existingByPhone.isPhoneVerified || existingByPhone.isEmailVerified) {
-                    throw new common_1.ConflictException("આ મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે. (This mobile number is already registered.)");
-                }
-                existingUnverifiedUser = existingByPhone;
+                throw new common_1.ConflictException("આ મોબાઇલ નંબર પહેલેથી જ નોંધાયેલ છે. (This mobile number is already registered.)");
             }
         }
         const saltRounds = 10;
@@ -148,7 +140,7 @@ let AuthService = AuthService_1 = class AuthService {
                 ...safeUser,
                 isVerified,
                 hasProfile,
-                profileStatus: profile?.status ?? "PENDING",
+                profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),
             },
             tokenType: "Bearer",
             expiresIn,

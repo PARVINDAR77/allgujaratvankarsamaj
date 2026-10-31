@@ -70,7 +70,7 @@ export declare class AuthController {
         user: {
             isVerified: boolean;
             hasProfile: boolean;
-            profileStatus: import(".prisma/client").$Enums.ProfileStatus;
+            profileStatus: string;
             status: import(".prisma/client").$Enums.Status;
             name: string | null;
             gender: import(".prisma/client").$Enums.Gender | null;

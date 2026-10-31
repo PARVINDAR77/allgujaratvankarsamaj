@@ -121,15 +121,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         // If user is verified, they DEFINITELY have a profile (fail-safe)
         final hasProfile = (user?.hasProfile ?? false) || isVerified;
 
-        // On Web, candidates can freely use all features without mandatory profile creation or review lock
-        if (kIsWeb) {
-          if (isLoggingIn) {
-            return '/main-poster';
-          }
-          return null;
-        }
-
-        // --- Native Mobile App (100% Preserved) ---
         // Fail-safe 1: If candidate ALREADY has a profile, they MUST NEVER be on /profile/create!
         if (hasProfile && location == '/profile/create') {
           return isVerified ? '/main-poster' : '/profile-under-review';
@@ -173,9 +164,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             return null;
           }
           if (authState.isAuthenticated) {
-            if (kIsWeb) {
-              return '/main-poster';
-            }
             final user = authState.user;
             final isVerified = user?.isVerified ?? false;
             final hasProfile = (user?.hasProfile ?? false) || isVerified;

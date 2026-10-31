@@ -189,7 +189,7 @@ export class AuthService {
         ...safeUser,
         isVerified,
         hasProfile,
-        profileStatus: profile?.status ?? "PENDING",
+        profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),
       },
       tokenType: "Bearer",
       expiresIn,

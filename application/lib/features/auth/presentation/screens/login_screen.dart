@@ -70,17 +70,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
-          if (kIsWeb) {
-            context.go('/main-poster');
+          final currentUser = ref.read(authNotifierProvider).user;
+          if (currentUser != null && !currentUser.hasProfile) {
+            context.go('/profile/create');
+          } else if (currentUser != null && !currentUser.isVerified) {
+            context.go('/profile-under-review');
           } else {
-            final currentUser = ref.read(authNotifierProvider).user;
-            if (currentUser != null && !currentUser.hasProfile) {
-              context.go('/profile/create');
-            } else if (currentUser != null && !currentUser.isVerified) {
-              context.go('/profile-under-review');
-            } else {
-              context.go('/main-poster');
-            }
+            context.go('/main-poster');
           }
         } else {
           final errorMsg = ref.read(authNotifierProvider).errorMessage ?? 'લોગિન નિષ્ફળ';
