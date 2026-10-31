@@ -34,7 +34,7 @@ interface AdminNavPage {
 const ADMIN_NAV_PAGES: AdminNavPage[] = [
   { name: "Profiles Management", gujarati: "વર-કન્યા પ્રોફાઇલ્સ", href: "/admin/profiles", icon: "👤", category: "Candidates", keywords: "profile candidate groom bride biodata rishta લગ્ન ઉમેદવાર bio" },
   { name: "User Management", gujarati: "સભ્યો એકાઉન્ટ", href: "/admin/users", icon: "👥", category: "Users", keywords: "users accounts members login સભ્યો એકાઉન્ટ" },
-  { name: "Verifications (KYC)", gujarati: "ઓળખ ચકાસણી", href: "/admin/verifications", icon: "🛡️", category: "KYC", keywords: "verification aadhar document kyc પુરાવા ચકાસણી આધારકાર્ડ" },
+  { name: "Verifications (KYC)", gujarati: "ઓળખ ચકાસણી", href: "/admin/verifications", icon: "🛡️", category: "KYC", keywords: "verification voter id dl driving license document kyc પુરાવા ચકાસણી ઓળખપત્ર" },
   { name: "Education (5 Boxes)", gujarati: "શિક્ષણ માર્ગદર્શન (૫ બોક્સ)", href: "/admin/education", icon: "🎓", category: "Community", keywords: "education study video guidance pdf પુસ્તક શિક્ષણ બોર્ડ" },
   { name: "Government Employees", gujarati: "સરકારી અને ખાનગી કર્મચારીઓ", href: "/admin/government-employees", icon: "💼", category: "Community", keywords: "govt government employee job nokri કર્મચારી નોકરી" },
   { name: "Matches & Compatibility", gujarati: "મેચમેકિંગ અને પસંદગી", href: "/admin/matches", icon: "💖", category: "Matchmaking", keywords: "matches match compatibility interest પસંદગી મેચ" },
@@ -137,7 +137,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
         const pendingVerifs = verifList.filter((v: any) => v.status === "PENDING");
         for (const v of pendingVerifs.slice(0, 10)) {
           const candidateName = v.profile?.name || v.profile?.firstName || "Candidate";
-          const docType = v.documentType || "Aadhar / Document";
+          const docType = v.documentType || "ID Document";
           const id = `verif-${v.id}`;
           items.push({
             id,
