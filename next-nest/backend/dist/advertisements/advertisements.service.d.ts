@@ -18,7 +18,8 @@ export declare class AdvertisementsService {
         endAt: Date | null;
         createdBy: string | null;
     }>;
-    findAllPublic(): Promise<{
+    private mapPlacement;
+    findAllPublic(placement?: string): Promise<{
         title: string;
         id: string;
         createdAt: Date;
@@ -32,7 +33,7 @@ export declare class AdvertisementsService {
         endAt: Date | null;
         createdBy: string | null;
     }[]>;
-    findAllAdmin(): Promise<{
+    findAllAdmin(placement?: string): Promise<{
         title: string;
         id: string;
         createdAt: Date;

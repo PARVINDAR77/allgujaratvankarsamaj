@@ -23,11 +23,11 @@ let AdvertisementsController = class AdvertisementsController {
     constructor(advertisementsService) {
         this.advertisementsService = advertisementsService;
     }
-    async findAllPublic() {
-        return this.advertisementsService.findAllPublic();
+    async findAllPublic(placement) {
+        return this.advertisementsService.findAllPublic(placement);
     }
-    async findAllAdmin() {
-        return this.advertisementsService.findAllAdmin();
+    async findAllAdmin(placement) {
+        return this.advertisementsService.findAllAdmin(placement);
     }
     async findOne(id) {
         return this.advertisementsService.findOne(id);
@@ -47,15 +47,17 @@ __decorate([
     (0, public_decorator_1.Public)(),
     (0, common_1.Get)("advertisements"),
     (0, swagger_1.ApiOperation)({ summary: "Get all active advertisements for the public app" }),
+    __param(0, (0, common_1.Query)("placement")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AdvertisementsController.prototype, "findAllPublic", null);
 __decorate([
     (0, common_1.Get)("admin/advertisements"),
     (0, swagger_1.ApiOperation)({ summary: "Get all advertisements (Admin)" }),
+    __param(0, (0, common_1.Query)("placement")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], AdvertisementsController.prototype, "findAllAdmin", null);
 __decorate([

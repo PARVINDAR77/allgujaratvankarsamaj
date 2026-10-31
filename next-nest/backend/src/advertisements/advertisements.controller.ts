@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from "@nestjs/common";
@@ -32,14 +33,14 @@ export class AdvertisementsController {
   @Public()
   @Get("advertisements")
   @ApiOperation({ summary: "Get all active advertisements for the public app" })
-  async findAllPublic() {
-    return this.advertisementsService.findAllPublic();
+  async findAllPublic(@Query("placement") placement?: string) {
+    return this.advertisementsService.findAllPublic(placement);
   }
 
   @Get("admin/advertisements")
   @ApiOperation({ summary: "Get all advertisements (Admin)" })
-  async findAllAdmin() {
-    return this.advertisementsService.findAllAdmin();
+  async findAllAdmin(@Query("placement") placement?: string) {
+    return this.advertisementsService.findAllAdmin(placement);
   }
 
   @Get("admin/advertisements/:id")

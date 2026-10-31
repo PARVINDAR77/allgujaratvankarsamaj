@@ -20,6 +20,7 @@ export default function AdvertisementsPage() {
   const [uploading, setUploading] = useState(false);
 
   const [urlPlacement, setUrlPlacement] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("ALL");
 
   const loadAds = async () => {
     try {
@@ -39,6 +40,7 @@ export default function AdvertisementsPage() {
     if (p) {
       setUrlPlacement(p);
       setFormPlacement(p);
+      setActiveTab(p);
     }
     loadAds();
   }, []);
@@ -48,7 +50,8 @@ export default function AdvertisementsPage() {
     setFormTitle("");
     setFormImageUrl("");
     setFormTargetUrl("");
-    setFormPlacement(urlPlacement || "HOME_BANNER");
+    const defaultPlacement = (activeTab !== "ALL" ? activeTab : (urlPlacement || "BUTTON_2"));
+    setFormPlacement(defaultPlacement);
     setFormIsActive(true);
     setIsModalOpen(true);
   };
@@ -130,7 +133,27 @@ export default function AdvertisementsPage() {
       alert("Error saving Advertisement: " + ((err as any)?.message || err));
     }
   };
-  const filteredAds = urlPlacement ? ads.filter(ad => ad.placement === urlPlacement) : ads;
+  const getPlacementCount = (tabId: string) => {
+    if (tabId === "ALL") return ads.length;
+    if (tabId === "BUTTON_2") {
+      return ads.filter(a => a.placement === "BUTTON_2" || a.placement === "HOME_UNITY").length;
+    }
+    if (tabId === "BUTTON_5") {
+      return ads.filter(a => a.placement === "BUTTON_5" || a.placement === "HOME_STRONG_ROOTS").length;
+    }
+    return ads.filter(a => a.placement === tabId).length;
+  };
+
+  const filteredAds = ads.filter(ad => {
+    if (activeTab === "ALL") return true;
+    if (activeTab === "BUTTON_2") {
+      return ad.placement === "BUTTON_2" || ad.placement === "HOME_UNITY";
+    }
+    if (activeTab === "BUTTON_5") {
+      return ad.placement === "BUTTON_5" || ad.placement === "HOME_STRONG_ROOTS";
+    }
+    return ad.placement === activeTab;
+  });
 
   return (
     <AdminLayout title="Advertisement Management">
@@ -168,6 +191,61 @@ export default function AdvertisementsPage() {
           </button>
         </div>
         
+        {/* Filter Tabs */}
+        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+          {[
+            { id: "ALL", label: "બધી જાહેરાત (All)" },
+            { id: "BUTTON_2", label: "📦 Box 1: Unity (સમાજ એકતા)" },
+            { id: "BUTTON_5", label: "📦 Box 2: Strong Roots (આપણો વારસો)" },
+            { id: "HOME_BANNER", label: "🏠 Home Banner" },
+            { id: "DIRECTORY_BANNER", label: "📖 Directory Top" },
+            { id: "POPUP", label: "🔔 Popup" },
+          ].map(tab => {
+            const isSelected = activeTab === tab.id;
+            const count = getPlacementCount(tab.id);
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  if (tab.id !== "ALL") {
+                    setFormPlacement(tab.id);
+                  }
+                }}
+                style={{
+                  padding: "10px 18px",
+                  borderRadius: "10px",
+                  background: isSelected 
+                    ? "linear-gradient(135deg, #D4AF37 0%, #AA7C11 100%)" 
+                    : "rgba(13, 27, 50, 0.7)",
+                  color: isSelected ? "#041026" : "#E2E8F0",
+                  fontWeight: isSelected ? 800 : 600,
+                  fontSize: "13px",
+                  border: isSelected ? "1px solid #D4AF37" : "1px solid rgba(212, 175, 55, 0.25)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  transition: "all 0.2s ease",
+                  boxShadow: isSelected ? "0 4px 12px rgba(212, 175, 55, 0.3)" : "none",
+                }}
+              >
+                <span>{tab.label}</span>
+                <span style={{
+                  padding: "2px 7px",
+                  borderRadius: "12px",
+                  fontSize: "11px",
+                  fontWeight: 900,
+                  backgroundColor: isSelected ? "#041026" : "rgba(212, 175, 55, 0.2)",
+                  color: isSelected ? "#D4AF37" : "#CBD5E1",
+                }}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Main Content Area */}
         <div style={{
           backgroundColor: "rgba(13, 27, 50, 0.85)",
@@ -211,7 +289,27 @@ export default function AdvertisementsPage() {
                           )}
                         </td>
                         <td style={{ padding: "12px 18px", fontWeight: 600 }}>{ad.title}</td>
-                        <td style={{ padding: "12px 18px" }}>{ad.placement}</td>
+                        <td style={{ padding: "12px 18px" }}>
+      <span style={{
+        padding: "4px 8px",
+        borderRadius: "6px",
+        fontSize: "11px",
+        fontWeight: 700,
+        backgroundColor: (ad.placement === "BUTTON_2" || ad.placement === "HOME_UNITY") 
+          ? "rgba(216, 67, 21, 0.2)" 
+          : (ad.placement === "BUTTON_5" || ad.placement === "HOME_STRONG_ROOTS")
+          ? "rgba(21, 101, 192, 0.2)"
+          : "rgba(212, 175, 55, 0.15)",
+        color: (ad.placement === "BUTTON_2" || ad.placement === "HOME_UNITY")
+          ? "#FF8A65"
+          : (ad.placement === "BUTTON_5" || ad.placement === "HOME_STRONG_ROOTS")
+          ? "#90CAF9"
+          : "#D4AF37",
+        border: "1px solid rgba(255,255,255,0.1)",
+      }}>
+        {ad.placement === "BUTTON_2" ? "Box 1: Unity" : ad.placement === "BUTTON_5" ? "Box 2: Strong Roots" : ad.placement}
+      </span>
+    </td>
                         <td style={{ padding: "12px 18px" }}>
                           <span style={{
                             padding: "4px 10px",
@@ -300,16 +398,16 @@ export default function AdvertisementsPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: "block", color: "#8E9BAE", marginBottom: "6px", fontSize: "13px" }}>Placement</label>
+                  <label style={{ display: "block", color: "#8E9BAE", marginBottom: "6px", fontSize: "13px" }}>Placement (વિભાગ / બોક્સ પસંદ કરો) *</label>
                   <select value={formPlacement} onChange={e => setFormPlacement(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid rgba(212,175,55,0.3)", backgroundColor: "rgba(0,0,0,0.2)", color: "#FFF" }}>
-                    <option value="HOME_BANNER">Home Banner</option>
-                    <option value="DIRECTORY_BANNER">Directory Top</option>
-                    <option value="POPUP">Popup</option>
+                    <option value="BUTTON_2">📦 Box 1: Unity Poster (સમાજ એકતા) — Button 2</option>
+                    <option value="BUTTON_5">📦 Box 2: Strong Roots Poster (આપણો વારસો) — Button 5</option>
+                    <option value="HOME_BANNER">🏠 Home Banner (મુખ્ય હોમ બેનર)</option>
+                    <option value="DIRECTORY_BANNER">📖 Directory Top (ડિરેક્ટરી બેનર)</option>
+                    <option value="POPUP">🔔 Popup Announcement (પોપઅપ સૂચના)</option>
                     <option value="BUTTON_1">Button 1 Poster</option>
-                    <option value="BUTTON_2">Button 2 Poster</option>
                     <option value="BUTTON_3">Button 3 Poster</option>
                     <option value="BUTTON_4">Button 4 Poster</option>
-                    <option value="BUTTON_5">Button 5 Poster</option>
                     <option value="PAVAN_PRERNADATA">Pavan Prernadata</option>
                     <option value="SAMAJ_SUPER_STARS">Samaj Super Stars</option>
                     <option value="SAMAJ_RATNA">Samaj Ratna</option>

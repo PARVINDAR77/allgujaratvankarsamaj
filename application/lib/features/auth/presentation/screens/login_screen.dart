@@ -769,11 +769,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 } else if (title.contains('Services')) {
                   context.push('/samaj-services');
                 } else if (title.contains('Unity')) {
-                  context.push('/advertisement?section=HOME_UNITY');
+                  context.push('/advertisement?placement=BUTTON_2&section=HOME_UNITY');
                 } else if (title.contains('Service')) {
                   context.push('/birthdays');
                 } else if (title.contains('Strong Roots')) {
-                  context.push('/advertisement?section=HOME_STRONG_ROOTS');
+                  context.push('/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS');
                 } else if (title.contains('Education')) {
                   context.push('/education');
                 } else if (title.contains('Progress')) {

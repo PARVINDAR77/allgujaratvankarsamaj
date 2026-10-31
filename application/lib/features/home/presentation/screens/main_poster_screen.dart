@@ -373,7 +373,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                                       borderRadius: BorderRadius.circular(50),
                                       onTap: () {
                                         ref.read(incrementViewProvider)('HOME_UNITY');
-                                        context.push('/advertisement?section=HOME_UNITY');
+                                        context.push('/advertisement?placement=BUTTON_2&section=HOME_UNITY');
                                       },
                                     ),
                                   ),
@@ -457,7 +457,7 @@ class _MainPosterScreenState extends ConsumerState<MainPosterScreen> with Widget
                                       borderRadius: BorderRadius.circular(50),
                                       onTap: () {
                                         ref.read(incrementViewProvider)('HOME_STRONG_ROOTS');
-                                        context.push('/advertisement?section=HOME_STRONG_ROOTS');
+                                        context.push('/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS');
                                       },
                                     ),
                                   ),

@@ -41,7 +41,7 @@ class WebCommunityValues extends ConsumerWidget {
       sectionName: 'HOME_UNITY',
       onAction: (context, ref) => () {
         ref.read(incrementViewProvider)('HOME_UNITY');
-        context.push('/advertisement?section=HOME_UNITY');
+        context.push('/advertisement?placement=BUTTON_2&section=HOME_UNITY');
       },
     ),
     ValueItemData(
@@ -71,7 +71,7 @@ class WebCommunityValues extends ConsumerWidget {
       sectionName: 'HOME_STRONG_ROOTS',
       onAction: (context, ref) => () {
         ref.read(incrementViewProvider)('HOME_STRONG_ROOTS');
-        context.push('/advertisement?section=HOME_STRONG_ROOTS');
+        context.push('/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS');
       },
     ),
   ];

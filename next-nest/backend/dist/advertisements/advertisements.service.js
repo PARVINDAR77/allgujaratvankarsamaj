@@ -11,6 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdvertisementsService = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const prisma_service_1 = require("../prisma/prisma.service");
 let AdvertisementsService = class AdvertisementsService {
     constructor(prisma) {
@@ -34,11 +35,26 @@ let AdvertisementsService = class AdvertisementsService {
         });
         return ad;
     }
-    async findAllPublic() {
+    mapPlacement(placement) {
+        if (!placement)
+            return undefined;
+        const p = placement.trim().toUpperCase();
+        if (p === "HOME_UNITY" || p === "BUTTON_2")
+            return client_1.AdPlacement.BUTTON_2;
+        if (p === "HOME_STRONG_ROOTS" || p === "BUTTON_5")
+            return client_1.AdPlacement.BUTTON_5;
+        if (Object.values(client_1.AdPlacement).includes(p)) {
+            return p;
+        }
+        return undefined;
+    }
+    async findAllPublic(placement) {
         const now = new Date();
+        const mappedPlacement = this.mapPlacement(placement);
         return this.prisma.advertisement.findMany({
             where: {
                 isActive: true,
+                ...(mappedPlacement ? { placement: mappedPlacement } : {}),
                 OR: [{ startAt: null }, { startAt: { lte: now } }],
                 AND: [
                     {
@@ -49,8 +65,12 @@ let AdvertisementsService = class AdvertisementsService {
             orderBy: { sortOrder: "asc" },
         });
     }
-    async findAllAdmin() {
+    async findAllAdmin(placement) {
+        const mappedPlacement = this.mapPlacement(placement);
         return this.prisma.advertisement.findMany({
+            where: {
+                ...(mappedPlacement ? { placement: mappedPlacement } : {}),
+            },
             orderBy: { createdAt: "desc" },
         });
     }

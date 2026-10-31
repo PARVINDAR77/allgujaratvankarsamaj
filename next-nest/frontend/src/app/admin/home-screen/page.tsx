@@ -10,8 +10,9 @@ export default function HomeScreenConfigPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const routeOptions = [
+    { label: "Box 1: Unity (Advertisement)", value: "/advertisement?placement=BUTTON_2&section=HOME_UNITY" },
+    { label: "Box 2: Strong Roots (Advertisement)", value: "/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS" },
     { label: "Samaj Ratna", value: "/samaj-ratna" },
-    { label: "Advertisement", value: "/advertisement" },
     { label: "Live Counter", value: "/statistics" },
     { label: "Happy Birthday", value: "/birthdays" },
     { label: "Advanced Search", value: "/advanced-search" },
@@ -51,7 +52,15 @@ export default function HomeScreenConfigPage() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify(configs)
+        body: JSON.stringify(configs.map(c => {
+          let r = c.route ? c.route.trim() : "";
+          if (c.buttonId === 2 && (r === "/advertisement" || r === "/advertisement/" || r === "")) {
+            r = "/advertisement?placement=BUTTON_2&section=HOME_UNITY";
+          } else if (c.buttonId === 5 && (r === "/advertisement" || r === "/advertisement/" || r === "")) {
+            r = "/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS";
+          }
+          return { ...c, route: r };
+        }))
       });
       
       if (response.ok) {
@@ -298,7 +307,15 @@ export default function HomeScreenConfigPage() {
                   {/* Buttons 2-5 actions */}
                   {config.buttonId !== 1 && (config.route.toLowerCase().includes("samaj-ratna") || config.route.toLowerCase().includes("advertisement")) && (
                     <a 
-                      href={config.route.toLowerCase().includes("samaj-ratna") ? "/admin/samaj-ratna" : `/admin/advertisements${config.route.includes("?") ? config.route.substring(config.route.indexOf("?")) : ""}`}
+                      href={
+                        config.route.toLowerCase().includes("samaj-ratna")
+                          ? "/admin/samaj-ratna"
+                          : config.buttonId === 2
+                          ? "/admin/advertisements?placement=BUTTON_2"
+                          : config.buttonId === 5
+                          ? "/admin/advertisements?placement=BUTTON_5"
+                          : `/admin/advertisements${config.route.includes("?") ? config.route.substring(config.route.indexOf("?")) : ""}`
+                      }
                       style={{
                         textAlign: "center",
                         padding: "8px 12px",

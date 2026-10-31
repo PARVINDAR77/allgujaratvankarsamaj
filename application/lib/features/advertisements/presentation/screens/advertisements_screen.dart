@@ -59,6 +59,29 @@ class _AdvertisementsScreenState extends ConsumerState<AdvertisementsScreen> {
     }
   }
 
+  List<AdvertisementModel> _filterAdsForBox(List<AdvertisementModel> allAds) {
+    final p = (widget.placement ?? '').toUpperCase().trim();
+    final s = (widget.section ?? '').toUpperCase().trim();
+
+    final isBox1 = p == 'BUTTON_2' || p == 'HOME_UNITY' || s == 'HOME_UNITY';
+    final isBox2 = p == 'BUTTON_5' || p == 'HOME_STRONG_ROOTS' || s == 'HOME_STRONG_ROOTS';
+
+    if (isBox1) {
+      return allAds.where((a) {
+        final ap = a.placement.toUpperCase().trim();
+        return ap == 'BUTTON_2' || ap == 'HOME_UNITY';
+      }).toList();
+    } else if (isBox2) {
+      return allAds.where((a) {
+        final ap = a.placement.toUpperCase().trim();
+        return ap == 'BUTTON_5' || ap == 'HOME_STRONG_ROOTS';
+      }).toList();
+    } else if (p.isNotEmpty) {
+      return allAds.where((a) => a.placement.toUpperCase().trim() == p).toList();
+    }
+    return allAds;
+  }
+
   // ===========================================================================
   // ============================== BUILD DISPATCHER ===========================
   // ===========================================================================
@@ -87,28 +110,26 @@ class _AdvertisementsScreenState extends ConsumerState<AdvertisementsScreen> {
               child: Text('Error loading ads: $e', style: const TextStyle(color: Colors.red)),
             ),
             data: (ads) {
-              List<AdvertisementModel> sectionAds;
-              if (widget.placement != null && widget.placement!.isNotEmpty) {
-                sectionAds = ads.where((a) => a.placement.toLowerCase() == widget.placement!.toLowerCase()).toList();
-                if (sectionAds.isEmpty) {
-                  // Fallback to all active ads so user never sees blank screen if placement differs
-                  sectionAds = ads;
-                }
-              } else {
-                sectionAds = ads;
-              }
+              final sectionAds = _filterAdsForBox(ads);
               
               if (sectionAds.isEmpty) {
+                final isBox1 = (widget.section == 'HOME_UNITY' || widget.placement?.toUpperCase() == 'BUTTON_2');
+                final isBox2 = (widget.section == 'HOME_STRONG_ROOTS' || widget.placement?.toUpperCase() == 'BUTTON_5');
+
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.campaign_outlined, size: 64, color: Color(0xFFD4AF37)),
                       const SizedBox(height: 16),
-                      const Text(
-                        'હાલમાં કોઈ જાહેરાત ઉપલબ્ધ નથી.\n(No advertisements available)',
+                      Text(
+                        isBox1
+                            ? 'હાલમાં સમાજ એકતા વિભાગમાં કોઈ જાહેરાત ઉપલબ્ધ નથી.\n(No advertisements in Unity section)'
+                            : isBox2
+                                ? 'હાલમાં આપણો વારસો વિભાગમાં કોઈ જાહેરાત ઉપલબ્ધ નથી.\n(No advertisements in Strong Roots section)'
+                                : 'હાલમાં કોઈ જાહેરાત ઉપલબ્ધ નથી.\n(No advertisements available)',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white70, fontSize: 18),
+                        style: const TextStyle(color: Colors.white70, fontSize: 16, height: 1.5),
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton.icon(
@@ -289,13 +310,7 @@ class _AdvertisementsScreenState extends ConsumerState<AdvertisementsScreen> {
                   child: Builder(
                     builder: (context) {
                       final ads = adsAsync.valueOrNull ?? [];
-                      List<AdvertisementModel> sectionAds;
-                      if (widget.placement != null && widget.placement!.isNotEmpty) {
-                        sectionAds = ads.where((a) => a.placement.toLowerCase() == widget.placement!.toLowerCase()).toList();
-                        if (sectionAds.isEmpty) sectionAds = ads;
-                      } else {
-                        sectionAds = ads;
-                      }
+                      final sectionAds = _filterAdsForBox(ads);
 
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,

@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
+import { AdPlacement } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateAdvertisementDto } from "./dto/create-advertisement.dto";
 import { UpdateAdvertisementDto } from "./dto/update-advertisement.dto";
@@ -30,11 +31,25 @@ export class AdvertisementsService {
     return ad;
   }
 
-  async findAllPublic() {
+  private mapPlacement(placement?: string): AdPlacement | undefined {
+    if (!placement) return undefined;
+    const p = placement.trim().toUpperCase();
+    if (p === "HOME_UNITY" || p === "BUTTON_2") return AdPlacement.BUTTON_2;
+    if (p === "HOME_STRONG_ROOTS" || p === "BUTTON_5") return AdPlacement.BUTTON_5;
+    if (Object.values(AdPlacement).includes(p as AdPlacement)) {
+      return p as AdPlacement;
+    }
+    return undefined;
+  }
+
+  async findAllPublic(placement?: string) {
     const now = new Date();
+    const mappedPlacement = this.mapPlacement(placement);
+
     return this.prisma.advertisement.findMany({
       where: {
         isActive: true,
+        ...(mappedPlacement ? { placement: mappedPlacement } : {}),
         OR: [{ startAt: null }, { startAt: { lte: now } }],
         AND: [
           {
@@ -46,8 +61,12 @@ export class AdvertisementsService {
     });
   }
 
-  async findAllAdmin() {
+  async findAllAdmin(placement?: string) {
+    const mappedPlacement = this.mapPlacement(placement);
     return this.prisma.advertisement.findMany({
+      where: {
+        ...(mappedPlacement ? { placement: mappedPlacement } : {}),
+      },
       orderBy: { createdAt: "desc" },
     });
   }

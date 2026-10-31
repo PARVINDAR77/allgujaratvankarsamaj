@@ -88,7 +88,7 @@ export class SettingsService {
       title: "Unity",
       subtitle: "In Diversity",
       icon: "groups",
-      route: "/advertisement",
+      route: "/advertisement?placement=BUTTON_2&section=HOME_UNITY",
       isActive: true,
     },
     {
@@ -112,7 +112,7 @@ export class SettingsService {
       title: "Strong Roots",
       subtitle: "Bright Future",
       icon: "nature",
-      route: "/advertisement",
+      route: "/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS",
       isActive: true,
     },
   ];
@@ -149,17 +149,23 @@ export class SettingsService {
 
     const fixedRoutes: Record<number, string> = {
       1: "/education",
-      2: "/advertisement",
+      2: "/advertisement?placement=BUTTON_2&section=HOME_UNITY",
       3: "/statistics",
       4: "/birthdays",
-      5: "/advertisement",
+      5: "/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS",
     };
 
     try {
       const updates = configs.map((config) => {
-        const targetRoute = config.route && config.route.trim().startsWith("/") 
+        let targetRoute = config.route && config.route.trim().startsWith("/") 
           ? config.route.trim() 
           : fixedRoutes[config.buttonId];
+        // Ensure buttons 2 and 5 retain their required query params if saved as bare /advertisement
+        if (config.buttonId === 2 && (targetRoute === "/advertisement" || targetRoute === "/advertisement/")) {
+          targetRoute = "/advertisement?placement=BUTTON_2&section=HOME_UNITY";
+        } else if (config.buttonId === 5 && (targetRoute === "/advertisement" || targetRoute === "/advertisement/")) {
+          targetRoute = "/advertisement?placement=BUTTON_5&section=HOME_STRONG_ROOTS";
+        }
         return this.prisma.homeButtonConfig.upsert({
           where: { buttonId: config.buttonId },
           update: {

@@ -4,7 +4,7 @@ import { UpdateAdvertisementDto } from "./dto/update-advertisement.dto";
 export declare class AdvertisementsController {
     private readonly advertisementsService;
     constructor(advertisementsService: AdvertisementsService);
-    findAllPublic(): Promise<{
+    findAllPublic(placement?: string): Promise<{
         title: string;
         id: string;
         createdAt: Date;
@@ -18,7 +18,7 @@ export declare class AdvertisementsController {
         endAt: Date | null;
         createdBy: string | null;
     }[]>;
-    findAllAdmin(): Promise<{
+    findAllAdmin(placement?: string): Promise<{
         title: string;
         id: string;
         createdAt: Date;
