@@ -282,7 +282,7 @@ export class VerificationsService {
       return {
         hasProfile: false,
         isVerified: false,
-        profileStatus: ProfileStatus.PENDING,
+        profileStatus: "NOT_CREATED",
         latestRequest: null,
       };
     }
@@ -295,6 +295,15 @@ export class VerificationsService {
       !profile.caste;
 
     const hasProfile = !isStub;
+
+    if (isStub) {
+      return {
+        hasProfile: false,
+        isVerified: false,
+        profileStatus: "NOT_CREATED",
+        latestRequest: null,
+      };
+    }
 
     const latestRequest = await this.prisma.verificationRequest.findFirst({
       where: { profileId: profile.id },

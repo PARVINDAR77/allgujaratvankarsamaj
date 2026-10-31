@@ -231,7 +231,7 @@ let VerificationsService = class VerificationsService {
             return {
                 hasProfile: false,
                 isVerified: false,
-                profileStatus: client_1.ProfileStatus.PENDING,
+                profileStatus: "NOT_CREATED",
                 latestRequest: null,
             };
         }
@@ -241,6 +241,14 @@ let VerificationsService = class VerificationsService {
             !profile.education &&
             !profile.caste;
         const hasProfile = !isStub;
+        if (isStub) {
+            return {
+                hasProfile: false,
+                isVerified: false,
+                profileStatus: "NOT_CREATED",
+                latestRequest: null,
+            };
+        }
         const latestRequest = await this.prisma.verificationRequest.findFirst({
             where: { profileId: profile.id },
             orderBy: { createdAt: "desc" },

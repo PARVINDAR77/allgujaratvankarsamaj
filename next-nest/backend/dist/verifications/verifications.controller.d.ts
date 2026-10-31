@@ -33,6 +33,11 @@ export declare class VerificationsController {
     getMyVerificationStatus(req: any): Promise<{
         hasProfile: boolean;
         isVerified: boolean;
+        profileStatus: string;
+        latestRequest: any;
+    } | {
+        hasProfile: boolean;
+        isVerified: boolean;
         profileStatus: import(".prisma/client").$Enums.ProfileStatus;
         latestRequest: {
             id: string;

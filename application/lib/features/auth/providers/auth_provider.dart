@@ -156,12 +156,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
             final isVer = vRes.data['isVerified'] == true ||
                 vRes.data['isVerified'] == 1 ||
                 vRes.data['isVerified'] == 'true';
-            final hasProf = vRes.data['hasProfile'] == true ||
+            final bool rawHasProfile = vRes.data['hasProfile'] == true ||
                 vRes.data['hasProfile'] == 1 ||
-                vRes.data['hasProfile'] == 'true' ||
-                (vRes.data['profileStatus'] != null && vRes.data['profileStatus'] != 'NOT_CREATED') ||
-                vRes.data['latestRequest'] != null ||
-                isVer;
+                vRes.data['hasProfile'] == 'true';
+            final hasProf = rawHasProfile || isVer;
 
             resolvedUser = (resolvedUser ?? decodedUser).copyWith(
               isVerified: isVer || (resolvedUser?.isVerified ?? false),
@@ -445,12 +443,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         final isVerified = res.data['isVerified'] == true ||
             res.data['isVerified'] == 1 ||
             res.data['isVerified'] == 'true';
-        final hasProfile = res.data['hasProfile'] == true ||
+        final bool rawHasProfile = res.data['hasProfile'] == true ||
             res.data['hasProfile'] == 1 ||
-            res.data['hasProfile'] == 'true' ||
-            (res.data['profileStatus'] != null && res.data['profileStatus'] != 'NOT_CREATED') ||
-            res.data['latestRequest'] != null ||
-            isVerified;
+            res.data['hasProfile'] == 'true';
+        final hasProfile = rawHasProfile || isVerified;
         if (state.user!.isVerified != isVerified || state.user!.hasProfile != hasProfile) {
           final updated = state.user!.copyWith(
             isVerified: isVerified,
