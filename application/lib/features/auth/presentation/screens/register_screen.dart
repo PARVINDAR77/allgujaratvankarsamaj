@@ -73,7 +73,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen>
     if (mounted) {
       setState(() => _isLoading = false);
       if (regSuccess) {
-        _showMandatoryProfileDialog();
+        if (kIsWeb) {
+          context.go('/profile/create');
+        } else {
+          _showMandatoryProfileDialog();
+        }
       } else {
         final err = ref.read(authNotifierProvider).errorMessage ??
             'નોંધણી નિષ્ફળ થઈ (Registration failed)';

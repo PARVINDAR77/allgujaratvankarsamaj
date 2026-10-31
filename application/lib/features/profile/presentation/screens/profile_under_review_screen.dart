@@ -1,8 +1,10 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../home/presentation/widgets/web_home_header.dart';
 
 class ProfileUnderReviewScreen extends ConsumerStatefulWidget {
   const ProfileUnderReviewScreen({super.key});
@@ -126,6 +128,332 @@ class _ProfileUnderReviewScreenState
         ? DateTime.tryParse(latestReq!['createdAt'].toString())
         : null;
 
+    final reviewContent = Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // ── Header Icon Badge ─────────────────────────────────────
+        Container(
+          width: 90,
+          height: 90,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isRejected
+                ? Colors.red.withOpacity(0.15)
+                : const Color(0xFFD4AF37).withOpacity(0.15),
+            border: Border.all(
+              color: isRejected ? Colors.red : const Color(0xFFD4AF37),
+              width: 2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: isRejected
+                    ? Colors.red.withOpacity(0.2)
+                    : const Color(0xFFD4AF37).withOpacity(0.25),
+                blurRadius: 20,
+                spreadRadius: 4,
+              ),
+            ],
+          ),
+          child: Center(
+            child: Icon(
+              isRejected
+                  ? Icons.cancel_outlined
+                  : Icons.hourglass_top_rounded,
+              size: 46,
+              color: isRejected ? Colors.red : const Color(0xFFD4AF37),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // ── Main Title ─────────────────────────────────────────────
+        Text(
+          isRejected
+              ? 'દસ્તાવેજ અસ્વીકાર થયેલ છે\n(Verification Rejected)'
+              : 'પ્રોફાઇલ ચકાસણી હેઠળ છે\n(Under Admin Review)',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: isRejected ? Colors.redAccent : Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            height: 1.3,
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // ── Description ───────────────────────────────────────────
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF07182E),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isRejected
+                  ? Colors.red.withOpacity(0.3)
+                  : const Color(0xFFD4AF37).withOpacity(0.3),
+            ),
+          ),
+          child: Column(
+            children: [
+              Text(
+                isRejected
+                    ? 'એડમિન દ્વારા તમારા દસ્તાવેજનો અસ્વીકાર કરવામાં આવ્યો છે. કૃપા કરીને યોગ્ય દસ્તાવેજ ફરી અપલોડ કરો.'
+                    : 'સમાજની સુરક્ષા અને યોગ્યતા માટે, એડમિન ટીમ તમારા અપલોડ કરેલ ઓળખ કાર્ડની ચકાસણી કરી રહી છે. સામાન્ય રીતે 1 થી 2 કલાકમાં મંજૂરી મળી જાય છે.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  height: 1.5,
+                ),
+              ),
+              if (isRejected && rejectionReason != null && rejectionReason.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.red.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    'અસ્વીકારનું કારણ: $rejectionReason',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'સૂચના: $_errorMessage',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: Colors.white38, fontSize: 11),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // ── Request Details Card ──────────────────────────────────
+        if (!_isLoadingStatus && latestReq != null) ...[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0B1F3A),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'સબમિશન વિગતો (Submission Info):',
+                  style: TextStyle(
+                    color: Color(0xFFD4AF37),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _detailRow(Icons.description_outlined, 'દસ્તાવેજનો પ્રકાર', docType),
+                const SizedBox(height: 8),
+                _detailRow(
+                  Icons.check_circle_outline,
+                  'સ્થિતિ',
+                  isRejected ? 'REJECTED (અસ્વીકાર)' : 'PENDING (ચકાસણી હેઠળ)',
+                  valueColor: isRejected ? Colors.redAccent : const Color(0xFFD4AF37),
+                ),
+                if (submittedAt != null) ...[
+                  const SizedBox(height: 8),
+                  _detailRow(
+                    Icons.calendar_today_outlined,
+                    'તારીખ',
+                    '${submittedAt.day}/${submittedAt.month}/${submittedAt.year}',
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+
+        // ── Action Buttons ────────────────────────────────────────
+        // Button 1: Check Status
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: _isChecking ? null : _handleRefresh,
+            icon: _isChecking
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.black,
+                    ),
+                  )
+                : const Icon(Icons.refresh_rounded, color: Colors.black),
+            label: Text(
+              _isChecking
+                  ? 'તપાસી રહ્યું છે... (Checking...)'
+                  : 'ચકાસણી સ્થિતિ તપાસો (Refresh Status)',
+              style: const TextStyle(
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFD4AF37),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Button 2: Re-upload or Update Document
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: () {
+              context.go('/verified-profile');
+            },
+            icon: const Icon(Icons.upload_file_rounded, color: Color(0xFFD4AF37)),
+            label: Text(
+              isRejected
+                  ? 'ફરીથી દસ્તાવેજ અપલોડ કરો (Re-upload Document)'
+                  : 'દસ્તાવેજ બદલો / ફરી અપલોડ કરો (Update Document)',
+              style: const TextStyle(
+                color: Color(0xFFD4AF37),
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // Button 3: Browse Candidates and Services
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            onPressed: () {
+              context.go('/main-poster');
+            },
+            icon: const Icon(Icons.people_outline_rounded, color: Colors.white, size: 20),
+            label: const Text(
+              'ઉમેદવારો અને સેવાઓ જુઓ (Browse Candidates & Services)',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 13,
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1E3A8A),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: const BorderSide(color: Colors.white24),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Support & Sign Out Links
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextButton.icon(
+              onPressed: () {
+                context.push('/privacy-contact');
+              },
+              icon: const Icon(Icons.support_agent_rounded, color: Colors.white60, size: 18),
+              label: const Text(
+                'સહાયતા (Need Help?)',
+                style: TextStyle(color: Colors.white60, fontSize: 12.5),
+              ),
+            ),
+            const SizedBox(width: 16),
+            TextButton.icon(
+              onPressed: () async {
+                await ref.read(authNotifierProvider.notifier).logout();
+                if (context.mounted) {
+                  context.go('/login');
+                }
+              },
+              icon: const Icon(Icons.logout_rounded, color: Colors.redAccent, size: 18),
+              label: const Text(
+                'લૉગઆઉટ (Sign Out)',
+                style: TextStyle(color: Colors.redAccent, fontSize: 12.5, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    // ==================== WEB PORTAL LAYOUT ====================
+    if (kIsWeb) {
+      return PopScope(
+        canPop: false,
+        child: Scaffold(
+          backgroundColor: const Color(0xFF030D1E),
+          appBar: const WebHomeHeader(activeRoute: '/profile-under-review'),
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 580),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 36),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF07182E),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isRejected
+                          ? Colors.redAccent.withOpacity(0.6)
+                          : const Color(0xFFD4AF37),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isRejected
+                            ? Colors.red.withOpacity(0.15)
+                            : const Color(0xFFD4AF37).withOpacity(0.12),
+                        blurRadius: 30,
+                        spreadRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: reviewContent,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ==================== MOBILE APP LAYOUT (100% PRESERVED) ====================
     return PopScope(
       canPop: false,
       child: Scaffold(
@@ -134,311 +462,31 @@ class _ProfileUnderReviewScreenState
           automaticallyImplyLeading: false,
           backgroundColor: const Color(0xFF07182E),
           elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'ચકાસણી સ્થિતિ (Verification)',
-          style: TextStyle(
-            color: Color(0xFFD4AF37),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
+          centerTitle: true,
+          title: const Text(
+            'ચકાસણી સ્થિતિ (Verification)',
+            style: TextStyle(
+              color: Color(0xFFD4AF37),
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.logout_rounded, color: Color(0xFFD4AF37)),
+              tooltip: 'લૉગઆઉટ (Sign Out)',
+              onPressed: () async {
+                await ref.read(authNotifierProvider.notifier).logout();
+              },
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: reviewContent,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Color(0xFFD4AF37)),
-            tooltip: 'લૉગઆઉટ (Sign Out)',
-            onPressed: () async {
-              await ref.read(authNotifierProvider.notifier).logout();
-            },
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // ── Header Icon Badge ─────────────────────────────────────
-              Container(
-                width: 90,
-                height: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isRejected
-                      ? Colors.red.withValues(alpha: 0.15)
-                      : const Color(0xFFD4AF37).withValues(alpha: 0.15),
-                  border: Border.all(
-                    color: isRejected
-                        ? Colors.red
-                        : const Color(0xFFD4AF37),
-                    width: 2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: isRejected
-                          ? Colors.red.withValues(alpha: 0.2)
-                          : const Color(0xFFD4AF37).withValues(alpha: 0.25),
-                      blurRadius: 20,
-                      spreadRadius: 4,
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Icon(
-                    isRejected
-                        ? Icons.cancel_outlined
-                        : Icons.hourglass_top_rounded,
-                    size: 46,
-                    color: isRejected
-                        ? Colors.red
-                        : const Color(0xFFD4AF37),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // ── Main Title ─────────────────────────────────────────────
-              Text(
-                isRejected
-                    ? 'દસ્તાવેજ અસ્વીકાર થયેલ છે\n(Verification Rejected)'
-                    : 'પ્રોફાઇલ ચકાસણી હેઠળ છે\n(Under Admin Review)',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: isRejected ? Colors.redAccent : Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 14),
-
-              // ── Description ───────────────────────────────────────────
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF07182E),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(
-                    color: isRejected
-                        ? Colors.red.withValues(alpha: 0.3)
-                        : const Color(0xFFD4AF37).withValues(alpha: 0.3),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      isRejected
-                          ? 'એડમિન દ્વારા તમારા દસ્તાવેજનો અસ્વીકાર કરવામાં આવ્યો છે. કૃપા કરીને યોગ્ય દસ્તાવેજ ફરી અપલોડ કરો.'
-                          : 'સમાજની સુરક્ષા અને યોગ્યતા માટે, એડમિન ટીમ તમારા અપલોડ કરેલ ઓળખ કાર્ડની ચકાસણી કરી રહી છે. સામાન્ય રીતે 1 થી 2 કલાકમાં મંજૂરી મળી જાય છે.',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 13,
-                        height: 1.5,
-                      ),
-                    ),
-                    if (isRejected && rejectionReason != null && rejectionReason.isNotEmpty) ...[
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.red.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
-                        ),
-                        child: Text(
-                          'અસ્વીકારનું કારણ: $rejectionReason',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: Colors.redAccent,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 10),
-                      Text(
-                        'સૂચના: $_errorMessage',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white38, fontSize: 11),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Request Details Card ──────────────────────────────────
-              if (!_isLoadingStatus && latestReq != null) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B1F3A),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'સબમિશન વિગતો (Submission Info):',
-                        style: TextStyle(
-                          color: Color(0xFFD4AF37),
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      _detailRow(Icons.description_outlined, 'દસ્તાવેજનો પ્રકાર', docType),
-                      const SizedBox(height: 8),
-                      _detailRow(
-                        Icons.check_circle_outline,
-                        'સ્થિતિ',
-                        isRejected ? 'REJECTED (અસ્વીકાર)' : 'PENDING (ચકાસણી હેઠળ)',
-                        valueColor: isRejected ? Colors.redAccent : const Color(0xFFD4AF37),
-                      ),
-                      if (submittedAt != null) ...[
-                        const SizedBox(height: 8),
-                        _detailRow(
-                          Icons.calendar_today_outlined,
-                          'તારીખ',
-                          '${submittedAt.day}/${submittedAt.month}/${submittedAt.year}',
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // ── Action Buttons ────────────────────────────────────────
-              // Button 1: Check Status
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: _isChecking ? null : _handleRefresh,
-                  icon: _isChecking
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.black,
-                          ),
-                        )
-                      : const Icon(Icons.refresh_rounded, color: Colors.black),
-                  label: Text(
-                    _isChecking
-                        ? 'તપાસી રહ્યું છે... (Checking...)'
-                        : 'ચકાસણી સ્થિતિ તપાસો (Refresh Status)',
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFD4AF37),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Button 2: Re-upload or Update Document
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    context.go('/verified-profile');
-                  },
-                  icon: const Icon(Icons.upload_file_rounded, color: Color(0xFFD4AF37)),
-                  label: Text(
-                    isRejected
-                        ? 'ફરીથી દસ્તાવેજ અપલોડ કરો (Re-upload Document)'
-                        : 'દસ્તાવેજ બદલો / ફરી અપલોડ કરો (Update Document)',
-                    style: const TextStyle(
-                      color: Color(0xFFD4AF37),
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Button 3: Browse Candidates and Services
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    context.go('/main-poster');
-                  },
-                  icon: const Icon(Icons.people_outline_rounded, color: Colors.white, size: 20),
-                  label: const Text(
-                    'ઉમેદવારો અને સેવાઓ જુઓ (Browse Candidates & Services)',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 13,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1E3A8A),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: const BorderSide(color: Colors.white24),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-
-              // Button 3: Need Help / Contact
-              TextButton.icon(
-                onPressed: () {
-                  context.push('/privacy-contact');
-                },
-                icon: const Icon(Icons.support_agent_rounded, color: Colors.white60, size: 18),
-                label: const Text(
-                  'સહાયતા માટે એડમિનનો સંપર્ક કરો (Need Help?)',
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Button 4: Sign Out
-              TextButton(
-                onPressed: () async {
-                  await ref.read(authNotifierProvider.notifier).logout();
-                  if (context.mounted) {
-                    context.go('/login');
-                  }
-                },
-                child: const Text(
-                  'લૉગઆઉટ (Sign Out)',
-                  style: TextStyle(color: Colors.redAccent, fontSize: 13),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
       ),
     );
   }
