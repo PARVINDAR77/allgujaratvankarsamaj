@@ -485,6 +485,20 @@ function ensure_database_schema_synced($project_dir, &$results) {
         } else {
             $results['schema_status'] = "permissions column is verified present on users table";
         }
+        // Ensure uploads symlinks and .htaccess are in place
+        $pubUploads = '/home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads';
+        $mainUploads = '/home/u796269890/domains/allgujaratvankarsamaj.com/uploads';
+        if (!is_dir($mainUploads)) {
+            @mkdir($mainUploads, 0755, true);
+        }
+        if (!file_exists($pubUploads) && !is_link($pubUploads)) {
+            @symlink($mainUploads, $pubUploads);
+        }
+        $pubHtaccess = '/home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess';
+        $buildHtaccess = $project_dir . '/application/build/web/.htaccess';
+        if (file_exists($buildHtaccess)) {
+            @copy($buildHtaccess, $pubHtaccess);
+        }
     } catch (Exception $e) {
         $results['schema_sync_error'] = $e->getMessage();
     }
@@ -688,6 +702,10 @@ if ($action === 'deploy') {
                "cp -rf next-nest/frontend/out/services /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf next-nest/frontend/out/verified-profile /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf application/build/web/* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
+               "cp -f application/build/web/.htaccess /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>&1; " .
+               "mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>&1; " .
+               "ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>&1; " .
+               "ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads next-nest/backend/uploads 2>&1; " .
                "echo 'DEPLOY_COMPLETE'";
         $deployLog = shell_exec($cmd);
         $results['deploy_log'] = $deployLog;

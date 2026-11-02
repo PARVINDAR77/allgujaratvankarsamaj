@@ -22,6 +22,8 @@ RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
 # Return real 404 for missing static assets (js, css, images) so they never serve index.html
+# Exclude /uploads/ so media requests can be served by api_proxy.php or symlinked directory
+RewriteCond %{REQUEST_URI} !^/uploads/ [NC]
 RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot|map)$ [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteRule ^ - [R=404,L]

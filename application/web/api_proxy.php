@@ -118,6 +118,54 @@ function ensure_direct_schema_sync($project_dir) {
 }
 ensure_direct_schema_sync($project_dir);
 
+// 1.2 Direct static media serving for /uploads/ (Bypasses backend socket for maximum speed & reliability)
+$cleanPath = parse_url($uri, PHP_URL_PATH) ?? $uri;
+if (preg_match('#^/(?:api/v1/)?uploads/([a-zA-Z0-9_\-\.]+)$#i', $cleanPath, $uploadMatch)) {
+    $requestedFilename = basename($uploadMatch[1]);
+    $possibleUploadDirs = [
+        '/home/u796269890/domains/allgujaratvankarsamaj.com/uploads',
+        $project_dir . '/uploads',
+        $backend_dir . '/uploads',
+        dirname(__DIR__) . '/uploads'
+    ];
+    
+    // Ensure public_html/uploads symlink exists
+    $pubUploads = '/home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads';
+    if (!file_exists($pubUploads) && !is_link($pubUploads)) {
+        @symlink('/home/u796269890/domains/allgujaratvankarsamaj.com/uploads', $pubUploads);
+    }
+    
+    foreach ($possibleUploadDirs as $candDir) {
+        $fullPath = $candDir . '/' . $requestedFilename;
+        if (file_exists($fullPath) && is_file($fullPath)) {
+            $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+            $mimeMap = [
+                'jpg'  => 'image/jpeg',
+                'jpeg' => 'image/jpeg',
+                'png'  => 'image/png',
+                'webp' => 'image/webp',
+                'gif'  => 'image/gif',
+                'svg'  => 'image/svg+xml',
+                'pdf'  => 'application/pdf',
+                'mp4'  => 'video/mp4',
+                'webm' => 'video/webm'
+            ];
+            $cType = $mimeMap[$ext] ?? 'application/octet-stream';
+            header("Content-Type: $cType");
+            header("Content-Length: " . filesize($fullPath));
+            header("Cache-Control: public, max-age=86400, stale-while-revalidate=604800");
+            header("Access-Control-Allow-Origin: *");
+            header("Access-Control-Allow-Methods: GET, HEAD, OPTIONS");
+            header("X-Content-Type-Options: nosniff");
+            if ($method === 'HEAD') {
+                exit;
+            }
+            readfile($fullPath);
+            exit;
+        }
+    }
+}
+
 // 2. Direct handling for file upload if PHP received a multipart form file
 if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upload#', $uri)) && !empty($_FILES['file'])) {
     $file = $_FILES['file'];

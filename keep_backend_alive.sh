@@ -169,10 +169,14 @@ if [ -f "$SCRIPT_DIR/sync_db_schema.php" ]; then
     php "$SCRIPT_DIR/sync_db_schema.php" >> "$LOG_FILE" 2>&1 || true
 fi
 
-# Ensure web proxy and management scripts are synced to public_html
+# Ensure web proxy, .htaccess, and management scripts are synced to public_html
 if [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
     [ -f "$SCRIPT_DIR/application/build/web/restart_backend.php" ] && cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/api_proxy.php" ] && cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
+    [ -f "$SCRIPT_DIR/application/build/web/.htaccess" ] && cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>/dev/null || true
+    mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>/dev/null || true
+    ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>/dev/null || true
+    ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads "$BACKEND_DIR/uploads" 2>/dev/null || true
 fi
 
 # 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 8s budget)
@@ -255,9 +259,13 @@ if [ -f "$SCRIPT_DIR/sync_db_schema.php" ]; then
     php "$SCRIPT_DIR/sync_db_schema.php" >> "$LOG_FILE" 2>&1 || true
 fi
 
-# Sync web scripts to public_html
+# Sync web scripts and htaccess to public_html
 cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
 cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
+cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>/dev/null || true
+mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>/dev/null || true
+ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>/dev/null || true
+ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads "$BACKEND_DIR/uploads" 2>/dev/null || true
 
 if [ "$DAEMON_RUNNING" -eq 1 ]; then
     if ! can_restart; then
