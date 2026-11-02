@@ -115,7 +115,7 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleLogin}  style={{ gap: "20px" }} className="flex flex-col">
+        <form onSubmit={handleLogin} autoComplete="off"  style={{ gap: "20px" }} className="flex flex-col">
           {/* Email Field */}
           <div>
             <label
@@ -146,7 +146,7 @@ export default function AdminLoginPage() {
                   outline: "none",
                   boxSizing: "border-box",
                 }}
-                placeholder="admin@vankarsamaj.org"
+                placeholder="Enter admin email" autoComplete="new-password" name="admin_user_id_field" id="admin_user_id_field"
               />
             </div>
           </div>
@@ -181,7 +181,7 @@ export default function AdminLoginPage() {
                   outline: "none",
                   boxSizing: "border-box",
                 }}
-                placeholder="••••••••"
+                placeholder="Enter password" autoComplete="new-password" name="admin_user_secret_field" id="admin_user_secret_field"
               />
               <button
                 type="button"
@@ -211,7 +211,7 @@ export default function AdminLoginPage() {
             <label  style={{ userSelect: "none" }} className="flex items-center cursor-pointer gap-2">
               <input
                 type="checkbox"
-                defaultChecked
+                
                  style={{ accentColor: "#D4AF37", width: "16px", height: "16px" }} className="cursor-pointer"
               />
               <span  style={{ color: "#d1d5db" }} className="font-semibold">Remember session</span>
