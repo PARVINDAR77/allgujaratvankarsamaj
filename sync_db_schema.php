@@ -39,7 +39,7 @@ try {
     ]);
     
     // 1. Ensure permissions column exists on users table
-    $col = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '$name' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
+    $col = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
     if (!$col) {
         $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT NULL");
         echo "[sync_db_schema] Added missing 'permissions' column to users table.\n";
@@ -49,3 +49,4 @@ try {
 } catch (Exception $e) {
     echo "[sync_db_schema] Error: " . $e->getMessage() . "\n";
 }
+

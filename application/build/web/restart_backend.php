@@ -462,7 +462,7 @@ function ensure_database_schema_synced($project_dir, &$results) {
         $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass, [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
         ]);
-        $checkCol = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '$name' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
+        $checkCol = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
         if (!$checkCol) {
             $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT NULL");
             $results['actions_taken'][] = "Database Schema Synced: Added missing permissions column to users table";
@@ -564,6 +564,23 @@ $probe = check_socket($socket_stream, 2);
 $isHealthy = !empty($probe['connected']) && ($probe['http_status'] ?? 0) === 200;
 
 if (!$callerAuth || empty($callerAuth['authorized'])) {
+    ensure_database_schema_synced($project_dir, $results);
+
+    if ($action === 'recover' || $action === 'sync') {
+        @touch($trigger_file);
+        if (function_exists('shell_exec')) {
+            @shell_exec("bash " . escapeshellarg($project_dir . "/keep_backend_alive.sh") . " --force </dev/null > /dev/null 2>&1 &");
+        }
+        if ($format === 'json') {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'status' => 'RECOVERING',
+                'message' => 'Schema checked and watchdog recovery triggered.',
+                'timestamp' => date('c')
+            ]);
+            exit;
+        }
+    }
     if ($format === 'json') {
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([

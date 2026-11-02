@@ -71,6 +71,7 @@ export declare class UsersService {
             isFeatured: boolean;
         };
     } & {
+        permissions: string | null;
         status: import(".prisma/client").$Enums.Status;
         name: string | null;
         gender: import(".prisma/client").$Enums.Gender | null;
@@ -83,7 +84,6 @@ export declare class UsersService {
         phone: string | null;
         passwordHash: string;
         role: import(".prisma/client").$Enums.Role;
-        permissions: string | null;
     }>;
     createUser(data: {
         email?: string;

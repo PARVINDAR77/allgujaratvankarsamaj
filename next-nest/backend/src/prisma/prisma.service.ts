@@ -76,7 +76,7 @@ export class PrismaService
             (table_name = 'samaj_service_persons' AND column_name = 'user_id') OR
             (table_name = 'verification_requests' AND column_name = 'document_back_url') OR
             (table_name = 'matrimonial_profiles' AND column_name = 'show_in_matrimony') OR
-            (table_name = 'users' AND column_name IN ('is_email_verified', 'is_phone_verified'))
+            (table_name = 'users' AND column_name IN ('is_email_verified', 'is_phone_verified', 'permissions'))
           );
       `);
       const existingCols = new Set(
@@ -90,6 +90,7 @@ export class PrismaService
         "matrimonial_profiles.show_in_matrimony",
         "users.is_email_verified",
         "users.is_phone_verified",
+        "users.permissions",
       ];
       return requiredCols.every((c) => existingCols.has(c));
     } catch (err: any) {
@@ -181,25 +182,33 @@ export class PrismaService
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
           `);
 
+          // Safe column addition helper compatible with all MySQL / MariaDB versions
+          const safeAddColumn = async (table: string, column: string, colDef: string) => {
+            try {
+              const check = await tx.$queryRawUnsafe<any[]>(
+                `SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '${table}' AND COLUMN_NAME = '${column}'`
+              );
+              if (!check || check.length === 0) {
+                await tx.$executeRawUnsafe(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${colDef};`);
+              }
+            } catch (colErr: any) {
+              this.logger.warn(`Notice adding column ${table}.${column}: ${colErr?.message || colErr}`);
+            }
+          };
+
           // Ensure supplementary columns exist on existing tables
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`samaj_service_persons\` ADD COLUMN IF NOT EXISTS \`user_id\` VARCHAR(191) NULL;
-          `);
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`address\` TEXT NULL;
-          `);
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`description\` TEXT NULL;
-          `);
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`photo_url\` TEXT NULL;
-          `);
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`verification_requests\` ADD COLUMN IF NOT EXISTS \`document_back_url\` VARCHAR(191) NULL;
-          `);
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`matrimonial_profiles\` ADD COLUMN IF NOT EXISTS \`show_in_matrimony\` TINYINT(1) NOT NULL DEFAULT 1;
-          `);
+          await safeAddColumn("samaj_service_persons", "user_id", "VARCHAR(191) NULL");
+
+          try {
+            await tx.$executeRawUnsafe(`ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`address\` TEXT NULL;`);
+            await tx.$executeRawUnsafe(`ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`description\` TEXT NULL;`);
+            await tx.$executeRawUnsafe(`ALTER TABLE \`samaj_service_persons\` MODIFY COLUMN \`photo_url\` TEXT NULL;`);
+          } catch (modErr: any) {
+            this.logger.warn(`Notice modifying columns on samaj_service_persons: ${modErr?.message || modErr}`);
+          }
+
+          await safeAddColumn("verification_requests", "document_back_url", "VARCHAR(191) NULL");
+          await safeAddColumn("matrimonial_profiles", "show_in_matrimony", "TINYINT(1) NOT NULL DEFAULT 1");
 
           await tx.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS \`system_notifications\` (
@@ -213,20 +222,18 @@ export class PrismaService
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
           `);
 
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`advertisements\` MODIFY COLUMN \`placement\` ENUM('HOME_BANNER', 'DIRECTORY_BANNER', 'POPUP', 'BUTTON_1', 'BUTTON_2', 'BUTTON_3', 'BUTTON_4', 'BUTTON_5', 'PAVAN_PRERNADATA', 'SAMAJ_SUPER_STARS', 'SAMAJ_RATNA') NOT NULL DEFAULT 'HOME_BANNER';
-          `);
+          try {
+            await tx.$executeRawUnsafe(`
+              ALTER TABLE \`advertisements\` MODIFY COLUMN \`placement\` ENUM('HOME_BANNER', 'DIRECTORY_BANNER', 'POPUP', 'BUTTON_1', 'BUTTON_2', 'BUTTON_3', 'BUTTON_4', 'BUTTON_5', 'PAVAN_PRERNADATA', 'SAMAJ_SUPER_STARS', 'SAMAJ_RATNA') NOT NULL DEFAULT 'HOME_BANNER';
+            `);
+          } catch (adErr: any) {
+            this.logger.warn(`Notice updating advertisements placement enum: ${adErr?.message || adErr}`);
+          }
 
-          // OTP Verification and Logs Schema
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`users\` ADD COLUMN IF NOT EXISTS \`is_email_verified\` BOOLEAN NOT NULL DEFAULT false;
-          `);
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`users\` ADD COLUMN IF NOT EXISTS \`is_phone_verified\` BOOLEAN NOT NULL DEFAULT false;
-          `);
-          await tx.$executeRawUnsafe(`
-            ALTER TABLE \`users\` ADD COLUMN IF NOT EXISTS \`permissions\` TEXT NULL;
-          `);
+          // OTP Verification and Sub-admin Permissions Schema
+          await safeAddColumn("users", "is_email_verified", "BOOLEAN NOT NULL DEFAULT false");
+          await safeAddColumn("users", "is_phone_verified", "BOOLEAN NOT NULL DEFAULT false");
+          await safeAddColumn("users", "permissions", "TEXT NULL");
           await tx.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS \`otp_sessions\` (
               \`id\` varchar(191) NOT NULL,

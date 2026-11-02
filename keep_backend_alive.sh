@@ -145,12 +145,34 @@ stop_backend_node() {
 pkill -f "npx prisma" 2>/dev/null || true
 pkill -f "npm install" 2>/dev/null || true
 
-# 1. Check if restart trigger was requested (e.g. from web UI or deploy)
+# 1. Automatic Git Deployment Check:
+# If GitHub main has a new commit, automatically pull and restart!
+UPSTREAM_COMMIT=$(cd "$SCRIPT_DIR" && git ls-remote origin main 2>/dev/null | awk '{print $1}')
+LOCAL_COMMIT=$(cd "$SCRIPT_DIR" && git rev-parse HEAD 2>/dev/null)
+if [ -n "$UPSTREAM_COMMIT" ] && [ "$UPSTREAM_COMMIT" != "$LOCAL_COMMIT" ]; then
+    log "🚀 New git commit detected on origin main ($UPSTREAM_COMMIT vs $LOCAL_COMMIT). Auto-pulling..."
+    (cd "$SCRIPT_DIR" && git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1 && git pull origin main 2>&1) >> "$LOG_FILE" 2>&1 || true
+    chmod +x "$SCRIPT_DIR/keep_backend_alive.sh" "$SCRIPT_DIR/start_backend_daemon.sh" 2>/dev/null || true
+    FORCE_RESTART=1
+fi
+
+# Explicit trigger file check
 if [ -f "$TRIGGER_FILE" ]; then
     rm -f "$TRIGGER_FILE"
     FORCE_RESTART=1
-    log "🔔 Explicit restart trigger file detected. Setting FORCE_RESTART=1 to initiate recovery."
+    log "🔔 Explicit restart trigger file detected. Setting FORCE_RESTART=1."
     (cd "$SCRIPT_DIR" && git pull origin main) >> "$LOG_FILE" 2>&1 || true
+fi
+
+# Ensure MySQL database schema is synchronized via direct PHP PDO
+if [ -f "$SCRIPT_DIR/sync_db_schema.php" ]; then
+    php "$SCRIPT_DIR/sync_db_schema.php" >> "$LOG_FILE" 2>&1 || true
+fi
+
+# Ensure web proxy and management scripts are synced to public_html
+if [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
+    [ -f "$SCRIPT_DIR/application/build/web/restart_backend.php" ] && cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
+    [ -f "$SCRIPT_DIR/application/build/web/api_proxy.php" ] && cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
 fi
 
 # 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 8s budget)
@@ -166,17 +188,37 @@ check_liveness_probe() {
     return 1
 }
 
+check_db_health_probe() {
+    local resp
+    resp=$(curl -s --max-time 4 --unix-socket "$SOCKET_FILE" "http://localhost/api/v1/health" 2>/dev/null || echo "")
+    if echo "$resp" | grep -q '"database"' && echo "$resp" | grep -q '"connected"'; then
+        return 0
+    fi
+    return 1
+}
+
 if [ -S "$SOCKET_FILE" ] && [ "$FORCE_RESTART" -ne 1 ]; then
     if check_liveness_probe; then
-        IS_HEALTHY=1
+        if check_db_health_probe; then
+            IS_HEALTHY=1
+        else
+            log "⚠️ Liveness passed but DB probe failed or timed out. Waiting 2s before strike 2..."
+            sleep 2
+            if check_db_health_probe; then
+                IS_HEALTHY=1
+                log "✅ Database probe succeeded on strike 2."
+            else
+                log "❌ Database probe failed twice. Backend database connection pool is unresponsive."
+            fi
+        fi
     else
         log "⚠️ First liveness probe failed or timed out. Waiting 2 seconds before strike 2..."
         sleep 2
-        if check_liveness_probe; then
+        if check_liveness_probe && check_db_health_probe; then
             IS_HEALTHY=1
-            log "✅ Second liveness probe succeeded. Backend is healthy."
+            log "✅ Second liveness and DB probe succeeded. Backend is healthy."
         else
-            log "❌ Second consecutive liveness probe failed. Backend is confirmed unresponsive."
+            log "❌ Second consecutive probe failed. Backend is confirmed unresponsive."
         fi
     fi
 fi

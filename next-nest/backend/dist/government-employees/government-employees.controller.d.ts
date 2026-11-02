@@ -289,6 +289,7 @@ export declare class GovernmentEmployeesController {
             };
             profile: {
                 user: {
+                    permissions: string | null;
                     status: import(".prisma/client").$Enums.Status;
                     name: string | null;
                     gender: import(".prisma/client").$Enums.Gender | null;
@@ -301,7 +302,6 @@ export declare class GovernmentEmployeesController {
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
-                    permissions: string | null;
                 };
                 district: {
                     name: string;
@@ -432,6 +432,7 @@ export declare class GovernmentEmployeesController {
             };
             profile: {
                 user: {
+                    permissions: string | null;
                     status: import(".prisma/client").$Enums.Status;
                     name: string | null;
                     gender: import(".prisma/client").$Enums.Gender | null;
@@ -444,7 +445,6 @@ export declare class GovernmentEmployeesController {
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
-                    permissions: string | null;
                 };
                 district: {
                     name: string;

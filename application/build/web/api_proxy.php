@@ -60,6 +60,55 @@ if ($method === 'OPTIONS') {
     exit;
 }
 
+// 1.1 Direct MySQL schema validation via PHP PDO (Non-blocking, cached for 1 hour)
+function ensure_direct_schema_sync($project_dir) {
+    $flag = sys_get_temp_dir() . '/vankar_schema_synced_v3.flag';
+    if (file_exists($flag) && (time() - (int)@filemtime($flag)) < 3600) {
+        return;
+    }
+    $env_file = $project_dir . '/.env.production';
+    if (!file_exists($env_file)) {
+        $env_file = $project_dir . '/next-nest/backend/.env';
+    }
+    if (!file_exists($env_file)) return;
+    $lines = @file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+    $conf = [];
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (strpos($line, '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($k, $v) = explode('=', $line, 2);
+            $conf[trim($k)] = trim(trim($v), '"\'');
+        }
+    }
+    $host = $conf['DB_HOST'] ?? 'localhost';
+    $user = $conf['DB_USER'] ?? '';
+    $pass = $conf['DB_PASSWORD'] ?? '';
+    $name = $conf['DB_NAME'] ?? '';
+    if (empty($user) && !empty($conf['DATABASE_URL'])) {
+        $p = parse_url($conf['DATABASE_URL']);
+        $host = $p['host'] ?? 'localhost';
+        $user = $p['user'] ?? '';
+        $pass = $p['pass'] ?? '';
+        $name = ltrim($p['path'] ?? '', '/');
+    }
+    if (empty($name) || empty($user)) return;
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 2
+        ]);
+        $col = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
+        if (!$col) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT NULL");
+        }
+        @touch($flag);
+    } catch (Exception $e) {
+        // Silently continue
+    }
+}
+ensure_direct_schema_sync($project_dir);
+
 // 2. Direct handling for file upload if PHP received a multipart form file
 if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upload#', $uri)) && !empty($_FILES['file'])) {
     $file = $_FILES['file'];
@@ -278,6 +327,7 @@ function proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $
     fclose($fp);
     
     if ($timedOut) {
+        trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
         http_response_code(504);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
@@ -447,6 +497,7 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
     
     if ($execResult === false) {
         if ($curlErrno === CURLE_OPERATION_TIMEDOUT || $curlErrno === 28) {
+            trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
             http_response_code(504);
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
