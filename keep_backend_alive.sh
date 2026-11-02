@@ -151,7 +151,7 @@ UPSTREAM_COMMIT=$(cd "$SCRIPT_DIR" && git ls-remote origin main 2>/dev/null | aw
 LOCAL_COMMIT=$(cd "$SCRIPT_DIR" && git rev-parse HEAD 2>/dev/null)
 if [ -n "$UPSTREAM_COMMIT" ] && [ "$UPSTREAM_COMMIT" != "$LOCAL_COMMIT" ]; then
     log "🚀 New git commit detected on origin main ($UPSTREAM_COMMIT vs $LOCAL_COMMIT). Auto-pulling..."
-    (cd "$SCRIPT_DIR" && git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1 && git pull origin main 2>&1) >> "$LOG_FILE" 2>&1 || true
+    (cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
     chmod +x "$SCRIPT_DIR/keep_backend_alive.sh" "$SCRIPT_DIR/start_backend_daemon.sh" 2>/dev/null || true
     FORCE_RESTART=1
 fi
@@ -161,7 +161,7 @@ if [ -f "$TRIGGER_FILE" ]; then
     rm -f "$TRIGGER_FILE"
     FORCE_RESTART=1
     log "🔔 Explicit restart trigger file detected. Setting FORCE_RESTART=1."
-    (cd "$SCRIPT_DIR" && git pull origin main) >> "$LOG_FILE" 2>&1 || true
+    (cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
 fi
 
 # Ensure MySQL database schema is synchronized via direct PHP PDO
@@ -248,7 +248,7 @@ fi
 log "⚠️ Backend confirmed unhealthy (Socket exists: $([ -S "$SOCKET_FILE" ] && echo YES || echo NO)). Initiating recovery..."
 
 # Pull latest repository changes
-(cd "$SCRIPT_DIR" && git pull origin main) >> "$LOG_FILE" 2>&1 || true
+(cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
 
 # Direct MySQL schema check and sync via PHP PDO
 if [ -f "$SCRIPT_DIR/sync_db_schema.php" ]; then
