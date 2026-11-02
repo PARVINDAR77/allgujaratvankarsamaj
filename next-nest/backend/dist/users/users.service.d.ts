@@ -97,14 +97,15 @@ export declare class UsersService {
         isPhoneVerified?: boolean;
     }): Promise<User>;
     getAllUsersForAdmin(): Promise<{
-        id: string;
-        name: string;
-        email: string;
-        phone: string;
-        pargana: string;
-        status: import(".prisma/client").$Enums.Status;
-        role: import(".prisma/client").$Enums.Role;
-        createdAt: Date;
+        id: any;
+        name: any;
+        email: any;
+        phone: any;
+        pargana: any;
+        status: any;
+        role: any;
+        permissions: any;
+        createdAt: any;
     }[]>;
     updateUserStatusAdmin(userId: string, adminId: string, status: Status, ipAddress?: string): Promise<{
         id: string;
@@ -160,17 +161,7 @@ export declare class UsersService {
         success: boolean;
         message: string;
     }>;
-    getSubAdmins(): Promise<{
-        permissions: string[];
-        status: import(".prisma/client").$Enums.Status;
-        name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        email: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-    }[]>;
+    getSubAdmins(): Promise<any[]>;
     createSubAdmin(superAdminId: string, dto: {
         name: string;
         email: string;

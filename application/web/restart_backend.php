@@ -429,38 +429,54 @@ function fix_database_genders_transactional($project_dir, &$results) {
 }
 
 function ensure_database_schema_synced($project_dir, &$results) {
-    $env_file = $project_dir . '/.env.production';
-    if (!file_exists($env_file)) {
-        $env_file = $project_dir . '/next-nest/backend/.env';
-    }
-    if (!file_exists($env_file)) return;
+    $envFiles = [
+        $project_dir . '/.env.production',
+        $project_dir . '/next-nest/backend/.env',
+        $project_dir . '/.env'
+    ];
     
-    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     $conf = [];
-    foreach ($lines as $line) {
-        $line = trim($line);
-        if (strpos($line, '#') === 0) continue;
-        if (strpos($line, '=') !== false) {
-            list($k, $v) = explode('=', $line, 2);
-            $conf[trim($k)] = trim(trim($v), '"\'');
+    foreach ($envFiles as $ef) {
+        if (file_exists($ef)) {
+            $lines = @file($ef, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if (empty($line) || strpos($line, '#') === 0) continue;
+                if (strpos($line, '=') !== false) {
+                    list($k, $v) = explode('=', $line, 2);
+                    $k = trim($k);
+                    $v = trim(trim($v), "\"'");
+                    if (!isset($conf[$k]) && strlen($v) > 0) {
+                        $conf[$k] = $v;
+                    }
+                }
+            }
         }
     }
-    $host = $conf['DB_HOST'] ?? 'localhost';
-    $user = $conf['DB_USER'] ?? '';
-    $pass = $conf['DB_PASSWORD'] ?? '';
-    $name = $conf['DB_NAME'] ?? '';
-    if (empty($user) && !empty($conf['DATABASE_URL'])) {
-        $p = parse_url($conf['DATABASE_URL']);
-        $host = $p['host'] ?? 'localhost';
-        $user = $p['user'] ?? '';
-        $pass = $p['pass'] ?? '';
-        $name = ltrim($p['path'] ?? '', '/');
+    
+    $user = $conf['MYSQL_USER'] ?? ($conf['DB_USER'] ?? '');
+    $pass = $conf['MYSQL_PASSWORD'] ?? ($conf['DB_PASSWORD'] ?? '');
+    $host = $conf['DB_HOST'] ?? '127.0.0.1';
+    $name = $conf['MYSQL_DB'] ?? ($conf['DB_NAME'] ?? '');
+    
+    $dbUrl = $conf['DATABASE_URL'] ?? '';
+    if (!empty($dbUrl)) {
+        $p = parse_url($dbUrl);
+        if (!empty($p['user'])) $user = urldecode($p['user']);
+        if (!empty($p['pass'])) $pass = urldecode($p['pass']);
+        if (!empty($p['host'])) $host = $p['host'];
+        if (!empty($p['path'])) $name = ltrim($p['path'], '/');
     }
-    if (empty($name) || empty($user)) return;
+    
+    if (empty($name) || empty($user)) {
+        $results['schema_sync_error'] = "Incomplete credentials (name=$name, user=$user)";
+        return;
+    }
 
     try {
         $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass, [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_TIMEOUT => 3
         ]);
         $checkCol = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
         if (!$checkCol) {
@@ -566,7 +582,17 @@ $isHealthy = !empty($probe['connected']) && ($probe['http_status'] ?? 0) === 200
 if (!$callerAuth || empty($callerAuth['authorized'])) {
     ensure_database_schema_synced($project_dir, $results);
 
-    if ($action === 'recover' || $action === 'sync') {
+    if ($action === 'sync') {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'status' => 'SYNCED',
+            'results' => $results,
+            'timestamp' => date('c')
+        ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    if ($action === 'recover') {
         @touch($trigger_file);
         if (function_exists('shell_exec')) {
             @shell_exec("bash " . escapeshellarg($project_dir . "/keep_backend_alive.sh") . " --force </dev/null > /dev/null 2>&1 &");

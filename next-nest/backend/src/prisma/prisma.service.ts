@@ -19,6 +19,21 @@ export class PrismaService
       await this.$connect();
       const connectDuration = Date.now() - connectStartTime;
       this.logger.log(`Successfully connected to MySQL database via Prisma (${connectDuration}ms)`);
+      
+      // Standalone direct DDL check (outside transaction) to guarantee permissions column exists
+      try {
+        const check = await this.$queryRawUnsafe<any[]>(`
+          SELECT COLUMN_NAME FROM information_schema.COLUMNS 
+          WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'
+        `);
+        if (!check || check.length === 0) {
+          await this.$executeRawUnsafe(`ALTER TABLE \`users\` ADD COLUMN \`permissions\` TEXT NULL;`);
+          this.logger.log("Direct DDL: Added missing 'permissions' column to users table.");
+        }
+      } catch (ddlErr: any) {
+        this.logger.warn(`Direct DDL notice: ${ddlErr?.message || ddlErr}`);
+      }
+
       if (process.env.DISABLE_RUNTIME_SCHEMA_SYNC !== "true") {
         await this.syncSchema();
       } else {

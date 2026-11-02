@@ -149,34 +149,36 @@ let UsersService = UsersService_1 = class UsersService {
                 pargana: u.profile?.city || u.profile?.nativePlace || "35 Pargana",
                 status: u.status,
                 role: u.role,
+                permissions: u.permissions ? (typeof u.permissions === "string" ? JSON.parse(u.permissions) : u.permissions) : [],
                 createdAt: u.createdAt,
             }));
         }
         catch (err) {
-            this.logger.error("Failed to query admin users with profiles, falling back to basic users", err);
-            const basicUsers = await this.prisma.user.findMany({
-                orderBy: { createdAt: "desc" },
-                select: {
-                    id: true,
-                    name: true,
-                    email: true,
-                    phone: true,
-                    status: true,
-                    role: true,
-                    permissions: true,
-                    createdAt: true,
-                },
-            });
-            return basicUsers.map((u) => ({
-                id: u.id,
-                name: u.name || u.email || "Member",
-                email: u.email || "",
-                phone: u.phone || "9876543210",
-                pargana: "35 Pargana",
-                status: u.status,
-                role: u.role,
-                createdAt: u.createdAt,
-            }));
+            this.logger.warn(`Failed to query admin users with profiles (${err?.message || err}). Falling back to safe raw query.`);
+            try {
+                const rawUsers = await this.prisma.$queryRawUnsafe(`
+          SELECT u.id, u.name, u.email, u.phone, u.status, u.role, u.created_at as createdAt,
+                 mp.first_name as firstName, mp.last_name as lastName, mp.city, mp.native_place as nativePlace
+          FROM users u
+          LEFT JOIN matrimonial_profiles mp ON mp.user_id = u.id
+          ORDER BY u.created_at DESC;
+        `);
+                return (rawUsers || []).map((u) => ({
+                    id: u.id,
+                    name: u.name || (u.firstName ? `${u.firstName} ${u.lastName || ""}`.trim() : u.email || "Member"),
+                    email: u.email || "",
+                    phone: u.phone || "9876543210",
+                    pargana: u.city || u.nativePlace || "35 Pargana",
+                    status: u.status,
+                    role: u.role,
+                    permissions: [],
+                    createdAt: u.createdAt,
+                }));
+            }
+            catch (rawErr) {
+                this.logger.error("Raw user query fallback also failed", rawErr);
+                throw rawErr;
+            }
         }
     }
     async updateUserStatusAdmin(userId, adminId, status, ipAddress) {
@@ -691,38 +693,59 @@ let UsersService = UsersService_1 = class UsersService {
         return res;
     }
     async getSubAdmins() {
-        const admins = await this.prisma.user.findMany({
-            where: {
-                role: {
-                    in: [client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN, client_1.Role.VERIFICATION_ADMIN, client_1.Role.CONTENT_ADMIN],
+        try {
+            const admins = await this.prisma.user.findMany({
+                where: {
+                    role: {
+                        in: [client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN, client_1.Role.VERIFICATION_ADMIN, client_1.Role.CONTENT_ADMIN],
+                    },
                 },
-            },
-            orderBy: { createdAt: "desc" },
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                role: true,
-                permissions: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
-        return admins.map((admin) => {
-            let parsedPermissions = [];
-            try {
-                if (admin.permissions) {
-                    parsedPermissions = typeof admin.permissions === "string" ? JSON.parse(admin.permissions) : admin.permissions;
+                orderBy: { createdAt: "desc" },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    phone: true,
+                    role: true,
+                    permissions: true,
+                    status: true,
+                    createdAt: true,
+                    updatedAt: true,
+                },
+            });
+            return admins.map((admin) => {
+                let parsedPermissions = [];
+                try {
+                    if (admin.permissions) {
+                        parsedPermissions = typeof admin.permissions === "string" ? JSON.parse(admin.permissions) : admin.permissions;
+                    }
                 }
+                catch (_) { }
+                return {
+                    ...admin,
+                    permissions: parsedPermissions,
+                };
+            });
+        }
+        catch (err) {
+            this.logger.warn(`Prisma findMany sub-admins failed (${err?.message || err}). Falling back to safe query.`);
+            try {
+                const rawAdmins = await this.prisma.$queryRawUnsafe(`
+          SELECT id, name, email, phone, role, status, created_at as createdAt, updated_at as updatedAt
+          FROM users
+          WHERE role IN ('SUPER_ADMIN', 'ADMIN', 'VERIFICATION_ADMIN', 'CONTENT_ADMIN')
+          ORDER BY created_at DESC;
+        `);
+                return (rawAdmins || []).map((admin) => ({
+                    ...admin,
+                    permissions: [],
+                }));
             }
-            catch (_) { }
-            return {
-                ...admin,
-                permissions: parsedPermissions,
-            };
-        });
+            catch (rawErr) {
+                this.logger.error("Raw sub-admin query fallback failed", rawErr);
+                throw rawErr;
+            }
+        }
     }
     async createSubAdmin(superAdminId, dto, ipAddress) {
         if (!dto.email || !dto.name || !dto.password) {

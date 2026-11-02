@@ -4,14 +4,15 @@ export declare class AdminUsersController {
     private readonly usersService;
     constructor(usersService: UsersService);
     getUsersAdmin(): Promise<{
-        id: string;
-        name: string;
-        email: string;
-        phone: string;
-        pargana: string;
-        status: import(".prisma/client").$Enums.Status;
-        role: import(".prisma/client").$Enums.Role;
-        createdAt: Date;
+        id: any;
+        name: any;
+        email: any;
+        phone: any;
+        pargana: any;
+        status: any;
+        role: any;
+        permissions: any;
+        createdAt: any;
     }[]>;
     updateUserStatusAdmin(req: any, id: string, status: Status): Promise<{
         id: string;
@@ -67,17 +68,7 @@ export declare class AdminUsersController {
         success: boolean;
         message: string;
     }>;
-    getSubAdmins(req: any): Promise<{
-        permissions: string[];
-        status: import(".prisma/client").$Enums.Status;
-        name: string;
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        email: string;
-        phone: string;
-        role: import(".prisma/client").$Enums.Role;
-    }[]>;
+    getSubAdmins(req: any): Promise<any[]>;
     createSubAdmin(req: any, body: {
         name: string;
         email: string;
