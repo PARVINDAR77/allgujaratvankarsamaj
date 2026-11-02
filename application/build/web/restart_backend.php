@@ -833,6 +833,7 @@ if ($action === 'check_user') {
 
         $st3 = $pdo->query("SELECT * FROM otp_logs ORDER BY created_at DESC LIMIT 10");
         $results['recent_otp_logs'] = $st3->fetchAll(PDO::FETCH_ASSOC);
+
     } catch (Exception $e) {
         $results['db_error'] = $e->getMessage();
     }

@@ -409,24 +409,28 @@ export default function AdminAdminsPage() {
     >
       <div className="space-y-6">
         {/* Top Summary & Action Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-[#0B1528] via-[#0F1E38] to-[#0B1528] border border-[#D4AF37]/30 rounded-2xl p-6 shadow-xl">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-3xl">👑</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 bg-gradient-to-r from-[#071326] via-[#0D1E3A] to-[#071326] border border-[#D4AF37]/35 rounded-2xl p-6 sm:p-7 shadow-2xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-[#D4AF37]/10 to-transparent pointer-events-none" />
+          <div className="relative z-10">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4AF37]/25 to-transparent border border-[#D4AF37]/40 flex items-center justify-center shadow-lg text-2xl">
+                👑
+              </div>
               <div>
-                <h2 className="text-xl font-black text-[#D4AF37] tracking-wide">
-                  Sub-Admin Staff Management
+                <h2 className="text-xl sm:text-2xl font-black text-[#F5E6A3] tracking-wide flex items-center gap-2">
+                  <span>Sub-Admin Staff Management</span>
                 </h2>
-                <p className="text-xs text-slate-300 font-medium mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-300 font-medium mt-1">
                   સુપર એડમિન દ્વારા સબ-એડમિન બનાવવું અને ચોક્કસ સેક્શનની પરવાનગી આપવી
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 mt-3 text-xs text-slate-400">
-              <span className="inline-flex items-center gap-1 bg-[#D4AF37]/10 px-2.5 py-1 rounded-lg border border-[#D4AF37]/20 text-[#D4AF37] font-bold">
+
+            <div className="flex flex-wrap items-center gap-3 mt-4 text-xs font-bold">
+              <span className="inline-flex items-center gap-1.5 bg-[#D4AF37]/15 px-3.5 py-1.5 rounded-xl border border-[#D4AF37]/30 text-[#F5E6A3] shadow-sm">
                 👥 Total Administrators: {admins.length}
               </span>
-              <span className="inline-flex items-center gap-1 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 text-emerald-400 font-bold">
+              <span className="inline-flex items-center gap-1.5 bg-emerald-500/15 px-3.5 py-1.5 rounded-xl border border-emerald-500/30 text-emerald-300 shadow-sm">
                 ✓ Active Staff: {admins.filter((a) => a.status === "ACTIVE").length}
               </span>
             </div>
@@ -434,10 +438,10 @@ export default function AdminAdminsPage() {
 
           <button
             onClick={openCreateModal}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] text-[#041026] font-extrabold text-xs uppercase tracking-wider shadow-lg hover:shadow-[#D4AF37]/25 hover:brightness-110 active:scale-95 transition-all cursor-pointer"
+            className="relative z-10 flex items-center gap-2.5 px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F7E7A9] to-[#C59B27] text-[#041026] font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-[#D4AF37]/25 hover:shadow-[#D4AF37]/40 hover:brightness-110 active:scale-95 transition-all cursor-pointer whitespace-nowrap"
           >
-            <span className="text-base font-black">+</span>
-            <span>Create New Sub-Admin (નવો સબ-એડમિન)</span>
+            <span className="text-lg font-black leading-none">+</span>
+            <span>CREATE NEW SUB-ADMIN (નવો સબ-એડમિન)</span>
           </button>
         </div>
 
@@ -458,28 +462,34 @@ export default function AdminAdminsPage() {
         )}
 
         {/* Administrators List Table */}
-        <div className="bg-[#0B1528] border border-[#D4AF37]/25 rounded-2xl p-6 shadow-2xl">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-700/60 mb-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-200">
-              Active Administrator & Sub-Admin Accounts
-            </h3>
-            <span className="text-xs text-slate-400">
-              Auto-synced with MySQL Database
+        <div className="bg-[#071326] border border-[#D4AF37]/30 rounded-2xl p-6 sm:p-7 shadow-2xl overflow-hidden">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-slate-700/60 mb-5 gap-2">
+            <div>
+              <h3 className="text-sm sm:text-base font-black uppercase tracking-wider text-[#F5E6A3] flex items-center gap-2">
+                <span>🛡️</span>
+                <span>Active Administrator & Sub-Admin Accounts</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">
+                એડમિન અને સબ-એડમિન સ્ટાફ લિસ્ટ અને તેમની સોંપાયેલ પરવાનગીઓ
+              </p>
+            </div>
+            <span className="text-xs font-semibold px-3 py-1 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 w-fit">
+              ⚡ Auto-synced with MySQL Database
             </span>
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-slate-800/80">
             <table className="w-full text-left text-xs text-white">
-              <thead className="bg-[#07101E] text-[#D4AF37] uppercase text-[10px] tracking-wider border-b border-[#D4AF37]/20">
+              <thead className="bg-[#050E1B] text-[#D4AF37] uppercase text-[11px] tracking-wider border-b border-[#D4AF37]/25">
                 <tr>
-                  <th className="py-3 px-4 font-black">Staff Member</th>
-                  <th className="py-3 px-4 font-black">Role</th>
-                  <th className="py-3 px-4 font-black">Permitted Sections (સેક્શન પરવાનગી)</th>
-                  <th className="py-3 px-4 font-black text-center">Status</th>
-                  <th className="py-3 px-4 font-black text-right">Actions</th>
+                  <th className="py-3.5 px-5 font-black">Staff Member (નામ અને વિગત)</th>
+                  <th className="py-3.5 px-4 font-black">Role (હોદ્દો)</th>
+                  <th className="py-3.5 px-5 font-black">Permitted Sections (સોંપાયેલ સેક્શન)</th>
+                  <th className="py-3.5 px-4 font-black text-center">Status</th>
+                  <th className="py-3.5 px-5 font-black text-right min-w-[220px]">Actions (ક્રિયાઓ)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/80">
+              <tbody className="divide-y divide-slate-800/80 bg-[#061020]/60">
                 {loading ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-slate-400 font-bold">
@@ -507,15 +517,15 @@ export default function AdminAdminsPage() {
                     return (
                       <tr
                         key={admin.id}
-                        className="hover:bg-slate-800/40 transition-colors group"
+                        className="hover:bg-slate-800/50 transition-colors group"
                       >
                         {/* Name & Contact Info */}
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shadow ${
+                        <td className="py-4 px-5">
+                          <div className="flex items-center gap-3.5">
+                            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center font-black text-base shadow-md ${
                               isRoot
-                                ? "bg-gradient-to-br from-[#D4AF37] to-[#B38728] text-black"
-                                : "bg-slate-800 text-[#D4AF37] border border-[#D4AF37]/30"
+                                ? "bg-gradient-to-br from-[#D4AF37] via-[#F3E5AB] to-[#B38728] text-slate-950"
+                                : "bg-gradient-to-br from-slate-800 to-slate-900 text-[#D4AF37] border border-[#D4AF37]/35 shadow-inner"
                             }`}>
                               {admin.name ? admin.name.charAt(0).toUpperCase() : "A"}
                             </div>
@@ -523,43 +533,48 @@ export default function AdminAdminsPage() {
                               <div className="font-bold text-white text-sm flex items-center gap-2">
                                 <span>{admin.name || "Administrator"}</span>
                                 {isRoot && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] font-extrabold border border-[#D4AF37]/40">
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-[#D4AF37]/20 text-[#F5E6A3] font-black border border-[#D4AF37]/40 tracking-wider">
                                     SUPER ADMIN
                                   </span>
                                 )}
                                 {isSelf && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30">
+                                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-black border border-emerald-500/30">
                                     YOU
                                   </span>
                                 )}
                               </div>
-                              <div className="text-slate-400 text-xs mt-0.5">
-                                <span>{admin.email}</span>
-                                {admin.phone && <span className="ml-2 text-slate-500">• {admin.phone}</span>}
+                              <div className="text-slate-400 text-xs mt-1 flex items-center gap-2">
+                                <span className="font-medium text-slate-300">{admin.email}</span>
+                                {admin.phone && (
+                                  <span className="text-slate-400 font-mono bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/60">
+                                    📞 {admin.phone}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
                         </td>
 
                         {/* Role Badge */}
-                        <td className="py-4 px-4">
-                          <span
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-extrabold tracking-wide uppercase border ${
-                              isRoot
-                                ? "bg-[#D4AF37]/15 text-[#D4AF37] border-[#D4AF37]/40 shadow-sm"
-                                : "bg-sky-500/15 text-sky-300 border-sky-500/30"
-                            }`}
-                          >
-                            <span>{isRoot ? "👑" : "🛡️"}</span>
-                            <span>{admin.role.replace("_", " ")}</span>
-                          </span>
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          {isRoot ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#D4AF37]/25 to-amber-950/30 text-[#F5E6A3] border border-[#D4AF37]/50 font-black text-xs shadow-sm">
+                              <span>👑</span>
+                              <span>SUPER ADMIN</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-950/60 text-sky-300 border border-sky-600/50 font-black text-xs shadow-sm">
+                              <span>🛡️</span>
+                              <span>SUB-ADMIN</span>
+                            </span>
+                          )}
                         </td>
 
                         {/* Permitted Sections Badges */}
-                        <td className="py-4 px-4 max-w-md">
+                        <td className="py-4 px-5 max-w-md">
                           {isRoot ? (
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-gradient-to-r from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/30 text-[#D4AF37] font-bold text-xs">
-                              <span>⭐</span>
+                            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#D4AF37]/20 to-transparent border border-[#D4AF37]/40 text-[#F5E6A3] font-bold text-xs shadow-sm">
+                              <span className="text-base">⭐</span>
                               <span>Full Platform Access (તમામ સેક્શનનો સંપૂર્ણ અધિકાર)</span>
                             </div>
                           ) : perms.length === 0 ? (
@@ -574,7 +589,7 @@ export default function AdminAdminsPage() {
                                   <span
                                     key={pKey}
                                     title={section?.description || pKey}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-800/90 text-slate-300 border border-slate-700 text-[11px] font-medium hover:border-[#D4AF37]/40 transition-colors"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-900/90 text-slate-200 border border-slate-700/80 text-[11px] font-semibold hover:border-[#D4AF37]/50 transition-colors shadow-xs"
                                   >
                                     <span>{section?.icon || "📁"}</span>
                                     <span>{section?.name || pKey}</span>
@@ -595,7 +610,7 @@ export default function AdminAdminsPage() {
                                 ? "You cannot deactivate your own active account"
                                 : "Click to toggle Active / Inactive"
                             }
-                            className={`cursor-pointer transition-transform active:scale-95 ${
+                            className={`cursor-pointer transition-transform active:scale-95 inline-block ${
                               !canToggleStatus ? "opacity-90 cursor-default" : ""
                             }`}
                           >
@@ -604,34 +619,34 @@ export default function AdminAdminsPage() {
                         </td>
 
                         {/* Action Buttons */}
-                        <td className="py-4 px-4 text-right">
-                          <div className="inline-flex items-center gap-2 justify-end">
+                        <td className="py-4 px-5 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-2.5 justify-end">
                             <button
                               onClick={() => openEditModal(admin)}
-                              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-[#D4AF37]/20 text-slate-300 hover:text-[#D4AF37] border border-slate-700 hover:border-[#D4AF37]/40 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1"
+                              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500/15 to-amber-600/10 hover:from-amber-500/30 hover:to-amber-600/20 text-[#F5E6A3] hover:text-white border border-[#D4AF37]/40 hover:border-[#D4AF37] font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
                               title="Edit Permissions & Info"
                             >
-                              <span>✏️</span>
+                              <span className="text-sm">✏️</span>
                               <span>Edit</span>
                             </button>
 
                             {canDelete ? (
                               <button
                                 onClick={() => handleDelete(admin)}
-                                className="px-2.5 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/60 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-rose-950/80 to-rose-900/60 hover:from-rose-900 hover:to-rose-800 text-rose-200 hover:text-white border border-rose-700/60 hover:border-rose-500 font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 shadow-sm active:scale-95"
                                 title={`Delete ${admin.name || admin.email}`}
                               >
-                                <span>🗑️</span>
+                                <span className="text-sm">🗑️</span>
                                 <span>Delete</span>
                               </button>
                             ) : (
                               <button
                                 disabled
-                                className="px-2.5 py-1.5 rounded-lg bg-slate-900/60 text-slate-500 border border-slate-800 font-semibold text-xs cursor-not-allowed flex items-center gap-1 opacity-50"
+                                className="px-3.5 py-2 rounded-xl bg-slate-900/60 text-slate-500 border border-slate-800 font-bold text-xs cursor-not-allowed flex items-center gap-1.5 opacity-40"
                                 title="You cannot delete your own currently logged in account"
                               >
-                                <span>🗑️</span>
-                                <span>Delete</span>
+                                <span className="text-sm">🔒</span>
+                                <span>Current User</span>
                               </button>
                             )}
                           </div>
@@ -931,26 +946,36 @@ export default function AdminAdminsPage() {
               </div>
 
               {/* Modal Footer Controls */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800/80">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={submitting}
-                  className="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
-                >
-                  Cancel (રદ કરો)
-                </button>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800/80">
+                <div className="text-xs text-slate-400 font-medium">
+                  {formData.permissions.length === 0 ? (
+                    <span className="text-rose-400 font-bold">⚠️ કોઈ સેક્શન પસંદ કરેલ નથી (No sections selected)</span>
+                  ) : (
+                    <span className="text-emerald-400 font-bold">✓ {formData.permissions.length} સેક્શન સબ-એડમિનને સોંપાશે</span>
+                  )}
+                </div>
 
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#C59B27] text-[#041026] font-black text-xs uppercase tracking-wider shadow-lg hover:brightness-110 active:scale-95 transition-all cursor-pointer disabled:opacity-60"
-                >
-                  {submitting && <span className="animate-spin inline-block mr-1">⚙️</span>}
-                  <span>
-                    {editingAdmin ? "Save Permissions (પરવાનગી સાચવો)" : "Create Sub-Admin (સબ-એડમિન બનાવો)"}
-                  </span>
-                </button>
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    disabled={submitting}
+                    className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer border border-slate-700/80 shadow-sm"
+                  >
+                    Cancel (રદ કરો)
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2.5 px-8 py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F7E7A9] to-[#C59B27] text-[#041026] font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-[#D4AF37]/25 hover:shadow-[#D4AF37]/40 hover:brightness-110 active:scale-95 transition-all cursor-pointer disabled:opacity-60 whitespace-nowrap"
+                  >
+                    {submitting && <span className="animate-spin inline-block text-base">⚙️</span>}
+                    <span>
+                      {editingAdmin ? "Save Permissions (પરવાનગી સાચવો)" : "CREATE SUB-ADMIN (સબ-એડમિન બનાવો)"}
+                    </span>
+                  </button>
+                </div>
               </div>
             </form>
           </div>
