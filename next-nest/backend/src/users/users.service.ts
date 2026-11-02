@@ -1010,6 +1010,7 @@ export class UsersService {
       phone?: string;
       password?: string;
       status?: Status;
+      role?: Role;
       permissions?: string[];
     },
     ipAddress?: string,
@@ -1022,15 +1023,20 @@ export class UsersService {
       throw new NotFoundException("સબ-એડમિન એકાઉન્ટ મળ્યું નથી (Admin account not found)");
     }
 
-    // Safety: Super Admin cannot be demoted or modified via this endpoint by others
-    if (existing.role === Role.SUPER_ADMIN && existing.id !== superAdminId) {
-      throw new ForbiddenException("અન્ય સુપર એડમિન એકાઉન્ટમાં ફેરફાર કરી શકાતો નથી (Cannot modify another Super Admin account)");
+    // Safety: The primary master root Super Admin cannot be demoted or modified by others
+    if (existing.email === "panjabiparvindar77@gmail.com" && existing.id !== superAdminId) {
+      throw new ForbiddenException("મુખ્ય રૂટ સુપર એડમિન એકાઉન્ટમાં ફેરફાર કરી શકાતો નથી (Cannot modify primary root Super Admin account)");
     }
 
     const updateData: any = {};
     if (dto.name !== undefined) updateData.name = dto.name.trim();
     if (dto.phone !== undefined) updateData.phone = dto.phone ? dto.phone.trim() : null;
     if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.role !== undefined && dto.role in Role) {
+      if (existing.email !== "panjabiparvindar77@gmail.com") {
+        updateData.role = dto.role;
+      }
+    }
     if (dto.permissions !== undefined) {
       updateData.permissions = JSON.stringify(dto.permissions);
     }
@@ -1086,7 +1092,7 @@ export class UsersService {
     ipAddress?: string,
   ) {
     if (superAdminId === id) {
-      throw new BadRequestException("તમે તમારું પોતાનું સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકતા નથી (You cannot delete your own Super Admin account)");
+      throw new BadRequestException("તમે તમારું પોતાનું સક્રિય એકાઉન્ટ ડિલીટ કરી શકતા નથી (You cannot delete your own active account)");
     }
 
     const existing = await this.prisma.user.findUnique({
@@ -1094,14 +1100,19 @@ export class UsersService {
     });
 
     if (!existing) {
-      throw new NotFoundException("સબ-એડમિન એકાઉન્ટ મળ્યું નથી (Admin account not found)");
+      throw new NotFoundException("એકાઉન્ટ મળ્યું નથી (Admin account not found)");
     }
 
-    if (existing.role === Role.SUPER_ADMIN) {
-      throw new ForbiddenException("સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (Cannot delete a Super Admin account)");
+    // Safety: Protect the primary master root Super Admin
+    if (existing.email === "panjabiparvindar77@gmail.com") {
+      throw new ForbiddenException("મુખ્ય રૂટ સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (Cannot delete primary root Super Admin account)");
     }
 
     return this.prisma.$transaction(async (tx) => {
+      // Clean up dependent records safely before removing user
+      await tx.userNotification.deleteMany({ where: { userId: id } }).catch(() => {});
+      await tx.matrimonialProfile.deleteMany({ where: { userId: id } }).catch(() => {});
+
       await tx.user.delete({
         where: { id },
       });
@@ -1112,12 +1123,12 @@ export class UsersService {
           action: "DELETE_SUB_ADMIN",
           entityType: "USER",
           entityId: id,
-          oldValue: JSON.stringify({ name: existing.name, email: existing.email }),
+          oldValue: JSON.stringify({ name: existing.name, email: existing.email, role: existing.role }),
           ipAddress: ipAddress || null,
         },
       });
 
-      return { success: true, message: "સબ-એડમિન એકાઉન્ટ સફળતાપૂર્વક ડિલીટ કર્યું (Sub-admin account deleted successfully)" };
+      return { success: true, message: "એકાઉન્ટ સફળતાપૂર્વક ડિલીટ કર્યું (Admin account deleted successfully)" };
     });
   }
 }

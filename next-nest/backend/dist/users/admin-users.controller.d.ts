@@ -91,6 +91,7 @@ export declare class AdminUsersController {
         password?: string;
         status?: Status;
         permissions?: string[];
+        role?: Role;
     }): Promise<{
         permissions: string[];
         status: import(".prisma/client").$Enums.Status;

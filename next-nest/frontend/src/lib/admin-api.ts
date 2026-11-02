@@ -84,6 +84,7 @@ export interface UpdateSubAdminDto {
   password?: string;
   status?: "ACTIVE" | "INACTIVE";
   permissions?: string[];
+  role?: "SUPER_ADMIN" | "SUB_ADMIN" | "ADMIN";
 }
 
 export interface AdminUserItem {

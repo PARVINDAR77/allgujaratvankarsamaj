@@ -197,12 +197,14 @@ export default function AdminAdminsPage() {
   const [submitting, setSubmitting] = useState(false);
 
   // Form Fields
+  const [currentAdminUser, setCurrentAdminUser] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
     status: "ACTIVE" as "ACTIVE" | "INACTIVE",
+    role: "SUB_ADMIN" as "SUPER_ADMIN" | "SUB_ADMIN" | "ADMIN",
     permissions: [] as string[],
   });
 
@@ -221,6 +223,14 @@ export default function AdminAdminsPage() {
   };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("adminUser");
+        if (stored) {
+          setCurrentAdminUser(JSON.parse(stored));
+        }
+      } catch (_) {}
+    }
     loadAdmins();
   }, []);
 
@@ -232,6 +242,7 @@ export default function AdminAdminsPage() {
       phone: "",
       password: "",
       status: "ACTIVE",
+      role: "SUB_ADMIN",
       permissions: [
         "dashboard",
         "verifications",
@@ -250,6 +261,7 @@ export default function AdminAdminsPage() {
       phone: admin.phone || "",
       password: "",
       status: admin.status || "ACTIVE",
+      role: (admin.role as any) || "SUB_ADMIN",
       permissions: Array.isArray(admin.permissions) ? admin.permissions : [],
     });
     setError(null);
@@ -306,18 +318,19 @@ export default function AdminAdminsPage() {
 
     try {
       if (editingAdmin) {
-        // Update existing sub-admin
+        // Update existing admin / sub-admin
         const updatePayload: UpdateSubAdminDto = {
           name: formData.name.trim(),
           phone: formData.phone.trim() || undefined,
           status: formData.status,
+          role: formData.role,
           permissions: formData.permissions,
         };
         if (formData.password && formData.password.trim().length >= 6) {
           updatePayload.password = formData.password.trim();
         }
         await adminApi.updateSubAdmin(editingAdmin.id, updatePayload);
-        setSuccessMsg(`સબ-એડમિન "${formData.name}" સફળતાપૂર્વક અપડેટ થયો (Updated successfully)`);
+        setSuccessMsg(`એકાઉન્ટ "${formData.name}" સફળતાપૂર્વક અપડેટ થયું (Updated successfully)`);
       } else {
         // Create new sub-admin
         const createPayload: CreateSubAdminDto = {
@@ -328,7 +341,7 @@ export default function AdminAdminsPage() {
           permissions: formData.permissions,
         };
         await adminApi.createSubAdmin(createPayload);
-        setSuccessMsg(`નવો સબ-એડમિન "${formData.name}" સફળતાપૂર્વક બન્યો (Created successfully)`);
+        setSuccessMsg(`નવો સ્ટાફ એકાઉન્ટ "${formData.name}" સફળતાપૂર્વક બન્યો (Created successfully)`);
       }
 
       closeModal();
@@ -336,34 +349,40 @@ export default function AdminAdminsPage() {
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
       console.error("Save admin error:", err);
-      alert(err.message || "Failed to save sub-admin");
+      alert(err.message || "Failed to save admin account");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleDelete = async (admin: AdminSubAdminItem) => {
-    if (admin.role === "SUPER_ADMIN") {
-      alert("સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (Cannot delete Super Admin account)");
+    if (admin.email === "panjabiparvindar77@gmail.com") {
+      alert("મુખ્ય રૂટ સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (The primary master root account cannot be deleted)");
       return;
     }
+    if (currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email === admin.email)) {
+      alert("તમે તમારું પોતાનું સક્રિય એકાઉન્ટ ડિલીટ કરી શકતા નથી (You cannot delete your own active account)");
+      return;
+    }
+
     const confirmed = window.confirm(
-      `શું તમે ખરેખર સબ-એડમિન "${admin.name}" (${admin.email}) ને ડિલીટ કરવા માંગો છો?\n\nઆ ક્રિયા રદ કરી શકાતી નથી!`
+      `શું તમે ખરેખર "${admin.name || "Administrator"}" (${admin.email}) એકાઉન્ટને ડિલીટ કરવા માંગો છો?\n\nઆ એકાઉન્ટ કાયમ માટે ડિલીટ થઈ જશે અને તેની બધી એક્સેસ રદ થશે!`
     );
     if (!confirmed) return;
 
     try {
       await adminApi.deleteSubAdmin(admin.id);
-      setSuccessMsg(`સબ-એડમિન "${admin.name}" સફળતાપૂર્વક ડિલીટ થયો`);
+      setSuccessMsg(`એકાઉન્ટ "${admin.name || admin.email}" સફળતાપૂર્વક ડિલીટ થયું (Deleted successfully)`);
       await loadAdmins();
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
-      alert(err.message || "Failed to delete sub-admin");
+      alert(err.message || "Failed to delete admin account");
     }
   };
 
   const handleToggleStatus = async (admin: AdminSubAdminItem) => {
-    if (admin.role === "SUPER_ADMIN") return;
+    if (admin.email === "panjabiparvindar77@gmail.com") return;
+    if (currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email === admin.email)) return;
     const nextStatus = admin.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
       await adminApi.updateSubAdmin(admin.id, { status: nextStatus });
@@ -467,6 +486,10 @@ export default function AdminAdminsPage() {
                 ) : (
                   admins.map((admin) => {
                     const isRoot = admin.role === "SUPER_ADMIN";
+                    const isMasterOwner = admin.email === "panjabiparvindar77@gmail.com";
+                    const isSelf = currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email === admin.email);
+                    const canDelete = !isMasterOwner && !isSelf;
+                    const canToggleStatus = !isMasterOwner && !isSelf;
                     const perms: string[] = Array.isArray(admin.permissions) ? admin.permissions : [];
 
                     return (
@@ -478,8 +501,10 @@ export default function AdminAdminsPage() {
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shadow ${
-                              isRoot
-                                ? "bg-gradient-to-br from-[#D4AF37] to-[#B38728] text-black"
+                              isMasterOwner
+                                ? "bg-gradient-to-br from-[#D4AF37] via-amber-400 to-[#B38728] text-black font-black"
+                                : isRoot
+                                ? "bg-gradient-to-br from-amber-600 to-amber-800 text-white"
                                 : "bg-slate-800 text-[#D4AF37] border border-[#D4AF37]/30"
                             }`}>
                               {admin.name ? admin.name.charAt(0).toUpperCase() : "A"}
@@ -487,9 +512,18 @@ export default function AdminAdminsPage() {
                             <div>
                               <div className="font-bold text-white text-sm flex items-center gap-2">
                                 <span>{admin.name || "Administrator"}</span>
-                                {isRoot && (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] font-extrabold border border-[#D4AF37]/40">
-                                    ROOT
+                                {isMasterOwner ? (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#D4AF37]/25 text-[#D4AF37] font-black border border-[#D4AF37]/50 shadow-sm">
+                                    MASTER ROOT
+                                  </span>
+                                ) : isRoot ? (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/30">
+                                    SUPER ADMIN
+                                  </span>
+                                ) : null}
+                                {isSelf && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30">
+                                    YOU
                                   </span>
                                 )}
                               </div>
@@ -549,10 +583,16 @@ export default function AdminAdminsPage() {
                         <td className="py-4 px-4 text-center">
                           <button
                             onClick={() => handleToggleStatus(admin)}
-                            disabled={isRoot}
-                            title={isRoot ? "Super Admin cannot be deactivated" : "Click to toggle Active / Inactive"}
+                            disabled={!canToggleStatus}
+                            title={
+                              isMasterOwner
+                                ? "Master Root Admin cannot be deactivated"
+                                : isSelf
+                                ? "You cannot deactivate your own active account"
+                                : "Click to toggle Active / Inactive"
+                            }
                             className={`cursor-pointer transition-transform active:scale-95 ${
-                              isRoot ? "opacity-90 cursor-default" : ""
+                              !canToggleStatus ? "opacity-90 cursor-default" : ""
                             }`}
                           >
                             <StatusBadge status={admin.status} />
@@ -561,24 +601,34 @@ export default function AdminAdminsPage() {
 
                         {/* Action Buttons */}
                         <td className="py-4 px-4 text-right">
-                          <div className="inline-flex items-center gap-1.5">
+                          <div className="inline-flex items-center gap-1.5 justify-end">
                             <button
                               onClick={() => openEditModal(admin)}
-                              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-[#D4AF37]/20 text-slate-300 hover:text-[#D4AF37] border border-slate-700 hover:border-[#D4AF37]/40 font-semibold text-xs transition-colors cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-[#D4AF37]/20 text-slate-300 hover:text-[#D4AF37] border border-slate-700 hover:border-[#D4AF37]/40 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1"
                               title="Edit Permissions & Info"
                             >
-                              ✏️ Edit
+                              <span>✏️</span>
+                              <span>Edit</span>
                             </button>
 
-                            {!isRoot && (
+                            {canDelete ? (
                               <button
                                 onClick={() => handleDelete(admin)}
-                                className="px-2.5 py-1.5 rounded-lg bg-rose-950/40 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/40 font-semibold text-xs transition-colors cursor-pointer"
-                                title="Delete Sub-Admin"
+                                className="px-2.5 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800/60 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
+                                title={`Delete ${admin.name || admin.email}`}
                               >
-                                🗑️ Delete
+                                <span>🗑️</span>
+                                <span>Delete</span>
                               </button>
-                            )}
+                            ) : isSelf ? (
+                              <span className="px-2 py-1 rounded bg-slate-800 text-slate-400 text-[10px] font-bold border border-slate-700">
+                                Current
+                              </span>
+                            ) : isMasterOwner ? (
+                              <span className="px-2 py-1 rounded bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold border border-[#D4AF37]/30">
+                                Root
+                              </span>
+                            ) : null}
                           </div>
                         </td>
                       </tr>
@@ -623,7 +673,7 @@ export default function AdminAdminsPage() {
             {/* Modal Scrollable Body */}
             <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
               {/* Personal Details Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-[#060D19] p-4 rounded-2xl border border-slate-800">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 bg-[#060D19] p-4 rounded-2xl border border-slate-800">
                 {/* Full Name */}
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5">
@@ -655,10 +705,33 @@ export default function AdminAdminsPage() {
                   />
                 </div>
 
+                {/* Account Role */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                    Account Role (હોદ્દો) *
+                  </label>
+                  <select
+                    value={formData.role}
+                    disabled={editingAdmin?.email === "panjabiparvindar77@gmail.com"}
+                    onChange={(e) => {
+                      const newRole = e.target.value as any;
+                      setFormData((prev) => ({
+                        ...prev,
+                        role: newRole,
+                        permissions: newRole === "SUPER_ADMIN" ? ADMIN_SECTIONS_CATALOG.map((s) => s.key) : prev.permissions,
+                      }));
+                    }}
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <option value="SUB_ADMIN">🛡️ Sub-Admin (નિયંત્રિત સેક્શન)</option>
+                    <option value="SUPER_ADMIN">👑 Super Admin (સંપૂર્ણ અધિકાર)</option>
+                  </select>
+                </div>
+
                 {/* Mobile Phone */}
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Phone Number (મોબાઇલ નંબર)
+                    Phone (મોબાઇલ નંબર)
                   </label>
                   <input
                     type="tel"
@@ -672,14 +745,14 @@ export default function AdminAdminsPage() {
                 {/* Password */}
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    {editingAdmin ? "New Password (ખાલી રાખો જો ન બદલવો હોય)" : "Password (પાસવર્ડ) *"}
+                    {editingAdmin ? "New Password (વૈકલ્પિક)" : "Password (પાસવર્ડ) *"}
                   </label>
                   <input
                     type="password"
                     required={!editingAdmin}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder={editingAdmin ? "Leave blank to keep current" : "Min 6 characters"}
+                    placeholder={editingAdmin ? "Leave blank to keep" : "Min 6 chars"}
                     className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
                   />
                 </div>

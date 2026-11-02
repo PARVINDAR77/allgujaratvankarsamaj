@@ -188,7 +188,7 @@ export class AdminUsersController {
   async updateSubAdmin(
     @Request() req: any,
     @Param("id") id: string,
-    @Body() body: { name?: string; phone?: string; password?: string; status?: Status; permissions?: string[] },
+    @Body() body: { name?: string; phone?: string; password?: string; status?: Status; permissions?: string[]; role?: Role },
   ) {
     if (req.user.role !== Role.SUPER_ADMIN) {
       throw new ForbiddenException("માત્ર સુપર એડમિન સબ-એડમિનમાં ફેરફાર કરી શકે છે (Only SUPER_ADMIN can update sub-admins)");

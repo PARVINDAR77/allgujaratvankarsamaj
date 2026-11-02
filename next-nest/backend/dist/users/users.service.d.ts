@@ -183,6 +183,7 @@ export declare class UsersService {
         phone?: string;
         password?: string;
         status?: Status;
+        role?: Role;
         permissions?: string[];
     }, ipAddress?: string): Promise<{
         permissions: string[];
