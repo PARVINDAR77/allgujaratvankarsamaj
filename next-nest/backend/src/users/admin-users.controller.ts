@@ -174,7 +174,7 @@ export class AdminUsersController {
   @ApiOperation({ summary: "Create a new sub-admin staff account with granular permissions (Super Admin only)" })
   async createSubAdmin(
     @Request() req: any,
-    @Body() body: { name: string; email: string; phone?: string; password: string; permissions: string[] },
+    @Body() body: { name: string; email: string; phone?: string; password: string; permissions: string[]; role?: Role },
   ) {
     if (req.user.role !== Role.SUPER_ADMIN) {
       throw new ForbiddenException("માત્ર સુપર એડમિન નવા સબ-એડમિન બનાવી શકે છે (Only SUPER_ADMIN can create sub-admins)");

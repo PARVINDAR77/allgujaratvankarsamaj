@@ -75,6 +75,7 @@ export interface CreateSubAdminDto {
   email: string;
   phone?: string;
   password: string;
+  role?: "SUPER_ADMIN" | "SUB_ADMIN" | "ADMIN";
   permissions: string[];
 }
 

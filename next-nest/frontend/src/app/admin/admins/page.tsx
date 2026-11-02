@@ -198,6 +198,8 @@ export default function AdminAdminsPage() {
 
   // Form Fields
   const [currentAdminUser, setCurrentAdminUser] = useState<any>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [activeCategoryTab, setActiveCategoryTab] = useState<string>("ALL");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -236,6 +238,8 @@ export default function AdminAdminsPage() {
 
   const openCreateModal = () => {
     setEditingAdmin(null);
+    setModalError(null);
+    setActiveCategoryTab("ALL");
     setFormData({
       name: "",
       email: "",
@@ -249,12 +253,13 @@ export default function AdminAdminsPage() {
         "profiles",
       ],
     });
-    setError(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (admin: AdminSubAdminItem) => {
     setEditingAdmin(admin);
+    setModalError(null);
+    setActiveCategoryTab("ALL");
     setFormData({
       name: admin.name || "",
       email: admin.email || "",
@@ -264,13 +269,13 @@ export default function AdminAdminsPage() {
       role: (admin.role as any) || "SUB_ADMIN",
       permissions: Array.isArray(admin.permissions) ? admin.permissions : [],
     });
-    setError(null);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingAdmin(null);
+    setModalError(null);
   };
 
   const togglePermission = (key: string) => {
@@ -298,23 +303,32 @@ export default function AdminAdminsPage() {
     }));
   };
 
+  const selectCategoryPermissions = (category: string) => {
+    const catKeys = ADMIN_SECTIONS_CATALOG.filter((s) => s.category === category).map((s) => s.key);
+    setFormData((prev) => {
+      const merged = new Set([...prev.permissions, ...catKeys]);
+      return { ...prev, permissions: Array.from(merged) };
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setModalError(null);
+
     if (!formData.name.trim()) {
-      alert("કૃપા કરીને સબ-એડમિનનું નામ દાખલ કરો (Please enter name)");
+      setModalError("કૃપા કરીને સબ-એડમિનનું નામ દાખલ કરો (Please enter name)");
       return;
     }
     if (!formData.email.trim()) {
-      alert("કૃપા કરીને ઇમેઇલ સરનામું દાખલ કરો (Please enter email)");
+      setModalError("કૃપા કરીને ઇમેઇલ સરનામું દાખલ કરો (Please enter email)");
       return;
     }
-    if (!editingAdmin && (!formData.password || formData.password.length < 6)) {
-      alert("પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)");
+    if (!editingAdmin && (!formData.password || formData.password.trim().length < 6)) {
+      setModalError("પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)");
       return;
     }
 
     setSubmitting(true);
-    setError(null);
 
     try {
       if (editingAdmin) {
@@ -338,6 +352,7 @@ export default function AdminAdminsPage() {
           email: formData.email.trim().toLowerCase(),
           phone: formData.phone.trim() || undefined,
           password: formData.password.trim(),
+          role: formData.role,
           permissions: formData.permissions,
         };
         await adminApi.createSubAdmin(createPayload);
@@ -349,7 +364,7 @@ export default function AdminAdminsPage() {
       setTimeout(() => setSuccessMsg(null), 5000);
     } catch (err: any) {
       console.error("Save admin error:", err);
-      alert(err.message || "Failed to save admin account");
+      setModalError(err.message || "Failed to save admin account");
     } finally {
       setSubmitting(false);
     }
@@ -635,210 +650,293 @@ export default function AdminAdminsPage() {
       {/* CREATE / EDIT SUB-ADMIN MODAL WITH CHECKLIST */}
       {/* ========================================================================= */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in overflow-y-auto">
-          <div className="relative w-full max-w-4xl bg-[#091322] border-2 border-[#D4AF37] rounded-3xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
+          <div className="relative w-full max-w-5xl bg-gradient-to-b from-[#091529] via-[#081224] to-[#040914] border border-[#D4AF37]/50 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/80 overflow-hidden my-6 max-h-[92vh] flex flex-col">
+            
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-[#0E1E38] via-[#142646] to-[#0E1E38] border-b border-[#D4AF37]/30">
-              <div className="flex items-center gap-3">
-                <span className="text-2xl">{editingAdmin ? "✏️" : "👑"}</span>
+            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0C1B33] via-[#142646] to-[#0C1B33] border-b border-[#D4AF37]/30 shadow-md">
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/5 border border-[#D4AF37]/40 flex items-center justify-center shadow-inner">
+                  <span className="text-xl">{editingAdmin ? "✏️" : "👑"}</span>
+                </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-[#D4AF37] tracking-wide">
+                  <h3 className="text-base sm:text-lg font-black text-[#F5E6A3] tracking-wide">
                     {editingAdmin
                       ? `Edit Sub-Admin Permissions: ${editingAdmin.name}`
-                      : "Create New Sub-Admin Staff Account (નવો સબ-એડમિન)"}
+                      : "Create Sub-Admin Staff Account (નવો સબ-એડમિન એકાઉન્ટ)"}
                   </h3>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs text-slate-300 font-medium">
                     આ સબ-એડમિન કયા સેક્શનનો ઉપયોગ કરી શકશે તે નીચે આપેલા બોક્સ ટીક કરીને નક્કી કરો
                   </p>
                 </div>
               </div>
               <button
                 onClick={closeModal}
-                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold cursor-pointer"
+                className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 hover:text-rose-300 border border-slate-700/80 text-slate-400 flex items-center justify-center text-sm font-bold transition-all cursor-pointer"
+                title="Close"
               >
                 ✕
               </button>
             </div>
 
             {/* Modal Scrollable Body */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
-              {/* Personal Details Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 bg-[#060D19] p-4 rounded-2xl border border-slate-800">
-                {/* Full Name */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Staff Full Name (નામ) *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g. Kiritbhai Vankar"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
-                  />
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar">
+              
+              {/* Error Alert Box inside Modal */}
+              {modalError && (
+                <div className="flex items-start gap-3 p-3.5 rounded-xl bg-rose-950/80 border border-rose-600/60 text-rose-200 text-xs font-semibold animate-shake">
+                  <span className="text-base shrink-0">⚠️</span>
+                  <div className="flex-1">{modalError}</div>
+                </div>
+              )}
+
+              {/* Personal Details Card */}
+              <div className="bg-[#050D1C]/90 p-4 sm:p-5 rounded-2xl border border-slate-800/90 shadow-inner">
+                <div className="text-xs font-black uppercase tracking-wider text-[#D4AF37] mb-3 flex items-center gap-2">
+                  <span>👤</span>
+                  <span>Staff Account Credentials (એકાઉન્ટ વિગતો)</span>
                 </div>
 
-                {/* Email Address */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Email (Login Username) *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    disabled={!!editingAdmin}
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="subadmin@vankarsamaj.org"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none disabled:opacity-60 disabled:cursor-not-allowed"
-                  />
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {/* Full Name */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Full Name (સ્ટાફનું નામ) <span className="text-amber-400">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="e.g. Parmit Vankar"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
+                    />
+                  </div>
 
-                {/* Account Role */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Account Role (હોદ્દો) *
-                  </label>
-                  <select
-                    value={formData.role}
-                    disabled={editingAdmin?.email === "panjabiparvindar77@gmail.com"}
-                    onChange={(e) => {
-                      const newRole = e.target.value as any;
-                      setFormData((prev) => ({
-                        ...prev,
-                        role: newRole,
-                        permissions: newRole === "SUPER_ADMIN" ? ADMIN_SECTIONS_CATALOG.map((s) => s.key) : prev.permissions,
-                      }));
-                    }}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
-                  >
-                    <option value="SUB_ADMIN">🛡️ Sub-Admin (નિયંત્રિત સેક્શન)</option>
-                    <option value="SUPER_ADMIN">👑 Super Admin (સંપૂર્ણ અધિકાર)</option>
-                  </select>
-                </div>
+                  {/* Email Address */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Email Username (ઇમેઇલ લોગિન) <span className="text-amber-400">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      disabled={!!editingAdmin}
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      placeholder="staff@vankarsamaj.org"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                  </div>
 
-                {/* Mobile Phone */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    Phone (મોબાઇલ નંબર)
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="e.g. 9876543210"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
-                  />
-                </div>
+                  {/* Account Role */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Assigned Role (હોદ્દો) <span className="text-amber-400">*</span>
+                    </label>
+                    <select
+                      value={formData.role}
+                      disabled={editingAdmin?.email === "panjabiparvindar77@gmail.com"}
+                      onChange={(e) => {
+                        const newRole = e.target.value as any;
+                        setFormData((prev) => ({
+                          ...prev,
+                          role: newRole,
+                          permissions: newRole === "SUPER_ADMIN" ? ADMIN_SECTIONS_CATALOG.map((s) => s.key) : prev.permissions,
+                        }));
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs font-medium focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      <option value="SUB_ADMIN">🛡️ Sub-Admin (નિયંત્રિત સેક્શન એક્સેસ)</option>
+                      <option value="SUPER_ADMIN">👑 Super Admin (સંપૂર્ણ અધિકાર)</option>
+                    </select>
+                  </div>
 
-                {/* Password */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                    {editingAdmin ? "New Password (વૈકલ્પિક)" : "Password (પાસવર્ડ) *"}
-                  </label>
-                  <input
-                    type="password"
-                    required={!editingAdmin}
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder={editingAdmin ? "Leave blank to keep" : "Min 6 chars"}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none"
-                  />
+                  {/* Mobile Phone */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      Phone Number (મોબાઇલ નંબર)
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      placeholder="e.g. 9879859911"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
+                    />
+                  </div>
+
+                  {/* Password */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                      {editingAdmin ? "Change Password (નવો પાસવર્ડ)" : "Password (પાસવર્ડ)"}{" "}
+                      {!editingAdmin && <span className="text-amber-400">*</span>}
+                    </label>
+                    <input
+                      type="password"
+                      required={!editingAdmin}
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      placeholder={editingAdmin ? "ખાલી રાખો જો બદલવો ન હોય" : "ઓછામાં ઓછા ૬ અક્ષર"}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
+                    />
+                  </div>
+
+                  {/* Account Status */}
+                  {editingAdmin && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                        Account Status (સ્થિતિ)
+                      </label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs font-medium focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm cursor-pointer"
+                      >
+                        <option value="ACTIVE">🟢 ACTIVE (સક્રિય)</option>
+                        <option value="INACTIVE">🔴 INACTIVE (નિષ્ક્રિય)</option>
+                      </select>
+                    </div>
+                  )}
                 </div>
               </div>
 
               {/* SECTION PERMISSIONS CHECKLIST HEADER */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-slate-800">
-                <div>
-                  <h4 className="text-sm font-black text-[#D4AF37] uppercase tracking-wider flex items-center gap-2">
-                    <span>🛡️</span>
-                    <span>Admin Section Access Checklist (સેક્શન પરવાનગીઓ પસંદ કરો)</span>
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    જે સેક્શન ટીક કરેલા હશે તે જ સબ-એડમિનની સ્ક્રીન પર દેખાશે અને વાપરી શકાશે
-                  </p>
-                </div>
+              <div className="bg-[#050D1C]/90 p-4 sm:p-5 rounded-2xl border border-slate-800/90 shadow-inner space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-black text-[#D4AF37] uppercase tracking-wider flex items-center gap-2">
+                      <span>🛡️</span>
+                      <span>Admin Section Access Checklist (સેક્શન પરવાનગીઓ પસંદ કરો)</span>
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      જે સેક્શન ટીક કરેલા હશે તે જ આ સબ-એડમિનની સ્ક્રીન પર દેખાશે અને વાપરી શકાશે
+                    </p>
+                  </div>
 
-                {/* Bulk Select Toggles */}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-[#D4AF37]/15 text-[#D4AF37] border border-[#D4AF37]/30">
-                    {formData.permissions.length} of {ADMIN_SECTIONS_CATALOG.length} Selected
-                  </span>
-                  <button
-                    type="button"
-                    onClick={selectAllPermissions}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-[#D4AF37] text-slate-300 hover:text-black font-bold text-xs border border-slate-700 transition-colors cursor-pointer"
-                  >
-                    ✓ Select All (બધા પસંદ કરો)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={clearAllPermissions}
-                    className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-900 text-slate-300 hover:text-white font-bold text-xs border border-slate-700 transition-colors cursor-pointer"
-                  >
-                    ✗ Clear All
-                  </button>
-                </div>
-              </div>
-
-              {/* INTERACTIVE CHECKLIST CARDS GRID */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-                {ADMIN_SECTIONS_CATALOG.map((sec) => {
-                  const isChecked = formData.permissions.includes(sec.key);
-
-                  return (
-                    <div
-                      key={sec.key}
-                      onClick={() => togglePermission(sec.key)}
-                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 select-none ${
-                        isChecked
-                          ? "bg-gradient-to-br from-[#12233F] to-[#0A162B] border-[#D4AF37] shadow-lg shadow-[#D4AF37]/10"
-                          : "bg-[#060D19]/80 border-slate-800 hover:border-slate-700 opacity-75 hover:opacity-100"
-                      }`}
+                  {/* Bulk Select Toggles */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-extrabold px-3 py-1.5 rounded-lg bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/40 shadow-sm">
+                      {formData.permissions.length} / {ADMIN_SECTIONS_CATALOG.length} Selected
+                    </span>
+                    <button
+                      type="button"
+                      onClick={selectAllPermissions}
+                      className="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 hover:text-white font-bold text-xs border border-emerald-700/50 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
                     >
-                      {/* Custom Checkbox */}
-                      <div className="pt-0.5 shrink-0">
+                      <span>✓</span>
+                      <span>Select All (બધા પસંદ કરો)</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllPermissions}
+                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/70 text-slate-300 hover:text-rose-200 font-bold text-xs border border-slate-700 transition-all cursor-pointer flex items-center gap-1"
+                    >
+                      <span>✕</span>
+                      <span>Clear All</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Category Filter Tabs */}
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  {[
+                    { id: "ALL", label: "All Sections (બધા સેક્શન)", icon: "✨" },
+                    { id: "Overview & Users", label: "Overview & Users", icon: "📊" },
+                    { id: "Community & Directory", label: "Community & Directory", icon: "🤝" },
+                    { id: "Content & Management", label: "Content & Settings", icon: "📢" },
+                  ].map((tab) => {
+                    const isActive = activeCategoryTab === tab.id;
+                    const catCount = tab.id === "ALL" 
+                      ? ADMIN_SECTIONS_CATALOG.length 
+                      : ADMIN_SECTIONS_CATALOG.filter((s) => s.category === tab.id).length;
+                    const catSelected = tab.id === "ALL"
+                      ? formData.permissions.length
+                      : ADMIN_SECTIONS_CATALOG.filter((s) => s.category === tab.id && formData.permissions.includes(s.key)).length;
+
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveCategoryTab(tab.id)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                          isActive
+                            ? "bg-[#D4AF37] text-slate-950 border-[#D4AF37] shadow-md shadow-[#D4AF37]/20"
+                            : "bg-slate-900/80 text-slate-300 border-slate-700/70 hover:border-slate-500"
+                        }`}
+                      >
+                        <span>{tab.icon}</span>
+                        <span>{tab.label}</span>
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                          isActive ? "bg-black/20 text-black" : "bg-slate-800 text-slate-400"
+                        }`}>
+                          {catSelected}/{catCount}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* INTERACTIVE CHECKLIST CARDS GRID */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+                  {ADMIN_SECTIONS_CATALOG
+                    .filter((sec) => activeCategoryTab === "ALL" || sec.category === activeCategoryTab)
+                    .map((sec) => {
+                      const isChecked = formData.permissions.includes(sec.key);
+
+                      return (
                         <div
-                          className={`w-5 h-5 rounded-md flex items-center justify-center border-2 transition-all ${
+                          key={sec.key}
+                          onClick={() => togglePermission(sec.key)}
+                          className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none relative group ${
                             isChecked
-                              ? "bg-[#D4AF37] border-[#D4AF37] text-black font-black"
-                              : "border-slate-600 bg-slate-900"
+                              ? "bg-gradient-to-br from-[#12284C] via-[#0E1E3A] to-[#0A162B] border-[#D4AF37] shadow-lg shadow-[#D4AF37]/15 ring-1 ring-[#D4AF37]/40"
+                              : "bg-[#081224]/70 border-slate-800/90 hover:border-slate-700 hover:bg-[#0C1B33]/80 opacity-70 hover:opacity-100"
                           }`}
                         >
-                          {isChecked && <span className="text-xs">✓</span>}
-                        </div>
-                      </div>
+                          {/* Checkbox Icon */}
+                          <div className="pt-0.5 shrink-0">
+                            <div
+                              className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-all ${
+                                isChecked
+                                  ? "bg-gradient-to-br from-[#D4AF37] to-[#F3E5AB] border-[#D4AF37] text-slate-950 font-black shadow-sm"
+                                  : "border-slate-600 bg-slate-900/90 text-transparent group-hover:border-slate-500"
+                              }`}
+                            >
+                              <span className="text-xs leading-none">✓</span>
+                            </div>
+                          </div>
 
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{sec.icon}</span>
-                          <span className={`text-xs font-black truncate ${
-                            isChecked ? "text-[#F3E5AB]" : "text-slate-300"
-                          }`}>
-                            {sec.name}
-                          </span>
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-base shrink-0">{sec.icon}</span>
+                              <span className={`text-xs font-black truncate ${
+                                isChecked ? "text-[#F5E6A3]" : "text-slate-200"
+                              }`}>
+                                {sec.name}
+                              </span>
+                            </div>
+                            <div className="text-[11px] font-bold text-amber-300/90 mt-0.5">
+                              {sec.gujarati}
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                              {sec.description}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-[11px] font-bold text-emerald-400 mt-0.5">
-                          {sec.gujarati}
-                        </div>
-                        <p className="text-[10.5px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
-                          {sec.description}
-                        </p>
-                      </div>
-                    </div>
-                  );
-                })}
+                      );
+                    })}
+                </div>
               </div>
 
               {/* Modal Footer Controls */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800/80">
                 <button
                   type="button"
                   onClick={closeModal}
                   disabled={submitting}
-                  className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-colors cursor-pointer"
                 >
                   Cancel (રદ કરો)
                 </button>

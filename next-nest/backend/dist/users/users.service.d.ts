@@ -167,6 +167,7 @@ export declare class UsersService {
         email: string;
         phone?: string;
         password: string;
+        role?: Role;
         permissions: string[];
     }, ipAddress?: string): Promise<{
         permissions: string[];

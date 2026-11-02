@@ -930,6 +930,7 @@ export class UsersService {
       email: string;
       phone?: string;
       password: string;
+      role?: Role;
       permissions: string[];
     },
     ipAddress?: string,
@@ -943,30 +944,81 @@ export class UsersService {
     }
 
     const email = dto.email.trim().toLowerCase();
+    const cleanPhone = dto.phone && dto.phone.trim().length > 0 ? dto.phone.trim() : null;
+
     const existing = await this.prisma.user.findFirst({
       where: {
         OR: [
           { email },
-          ...(dto.phone ? [{ phone: dto.phone.trim() }] : []),
+          ...(cleanPhone ? [{ phone: cleanPhone }] : []),
         ],
       },
     });
 
-    if (existing) {
-      throw new BadRequestException("આ ઇમેઇલ અથવા ફોન નંબર વાળો વપરાશકર્તા પહેલેથી હાજર છે (A user with this email or phone already exists)");
-    }
-
-    const passwordHash = await bcrypt.hash(dto.password.trim(), 10);
+    const targetRole = dto.role === Role.SUPER_ADMIN ? Role.SUPER_ADMIN : Role.ADMIN;
     const permissionsJson = JSON.stringify(dto.permissions || []);
+    const passwordHash = await bcrypt.hash(dto.password.trim(), 10);
+
+    // If a user account already exists
+    if (existing) {
+      if (existing.role === Role.ADMIN || existing.role === Role.SUPER_ADMIN) {
+        throw new BadRequestException(
+          `આ ઇમેઇલ (${email}) અથવા મોબાઇલ વાળો એડમિન એકાઉન્ટ પહેલેથી હાજર છે (An admin account with this email/phone already exists)`
+        );
+      }
+
+      // If user is a member (USER), promote them to staff / sub-admin seamlessly
+      return this.prisma.$transaction(async (tx) => {
+        const updatedAdmin = await tx.user.update({
+          where: { id: existing.id },
+          data: {
+            name: dto.name.trim(),
+            passwordHash,
+            role: targetRole,
+            permissions: permissionsJson,
+            status: Status.ACTIVE,
+            isEmailVerified: true,
+            isPhoneVerified: true,
+            ...(cleanPhone ? { phone: cleanPhone } : {}),
+          },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            role: true,
+            permissions: true,
+            status: true,
+            createdAt: true,
+          },
+        });
+
+        await tx.adminAuditLog.create({
+          data: {
+            adminId: superAdminId,
+            action: "PROMOTE_TO_SUB_ADMIN",
+            entityType: "USER",
+            entityId: updatedAdmin.id,
+            newValue: JSON.stringify({ name: dto.name, email, role: targetRole, permissions: dto.permissions }),
+            ipAddress: ipAddress || null,
+          },
+        });
+
+        return {
+          ...updatedAdmin,
+          permissions: dto.permissions || [],
+        };
+      });
+    }
 
     return this.prisma.$transaction(async (tx) => {
       const newAdmin = await tx.user.create({
         data: {
           name: dto.name.trim(),
           email,
-          phone: dto.phone ? dto.phone.trim() : null,
+          phone: cleanPhone,
           passwordHash,
-          role: Role.ADMIN,
+          role: targetRole,
           permissions: permissionsJson,
           status: Status.ACTIVE,
           isEmailVerified: true,
@@ -990,7 +1042,7 @@ export class UsersService {
           action: "CREATE_SUB_ADMIN",
           entityType: "USER",
           entityId: newAdmin.id,
-          newValue: JSON.stringify({ name: dto.name, email, permissions: dto.permissions }),
+          newValue: JSON.stringify({ name: dto.name, email, role: targetRole, permissions: dto.permissions }),
           ipAddress: ipAddress || null,
         },
       });
