@@ -175,7 +175,7 @@ function trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, 
     // Prevent multiple requests within 8s from concurrently spawning watchdogs
     if (file_exists($lock_file)) {
         $lockMtime = (int)@filemtime($lock_file);
-        if (($now - $lockMtime) < 8) {
+        if (($now - $lockMtime) < 15) {
             return false;
         }
     }
@@ -185,7 +185,7 @@ function trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, 
     
     $watchdog_script = $project_dir . '/keep_backend_alive.sh';
     if (file_exists($watchdog_script)) {
-        $cmd = "/bin/bash " . escapeshellarg($watchdog_script) . " --force </dev/null >/dev/null 2>&1 &";
+        $cmd = "nohup /bin/bash " . escapeshellarg($watchdog_script) . " --force </dev/null >/dev/null 2>&1 &";
         if (function_exists('shell_exec')) {
             @shell_exec($cmd);
         } elseif (function_exists('exec')) {
@@ -211,8 +211,8 @@ function proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $
         trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
         
         // Wait up to 10 seconds (25 iterations * 400ms) for socket readiness
-        for ($retry = 0; $retry < 25; $retry++) {
-            usleep(400000); // 400ms
+        for ($retry = 0; $retry < 3; $retry++) {
+            usleep(250000); // 400ms
             $fp = @stream_socket_client($socket_path, $errno, $errstr, 1);
             if (!$fp) {
                 $fp = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 1);
@@ -356,8 +356,8 @@ function proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $
 function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $trigger_file, $restart_state_file, $lock_file, $project_dir) {
     if (!file_exists($socket_file)) {
         trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
-        for ($retry = 0; $retry < 25; $retry++) {
-            usleep(400000); // 400ms
+        for ($retry = 0; $retry < 3; $retry++) {
+            usleep(250000); // 400ms
             if (file_exists($socket_file)) {
                 usleep(200000); // 200ms grace for socket bind
                 break;
