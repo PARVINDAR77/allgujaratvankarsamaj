@@ -437,7 +437,8 @@ $mutatingActions = [
     'clean_restart',
     'kill_stale',
     'deploy',
-    'fix_db_manual'
+    'fix_db_manual',
+    'prisma_generate'
 ];
 
 $sensitiveActions = [
@@ -452,7 +453,8 @@ $sensitiveActions = [
     'tail_log',
     'check_verif',
     'check_user',
-    'test_mail'
+    'test_mail',
+    'prisma_generate'
 ];
 
 $callerAuth = null;
@@ -584,6 +586,8 @@ if ($action === 'deploy') {
                "git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1; " .
                "git pull origin main 2>&1; " .
                "chmod +x keep_backend_alive.sh start_backend_daemon.sh 2>&1; " .
+               "export PATH='/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH'; " .
+               "cd next-nest/backend && npx prisma generate 2>&1; cd " . escapeshellarg($project_dir) . " 2>&1; " .
                "(crontab -l 2>/dev/null | grep -v 'keep_backend_alive.sh'; echo '* * * * * /bin/bash /home/u796269890/domains/allgujaratvankarsamaj.com/project_source/keep_backend_alive.sh >/dev/null 2>&1') | crontab - 2>/dev/null || true; " .
                "cp -rf next-nest/frontend/out/_next /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf next-nest/frontend/out/admin /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
@@ -622,6 +626,17 @@ if ($action === 'install_pkg') {
         $results['install_log'] = $installLog;
         $results['actions_taken'][] = 'Executed npm install @google/generative-ai';
         write_maintenance_audit_log($audit_file, $callerAuth['user'], $callerAuth['role'], 'install_pkg', 'Installed npm package @google/generative-ai');
+    }
+}
+
+if ($action === 'prisma_generate') {
+    if (function_exists('shell_exec')) {
+        $prismaLog = shell_exec("cd " . escapeshellarg($backend_dir) . " 2>&1; export PATH='/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH'; npx prisma generate 2>&1");
+        $results['prisma_log'] = $prismaLog;
+        $results['actions_taken'][] = 'Executed npx prisma generate';
+        terminate_verified_backend_processes($project_dir, $socket_file, $results['actions_taken']);
+        @shell_exec("bash " . escapeshellarg($project_dir . "/keep_backend_alive.sh") . " --force </dev/null > /dev/null 2>&1 &");
+        write_maintenance_audit_log($audit_file, $callerAuth['user'], $callerAuth['role'], 'prisma_generate', 'Regenerated Prisma client and restarted backend');
     }
 }
 
