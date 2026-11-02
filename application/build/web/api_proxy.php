@@ -170,19 +170,12 @@ if (strlen($body) > 0) {
 
 // 5. Watchdog Cooldown & Auto-Recovery Trigger (Non-blocking)
 function trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir) {
-    $cooldown = WATCHDOG_COOLDOWN_SECS;
     $now = time();
     
-    if (file_exists($restart_state_file)) {
-        $lastRestart = (int)@file_get_contents($restart_state_file);
-        if (($now - $lastRestart) < $cooldown) {
-            return false;
-        }
-    }
-    
+    // Prevent multiple requests within 8s from concurrently spawning watchdogs
     if (file_exists($lock_file)) {
         $lockMtime = (int)@filemtime($lock_file);
-        if (($now - $lockMtime) < $cooldown) {
+        if (($now - $lockMtime) < 8) {
             return false;
         }
     }
@@ -192,7 +185,7 @@ function trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, 
     
     $watchdog_script = $project_dir . '/keep_backend_alive.sh';
     if (file_exists($watchdog_script)) {
-        $cmd = "/bin/bash " . escapeshellarg($watchdog_script) . " </dev/null >/dev/null 2>&1 &";
+        $cmd = "/bin/bash " . escapeshellarg($watchdog_script) . " --force </dev/null >/dev/null 2>&1 &";
         if (function_exists('shell_exec')) {
             @shell_exec($cmd);
         } elseif (function_exists('exec')) {
@@ -213,13 +206,29 @@ function proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $
         $fp = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 1);
     }
     
+    // Auto-recovery polling loop if backend is starting up or recovering
     if (!$fp) {
         trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
+        
+        // Wait up to 10 seconds (25 iterations * 400ms) for socket readiness
+        for ($retry = 0; $retry < 25; $retry++) {
+            usleep(400000); // 400ms
+            $fp = @stream_socket_client($socket_path, $errno, $errstr, 1);
+            if (!$fp) {
+                $fp = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 1);
+            }
+            if ($fp) {
+                break;
+            }
+        }
+    }
+    
+    if (!$fp) {
         http_response_code(502);
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
             'statusCode' => 502,
-            'message' => 'Bad Gateway: Backend socket is unreachable. Auto-recovery in progress.',
+            'message' => 'Bad Gateway: Backend service is currently starting. Please retry in a few seconds.',
             'restartUrl' => 'https://allgujaratvankarsamaj.com/restart_backend.php'
         ]);
         exit;
@@ -345,6 +354,17 @@ function proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $
 }
 
 function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $trigger_file, $restart_state_file, $lock_file, $project_dir) {
+    if (!file_exists($socket_file)) {
+        trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
+        for ($retry = 0; $retry < 25; $retry++) {
+            usleep(400000); // 400ms
+            if (file_exists($socket_file)) {
+                usleep(200000); // 200ms grace for socket bind
+                break;
+            }
+        }
+    }
+    
     $hasSocket = file_exists($socket_file);
     $upstreamUrl = $hasSocket ? ('http://localhost' . $uri) : ('http://127.0.0.1:3000' . $uri);
     
@@ -436,20 +456,8 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
             exit;
         }
         
-        // If Unix socket failed and socket file was present, fallback to stream check
-        if ($hasSocket) {
-            return proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $trigger_file, $restart_state_file, $lock_file, $project_dir);
-        }
-        
-        trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
-        http_response_code(502);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode([
-            'statusCode' => 502,
-            'message' => 'Bad Gateway: Backend service is unreachable. Auto-recovery in progress.',
-            'restartUrl' => 'https://allgujaratvankarsamaj.com/restart_backend.php'
-        ]);
-        exit;
+        // Fallback to stream proxy with auto-recovery retry loop
+        return proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $trigger_file, $restart_state_file, $lock_file, $project_dir);
     }
     
     http_response_code($finalStatusCode);

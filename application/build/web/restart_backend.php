@@ -583,6 +583,8 @@ if ($action === 'deploy') {
         $cmd = "cd " . escapeshellarg($project_dir) . " 2>&1; " .
                "git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1; " .
                "git pull origin main 2>&1; " .
+               "chmod +x keep_backend_alive.sh start_backend_daemon.sh 2>&1; " .
+               "(crontab -l 2>/dev/null | grep -v 'keep_backend_alive.sh'; echo '* * * * * /bin/bash /home/u796269890/domains/allgujaratvankarsamaj.com/project_source/keep_backend_alive.sh >/dev/null 2>&1') | crontab - 2>/dev/null || true; " .
                "cp -rf next-nest/frontend/out/_next /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf next-nest/frontend/out/admin /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf next-nest/frontend/out/login /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
@@ -597,8 +599,9 @@ if ($action === 'deploy') {
         $deployLog = shell_exec($cmd);
         $results['deploy_log'] = $deployLog;
         terminate_verified_backend_processes($project_dir, $socket_file, $results['actions_taken']);
-        $results['actions_taken'][] = 'Pulled origin main, copied web assets and static routes, and gracefully signaled backend';
-        write_maintenance_audit_log($audit_file, $callerAuth['user'], $callerAuth['role'], 'deploy', 'Deployed git assets and restarted backend');
+        @shell_exec("bash " . escapeshellarg($project_dir . "/keep_backend_alive.sh") . " --force </dev/null > /dev/null 2>&1 &");
+        $results['actions_taken'][] = 'Pulled origin main, installed 1-minute watchdog cron, copied web assets, and cleanly launched supervisor';
+        write_maintenance_audit_log($audit_file, $callerAuth['user'], $callerAuth['role'], 'deploy', 'Deployed git assets and restarted backend with 1-min cron');
     }
     @touch($trigger_file);
 }

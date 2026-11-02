@@ -144,35 +144,29 @@ stop_backend_node() {
 # 1. Check if restart trigger was requested (e.g. from web UI or deploy)
 if [ -f "$TRIGGER_FILE" ]; then
     rm -f "$TRIGGER_FILE"
-    if can_restart; then
-        log "🔔 Restart trigger file detected. Initiating graceful backend restart..."
-        record_restart
-        stop_backend_node
-        sleep 2
-    else
-        log "⚠️ Restart trigger file ignored due to active cooldown window."
-    fi
+    FORCE_RESTART=1
+    log "🔔 Explicit restart trigger file detected. Setting FORCE_RESTART=1 to initiate recovery."
 fi
 
-# 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 10s budget)
+# 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 8s budget)
 IS_HEALTHY=0
 LIVENESS_URL="http://localhost/api/v1/health/liveness"
 
 check_liveness_probe() {
     local resp
-    resp=$(curl -s --max-time 10 --unix-socket "$SOCKET_FILE" "$LIVENESS_URL" 2>/dev/null || echo "")
+    resp=$(curl -s --max-time 4 --unix-socket "$SOCKET_FILE" "$LIVENESS_URL" 2>/dev/null || echo "")
     if echo "$resp" | grep -q '"status"' && echo "$resp" | grep -q '"ok"'; then
         return 0
     fi
     return 1
 }
 
-if [ -S "$SOCKET_FILE" ]; then
+if [ -S "$SOCKET_FILE" ] && [ "$FORCE_RESTART" -ne 1 ]; then
     if check_liveness_probe; then
         IS_HEALTHY=1
     else
-        log "⚠️ First liveness probe failed or timed out. Waiting 3 seconds before strike 2..."
-        sleep 3
+        log "⚠️ First liveness probe failed or timed out. Waiting 2 seconds before strike 2..."
+        sleep 2
         if check_liveness_probe; then
             IS_HEALTHY=1
             log "✅ Second liveness probe succeeded. Backend is healthy."
@@ -188,16 +182,7 @@ if [ "$IS_HEALTHY" -eq 1 ]; then
     exit 0
 fi
 
-# 4. If Unhealthy, check startup grace period before triggering restart
-if ! can_restart; then
-    log "⏳ Backend not responding, but currently inside restart cooldown/grace period. Allowing more time to boot."
-    exit 0
-fi
-
-# 5. Recovery: Daemon Supervisor & Child Management
-log "⚠️ Backend confirmed unhealthy (Socket exists: $([ -S "$SOCKET_FILE" ] && echo YES || echo NO)). Initiating daemon recovery..."
-record_restart
-
+# 4. Check Daemon Supervisor status
 DAEMON_RUNNING=0
 if [ -f "$DAEMON_PID_FILE" ]; then
     DPID=$(cat "$DAEMON_PID_FILE" 2>/dev/null || echo "")
@@ -212,11 +197,21 @@ if [ -f "$DAEMON_PID_FILE" ]; then
     fi
 fi
 
+# 5. Recovery Execution
+log "⚠️ Backend confirmed unhealthy (Socket exists: $([ -S "$SOCKET_FILE" ] && echo YES || echo NO)). Initiating recovery..."
+
 if [ "$DAEMON_RUNNING" -eq 1 ]; then
+    if ! can_restart; then
+        log "⏳ Backend not responding, but currently inside restart cooldown/grace period. Allowing supervisor daemon (PID: $DPID) time to boot."
+        exit 0
+    fi
     log "ℹ️ Supervisor daemon loop is alive (PID: $DPID). Restarting child process..."
+    record_restart
     stop_backend_node
 else
-    log "ℹ️ Supervisor daemon not running. Starting new supervisor daemon..."
+    # Daemon is NOT running: Start supervisor daemon IMMEDIATELY (no cooldown delay when completely offline!)
+    log "ℹ️ Supervisor daemon not running. Spawning new supervisor daemon immediately..."
+    record_restart
     stop_backend_node
     nohup bash "$SCRIPT_DIR/start_backend_daemon.sh" >> "$BACKEND_DIR/backend.log" 2>&1 &
 fi
