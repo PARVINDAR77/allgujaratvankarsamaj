@@ -428,6 +428,52 @@ function fix_database_genders_transactional($project_dir, &$results) {
     }
 }
 
+function ensure_database_schema_synced($project_dir, &$results) {
+    $env_file = $project_dir . '/.env.production';
+    if (!file_exists($env_file)) {
+        $env_file = $project_dir . '/next-nest/backend/.env';
+    }
+    if (!file_exists($env_file)) return;
+    
+    $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $conf = [];
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if (strpos($line, '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($k, $v) = explode('=', $line, 2);
+            $conf[trim($k)] = trim(trim($v), '"\'');
+        }
+    }
+    $host = $conf['DB_HOST'] ?? 'localhost';
+    $user = $conf['DB_USER'] ?? '';
+    $pass = $conf['DB_PASSWORD'] ?? '';
+    $name = $conf['DB_NAME'] ?? '';
+    if (empty($user) && !empty($conf['DATABASE_URL'])) {
+        $p = parse_url($conf['DATABASE_URL']);
+        $host = $p['host'] ?? 'localhost';
+        $user = $p['user'] ?? '';
+        $pass = $p['pass'] ?? '';
+        $name = ltrim($p['path'] ?? '', '/');
+    }
+    if (empty($name) || empty($user)) return;
+
+    try {
+        $pdo = new PDO("mysql:host=$host;dbname=$name;charset=utf8mb4", $user, $pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]);
+        $checkCol = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = '$name' AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
+        if (!$checkCol) {
+            $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT NULL");
+            $results['actions_taken'][] = "Database Schema Synced: Added missing permissions column to users table";
+        } else {
+            $results['schema_status'] = "permissions column is verified present on users table";
+        }
+    } catch (Exception $e) {
+        $results['schema_sync_error'] = $e->getMessage();
+    }
+}
+
 // -------------------------------------------------------------
 // Route Access Control & Authorization Enforcement
 // -------------------------------------------------------------
@@ -575,6 +621,8 @@ $results = [
     'disabled_functions' => ini_get('disable_functions') ?: 'none',
     'actions_taken' => [],
 ];
+
+ensure_database_schema_synced($project_dir, $results);
 
 if (file_exists($socket_file)) {
     $results['socket_perms'] = substr(sprintf('%o', fileperms($socket_file)), -4);
