@@ -205,6 +205,18 @@ fi
 # 5. Recovery Execution
 log "⚠️ Backend confirmed unhealthy (Socket exists: $([ -S "$SOCKET_FILE" ] && echo YES || echo NO)). Initiating recovery..."
 
+# Pull latest repository changes
+(cd "$SCRIPT_DIR" && git pull origin main) >> "$LOG_FILE" 2>&1 || true
+
+# Direct MySQL schema check and sync via PHP PDO
+if [ -f "$SCRIPT_DIR/sync_db_schema.php" ]; then
+    php "$SCRIPT_DIR/sync_db_schema.php" >> "$LOG_FILE" 2>&1 || true
+fi
+
+# Sync web scripts to public_html
+cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
+cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
+
 if [ "$DAEMON_RUNNING" -eq 1 ]; then
     if ! can_restart; then
         log "⏳ Backend not responding, but currently inside restart cooldown/grace period. Allowing supervisor daemon (PID: $DPID) time to boot."
