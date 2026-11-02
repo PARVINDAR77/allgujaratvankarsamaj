@@ -141,6 +141,10 @@ stop_backend_node() {
     rm -f "$SOCKET_FILE"
 }
 
+# Clean up any runaway npm / npx processes that exhaust Hostinger CloudLinux LVE limits
+pkill -f "npx prisma" 2>/dev/null || true
+pkill -f "npm install" 2>/dev/null || true
+
 # 1. Check if restart trigger was requested (e.g. from web UI or deploy)
 if [ -f "$TRIGGER_FILE" ]; then
     rm -f "$TRIGGER_FILE"
