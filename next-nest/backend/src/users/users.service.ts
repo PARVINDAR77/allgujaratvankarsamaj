@@ -1023,19 +1023,12 @@ export class UsersService {
       throw new NotFoundException("સબ-એડમિન એકાઉન્ટ મળ્યું નથી (Admin account not found)");
     }
 
-    // Safety: The primary master root Super Admin cannot be demoted or modified by others
-    if (existing.email === "panjabiparvindar77@gmail.com" && existing.id !== superAdminId) {
-      throw new ForbiddenException("મુખ્ય રૂટ સુપર એડમિન એકાઉન્ટમાં ફેરફાર કરી શકાતો નથી (Cannot modify primary root Super Admin account)");
-    }
-
     const updateData: any = {};
     if (dto.name !== undefined) updateData.name = dto.name.trim();
     if (dto.phone !== undefined) updateData.phone = dto.phone ? dto.phone.trim() : null;
     if (dto.status !== undefined) updateData.status = dto.status;
     if (dto.role !== undefined && dto.role in Role) {
-      if (existing.email !== "panjabiparvindar77@gmail.com") {
-        updateData.role = dto.role;
-      }
+      updateData.role = dto.role;
     }
     if (dto.permissions !== undefined) {
       updateData.permissions = JSON.stringify(dto.permissions);
@@ -1101,11 +1094,6 @@ export class UsersService {
 
     if (!existing) {
       throw new NotFoundException("એકાઉન્ટ મળ્યું નથી (Admin account not found)");
-    }
-
-    // Safety: Protect the primary master root Super Admin
-    if (existing.email === "panjabiparvindar77@gmail.com") {
-      throw new ForbiddenException("મુખ્ય રૂટ સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (Cannot delete primary root Super Admin account)");
     }
 
     return this.prisma.$transaction(async (tx) => {

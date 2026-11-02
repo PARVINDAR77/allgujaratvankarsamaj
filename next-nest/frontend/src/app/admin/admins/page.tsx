@@ -356,17 +356,13 @@ export default function AdminAdminsPage() {
   };
 
   const handleDelete = async (admin: AdminSubAdminItem) => {
-    if (admin.email === "panjabiparvindar77@gmail.com") {
-      alert("મુખ્ય રૂટ સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (The primary master root account cannot be deleted)");
-      return;
-    }
-    if (currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email === admin.email)) {
+    if (currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email?.toLowerCase() === admin.email?.toLowerCase())) {
       alert("તમે તમારું પોતાનું સક્રિય એકાઉન્ટ ડિલીટ કરી શકતા નથી (You cannot delete your own active account)");
       return;
     }
 
     const confirmed = window.confirm(
-      `શું તમે ખરેખર "${admin.name || "Administrator"}" (${admin.email}) એકાઉન્ટને ડિલીટ કરવા માંગો છો?\n\nઆ એકાઉન્ટ કાયમ માટે ડિલીટ થઈ જશે અને તેની બધી એક્સેસ રદ થશે!`
+      `શું તમે ખરેખર એકાઉન્ટ "${admin.name || "Administrator"}" (${admin.email}) ને ડિલીટ કરવા માંગો છો?\n\nઆ એકાઉન્ટ કાયમ માટે ડિલીટ થઈ જશે અને તેની બધી એક્સેસ રદ થશે!`
     );
     if (!confirmed) return;
 
@@ -381,8 +377,7 @@ export default function AdminAdminsPage() {
   };
 
   const handleToggleStatus = async (admin: AdminSubAdminItem) => {
-    if (admin.email === "panjabiparvindar77@gmail.com") return;
-    if (currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email === admin.email)) return;
+    if (currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email?.toLowerCase() === admin.email?.toLowerCase())) return;
     const nextStatus = admin.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     try {
       await adminApi.updateSubAdmin(admin.id, { status: nextStatus });
@@ -486,10 +481,12 @@ export default function AdminAdminsPage() {
                 ) : (
                   admins.map((admin) => {
                     const isRoot = admin.role === "SUPER_ADMIN";
-                    const isMasterOwner = admin.email === "panjabiparvindar77@gmail.com";
-                    const isSelf = currentAdminUser && (currentAdminUser.id === admin.id || currentAdminUser.email === admin.email);
-                    const canDelete = !isMasterOwner && !isSelf;
-                    const canToggleStatus = !isMasterOwner && !isSelf;
+                    const isSelf = !!(currentAdminUser && (
+                      currentAdminUser.id === admin.id ||
+                      (currentAdminUser.email && admin.email && currentAdminUser.email.toLowerCase() === admin.email.toLowerCase())
+                    ));
+                    const canDelete = !isSelf;
+                    const canToggleStatus = !isSelf;
                     const perms: string[] = Array.isArray(admin.permissions) ? admin.permissions : [];
 
                     return (
@@ -501,10 +498,8 @@ export default function AdminAdminsPage() {
                         <td className="py-4 px-4">
                           <div className="flex items-center gap-3">
                             <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shadow ${
-                              isMasterOwner
-                                ? "bg-gradient-to-br from-[#D4AF37] via-amber-400 to-[#B38728] text-black font-black"
-                                : isRoot
-                                ? "bg-gradient-to-br from-amber-600 to-amber-800 text-white"
+                              isRoot
+                                ? "bg-gradient-to-br from-[#D4AF37] to-[#B38728] text-black"
                                 : "bg-slate-800 text-[#D4AF37] border border-[#D4AF37]/30"
                             }`}>
                               {admin.name ? admin.name.charAt(0).toUpperCase() : "A"}
@@ -512,15 +507,11 @@ export default function AdminAdminsPage() {
                             <div>
                               <div className="font-bold text-white text-sm flex items-center gap-2">
                                 <span>{admin.name || "Administrator"}</span>
-                                {isMasterOwner ? (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#D4AF37]/25 text-[#D4AF37] font-black border border-[#D4AF37]/50 shadow-sm">
-                                    MASTER ROOT
-                                  </span>
-                                ) : isRoot ? (
-                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-extrabold border border-amber-500/30">
+                                {isRoot && (
+                                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#D4AF37]/20 text-[#D4AF37] font-extrabold border border-[#D4AF37]/40">
                                     SUPER ADMIN
                                   </span>
-                                ) : null}
+                                )}
                                 {isSelf && (
                                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-extrabold border border-emerald-500/30">
                                     YOU
@@ -585,9 +576,7 @@ export default function AdminAdminsPage() {
                             onClick={() => handleToggleStatus(admin)}
                             disabled={!canToggleStatus}
                             title={
-                              isMasterOwner
-                                ? "Master Root Admin cannot be deactivated"
-                                : isSelf
+                              isSelf
                                 ? "You cannot deactivate your own active account"
                                 : "Click to toggle Active / Inactive"
                             }
@@ -601,7 +590,7 @@ export default function AdminAdminsPage() {
 
                         {/* Action Buttons */}
                         <td className="py-4 px-4 text-right">
-                          <div className="inline-flex items-center gap-1.5 justify-end">
+                          <div className="inline-flex items-center gap-2 justify-end">
                             <button
                               onClick={() => openEditModal(admin)}
                               className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-[#D4AF37]/20 text-slate-300 hover:text-[#D4AF37] border border-slate-700 hover:border-[#D4AF37]/40 font-semibold text-xs transition-colors cursor-pointer flex items-center gap-1"
@@ -620,15 +609,16 @@ export default function AdminAdminsPage() {
                                 <span>🗑️</span>
                                 <span>Delete</span>
                               </button>
-                            ) : isSelf ? (
-                              <span className="px-2 py-1 rounded bg-slate-800 text-slate-400 text-[10px] font-bold border border-slate-700">
-                                Current
-                              </span>
-                            ) : isMasterOwner ? (
-                              <span className="px-2 py-1 rounded bg-[#D4AF37]/10 text-[#D4AF37] text-[10px] font-bold border border-[#D4AF37]/30">
-                                Root
-                              </span>
-                            ) : null}
+                            ) : (
+                              <button
+                                disabled
+                                className="px-2.5 py-1.5 rounded-lg bg-slate-900/60 text-slate-500 border border-slate-800 font-semibold text-xs cursor-not-allowed flex items-center gap-1 opacity-50"
+                                title="You cannot delete your own currently logged in account"
+                              >
+                                <span>🗑️</span>
+                                <span>Delete</span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
