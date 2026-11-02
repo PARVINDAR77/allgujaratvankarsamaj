@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RolePermissions = exports.AdminRole = exports.Permission = void 0;
+exports.RolePermissions = exports.PermissionToSectionMap = exports.AdminRole = exports.AdminSection = exports.Permission = void 0;
 var Permission;
 (function (Permission) {
     Permission["MEMBERS_READ"] = "members.read";
@@ -17,6 +17,27 @@ var Permission;
     Permission["AUDIT_READ"] = "audit.read";
     Permission["STATISTICS_VIEW"] = "statistics.view";
 })(Permission || (exports.Permission = Permission = {}));
+var AdminSection;
+(function (AdminSection) {
+    AdminSection["DASHBOARD"] = "dashboard";
+    AdminSection["USERS"] = "users";
+    AdminSection["PROFILES"] = "profiles";
+    AdminSection["GOVERNMENT_EMPLOYEES"] = "government_employees";
+    AdminSection["VERIFICATIONS"] = "verifications";
+    AdminSection["MATCHES"] = "matches";
+    AdminSection["EDUCATION"] = "education";
+    AdminSection["LOCATIONS"] = "locations";
+    AdminSection["SERVICES"] = "services";
+    AdminSection["PAVAN_PRERNADATA"] = "pavan_prernadata";
+    AdminSection["SAMAJ_SUPER_STARS"] = "samaj_super_stars";
+    AdminSection["SAMAJ_RATNA"] = "samaj_ratna";
+    AdminSection["HOME_SCREEN"] = "home_screen";
+    AdminSection["ADVERTISEMENTS"] = "advertisements";
+    AdminSection["NOTIFICATIONS"] = "notifications";
+    AdminSection["REPORTS"] = "reports";
+    AdminSection["OTP_ANALYTICS"] = "otp_analytics";
+    AdminSection["SETTINGS"] = "settings";
+})(AdminSection || (exports.AdminSection = AdminSection = {}));
 var AdminRole;
 (function (AdminRole) {
     AdminRole["SUPER_ADMIN"] = "SUPER_ADMIN";
@@ -24,6 +45,37 @@ var AdminRole;
     AdminRole["VERIFICATION_ADMIN"] = "VERIFICATION_ADMIN";
     AdminRole["CONTENT_ADMIN"] = "CONTENT_ADMIN";
 })(AdminRole || (exports.AdminRole = AdminRole = {}));
+exports.PermissionToSectionMap = {
+    [Permission.MEMBERS_READ]: [AdminSection.USERS, AdminSection.PROFILES],
+    [Permission.MEMBERS_UPDATE]: [AdminSection.USERS, AdminSection.PROFILES],
+    [Permission.MEMBERS_BLOCK]: [AdminSection.USERS],
+    [Permission.MEMBERS_DELETE]: [AdminSection.USERS, AdminSection.PROFILES],
+    [Permission.VERIFICATION_READ]: [AdminSection.VERIFICATIONS],
+    [Permission.VERIFICATION_REVIEW]: [AdminSection.VERIFICATIONS],
+    [Permission.GOVERNMENT_READ]: [AdminSection.GOVERNMENT_EMPLOYEES],
+    [Permission.GOVERNMENT_MANAGE]: [AdminSection.GOVERNMENT_EMPLOYEES],
+    [Permission.GOVERNMENT_FEATURE]: [AdminSection.GOVERNMENT_EMPLOYEES],
+    [Permission.CONTENT_READ]: [
+        AdminSection.ADVERTISEMENTS,
+        AdminSection.SERVICES,
+        AdminSection.HOME_SCREEN,
+        AdminSection.EDUCATION,
+        AdminSection.PAVAN_PRERNADATA,
+        AdminSection.SAMAJ_SUPER_STARS,
+        AdminSection.SAMAJ_RATNA,
+    ],
+    [Permission.CONTENT_MANAGE]: [
+        AdminSection.ADVERTISEMENTS,
+        AdminSection.SERVICES,
+        AdminSection.HOME_SCREEN,
+        AdminSection.EDUCATION,
+        AdminSection.PAVAN_PRERNADATA,
+        AdminSection.SAMAJ_SUPER_STARS,
+        AdminSection.SAMAJ_RATNA,
+    ],
+    [Permission.AUDIT_READ]: [AdminSection.DASHBOARD, AdminSection.OTP_ANALYTICS],
+    [Permission.STATISTICS_VIEW]: [AdminSection.DASHBOARD],
+};
 exports.RolePermissions = {
     [AdminRole.SUPER_ADMIN]: Object.values(Permission),
     [AdminRole.ADMIN]: [

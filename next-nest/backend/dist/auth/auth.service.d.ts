@@ -18,6 +18,7 @@ export declare class AuthService {
     login(dto: LoginDto): Promise<{
         accessToken: string;
         user: {
+            permissions: string[];
             isVerified: boolean;
             hasProfile: boolean;
             profileStatus: string;
@@ -37,6 +38,7 @@ export declare class AuthService {
         expiresIn: string;
     }>;
     getMe(userId: string): Promise<{
+        permissions: string[];
         isVerified: boolean;
         hasProfile: boolean;
         profileStatus: string;

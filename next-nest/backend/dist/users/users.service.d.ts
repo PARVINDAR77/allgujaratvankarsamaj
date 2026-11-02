@@ -83,6 +83,7 @@ export declare class UsersService {
         phone: string | null;
         passwordHash: string;
         role: import(".prisma/client").$Enums.Role;
+        permissions: string | null;
     }>;
     createUser(data: {
         email?: string;
@@ -156,6 +157,53 @@ export declare class UsersService {
         message: string;
     }>;
     deleteProfileAdmin(profileIdOrUserId: string, adminId: string, ipAddress?: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    getSubAdmins(): Promise<{
+        permissions: string[];
+        status: import(".prisma/client").$Enums.Status;
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+    }[]>;
+    createSubAdmin(superAdminId: string, dto: {
+        name: string;
+        email: string;
+        phone?: string;
+        password: string;
+        permissions: string[];
+    }, ipAddress?: string): Promise<{
+        permissions: string[];
+        status: import(".prisma/client").$Enums.Status;
+        name: string;
+        id: string;
+        createdAt: Date;
+        email: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
+    updateSubAdmin(superAdminId: string, id: string, dto: {
+        name?: string;
+        phone?: string;
+        password?: string;
+        status?: Status;
+        permissions?: string[];
+    }, ipAddress?: string): Promise<{
+        permissions: string[];
+        status: import(".prisma/client").$Enums.Status;
+        name: string;
+        id: string;
+        updatedAt: Date;
+        email: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
+    deleteSubAdmin(superAdminId: string, id: string, ipAddress?: string): Promise<{
         success: boolean;
         message: string;
     }>;

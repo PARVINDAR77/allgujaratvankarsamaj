@@ -58,8 +58,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       profile?.isVerified === true &&
       (profile?.status === "APPROVED" || (profile?.status as string) === "APPROVED");
 
+    let parsedPermissions: string[] = [];
+    try {
+      if ((result as any).permissions) {
+        parsedPermissions = typeof (result as any).permissions === "string"
+          ? JSON.parse((result as any).permissions)
+          : (result as any).permissions;
+      }
+    } catch (_) {}
+
     return {
       ...result,
+      permissions: parsedPermissions,
       hasProfile,
       isVerified,
       profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),

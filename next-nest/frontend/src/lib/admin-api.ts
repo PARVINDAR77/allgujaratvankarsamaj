@@ -57,6 +57,35 @@ export interface DashboardStats {
   recentVerifications: Array<{ id: string; name: string; type: string; status: string; date: string }>;
 }
 
+
+export interface AdminSubAdminItem {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  role: string;
+  status: "ACTIVE" | "INACTIVE";
+  permissions: string[];
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface CreateSubAdminDto {
+  name: string;
+  email: string;
+  phone?: string;
+  password: string;
+  permissions: string[];
+}
+
+export interface UpdateSubAdminDto {
+  name?: string;
+  phone?: string;
+  password?: string;
+  status?: "ACTIVE" | "INACTIVE";
+  permissions?: string[];
+}
+
 export interface AdminUserItem {
   id: string;
   name: string;
@@ -788,6 +817,56 @@ export const adminApi = {
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || `Failed to delete notification (Status: ${res.status})`);
+    }
+    return res.json();
+  },
+
+  // ----------------------------------------------------
+  // SUB-ADMINS & STAFF MANAGEMENT (SUPER_ADMIN ONLY)
+  // ----------------------------------------------------
+  async getSubAdmins(): Promise<AdminSubAdminItem[]> {
+    const res = await adminFetch(`${API_BASE_URL}/admin/sub-admins`, { headers: getAuthHeaders() });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to fetch sub-administrators");
+    }
+    return res.json();
+  },
+
+  async createSubAdmin(data: CreateSubAdminDto): Promise<AdminSubAdminItem> {
+    const res = await adminFetch(`${API_BASE_URL}/admin/sub-admins`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to create sub-admin account");
+    }
+    return res.json();
+  },
+
+  async updateSubAdmin(id: string, data: UpdateSubAdminDto): Promise<AdminSubAdminItem> {
+    const res = await adminFetch(`${API_BASE_URL}/admin/sub-admins/${id}`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to update sub-admin account");
+    }
+    return res.json();
+  },
+
+  async deleteSubAdmin(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await adminFetch(`${API_BASE_URL}/admin/sub-admins/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Failed to delete sub-admin account");
     }
     return res.json();
   },

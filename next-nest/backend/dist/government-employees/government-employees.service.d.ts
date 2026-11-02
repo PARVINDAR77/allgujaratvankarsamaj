@@ -382,6 +382,7 @@ export declare class GovernmentEmployeesService {
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
+                    permissions: string | null;
                 };
                 district: {
                     name: string;
@@ -524,6 +525,7 @@ export declare class GovernmentEmployeesService {
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
+                    permissions: string | null;
                 };
                 district: {
                     name: string;

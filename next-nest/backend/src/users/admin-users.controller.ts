@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Patch,
+  Post,
   UseGuards,
   Request,
   ForbiddenException,
@@ -154,6 +155,59 @@ export class AdminUsersController {
     }
     const ipAddress = req.ip || req.connection?.remoteAddress || null;
     return this.usersService.deleteProfileAdmin(id, req.user.id, ipAddress);
+  }
+
+  // =========================================================================
+  // SUB-ADMIN STAFF MANAGEMENT (SUPER_ADMIN ONLY)
+  // =========================================================================
+
+  @Get("sub-admins")
+  @ApiOperation({ summary: "Get all sub-admin staff accounts (Super Admin only)" })
+  async getSubAdmins(@Request() req: any) {
+    if (req.user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException("માત્ર સુપર એડમિન સબ-એડમિન એકાઉન્ટ્સ જોઈ શકે છે (Only SUPER_ADMIN can view sub-admins)");
+    }
+    return this.usersService.getSubAdmins();
+  }
+
+  @Post("sub-admins")
+  @ApiOperation({ summary: "Create a new sub-admin staff account with granular permissions (Super Admin only)" })
+  async createSubAdmin(
+    @Request() req: any,
+    @Body() body: { name: string; email: string; phone?: string; password: string; permissions: string[] },
+  ) {
+    if (req.user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException("માત્ર સુપર એડમિન નવા સબ-એડમિન બનાવી શકે છે (Only SUPER_ADMIN can create sub-admins)");
+    }
+    const ipAddress = req.ip || req.connection?.remoteAddress || null;
+    return this.usersService.createSubAdmin(req.user.id, body, ipAddress);
+  }
+
+  @Patch("sub-admins/:id")
+  @ApiOperation({ summary: "Update a sub-admin staff account details & section permissions (Super Admin only)" })
+  async updateSubAdmin(
+    @Request() req: any,
+    @Param("id") id: string,
+    @Body() body: { name?: string; phone?: string; password?: string; status?: Status; permissions?: string[] },
+  ) {
+    if (req.user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException("માત્ર સુપર એડમિન સબ-એડમિનમાં ફેરફાર કરી શકે છે (Only SUPER_ADMIN can update sub-admins)");
+    }
+    const ipAddress = req.ip || req.connection?.remoteAddress || null;
+    return this.usersService.updateSubAdmin(req.user.id, id, body, ipAddress);
+  }
+
+  @Delete("sub-admins/:id")
+  @ApiOperation({ summary: "Delete a sub-admin staff account (Super Admin only)" })
+  async deleteSubAdmin(
+    @Request() req: any,
+    @Param("id") id: string,
+  ) {
+    if (req.user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException("માત્ર સુપર એડમિન સબ-એડમિન ડિલીટ કરી શકે છે (Only SUPER_ADMIN can delete sub-admins)");
+    }
+    const ipAddress = req.ip || req.connection?.remoteAddress || null;
+    return this.usersService.deleteSubAdmin(req.user.id, id, ipAddress);
   }
 }
 

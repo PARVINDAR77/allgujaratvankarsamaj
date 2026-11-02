@@ -25,12 +25,65 @@ export enum Permission {
   STATISTICS_VIEW = "statistics.view",
 }
 
+export enum AdminSection {
+  DASHBOARD = "dashboard",
+  USERS = "users",
+  PROFILES = "profiles",
+  GOVERNMENT_EMPLOYEES = "government_employees",
+  VERIFICATIONS = "verifications",
+  MATCHES = "matches",
+  EDUCATION = "education",
+  LOCATIONS = "locations",
+  SERVICES = "services",
+  PAVAN_PRERNADATA = "pavan_prernadata",
+  SAMAJ_SUPER_STARS = "samaj_super_stars",
+  SAMAJ_RATNA = "samaj_ratna",
+  HOME_SCREEN = "home_screen",
+  ADVERTISEMENTS = "advertisements",
+  NOTIFICATIONS = "notifications",
+  REPORTS = "reports",
+  OTP_ANALYTICS = "otp_analytics",
+  SETTINGS = "settings",
+}
+
 export enum AdminRole {
   SUPER_ADMIN = "SUPER_ADMIN",
   ADMIN = "ADMIN",
   VERIFICATION_ADMIN = "VERIFICATION_ADMIN",
   CONTENT_ADMIN = "CONTENT_ADMIN",
 }
+
+export const PermissionToSectionMap: Record<Permission, AdminSection[]> = {
+  [Permission.MEMBERS_READ]: [AdminSection.USERS, AdminSection.PROFILES],
+  [Permission.MEMBERS_UPDATE]: [AdminSection.USERS, AdminSection.PROFILES],
+  [Permission.MEMBERS_BLOCK]: [AdminSection.USERS],
+  [Permission.MEMBERS_DELETE]: [AdminSection.USERS, AdminSection.PROFILES],
+  [Permission.VERIFICATION_READ]: [AdminSection.VERIFICATIONS],
+  [Permission.VERIFICATION_REVIEW]: [AdminSection.VERIFICATIONS],
+  [Permission.GOVERNMENT_READ]: [AdminSection.GOVERNMENT_EMPLOYEES],
+  [Permission.GOVERNMENT_MANAGE]: [AdminSection.GOVERNMENT_EMPLOYEES],
+  [Permission.GOVERNMENT_FEATURE]: [AdminSection.GOVERNMENT_EMPLOYEES],
+  [Permission.CONTENT_READ]: [
+    AdminSection.ADVERTISEMENTS,
+    AdminSection.SERVICES,
+    AdminSection.HOME_SCREEN,
+    AdminSection.EDUCATION,
+    AdminSection.PAVAN_PRERNADATA,
+    AdminSection.SAMAJ_SUPER_STARS,
+    AdminSection.SAMAJ_RATNA,
+  ],
+  [Permission.CONTENT_MANAGE]: [
+    AdminSection.ADVERTISEMENTS,
+    AdminSection.SERVICES,
+    AdminSection.HOME_SCREEN,
+    AdminSection.EDUCATION,
+    AdminSection.PAVAN_PRERNADATA,
+    AdminSection.SAMAJ_SUPER_STARS,
+    AdminSection.SAMAJ_RATNA,
+  ],
+  [Permission.AUDIT_READ]: [AdminSection.DASHBOARD, AdminSection.OTP_ANALYTICS],
+  [Permission.STATISTICS_VIEW]: [AdminSection.DASHBOARD],
+};
 
 export const RolePermissions: Record<AdminRole, Permission[]> = {
   [AdminRole.SUPER_ADMIN]: Object.values(Permission), // Has all permissions

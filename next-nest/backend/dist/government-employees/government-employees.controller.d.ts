@@ -301,6 +301,7 @@ export declare class GovernmentEmployeesController {
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
+                    permissions: string | null;
                 };
                 district: {
                     name: string;
@@ -443,6 +444,7 @@ export declare class GovernmentEmployeesController {
                     phone: string | null;
                     passwordHash: string;
                     role: import(".prisma/client").$Enums.Role;
+                    permissions: string | null;
                 };
                 district: {
                     name: string;

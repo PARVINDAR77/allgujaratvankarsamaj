@@ -12,6 +12,7 @@ export declare class JwtStrategy extends JwtStrategy_base {
     private readonly usersService;
     constructor(configService: ConfigService, usersService: UsersService);
     validate(payload: JwtPayload): Promise<{
+        permissions: string[];
         hasProfile: boolean;
         isVerified: boolean;
         profileStatus: string;

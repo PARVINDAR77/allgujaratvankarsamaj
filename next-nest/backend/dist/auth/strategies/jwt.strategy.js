@@ -50,8 +50,18 @@ let JwtStrategy = class JwtStrategy extends (0, passport_1.PassportStrategy)(pas
         const isVerified = hasProfile &&
             profile?.isVerified === true &&
             (profile?.status === "APPROVED" || profile?.status === "APPROVED");
+        let parsedPermissions = [];
+        try {
+            if (result.permissions) {
+                parsedPermissions = typeof result.permissions === "string"
+                    ? JSON.parse(result.permissions)
+                    : result.permissions;
+            }
+        }
+        catch (_) { }
         return {
             ...result,
+            permissions: parsedPermissions,
             hasProfile,
             isVerified,
             profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),

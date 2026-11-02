@@ -225,6 +225,9 @@ export class PrismaService
             ALTER TABLE \`users\` ADD COLUMN IF NOT EXISTS \`is_phone_verified\` BOOLEAN NOT NULL DEFAULT false;
           `);
           await tx.$executeRawUnsafe(`
+            ALTER TABLE \`users\` ADD COLUMN IF NOT EXISTS \`permissions\` TEXT NULL;
+          `);
+          await tx.$executeRawUnsafe(`
             CREATE TABLE IF NOT EXISTS \`otp_sessions\` (
               \`id\` varchar(191) NOT NULL,
               \`target\` varchar(191) NOT NULL,

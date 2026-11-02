@@ -16,6 +16,7 @@ const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
 const client_1 = require("@prisma/client");
 const uuid_1 = require("uuid");
+const bcrypt = require("bcrypt");
 const normalize_profile_helper_1 = require("../profiles/dto/normalize-profile.helper");
 const profiles_service_1 = require("../profiles/profiles.service");
 function normalizePhoneNumber(phone) {
@@ -125,6 +126,7 @@ let UsersService = UsersService_1 = class UsersService {
                     phone: true,
                     status: true,
                     role: true,
+                    permissions: true,
                     createdAt: true,
                     profile: {
                         select: {
@@ -161,6 +163,7 @@ let UsersService = UsersService_1 = class UsersService {
                     phone: true,
                     status: true,
                     role: true,
+                    permissions: true,
                     createdAt: true,
                 },
             });
@@ -686,6 +689,193 @@ let UsersService = UsersService_1 = class UsersService {
             profiles_service_1.ProfilesService.clearMemoryProfile(resolvedUserId);
         }
         return res;
+    }
+    async getSubAdmins() {
+        const admins = await this.prisma.user.findMany({
+            where: {
+                role: {
+                    in: [client_1.Role.SUPER_ADMIN, client_1.Role.ADMIN, client_1.Role.VERIFICATION_ADMIN, client_1.Role.CONTENT_ADMIN],
+                },
+            },
+            orderBy: { createdAt: "desc" },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                role: true,
+                permissions: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        return admins.map((admin) => {
+            let parsedPermissions = [];
+            try {
+                if (admin.permissions) {
+                    parsedPermissions = typeof admin.permissions === "string" ? JSON.parse(admin.permissions) : admin.permissions;
+                }
+            }
+            catch (_) { }
+            return {
+                ...admin,
+                permissions: parsedPermissions,
+            };
+        });
+    }
+    async createSubAdmin(superAdminId, dto, ipAddress) {
+        if (!dto.email || !dto.name || !dto.password) {
+            throw new common_1.BadRequestException("નામ, ઇમેઇલ અને પાસવર્ડ જરૂરી છે (Name, Email, and Password are required)");
+        }
+        if (dto.password.trim().length < 6) {
+            throw new common_1.BadRequestException("પાસવર્ડ ઓછામાં ઓછા 6 અક્ષરોનો હોવો જોઈએ (Password must be at least 6 characters)");
+        }
+        const email = dto.email.trim().toLowerCase();
+        const existing = await this.prisma.user.findFirst({
+            where: {
+                OR: [
+                    { email },
+                    ...(dto.phone ? [{ phone: dto.phone.trim() }] : []),
+                ],
+            },
+        });
+        if (existing) {
+            throw new common_1.BadRequestException("આ ઇમેઇલ અથવા ફોન નંબર વાળો વપરાશકર્તા પહેલેથી હાજર છે (A user with this email or phone already exists)");
+        }
+        const passwordHash = await bcrypt.hash(dto.password.trim(), 10);
+        const permissionsJson = JSON.stringify(dto.permissions || []);
+        return this.prisma.$transaction(async (tx) => {
+            const newAdmin = await tx.user.create({
+                data: {
+                    name: dto.name.trim(),
+                    email,
+                    phone: dto.phone ? dto.phone.trim() : null,
+                    passwordHash,
+                    role: client_1.Role.ADMIN,
+                    permissions: permissionsJson,
+                    status: client_1.Status.ACTIVE,
+                    isEmailVerified: true,
+                    isPhoneVerified: true,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    phone: true,
+                    role: true,
+                    permissions: true,
+                    status: true,
+                    createdAt: true,
+                },
+            });
+            await tx.adminAuditLog.create({
+                data: {
+                    adminId: superAdminId,
+                    action: "CREATE_SUB_ADMIN",
+                    entityType: "USER",
+                    entityId: newAdmin.id,
+                    newValue: JSON.stringify({ name: dto.name, email, permissions: dto.permissions }),
+                    ipAddress: ipAddress || null,
+                },
+            });
+            return {
+                ...newAdmin,
+                permissions: dto.permissions || [],
+            };
+        });
+    }
+    async updateSubAdmin(superAdminId, id, dto, ipAddress) {
+        const existing = await this.prisma.user.findUnique({
+            where: { id },
+        });
+        if (!existing) {
+            throw new common_1.NotFoundException("સબ-એડમિન એકાઉન્ટ મળ્યું નથી (Admin account not found)");
+        }
+        if (existing.role === client_1.Role.SUPER_ADMIN && existing.id !== superAdminId) {
+            throw new common_1.ForbiddenException("અન્ય સુપર એડમિન એકાઉન્ટમાં ફેરફાર કરી શકાતો નથી (Cannot modify another Super Admin account)");
+        }
+        const updateData = {};
+        if (dto.name !== undefined)
+            updateData.name = dto.name.trim();
+        if (dto.phone !== undefined)
+            updateData.phone = dto.phone ? dto.phone.trim() : null;
+        if (dto.status !== undefined)
+            updateData.status = dto.status;
+        if (dto.permissions !== undefined) {
+            updateData.permissions = JSON.stringify(dto.permissions);
+        }
+        if (dto.password && dto.password.trim().length >= 6) {
+            updateData.passwordHash = await bcrypt.hash(dto.password.trim(), 10);
+        }
+        return this.prisma.$transaction(async (tx) => {
+            const updated = await tx.user.update({
+                where: { id },
+                data: updateData,
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    phone: true,
+                    role: true,
+                    permissions: true,
+                    status: true,
+                    updatedAt: true,
+                },
+            });
+            await tx.adminAuditLog.create({
+                data: {
+                    adminId: superAdminId,
+                    action: "UPDATE_SUB_ADMIN",
+                    entityType: "USER",
+                    entityId: id,
+                    oldValue: JSON.stringify({ name: existing.name, permissions: existing.permissions, status: existing.status }),
+                    newValue: JSON.stringify(updateData),
+                    ipAddress: ipAddress || null,
+                },
+            });
+            let parsedPermissions = [];
+            try {
+                if (updated.permissions) {
+                    parsedPermissions = typeof updated.permissions === "string" ? JSON.parse(updated.permissions) : updated.permissions;
+                }
+            }
+            catch (_) { }
+            return {
+                ...updated,
+                permissions: parsedPermissions,
+            };
+        });
+    }
+    async deleteSubAdmin(superAdminId, id, ipAddress) {
+        if (superAdminId === id) {
+            throw new common_1.BadRequestException("તમે તમારું પોતાનું સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકતા નથી (You cannot delete your own Super Admin account)");
+        }
+        const existing = await this.prisma.user.findUnique({
+            where: { id },
+        });
+        if (!existing) {
+            throw new common_1.NotFoundException("સબ-એડમિન એકાઉન્ટ મળ્યું નથી (Admin account not found)");
+        }
+        if (existing.role === client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("સુપર એડમિન એકાઉન્ટ ડિલીટ કરી શકાતું નથી (Cannot delete a Super Admin account)");
+        }
+        return this.prisma.$transaction(async (tx) => {
+            await tx.user.delete({
+                where: { id },
+            });
+            await tx.adminAuditLog.create({
+                data: {
+                    adminId: superAdminId,
+                    action: "DELETE_SUB_ADMIN",
+                    entityType: "USER",
+                    entityId: id,
+                    oldValue: JSON.stringify({ name: existing.name, email: existing.email }),
+                    ipAddress: ipAddress || null,
+                },
+            });
+            return { success: true, message: "સબ-એડમિન એકાઉન્ટ સફળતાપૂર્વક ડિલીટ કર્યું (Sub-admin account deleted successfully)" };
+        });
     }
 };
 exports.UsersService = UsersService;

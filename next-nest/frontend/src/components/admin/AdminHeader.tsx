@@ -29,28 +29,30 @@ interface AdminNavPage {
   icon: string;
   category: string;
   keywords: string;
+  permissionKey?: string;
 }
 
 const ADMIN_NAV_PAGES: AdminNavPage[] = [
-  { name: "Profiles Management", gujarati: "વર-કન્યા પ્રોફાઇલ્સ", href: "/admin/profiles", icon: "👤", category: "Candidates", keywords: "profile candidate groom bride biodata rishta લગ્ન ઉમેદવાર bio" },
-  { name: "User Management", gujarati: "સભ્યો એકાઉન્ટ", href: "/admin/users", icon: "👥", category: "Users", keywords: "users accounts members login સભ્યો એકાઉન્ટ" },
-  { name: "Verifications (KYC)", gujarati: "ઓળખ ચકાસણી", href: "/admin/verifications", icon: "🛡️", category: "KYC", keywords: "verification voter id dl driving license document kyc પુરાવા ચકાસણી ઓળખપત્ર" },
-  { name: "Education (5 Boxes)", gujarati: "શિક્ષણ માર્ગદર્શન (૫ બોક્સ)", href: "/admin/education", icon: "🎓", category: "Community", keywords: "education study video guidance pdf પુસ્તક શિક્ષણ બોર્ડ" },
-  { name: "Government Employees", gujarati: "સરકારી અને ખાનગી કર્મચારીઓ", href: "/admin/government-employees", icon: "💼", category: "Community", keywords: "govt government employee job nokri કર્મચારી નોકરી" },
-  { name: "Matches & Compatibility", gujarati: "મેચમેકિંગ અને પસંદગી", href: "/admin/matches", icon: "💖", category: "Matchmaking", keywords: "matches match compatibility interest પસંદગી મેચ" },
-  { name: "Samaj Super Stars", gujarati: "સમાજ સુપર સ્ટાર્સ", href: "/admin/samaj-super-stars", icon: "🌟", category: "Honors", keywords: "super stars superstars achievements સિદ્ધિ ગૌરવ સ્ટાર" },
-  { name: "Samaj Ratna", gujarati: "સમાજ રત્ન એવોર્ડ", href: "/admin/samaj-ratna", icon: "🏆", category: "Honors", keywords: "samaj ratna award honors રત્ન એવોર્ડ સન્માન" },
-  { name: "Samaj Services", gujarati: "સમાજ સેવાઓ / વેન્ડર્સ", href: "/admin/services", icon: "🤝", category: "Services", keywords: "services business caterer mandap photographer સેવાઓ કેટરર્સ" },
-  { name: "Pavan Prernadata", gujarati: "પાવન પ્રેરણાદાતા", href: "/admin/pavan-prernadata", icon: "📖", category: "Heritage", keywords: "pavan prernadata inspiration history ઇતિહાસ પ્રેરણા મહાપુરુષ" },
-  { name: "Locations & Villages", gujarati: "ગામ અને તાલુકા", href: "/admin/locations", icon: "📍", category: "Locations", keywords: "locations villages taluka district ગામ તાલુકો જિલ્લો" },
-  { name: "Parganas Directory", gujarati: "પરગણા યાદી", href: "/admin/parganas", icon: "🏛️", category: "Locations", keywords: "pargana parganas region વિસ્તાર પરગણું ૧૨ પરગણા" },
-  { name: "Photo Moderation", gujarati: "ફોટો ચકાસણી", href: "/admin/photos", icon: "🖼️", category: "Moderation", keywords: "photos images pictures avatar ફોટા મંજૂરી" },
-  { name: "Advertisements & Banners", gujarati: "જાહેરાત અને બેનર્સ", href: "/admin/advertisements", icon: "📢", category: "Marketing", keywords: "ads advertisements banners જાહેરાત પ્રમોશન સ્પોન્સર" },
-  { name: "Home Screen Banners", gujarati: "હોમ સ્ક્રીન બેનર્સ", href: "/admin/home-screen", icon: "📱", category: "App Setup", keywords: "home screen mobile app banners હોમ સ્ક્રીન" },
-  { name: "Notifications Broadcast", gujarati: "સંદેશાઓ / નોટિફિકેશન", href: "/admin/notifications", icon: "🔔", category: "System", keywords: "notifications broadcast push alert સૂચના મેસેજ" },
-  { name: "Reports & Grievances", gujarati: "ફરિયાદ નિવારણ", href: "/admin/reports", icon: "📈", category: "Moderation", keywords: "reports complaints issues flag ફરિયાદ બ્લોક રિપોર્ટ" },
-  { name: "System Settings", gujarati: "સિસ્ટમ સેટિંગ્સ", href: "/admin/settings", icon: "⚙️", category: "System", keywords: "settings config maintenance સેટિંગ્સ સિસ્ટમ" },
-  { name: "Dashboard Overview", gujarati: "ડેશબોર્ડ આંકડાકીય વિગત", href: "/admin/dashboard", icon: "📊", category: "Analytics", keywords: "dashboard stats analytics summary ડેશબોર્ડ આંકડા" },
+  { name: "Dashboard Overview", gujarati: "ડેશબોર્ડ આંકડાકીય વિગત", href: "/admin/dashboard", icon: "📊", category: "Analytics", keywords: "dashboard stats analytics summary ડેશબોર્ડ આંકડા", permissionKey: "dashboard" },
+  { name: "Profiles Management", gujarati: "વર-કન્યા પ્રોફાઇલ્સ", href: "/admin/profiles", icon: "👤", category: "Candidates", keywords: "profile candidate groom bride biodata rishta લગ્ન ઉમેદવાર bio", permissionKey: "profiles" },
+  { name: "User Management", gujarati: "સભ્યો એકાઉન્ટ", href: "/admin/users", icon: "👥", category: "Users", keywords: "users accounts members login સભ્યો એકાઉન્ટ", permissionKey: "users" },
+  { name: "Verifications (KYC)", gujarati: "ઓળખ ચકાસણી", href: "/admin/verifications", icon: "🛡️", category: "KYC", keywords: "verification voter id dl driving license document kyc પુરાવા ચકાસણી ઓળખપત્ર", permissionKey: "verifications" },
+  { name: "Sub-Admins / Staff", gujarati: "સબ-એડમિન વ્યવસ્થાપન", href: "/admin/admins", icon: "👑", category: "System", keywords: "admins subadmin sub-admin staff roles permissions સબ એડમિન સ્ટાફ", permissionKey: "super_admin_only" },
+  { name: "Education (5 Boxes)", gujarati: "શિક્ષણ માર્ગદર્શન (૫ બોક્સ)", href: "/admin/education", icon: "🎓", category: "Community", keywords: "education study video guidance pdf પુસ્તક શિક્ષણ બોર્ડ", permissionKey: "education" },
+  { name: "Government Employees", gujarati: "સરકારી અને ખાનગી કર્મચારીઓ", href: "/admin/government-employees", icon: "💼", category: "Community", keywords: "govt government employee job nokri કર્મચારી નોકરી", permissionKey: "government_employees" },
+  { name: "Matches & Compatibility", gujarati: "મેચમેકિંગ અને પસંદગી", href: "/admin/matches", icon: "💖", category: "Matchmaking", keywords: "matches match compatibility interest પસંદગી મેચ", permissionKey: "matches" },
+  { name: "Samaj Super Stars", gujarati: "સમાજ સુપર સ્ટાર્સ", href: "/admin/samaj-super-stars", icon: "🌟", category: "Honors", keywords: "super stars superstars achievements સિદ્ધિ ગૌરવ સ્ટાર", permissionKey: "samaj_super_stars" },
+  { name: "Samaj Ratna", gujarati: "સમાજ રત્ન એવોર્ડ", href: "/admin/samaj-ratna", icon: "🏆", category: "Honors", keywords: "samaj ratna award honors રત્ન એવોર્ડ સન્માન", permissionKey: "samaj_ratna" },
+  { name: "Samaj Services", gujarati: "સમાજ સેવાઓ / વેન્ડર્સ", href: "/admin/services", icon: "🤝", category: "Services", keywords: "services business caterer mandap photographer સેવાઓ કેટરર્સ", permissionKey: "services" },
+  { name: "Pavan Prernadata", gujarati: "પાવન પ્રેરણાદાતા", href: "/admin/pavan-prernadata", icon: "📖", category: "Heritage", keywords: "pavan prernadata inspiration history ઇતિહાસ પ્રેરણા મહાપુરુષ", permissionKey: "pavan_prernadata" },
+  { name: "Locations & Villages", gujarati: "ગામ અને તાલુકા", href: "/admin/locations", icon: "📍", category: "Locations", keywords: "locations villages taluka district ગામ તાલુકો જિલ્લો", permissionKey: "locations" },
+  { name: "Parganas Directory", gujarati: "પરગણા યાદી", href: "/admin/parganas", icon: "🏛️", category: "Locations", keywords: "pargana parganas region વિસ્તાર પરગણું ૧૨ પરગણા", permissionKey: "locations" },
+  { name: "Advertisements & Banners", gujarati: "જાહેરાત અને બેનર્સ", href: "/admin/advertisements", icon: "📢", category: "Marketing", keywords: "ads advertisements banners જાહેરાત પ્રમોશન સ્પોન્સર", permissionKey: "advertisements" },
+  { name: "Home Screen Banners", gujarati: "હોમ સ્ક્રીન બેનર્સ", href: "/admin/home-screen", icon: "📱", category: "App Setup", keywords: "home screen mobile app banners હોમ સ્ક્રીન", permissionKey: "home_screen" },
+  { name: "Notifications Broadcast", gujarati: "સંદેશાઓ / નોટિફિકેશન", href: "/admin/notifications", icon: "🔔", category: "System", keywords: "notifications broadcast push alert સૂચના મેસેજ", permissionKey: "notifications" },
+  { name: "Reports & Grievances", gujarati: "ફરિયાદ નિવારણ", href: "/admin/reports", icon: "📈", category: "Moderation", keywords: "reports complaints issues flag ફરિયાદ બ્લોક રિપોર્ટ", permissionKey: "reports" },
+  { name: "OTP & SMS Analytics", gujarati: "ઓટીપી વિશ્લેષણ", href: "/admin/otp-analytics", icon: "💬", category: "System", keywords: "otp sms analytics ઓટીપી એસએમએસ", permissionKey: "otp_analytics" },
+  { name: "System Settings", gujarati: "સિસ્ટમ સેટિંગ્સ", href: "/admin/settings", icon: "⚙️", category: "System", keywords: "settings config maintenance સેટિંગ્સ સિસ્ટમ", permissionKey: "settings" },
 ];
 
 export const AdminHeader: React.FC<AdminHeaderProps> = ({
@@ -94,10 +96,9 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
 
   const adminDisplayName = adminUser?.name || "Admin Officer";
   const adminDisplayEmail = adminUser?.email || "admin@vankarsamaj.org";
-  const adminDisplayRole =
-    adminUser?.role === "SUPER_ADMIN"
-      ? "Super Administrator"
-      : adminUser?.role || "Super Administrator";
+    const isSuperAdmin = adminUser?.role === "SUPER_ADMIN";
+  const userPerms: string[] = Array.isArray((adminUser as any)?.permissions) ? (adminUser as any).permissions : [];
+  const adminDisplayRole = isSuperAdmin ? "Super Administrator" : "Sub-Admin Officer";
   const adminInitial = (adminDisplayName[0] || "A").toUpperCase();
 
   // Close dropdowns on outside click
@@ -278,16 +279,24 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
   // Filter calculation
   const cleanQuery = searchQuery.trim().toLowerCase();
 
+    const accessibleNavPages = ADMIN_NAV_PAGES.filter((p) => {
+    if (p.permissionKey === "super_admin_only") return isSuperAdmin;
+    if (isSuperAdmin) return true;
+    if (!p.permissionKey) return true;
+    return userPerms.includes(p.permissionKey);
+  });
+
   const matchedPages = cleanQuery
-    ? ADMIN_NAV_PAGES.filter(
+    ? accessibleNavPages.filter(
         (p) =>
           p.name.toLowerCase().includes(cleanQuery) ||
           p.gujarati.toLowerCase().includes(cleanQuery) ||
           p.keywords.toLowerCase().includes(cleanQuery)
       )
-    : ADMIN_NAV_PAGES.slice(0, 6);
+    : accessibleNavPages.slice(0, 6);
 
-  const matchedProfiles = cleanQuery
+  const canViewProfiles = isSuperAdmin || userPerms.includes("profiles");
+  const matchedProfiles = (cleanQuery && canViewProfiles)
     ? cachedProfiles.filter((p) => {
         if (!p) return false;
         return (
@@ -304,7 +313,8 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
       }).slice(0, 10)
     : [];
 
-  const matchedUsers = cleanQuery
+  const canViewUsers = isSuperAdmin || userPerms.includes("users");
+  const matchedUsers = (cleanQuery && canViewUsers)
     ? cachedUsers.filter((u) => {
         if (!u) return false;
         return (

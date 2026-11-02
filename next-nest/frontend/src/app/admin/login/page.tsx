@@ -27,7 +27,36 @@ export default function AdminLoginPage() {
             localStorage.setItem("adminToken", data.accessToken);
           }
         }
-        router.push("/admin/dashboard");
+        const isSuperAdmin = data.user?.role === "SUPER_ADMIN";
+        const userPerms: string[] = Array.isArray(data.user?.permissions) ? data.user.permissions : [];
+
+        if (isSuperAdmin || userPerms.includes("dashboard")) {
+          router.push("/admin/dashboard");
+        } else if (userPerms.length > 0) {
+          const SECTION_ROUTE_MAP: Record<string, string> = {
+            verifications: "/admin/verifications",
+            users: "/admin/users",
+            profiles: "/admin/profiles",
+            government_employees: "/admin/government-employees",
+            matches: "/admin/matches",
+            education: "/admin/education",
+            locations: "/admin/locations",
+            services: "/admin/services",
+            pavan_prernadata: "/admin/pavan-prernadata",
+            samaj_super_stars: "/admin/samaj-super-stars",
+            samaj_ratna: "/admin/samaj-ratna",
+            home_screen: "/admin/home-screen",
+            advertisements: "/admin/advertisements",
+            notifications: "/admin/notifications",
+            reports: "/admin/reports",
+            otp_analytics: "/admin/otp-analytics",
+            settings: "/admin/settings",
+          };
+          const target = SECTION_ROUTE_MAP[userPerms[0]] || "/admin/dashboard";
+          router.push(target);
+        } else {
+          router.push("/admin/dashboard");
+        }
       } else {
         setError("Please enter valid administrator credentials.");
       }

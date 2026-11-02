@@ -5,6 +5,8 @@ import {
   Permission,
   RolePermissions,
   AdminRole,
+  PermissionToSectionMap,
+  AdminSection,
 } from "../constants/permissions";
 
 @Injectable()
@@ -27,15 +29,34 @@ export class PermissionsGuard implements CanActivate {
       return false;
     }
 
-    // Convert DB role string to AdminRole enum (if it's a valid admin role)
+    // Super Admin has unrestricted access to everything
+    if (user.role === "SUPER_ADMIN") {
+      return true;
+    }
+
+    // Extract user permissions
+    let userPermissions: string[] = [];
+    if (Array.isArray(user.permissions)) {
+      userPermissions = user.permissions;
+    } else if (typeof user.permissions === "string") {
+      try {
+        userPermissions = JSON.parse(user.permissions);
+      } catch (_) {}
+    }
+
+    // Also include legacy role permissions if configured
     const userRole = user.role as AdminRole;
+    const legacyPerms = RolePermissions[userRole] || [];
 
-    // Check if the user's role is defined in our RolePermissions map
-    const userPermissions = RolePermissions[userRole] || [];
-
-    // The user must have ALL required permissions for the endpoint
-    return requiredPermissions.every((permission) =>
-      userPermissions.includes(permission),
-    );
+    // The user must satisfy the required permissions
+    return requiredPermissions.every((perm) => {
+      // Direct permission match
+      if (userPermissions.includes(perm) || legacyPerms.includes(perm)) {
+        return true;
+      }
+      // Section-level match
+      const mappedSections = PermissionToSectionMap[perm] || [];
+      return mappedSections.some((sec) => userPermissions.includes(sec));
+    });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect, UIEvent } from "react";
+import React, { useRef, useEffect, useState, useMemo, UIEvent } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -9,49 +9,62 @@ interface AdminSidebarProps {
   onClose: () => void;
 }
 
-const menuSections = [
+interface MenuItem {
+  name: string;
+  href: string;
+  icon: string;
+  permissionKey: string;
+}
+
+interface MenuSection {
+  title: string;
+  items: MenuItem[];
+}
+
+const menuSections: MenuSection[] = [
   {
     title: "DASHBOARD",
     items: [
-      { name: "Dashboard", href: "/admin/dashboard", icon: "📊" },
+      { name: "Dashboard", href: "/admin/dashboard", icon: "📊", permissionKey: "dashboard" },
     ],
   },
   {
     title: "USER MANAGEMENT",
     items: [
-      { name: "Users", href: "/admin/users", icon: "👥" },
-      { name: "Profiles", href: "/admin/profiles", icon: "👤" },
-      { name: "Govt. Employees", href: "/admin/government-employees", icon: "💼" },
-      { name: "Verifications", href: "/admin/verifications", icon: "🛡️" },
+      { name: "Users", href: "/admin/users", icon: "👥", permissionKey: "users" },
+      { name: "Profiles", href: "/admin/profiles", icon: "👤", permissionKey: "profiles" },
+      { name: "Govt. Employees", href: "/admin/government-employees", icon: "💼", permissionKey: "government_employees" },
+      { name: "Verifications", href: "/admin/verifications", icon: "🛡️", permissionKey: "verifications" },
+      { name: "Sub-Admins / Staff", href: "/admin/admins", icon: "👑", permissionKey: "super_admin_only" },
     ],
   },
   {
     title: "MATCHMAKING",
     items: [
-      { name: "Matches", href: "/admin/matches", icon: "💖" },
+      { name: "Matches", href: "/admin/matches", icon: "💖", permissionKey: "matches" },
     ],
   },
   {
     title: "COMMUNITY & SERVICES",
     items: [
-      { name: "Education (5 Boxes)", href: "/admin/education", icon: "🎓" },
-      { name: "Locations", href: "/admin/locations", icon: "📍" },
-      { name: "Parganas", href: "/admin/parganas", icon: "🏛️" },
-      { name: "Samaj Services", href: "/admin/services", icon: "🤝" },
-      { name: "Pavan Prernadata", href: "/admin/pavan-prernadata", icon: "📖" },
-      { name: "Samaj Super Stars", href: "/admin/samaj-super-stars", icon: "🌟" },
-      { name: "Samaj Ratna", href: "/admin/samaj-ratna", icon: "🏆" },
+      { name: "Education (5 Boxes)", href: "/admin/education", icon: "🎓", permissionKey: "education" },
+      { name: "Locations", href: "/admin/locations", icon: "📍", permissionKey: "locations" },
+      { name: "Parganas", href: "/admin/parganas", icon: "🏛️", permissionKey: "locations" },
+      { name: "Samaj Services", href: "/admin/services", icon: "🤝", permissionKey: "services" },
+      { name: "Pavan Prernadata", href: "/admin/pavan-prernadata", icon: "📖", permissionKey: "pavan_prernadata" },
+      { name: "Samaj Super Stars", href: "/admin/samaj-super-stars", icon: "🌟", permissionKey: "samaj_super_stars" },
+      { name: "Samaj Ratna", href: "/admin/samaj-ratna", icon: "🏆", permissionKey: "samaj_ratna" },
     ],
   },
   {
     title: "CONTENT & SYSTEM",
     items: [
-      { name: "Home Screen", href: "/admin/home-screen", icon: "📱" },
-      { name: "Advertisements", href: "/admin/advertisements", icon: "📢" },
-      { name: "Notifications", href: "/admin/notifications", icon: "🔔" },
-      { name: "Reports", href: "/admin/reports", icon: "📈" },
-      { name: "OTP & SMS Analytics", href: "/admin/otp-analytics", icon: "💬" },
-      { name: "Settings", href: "/admin/settings", icon: "⚙️" },
+      { name: "Home Screen", href: "/admin/home-screen", icon: "📱", permissionKey: "home_screen" },
+      { name: "Advertisements", href: "/admin/advertisements", icon: "📢", permissionKey: "advertisements" },
+      { name: "Notifications", href: "/admin/notifications", icon: "🔔", permissionKey: "notifications" },
+      { name: "Reports", href: "/admin/reports", icon: "📈", permissionKey: "reports" },
+      { name: "OTP & SMS Analytics", href: "/admin/otp-analytics", icon: "💬", permissionKey: "otp_analytics" },
+      { name: "Settings", href: "/admin/settings", icon: "⚙️", permissionKey: "settings" },
     ],
   },
 ];
@@ -62,6 +75,39 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
 
   const navContainerRef = useRef<HTMLDivElement>(null);
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
+
+  // Authenticated Admin User
+  const [adminUser, setAdminUser] = useState<any>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("adminUser");
+      if (stored) {
+        setAdminUser(JSON.parse(stored));
+      }
+    } catch (_) {}
+  }, []);
+
+  const isSuperAdmin = adminUser?.role === "SUPER_ADMIN";
+  const userPerms: string[] = Array.isArray(adminUser?.permissions) ? adminUser.permissions : [];
+
+  // Filter sections dynamically based on sub-admin permissions
+  const visibleSections = useMemo(() => {
+    return menuSections
+      .map((section) => {
+        const filteredItems = section.items.filter((item) => {
+          if (item.permissionKey === "super_admin_only") {
+            return isSuperAdmin;
+          }
+          if (isSuperAdmin) {
+            return true;
+          }
+          return userPerms.includes(item.permissionKey);
+        });
+        return { ...section, items: filteredItems };
+      })
+      .filter((section) => section.items.length > 0);
+  }, [isSuperAdmin, userPerms]);
 
   // Restore scroll position or scroll active item into view on route change
   useEffect(() => {
@@ -250,7 +296,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           }}
           className="flex flex-col flex-1 custom-scrollbar"
         >
-          {menuSections.map((section, idx) => (
+          {visibleSections.map((section, idx) => (
             <div key={idx} style={{ gap: "5px" }} className="flex flex-col">
               <h2
                 style={{
@@ -318,9 +364,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
           className="shrink-0 flex flex-col gap-2.5"
         >
           <div className="flex items-center justify-between text-xs px-1 text-slate-400">
-            <span className="truncate">Administrator Session</span>
-            <span className="text-[10px] font-extrabold text-[#D4AF37] bg-[#D4AF37]/10 px-2 py-0.5 rounded border border-[#D4AF37]/30">
-              SECURE
+            <span className="truncate font-semibold text-slate-300">
+              {adminUser?.name || "Administrator"}
+            </span>
+            <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded border ${
+              isSuperAdmin
+                ? "text-[#D4AF37] bg-[#D4AF37]/10 border-[#D4AF37]/30"
+                : "text-sky-300 bg-sky-500/10 border-sky-500/30"
+            }`}>
+              {isSuperAdmin ? "SUPER ADMIN" : "SUB-ADMIN"}
             </span>
           </div>
           <button

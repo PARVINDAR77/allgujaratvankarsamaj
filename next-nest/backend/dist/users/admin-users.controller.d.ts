@@ -67,4 +67,51 @@ export declare class AdminUsersController {
         success: boolean;
         message: string;
     }>;
+    getSubAdmins(req: any): Promise<{
+        permissions: string[];
+        status: import(".prisma/client").$Enums.Status;
+        name: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+    }[]>;
+    createSubAdmin(req: any, body: {
+        name: string;
+        email: string;
+        phone?: string;
+        password: string;
+        permissions: string[];
+    }): Promise<{
+        permissions: string[];
+        status: import(".prisma/client").$Enums.Status;
+        name: string;
+        id: string;
+        createdAt: Date;
+        email: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
+    updateSubAdmin(req: any, id: string, body: {
+        name?: string;
+        phone?: string;
+        password?: string;
+        status?: Status;
+        permissions?: string[];
+    }): Promise<{
+        permissions: string[];
+        status: import(".prisma/client").$Enums.Status;
+        name: string;
+        id: string;
+        updatedAt: Date;
+        email: string;
+        phone: string;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
+    deleteSubAdmin(req: any, id: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

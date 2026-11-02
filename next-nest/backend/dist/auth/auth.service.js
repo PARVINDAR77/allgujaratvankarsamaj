@@ -124,10 +124,20 @@ let AuthService = AuthService_1 = class AuthService {
         const isVerified = hasProfile &&
             profile?.isVerified === true &&
             profile?.status === client_1.ProfileStatus.APPROVED;
+        let parsedPermissions = [];
+        try {
+            if (user.permissions) {
+                parsedPermissions = typeof user.permissions === "string"
+                    ? JSON.parse(user.permissions)
+                    : user.permissions;
+            }
+        }
+        catch (_) { }
         const payload = {
             sub: user.id,
             email: user.email,
             role: user.role,
+            permissions: parsedPermissions,
             isVerified,
             hasProfile,
         };
@@ -138,6 +148,7 @@ let AuthService = AuthService_1 = class AuthService {
             accessToken,
             user: {
                 ...safeUser,
+                permissions: parsedPermissions,
                 isVerified,
                 hasProfile,
                 profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),
@@ -164,9 +175,19 @@ let AuthService = AuthService_1 = class AuthService {
         const isVerified = hasProfile &&
             profile?.isVerified === true &&
             profile?.status === client_1.ProfileStatus.APPROVED;
+        let parsedPermissions = [];
+        try {
+            if (user.permissions) {
+                parsedPermissions = typeof user.permissions === "string"
+                    ? JSON.parse(user.permissions)
+                    : user.permissions;
+            }
+        }
+        catch (_) { }
         const { passwordHash: _, ...safeUser } = user;
         return {
             ...safeUser,
+            permissions: parsedPermissions,
             isVerified,
             hasProfile,
             profileStatus: profile?.status ?? (hasProfile ? "PENDING" : "NOT_CREATED"),

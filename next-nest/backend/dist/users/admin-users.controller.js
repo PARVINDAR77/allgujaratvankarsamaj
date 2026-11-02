@@ -64,6 +64,33 @@ let AdminUsersController = class AdminUsersController {
         const ipAddress = req.ip || req.connection?.remoteAddress || null;
         return this.usersService.deleteProfileAdmin(id, req.user.id, ipAddress);
     }
+    async getSubAdmins(req) {
+        if (req.user.role !== client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("માત્ર સુપર એડમિન સબ-એડમિન એકાઉન્ટ્સ જોઈ શકે છે (Only SUPER_ADMIN can view sub-admins)");
+        }
+        return this.usersService.getSubAdmins();
+    }
+    async createSubAdmin(req, body) {
+        if (req.user.role !== client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("માત્ર સુપર એડમિન નવા સબ-એડમિન બનાવી શકે છે (Only SUPER_ADMIN can create sub-admins)");
+        }
+        const ipAddress = req.ip || req.connection?.remoteAddress || null;
+        return this.usersService.createSubAdmin(req.user.id, body, ipAddress);
+    }
+    async updateSubAdmin(req, id, body) {
+        if (req.user.role !== client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("માત્ર સુપર એડમિન સબ-એડમિનમાં ફેરફાર કરી શકે છે (Only SUPER_ADMIN can update sub-admins)");
+        }
+        const ipAddress = req.ip || req.connection?.remoteAddress || null;
+        return this.usersService.updateSubAdmin(req.user.id, id, body, ipAddress);
+    }
+    async deleteSubAdmin(req, id) {
+        if (req.user.role !== client_1.Role.SUPER_ADMIN) {
+            throw new common_1.ForbiddenException("માત્ર સુપર એડમિન સબ-એડમિન ડિલીટ કરી શકે છે (Only SUPER_ADMIN can delete sub-admins)");
+        }
+        const ipAddress = req.ip || req.connection?.remoteAddress || null;
+        return this.usersService.deleteSubAdmin(req.user.id, id, ipAddress);
+    }
 };
 exports.AdminUsersController = AdminUsersController;
 __decorate([
@@ -156,6 +183,42 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], AdminUsersController.prototype, "deleteProfileAdmin", null);
+__decorate([
+    (0, common_1.Get)("sub-admins"),
+    (0, swagger_1.ApiOperation)({ summary: "Get all sub-admin staff accounts (Super Admin only)" }),
+    __param(0, (0, common_1.Request)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AdminUsersController.prototype, "getSubAdmins", null);
+__decorate([
+    (0, common_1.Post)("sub-admins"),
+    (0, swagger_1.ApiOperation)({ summary: "Create a new sub-admin staff account with granular permissions (Super Admin only)" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], AdminUsersController.prototype, "createSubAdmin", null);
+__decorate([
+    (0, common_1.Patch)("sub-admins/:id"),
+    (0, swagger_1.ApiOperation)({ summary: "Update a sub-admin staff account details & section permissions (Super Admin only)" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("id")),
+    __param(2, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String, Object]),
+    __metadata("design:returntype", Promise)
+], AdminUsersController.prototype, "updateSubAdmin", null);
+__decorate([
+    (0, common_1.Delete)("sub-admins/:id"),
+    (0, swagger_1.ApiOperation)({ summary: "Delete a sub-admin staff account (Super Admin only)" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], AdminUsersController.prototype, "deleteSubAdmin", null);
 exports.AdminUsersController = AdminUsersController = __decorate([
     (0, swagger_1.ApiTags)("Admin Users"),
     (0, swagger_1.ApiBearerAuth)(),

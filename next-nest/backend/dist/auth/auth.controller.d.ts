@@ -68,6 +68,7 @@ export declare class AuthController {
     login(dto: LoginDto, res: Response): Promise<{
         message: string;
         user: {
+            permissions: string[];
             isVerified: boolean;
             hasProfile: boolean;
             profileStatus: string;
@@ -91,6 +92,7 @@ export declare class AuthController {
         message: string;
     }>;
     getProfile(req: any): Promise<{
+        permissions: string[];
         isVerified: boolean;
         hasProfile: boolean;
         profileStatus: string;

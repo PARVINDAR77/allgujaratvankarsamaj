@@ -27,9 +27,28 @@ let PermissionsGuard = class PermissionsGuard {
         if (!user || !user.role) {
             return false;
         }
+        if (user.role === "SUPER_ADMIN") {
+            return true;
+        }
+        let userPermissions = [];
+        if (Array.isArray(user.permissions)) {
+            userPermissions = user.permissions;
+        }
+        else if (typeof user.permissions === "string") {
+            try {
+                userPermissions = JSON.parse(user.permissions);
+            }
+            catch (_) { }
+        }
         const userRole = user.role;
-        const userPermissions = permissions_1.RolePermissions[userRole] || [];
-        return requiredPermissions.every((permission) => userPermissions.includes(permission));
+        const legacyPerms = permissions_1.RolePermissions[userRole] || [];
+        return requiredPermissions.every((perm) => {
+            if (userPermissions.includes(perm) || legacyPerms.includes(perm)) {
+                return true;
+            }
+            const mappedSections = permissions_1.PermissionToSectionMap[perm] || [];
+            return mappedSections.some((sec) => userPermissions.includes(sec));
+        });
     }
 };
 exports.PermissionsGuard = PermissionsGuard;
