@@ -146,6 +146,7 @@ if [ -f "$TRIGGER_FILE" ]; then
     rm -f "$TRIGGER_FILE"
     FORCE_RESTART=1
     log "🔔 Explicit restart trigger file detected. Setting FORCE_RESTART=1 to initiate recovery."
+    (cd "$SCRIPT_DIR" && git pull origin main) >> "$LOG_FILE" 2>&1 || true
 fi
 
 # 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 8s budget)
