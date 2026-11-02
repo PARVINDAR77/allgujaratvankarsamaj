@@ -586,9 +586,7 @@ if ($action === 'deploy') {
                "git checkout -- keep_backend_alive.sh start_backend_daemon.sh 2>&1; " .
                "git pull origin main 2>&1; " .
                "chmod +x keep_backend_alive.sh start_backend_daemon.sh 2>&1; " .
-               "export PATH='/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH'; " .
-               "cd next-nest/backend && npx prisma generate 2>&1; cd " . escapeshellarg($project_dir) . " 2>&1; " .
-               "(crontab -l 2>/dev/null | grep -v 'keep_backend_alive.sh'; echo '* * * * * /bin/bash /home/u796269890/domains/allgujaratvankarsamaj.com/project_source/keep_backend_alive.sh >/dev/null 2>&1') | crontab - 2>/dev/null || true; " .
+                              "(crontab -l 2>/dev/null | grep -v 'keep_backend_alive.sh'; echo '* * * * * /bin/bash /home/u796269890/domains/allgujaratvankarsamaj.com/project_source/keep_backend_alive.sh >/dev/null 2>&1') | crontab - 2>/dev/null || true; " .
                "cp -rf next-nest/frontend/out/_next /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf next-nest/frontend/out/admin /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
                "cp -rf next-nest/frontend/out/login /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>&1; " .
