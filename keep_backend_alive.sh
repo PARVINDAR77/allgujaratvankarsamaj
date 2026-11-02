@@ -177,6 +177,10 @@ if [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
     mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>/dev/null || true
     ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>/dev/null || true
     ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads "$BACKEND_DIR/uploads" 2>/dev/null || true
+[ -d "$SCRIPT_DIR/next-nest/frontend/out/_next" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/_next" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
+[ -d "$SCRIPT_DIR/next-nest/frontend/out/admin" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/admin" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
+    [ -d "$SCRIPT_DIR/next-nest/frontend/out/_next" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/_next" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
+    [ -d "$SCRIPT_DIR/next-nest/frontend/out/admin" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/admin" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
 fi
 
 # 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 8s budget)
@@ -266,6 +270,8 @@ cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/all
 mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>/dev/null || true
 ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>/dev/null || true
 ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads "$BACKEND_DIR/uploads" 2>/dev/null || true
+[ -d "$SCRIPT_DIR/next-nest/frontend/out/_next" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/_next" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
+[ -d "$SCRIPT_DIR/next-nest/frontend/out/admin" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/admin" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
 
 if [ "$DAEMON_RUNNING" -eq 1 ]; then
     if ! can_restart; then
