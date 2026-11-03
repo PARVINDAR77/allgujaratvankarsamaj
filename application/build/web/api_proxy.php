@@ -21,6 +21,21 @@ define('WATCHDOG_COOLDOWN_SECS', 45);
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $uri = $_SERVER['REQUEST_URI'] ?? '/api/v1';
 
+// Normalize endpoint paths so un-prefixed requests reach NestJS /api/v1 routes
+$known_prefixes = [
+    'verifications', 'advertisements', 'auth', 'profiles', 'storage',
+    'interests', 'chat', 'notifications', 'master-data', 'parganas',
+    'locations', 'education', 'government-employees', 'samaj-services',
+    'samaj-super-stars', 'samaj-ratna', 'pavan-prernadata', 'shortlists',
+    'reports', 'settings', 'health', 'admin'
+];
+$prefix_regex = implode('|', $known_prefixes);
+if (preg_match('#^/(' . $prefix_regex . ')(?:[/?].*)?$#i', $uri)) {
+    $uri = '/api/v1' . $uri;
+} elseif (preg_match('#^/api/(?!v1/)(.*)$#i', $uri, $m)) {
+    $uri = '/api/v1/' . $m[1];
+}
+
 // Strict Origin & CORS validation (Exact scheme, hostname, and port)
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 $allowedOrigins = [

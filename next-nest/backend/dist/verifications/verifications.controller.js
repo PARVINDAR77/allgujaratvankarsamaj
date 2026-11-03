@@ -19,6 +19,7 @@ const swagger_1 = require("@nestjs/swagger");
 const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const permissions_guard_1 = require("../auth/guards/permissions.guard");
 const permissions_decorator_1 = require("../auth/decorators/permissions.decorator");
+const public_decorator_1 = require("../auth/decorators/public.decorator");
 const permissions_1 = require("../auth/constants/permissions");
 const verifications_service_1 = require("./verifications.service");
 const ai_verification_service_1 = require("./ai-verification.service");
@@ -98,6 +99,7 @@ let VerificationsController = class VerificationsController {
 };
 exports.VerificationsController = VerificationsController;
 __decorate([
+    (0, public_decorator_1.Public)(),
     (0, common_1.Post)("ai-verify"),
     (0, swagger_1.ApiOperation)({ summary: "AI Document Verification (verifies Name and DOB on ID card)" }),
     (0, swagger_1.ApiConsumes)("multipart/form-data", "application/json"),

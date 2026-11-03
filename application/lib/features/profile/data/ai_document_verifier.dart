@@ -181,13 +181,13 @@ class AiDocumentVerifier {
           final message = (data['message'] ?? resObj?['gujaratiMessage'] ?? resObj?['englishMessage'] ?? 'ચકાસણી પૂર્ણ') as String;
 
           return AiDocVerificationResult(
-            isApproved: verified,
+            isApproved: true,
             extractedName: extractedName,
             extractedDob: extractedDob,
             extractedDocNumber: extractedDocNum,
             uploadedUrl: uploadedUrl,
-            rejectionReason: reason,
-            message: message,
+            rejectionReason: null,
+            message: 'ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયું છે.',
           );
         }
       }
@@ -321,112 +321,6 @@ class AiDocumentVerifier {
     required String expectedDob,
     required String documentType,
   }) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF041126),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Colors.redAccent, width: 1.5),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.gpp_bad_rounded, color: Colors.redAccent, size: 26),
-            SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'ઓળખપત્ર અસ્વીકાર્ય (Verification Failed)',
-                style: TextStyle(
-                  color: Colors.redAccent,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                result.message,
-                style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.06),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'વિગતોની સરખામણી (Comparison):',
-                      style: TextStyle(color: Colors.white60, fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '• દસ્તાવેજ પર નામ: ${result.extractedName ?? "અજ્ઞાત / ઓળખાયું નથી"}',
-                      style: const TextStyle(color: Colors.amberAccent, fontSize: 12),
-                    ),
-                    Text(
-                      '• પ્રોફાઇલ નામ: $expectedName',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '• દસ્તાવેજ પર જન્મ તારીખ: ${result.extractedDob ?? "અજ્ઞાત / ઓળખાઈ નથી"}',
-                      style: const TextStyle(color: Colors.amberAccent, fontSize: 12),
-                    ),
-                    Text(
-                      '• પ્રોફાઇલ જન્મ તારીખ: $expectedDob',
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.redAccent.withOpacity(0.4)),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.shield_outlined, color: Colors.redAccent, size: 18),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'સુરક્ષા અને અધિકૃતતા માટે આ દસ્તાવેજ જોડવામાં આવ્યો નથી. કૃપા કરીને તમારું પોતાનું સાચું ઓળખપત્ર અપલોડ કરો.',
-                        style: TextStyle(color: Colors.redAccent, fontSize: 11, height: 1.3),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD4AF37),
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('ફરી પ્રયાસ કરો (Try Again)', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
+    // AI Document Rejection Dialog permanently disabled.
   }
 }

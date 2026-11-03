@@ -51,16 +51,19 @@ let AdvertisementsService = class AdvertisementsService {
     async findAllPublic(placement) {
         const now = new Date();
         const mappedPlacement = this.mapPlacement(placement);
+        const andConditions = [{ isActive: true }];
+        if (mappedPlacement) {
+            andConditions.push({ placement: mappedPlacement });
+        }
+        andConditions.push({
+            OR: [{ startAt: null }, { startAt: { lte: now } }],
+        });
+        andConditions.push({
+            OR: [{ endAt: null }, { endAt: { gte: now } }],
+        });
         return this.prisma.advertisement.findMany({
             where: {
-                isActive: true,
-                ...(mappedPlacement ? { placement: mappedPlacement } : {}),
-                OR: [{ startAt: null }, { startAt: { lte: now } }],
-                AND: [
-                    {
-                        OR: [{ endAt: null }, { endAt: { gte: now } }],
-                    },
-                ],
+                AND: andConditions,
             },
             orderBy: { sortOrder: "asc" },
         });

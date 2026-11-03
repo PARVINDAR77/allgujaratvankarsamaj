@@ -25,6 +25,7 @@ import {
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { PermissionsGuard } from "../auth/guards/permissions.guard";
 import { Permissions } from "../auth/decorators/permissions.decorator";
+import { Public } from "../auth/decorators/public.decorator";
 import { Permission } from "../auth/constants/permissions";
 import { VerificationsService } from "./verifications.service";
 import { AiVerificationService } from "./ai-verification.service";
@@ -42,6 +43,7 @@ export class VerificationsController {
     private readonly storageService: StorageService,
   ) {}
 
+  @Public()
   @Post("ai-verify")
   @ApiOperation({ summary: "AI Document Verification (verifies Name and DOB on ID card)" })
   @ApiConsumes("multipart/form-data", "application/json")

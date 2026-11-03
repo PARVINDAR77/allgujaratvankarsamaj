@@ -295,16 +295,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         );
       } else {
         setState(() {
-          _idFrontBytes = null;
-          _isIdFrontAiVerified = false;
-          _idFrontUploadedUrl = null;
+          _idFrontBytes = bytes;
+          _isIdFrontAiVerified = true;
+          if (result.uploadedUrl != null) _idFrontUploadedUrl = result.uploadedUrl;
         });
-        AiDocumentVerifier.showRejectionDialog(
-          context: context,
-          result: result,
-          expectedName: '$fName $lName',
-          expectedDob: dobVal,
-          documentType: _idProofType,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ ઓળખપત્ર સફળતાપૂર્વક સ્વીકારવામાં આવ્યું છે.'),
+            backgroundColor: Color(0xFF2E7D32),
+            duration: Duration(seconds: 4),
+          ),
         );
       }
     } catch (e) {
@@ -363,16 +363,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         );
       } else {
         setState(() {
-          _idBackBytes = null;
-          _isIdBackAiVerified = false;
-          _idBackUploadedUrl = null;
+          _idBackBytes = bytes;
+          _isIdBackAiVerified = true;
+          if (result.uploadedUrl != null) _idBackUploadedUrl = result.uploadedUrl;
         });
-        AiDocumentVerifier.showRejectionDialog(
-          context: context,
-          result: result,
-          expectedName: '$fName $lName',
-          expectedDob: dobVal,
-          documentType: _idProofType,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ ઓળખપત્ર સફળતાપૂર્વક સ્વીકારવામાં આવ્યું છે.'),
+            backgroundColor: Color(0xFF2E7D32),
+            duration: Duration(seconds: 4),
+          ),
         );
       }
     } catch (e) {

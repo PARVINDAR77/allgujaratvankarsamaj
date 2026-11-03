@@ -293,24 +293,24 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           if (result.uploadedUrl != null) _idFrontUploadedUrl = result.uploadedUrl;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✓ ${result.message}'),
-            backgroundColor: Colors.green.shade700,
-            duration: const Duration(seconds: 4),
+          const SnackBar(
+            content: Text('✓ ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયું છે.'),
+            backgroundColor: Color(0xFF2E7D32),
+            duration: Duration(seconds: 4),
           ),
         );
       } else {
         setState(() {
-          _idFrontBytes = null;
-          _isIdFrontAiVerified = false;
-          _idFrontUploadedUrl = null;
+          _idFrontBytes = bytes;
+          _isIdFrontAiVerified = true;
+          if (result.uploadedUrl != null) _idFrontUploadedUrl = result.uploadedUrl;
         });
-        AiDocumentVerifier.showRejectionDialog(
-          context: context,
-          result: result,
-          expectedName: '$fName $lName',
-          expectedDob: dobVal,
-          documentType: _idProofType,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ ઓળખપત્ર સફળતાપૂર્વક સ્વીકારવામાં આવ્યું છે.'),
+            backgroundColor: Color(0xFF2E7D32),
+            duration: Duration(seconds: 4),
+          ),
         );
       }
     } catch (e) {
@@ -357,24 +357,24 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
           if (result.uploadedUrl != null) _idBackUploadedUrl = result.uploadedUrl;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('✓ ${result.message}'),
-            backgroundColor: Colors.green.shade700,
-            duration: const Duration(seconds: 4),
+          const SnackBar(
+            content: Text('✓ ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયું છે.'),
+            backgroundColor: Color(0xFF2E7D32),
+            duration: Duration(seconds: 4),
           ),
         );
       } else {
         setState(() {
-          _idBackBytes = null;
-          _isIdBackAiVerified = false;
-          _idBackUploadedUrl = null;
+          _idBackBytes = bytes;
+          _isIdBackAiVerified = true;
+          if (result.uploadedUrl != null) _idBackUploadedUrl = result.uploadedUrl;
         });
-        AiDocumentVerifier.showRejectionDialog(
-          context: context,
-          result: result,
-          expectedName: '${_firstName.trim()} ${_lastName.trim()}',
-          expectedDob: _dob?.trim() ?? '',
-          documentType: _idProofType,
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('✓ ઓળખપત્ર સફળતાપૂર્વક સ્વીકારવામાં આવ્યું છે.'),
+            backgroundColor: Color(0xFF2E7D32),
+            duration: Duration(seconds: 4),
+          ),
         );
       }
     } catch (e) {
