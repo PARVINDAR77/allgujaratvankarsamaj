@@ -14,8 +14,8 @@ $restart_state_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/last_r
 
 define('MAX_REQUEST_BYTES', 10 * 1024 * 1024);   // 10 MB limit on request body
 define('MAX_RESPONSE_BYTES', 10 * 1024 * 1024);  // 10 MB limit on response body
-define('CONNECT_TIMEOUT_SECS', 3);
-define('TRANSFER_TIMEOUT_SECS', 15);
+define('CONNECT_TIMEOUT_SECS', 1);
+define('TRANSFER_TIMEOUT_SECS', 8);
 define('WATCHDOG_COOLDOWN_SECS', 45);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
@@ -488,6 +488,21 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
     }
     
     $hasSocket = file_exists($socket_file);
+    if (!$hasSocket) {
+        $tcpTest = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 0.5);
+        if (!$tcpTest) {
+            trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
+            http_response_code(502);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'statusCode' => 502,
+                'message' => 'Bad Gateway: Backend service is currently starting. Please retry in a few seconds.',
+                'restartUrl' => 'https://allgujaratvankarsamaj.com/restart_backend.php'
+            ]);
+            exit;
+        }
+        fclose($tcpTest);
+    }
     $upstreamUrl = $hasSocket ? ('http://localhost' . $uri) : ('http://127.0.0.1:3000' . $uri);
     
     $ch = curl_init();
@@ -568,19 +583,25 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
     }
     
     if ($execResult === false) {
+        trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
         if ($curlErrno === CURLE_OPERATION_TIMEDOUT || $curlErrno === 28) {
-            trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
             http_response_code(504);
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'statusCode' => 504,
-                'message' => 'Gateway Timeout: Backend request timed out after 15 seconds.'
+                'message' => 'Gateway Timeout: Backend request timed out after 8 seconds.'
             ]);
             exit;
         }
         
-        // Fallback to stream proxy with auto-recovery retry loop
-        return proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $trigger_file, $restart_state_file, $lock_file, $project_dir);
+        http_response_code(502);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'statusCode' => 502,
+            'message' => 'Bad Gateway: Backend connection failed. Automatic restart triggered.',
+            'restartUrl' => 'https://allgujaratvankarsamaj.com/restart_backend.php'
+        ]);
+        exit;
     }
     
     http_response_code($finalStatusCode);
