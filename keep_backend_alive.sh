@@ -174,11 +174,15 @@ if [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
     [ -f "$SCRIPT_DIR/application/build/web/restart_backend.php" ] && cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/api_proxy.php" ] && cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/.htaccess" ] && cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>/dev/null || true
+    [ -f "$SCRIPT_DIR/application/build/web/index.html" ] && cp -f "$SCRIPT_DIR/application/build/web/index.html" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/index.html 2>/dev/null || true
+    [ -f "$SCRIPT_DIR/application/build/web/main.dart.js" ] && cp -f "$SCRIPT_DIR/application/build/web/main.dart.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/main.dart.js 2>/dev/null || true
+    [ -f "$SCRIPT_DIR/application/build/web/flutter_bootstrap.js" ] && cp -f "$SCRIPT_DIR/application/build/web/flutter_bootstrap.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter_bootstrap.js 2>/dev/null || true
+    [ -f "$SCRIPT_DIR/application/build/web/flutter.js" ] && cp -f "$SCRIPT_DIR/application/build/web/flutter.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter.js 2>/dev/null || true
+    [ -d "$SCRIPT_DIR/application/build/web/assets" ] && cp -rf "$SCRIPT_DIR/application/build/web/assets" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
+    [ -d "$SCRIPT_DIR/application/build/web/canvaskit" ] && cp -rf "$SCRIPT_DIR/application/build/web/canvaskit" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
     mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>/dev/null || true
     ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>/dev/null || true
     ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads "$BACKEND_DIR/uploads" 2>/dev/null || true
-[ -d "$SCRIPT_DIR/next-nest/frontend/out/_next" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/_next" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
-[ -d "$SCRIPT_DIR/next-nest/frontend/out/admin" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/admin" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
     [ -d "$SCRIPT_DIR/next-nest/frontend/out/_next" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/_next" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
     [ -d "$SCRIPT_DIR/next-nest/frontend/out/admin" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/admin" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
 fi
@@ -267,6 +271,12 @@ fi
 cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
 cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
 cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>/dev/null || true
+cp -f "$SCRIPT_DIR/application/build/web/index.html" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/index.html 2>/dev/null || true
+cp -f "$SCRIPT_DIR/application/build/web/main.dart.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/main.dart.js 2>/dev/null || true
+cp -f "$SCRIPT_DIR/application/build/web/flutter_bootstrap.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter_bootstrap.js 2>/dev/null || true
+cp -f "$SCRIPT_DIR/application/build/web/flutter.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter.js 2>/dev/null || true
+[ -d "$SCRIPT_DIR/application/build/web/assets" ] && cp -rf "$SCRIPT_DIR/application/build/web/assets" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
+[ -d "$SCRIPT_DIR/application/build/web/canvaskit" ] && cp -rf "$SCRIPT_DIR/application/build/web/canvaskit" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
 mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>/dev/null || true
 ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>/dev/null || true
 ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads "$BACKEND_DIR/uploads" 2>/dev/null || true
