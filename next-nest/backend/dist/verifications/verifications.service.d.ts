@@ -2,6 +2,7 @@ import { PrismaService } from "../prisma/prisma.service";
 import { UpdateVerificationStatusDto } from "./dto/update-verification.dto";
 export declare class VerificationsService {
     private readonly prisma;
+    private readonly logger;
     constructor(prisma: PrismaService);
     submitVerification(userId: string, documentType: string, documentUrl: string): Promise<{
         status: import(".prisma/client").$Enums.VerificationStatus;

@@ -60,6 +60,15 @@ try {
     } else {
         echo "[sync_db_schema] 'permissions' column is already present on users table.\n";
     }
+
+    // 2. Ensure document_back_url column exists on verification_requests table
+    $col2 = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'verification_requests' AND COLUMN_NAME = 'document_back_url'")->fetch();
+    if (!$col2) {
+        $pdo->exec("ALTER TABLE verification_requests ADD COLUMN document_back_url VARCHAR(255) NULL");
+        echo "[sync_db_schema] Added missing 'document_back_url' column to verification_requests table.\n";
+    } else {
+        echo "[sync_db_schema] 'document_back_url' column is already present on verification_requests table.\n";
+    }
 } catch (Exception $e) {
     echo "[sync_db_schema] Error: " . $e->getMessage() . "\n";
 }

@@ -8,214 +8,236 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var StatisticsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.StatisticsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
-let StatisticsService = class StatisticsService {
+let StatisticsService = StatisticsService_1 = class StatisticsService {
     constructor(prisma) {
         this.prisma = prisma;
+        this.logger = new common_1.Logger(StatisticsService_1.name);
     }
     async getDashboardStatistics() {
-        const [totalUsers, activeProfiles, totalMatches, pendingVerifications, openReports, totalSuccessStories, activeGovtEmployees,] = await Promise.all([
-            this.prisma.user.count(),
-            this.prisma.matrimonialProfile.count({ where: { status: "APPROVED" } }),
-            this.prisma.matchInterest.count({ where: { status: "ACCEPTED" } }),
-            this.prisma.verificationRequest.count({ where: { status: "PENDING" } }),
-            this.prisma.report.count({ where: { status: "OPEN" } }),
-            this.prisma.successStory.count(),
-            this.prisma.governmentEmployment.count({ where: { isActive: true } }),
-        ]);
-        const genderStats = await this.prisma.matrimonialProfile.groupBy({
-            by: ["gender"],
-            _count: { id: true },
-            where: { status: "APPROVED" },
-        });
-        const genderBreakdown = {
-            MALE: 0,
-            FEMALE: 0,
-            OTHER: 0,
-        };
-        genderStats.forEach((stat) => {
-            genderBreakdown[stat.gender] = stat._count.id;
-        });
-        const parganaStats = await this.prisma.matrimonialProfile.groupBy({
-            by: ["parganaId"],
-            _count: { id: true },
-            where: { parganaId: { not: null } },
-        });
-        let parganaBreakdown = [];
-        if (parganaStats.length > 0) {
-            const parganaIds = parganaStats
-                .map((p) => p.parganaId)
-                .filter((id) => id !== null);
-            const parganas = await this.prisma.pargana.findMany({
-                where: { id: { in: parganaIds } },
-                select: { id: true, name: true },
+        try {
+            const [totalUsers, activeProfiles, totalMatches, pendingVerifications, openReports, totalSuccessStories, activeGovtEmployees,] = await Promise.all([
+                this.prisma.user.count(),
+                this.prisma.matrimonialProfile.count({ where: { status: "APPROVED" } }),
+                this.prisma.matchInterest.count({ where: { status: "ACCEPTED" } }),
+                this.prisma.verificationRequest.count({ where: { status: "PENDING" } }),
+                this.prisma.report.count({ where: { status: "OPEN" } }),
+                this.prisma.successStory.count(),
+                this.prisma.governmentEmployment.count({ where: { isActive: true } }),
+            ]);
+            const genderStats = await this.prisma.matrimonialProfile.groupBy({
+                by: ["gender"],
+                _count: { id: true },
+                where: { status: "APPROVED" },
             });
-            const parganaMap = new Map(parganas.map((p) => [p.id, p.name]));
-            const totalParganaProfiles = parganaStats.reduce((acc, curr) => acc + curr._count.id, 0);
-            parganaBreakdown = parganaStats
-                .map((stat) => ({
-                name: stat.parganaId
-                    ? parganaMap.get(stat.parganaId) || "Unknown"
-                    : "Unknown",
-                count: stat._count.id,
-                percentage: totalParganaProfiles > 0
-                    ? Math.round((stat._count.id / totalParganaProfiles) * 100)
-                    : 0,
-            }))
-                .sort((a, b) => b.count - a.count)
-                .slice(0, 5);
-        }
-        if (parganaBreakdown.length === 0) {
-            const activeParganas = await this.prisma.pargana.findMany({
-                where: { isActive: true },
+            const genderBreakdown = {
+                MALE: 0,
+                FEMALE: 0,
+                OTHER: 0,
+            };
+            genderStats.forEach((stat) => {
+                genderBreakdown[stat.gender] = stat._count.id;
+            });
+            const parganaStats = await this.prisma.matrimonialProfile.groupBy({
+                by: ["parganaId"],
+                _count: { id: true },
+                where: { parganaId: { not: null } },
+            });
+            let parganaBreakdown = [];
+            if (parganaStats.length > 0) {
+                const parganaIds = parganaStats
+                    .map((p) => p.parganaId)
+                    .filter((id) => id !== null);
+                const parganas = await this.prisma.pargana.findMany({
+                    where: { id: { in: parganaIds } },
+                    select: { id: true, name: true },
+                });
+                const parganaMap = new Map(parganas.map((p) => [p.id, p.name]));
+                const totalParganaProfiles = parganaStats.reduce((acc, curr) => acc + curr._count.id, 0);
+                parganaBreakdown = parganaStats
+                    .map((stat) => ({
+                    name: stat.parganaId
+                        ? parganaMap.get(stat.parganaId) || "Unknown"
+                        : "Unknown",
+                    count: stat._count.id,
+                    percentage: totalParganaProfiles > 0
+                        ? Math.round((stat._count.id / totalParganaProfiles) * 100)
+                        : 0,
+                }))
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 5);
+            }
+            if (parganaBreakdown.length === 0) {
+                const activeParganas = await this.prisma.pargana.findMany({
+                    where: { isActive: true },
+                    take: 5,
+                    orderBy: { totalCount: "desc" },
+                    select: { id: true, name: true, totalCount: true },
+                });
+                if (activeParganas.length > 0) {
+                    const totalSample = activeParganas.reduce((sum, p) => sum + (p.totalCount || 10), 0) || 1;
+                    parganaBreakdown = activeParganas.map((p) => ({
+                        name: p.name,
+                        count: p.totalCount || 15,
+                        percentage: Math.round(((p.totalCount || 15) / totalSample) * 100) || 20,
+                    }));
+                }
+                else {
+                    parganaBreakdown = [
+                        { name: "Ahmedabad Pargana", count: 48, percentage: 32 },
+                        { name: "Patan Pargana", count: 36, percentage: 24 },
+                        { name: "Mehsana Pargana", count: 28, percentage: 19 },
+                        { name: "Vadodara Pargana", count: 22, percentage: 15 },
+                        { name: "Surat Pargana", count: 16, percentage: 10 },
+                    ];
+                }
+            }
+            const recentUsersRaw = await this.prisma.user.findMany({
+                orderBy: { createdAt: "desc" },
                 take: 5,
-                orderBy: { totalCount: "desc" },
-                select: { id: true, name: true, totalCount: true },
-            });
-            if (activeParganas.length > 0) {
-                const totalSample = activeParganas.reduce((sum, p) => sum + (p.totalCount || 10), 0) || 1;
-                parganaBreakdown = activeParganas.map((p) => ({
-                    name: p.name,
-                    count: p.totalCount || 15,
-                    percentage: Math.round(((p.totalCount || 15) / totalSample) * 100) || 20,
-                }));
-            }
-            else {
-                parganaBreakdown = [
-                    { name: "Ahmedabad Pargana", count: 48, percentage: 32 },
-                    { name: "Patan Pargana", count: 36, percentage: 24 },
-                    { name: "Mehsana Pargana", count: 28, percentage: 19 },
-                    { name: "Vadodara Pargana", count: 22, percentage: 15 },
-                    { name: "Surat Pargana", count: 16, percentage: 10 },
-                ];
-            }
-        }
-        const recentUsersRaw = await this.prisma.user.findMany({
-            orderBy: { createdAt: "desc" },
-            take: 5,
-            select: {
-                id: true,
-                name: true,
-                email: true,
-                phone: true,
-                status: true,
-                role: true,
-                createdAt: true,
-                profile: {
-                    select: {
-                        firstName: true,
-                        lastName: true,
-                        pargana: { select: { name: true } },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    phone: true,
+                    status: true,
+                    role: true,
+                    createdAt: true,
+                    profile: {
+                        select: {
+                            firstName: true,
+                            lastName: true,
+                            pargana: { select: { name: true } },
+                        },
                     },
                 },
-            },
-        });
-        const recentUsers = recentUsersRaw.map((u) => ({
-            id: u.id,
-            name: (u.profile?.firstName
-                ? `${u.profile.firstName} ${u.profile.lastName || ""}`.trim()
-                : u.name) || "",
-            email: u.email || "",
-            phone: u.phone || "",
-            pargana: u.profile?.pargana?.name || "Not Set",
-            status: u.status,
-            role: u.role,
-            createdAt: u.createdAt.toISOString(),
-        }));
-        const recentVerificationsRaw = await this.prisma.verificationRequest.findMany({
-            where: { status: "PENDING" },
-            orderBy: { createdAt: "desc" },
-            take: 5,
-            include: {
-                profile: { select: { firstName: true, lastName: true } },
-            },
-        });
-        const recentVerifications = recentVerificationsRaw.map((v) => ({
-            id: v.id,
-            name: v.profile
-                ? `${v.profile.firstName} ${v.profile.lastName}`
-                : "Unknown Profile",
-            type: "Profile Identity",
-            status: v.status,
-            date: v.createdAt.toISOString(),
-        }));
-        const recentLogs = await this.prisma.adminAuditLog.findMany({
-            orderBy: { createdAt: "desc" },
-            take: 5,
-        });
-        const adminIds = [...new Set(recentLogs.map((l) => l.adminId))];
-        const admins = await this.prisma.user.findMany({
-            where: { id: { in: adminIds } },
-            select: { id: true, name: true, email: true },
-        });
-        const adminMap = new Map(admins.map((a) => [a.id, a.name || a.email || "Admin"]));
-        let recentActivities = recentLogs.map((log) => ({
-            id: log.id,
-            icon: log.action.includes("DELETE")
-                ? "🗑️"
-                : log.action.includes("UPDATE")
-                    ? "📝"
-                    : "✨",
-            title: `${log.action} ${log.entityType}`,
-            user: adminMap.get(log.adminId) || "System",
-            time: log.createdAt.toISOString(),
-            status: "completed",
-        }));
-        if (recentActivities.length === 0 && recentUsersRaw.length > 0) {
-            recentActivities = recentUsersRaw.map((u) => {
-                const timeDiff = Date.now() - new Date(u.createdAt).getTime();
-                const mins = Math.floor(timeDiff / (1000 * 60));
-                const hours = Math.floor(mins / 60);
-                const days = Math.floor(hours / 24);
-                const timeStr = days > 0 ? `${days}d ago` : hours > 0 ? `${hours}h ago` : mins > 0 ? `${mins}m ago` : "Just now";
-                return {
-                    id: `act-${u.id}`,
-                    icon: u.role === "SUPER_ADMIN" ? "👑" : "👤",
-                    title: `New User: ${u.name || u.email || "Community Candidate"}`,
-                    user: u.role === "SUPER_ADMIN" ? "Super Admin" : "Registered Member",
-                    time: timeStr,
-                    status: "completed",
-                };
             });
-        }
-        if (recentActivities.length === 0) {
-            recentActivities = [
-                { id: "act-1", icon: "🛡️", title: "Portal Security Initialized", user: "System Admin", time: "Today", status: "completed" },
-                { id: "act-2", icon: "🌐", title: "API Gateway Operational", user: "System", time: "Today", status: "completed" },
-                { id: "act-3", icon: "🏛️", title: "Pargana Directory Synchronized", user: "Central Registry", time: "Today", status: "completed" },
-                { id: "act-4", icon: "👥", title: "Authentication Engine Active", user: "Auth Service", time: "Today", status: "completed" },
+            const recentUsers = recentUsersRaw.map((u) => ({
+                id: u.id,
+                name: (u.profile?.firstName
+                    ? `${u.profile.firstName} ${u.profile.lastName || ""}`.trim()
+                    : u.name) || "",
+                email: u.email || "",
+                phone: u.phone || "",
+                pargana: u.profile?.pargana?.name || "Not Set",
+                status: u.status,
+                role: u.role,
+                createdAt: u.createdAt.toISOString(),
+            }));
+            const recentVerificationsRaw = await this.prisma.verificationRequest.findMany({
+                where: { status: "PENDING" },
+                orderBy: { createdAt: "desc" },
+                take: 5,
+                include: {
+                    profile: { select: { firstName: true, lastName: true } },
+                },
+            });
+            const recentVerifications = recentVerificationsRaw.map((v) => ({
+                id: v.id,
+                name: v.profile
+                    ? `${v.profile.firstName} ${v.profile.lastName}`
+                    : "Unknown Profile",
+                type: "Profile Identity",
+                status: v.status,
+                date: v.createdAt.toISOString(),
+            }));
+            const recentLogs = await this.prisma.adminAuditLog.findMany({
+                orderBy: { createdAt: "desc" },
+                take: 5,
+            });
+            const adminIds = [...new Set(recentLogs.map((l) => l.adminId))];
+            const admins = await this.prisma.user.findMany({
+                where: { id: { in: adminIds } },
+                select: { id: true, name: true, email: true },
+            });
+            const adminMap = new Map(admins.map((a) => [a.id, a.name || a.email || "Admin"]));
+            let recentActivities = recentLogs.map((log) => ({
+                id: log.id,
+                icon: log.action.includes("DELETE")
+                    ? "🗑️"
+                    : log.action.includes("UPDATE")
+                        ? "📝"
+                        : "✨",
+                title: `${log.action} ${log.entityType}`,
+                user: adminMap.get(log.adminId) || "System",
+                time: log.createdAt.toISOString(),
+                status: "completed",
+            }));
+            if (recentActivities.length === 0 && recentUsersRaw.length > 0) {
+                recentActivities = recentUsersRaw.map((u) => {
+                    const timeDiff = Date.now() - new Date(u.createdAt).getTime();
+                    const mins = Math.floor(timeDiff / (1000 * 60));
+                    const hours = Math.floor(mins / 60);
+                    const days = Math.floor(hours / 24);
+                    const timeStr = days > 0 ? `${days}d ago` : hours > 0 ? `${hours}h ago` : mins > 0 ? `${mins}m ago` : "Just now";
+                    return {
+                        id: `act-${u.id}`,
+                        icon: u.role === "SUPER_ADMIN" ? "👑" : "👤",
+                        title: `New User: ${u.name || u.email || "Community Candidate"}`,
+                        user: u.role === "SUPER_ADMIN" ? "Super Admin" : "Registered Member",
+                        time: timeStr,
+                        status: "completed",
+                    };
+                });
+            }
+            if (recentActivities.length === 0) {
+                recentActivities = [
+                    { id: "act-1", icon: "🛡️", title: "Portal Security Initialized", user: "System Admin", time: "Today", status: "completed" },
+                    { id: "act-2", icon: "🌐", title: "API Gateway Operational", user: "System", time: "Today", status: "completed" },
+                    { id: "act-3", icon: "🏛️", title: "Pargana Directory Synchronized", user: "Central Registry", time: "Today", status: "completed" },
+                    { id: "act-4", icon: "👥", title: "Authentication Engine Active", user: "Auth Service", time: "Today", status: "completed" },
+                ];
+            }
+            const monthlyGrowth = [
+                { month: "Jan", users: 100, profiles: 80 },
+                { month: "Feb", users: 150, profiles: 120 },
+                { month: "Mar", users: 200, profiles: 160 },
+                { month: "Apr", users: 280, profiles: 220 },
+                {
+                    month: "May",
+                    users: Math.round(totalUsers * 0.8),
+                    profiles: Math.round(activeProfiles * 0.8),
+                },
+                { month: "Jun", users: totalUsers, profiles: activeProfiles },
             ];
+            return {
+                totalUsers,
+                activeProfiles,
+                totalMatches,
+                pendingVerifications,
+                openReports,
+                totalSuccessStories,
+                activeGovtEmployees,
+                genderBreakdown,
+                parganaBreakdown,
+                recentUsers,
+                recentVerifications,
+                recentActivities,
+                monthlyGrowth,
+            };
         }
-        const monthlyGrowth = [
-            { month: "Jan", users: 100, profiles: 80 },
-            { month: "Feb", users: 150, profiles: 120 },
-            { month: "Mar", users: 200, profiles: 160 },
-            { month: "Apr", users: 280, profiles: 220 },
-            {
-                month: "May",
-                users: Math.round(totalUsers * 0.8),
-                profiles: Math.round(activeProfiles * 0.8),
-            },
-            { month: "Jun", users: totalUsers, profiles: activeProfiles },
-        ];
-        return {
-            totalUsers,
-            activeProfiles,
-            totalMatches,
-            pendingVerifications,
-            openReports,
-            totalSuccessStories,
-            activeGovtEmployees,
-            genderBreakdown,
-            parganaBreakdown,
-            recentUsers,
-            recentVerifications,
-            recentActivities,
-            monthlyGrowth,
-        };
+        catch (err) {
+            this.logger.error("Error generating dashboard statistics: " + (err.message || err));
+            return {
+                totalUsers: 0,
+                activeProfiles: 0,
+                totalMatches: 0,
+                pendingVerifications: 0,
+                openReports: 0,
+                totalSuccessStories: 0,
+                activeGovtEmployees: 0,
+                genderBreakdown: { MALE: 0, FEMALE: 0, OTHER: 0 },
+                parganaBreakdown: [],
+                recentUsers: [],
+                recentVerifications: [],
+                recentActivities: [],
+                monthlyGrowth: [],
+            };
+        }
     }
     async getTodaysBirthdays() {
         try {
@@ -513,7 +535,7 @@ let StatisticsService = class StatisticsService {
     }
 };
 exports.StatisticsService = StatisticsService;
-exports.StatisticsService = StatisticsService = __decorate([
+exports.StatisticsService = StatisticsService = StatisticsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], StatisticsService);

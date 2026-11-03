@@ -8,6 +8,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var VerificationsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VerificationsService = void 0;
 const common_1 = require("@nestjs/common");
@@ -16,9 +17,10 @@ const client_1 = require("@prisma/client");
 const fs = require("fs");
 const fsPromises = require("fs/promises");
 const path = require("path");
-let VerificationsService = class VerificationsService {
+let VerificationsService = VerificationsService_1 = class VerificationsService {
     constructor(prisma) {
         this.prisma = prisma;
+        this.logger = new common_1.Logger(VerificationsService_1.name);
     }
     async submitVerification(userId, documentType, documentUrl) {
         if (!documentUrl || documentUrl.trim().length === 0) {
@@ -182,50 +184,56 @@ let VerificationsService = class VerificationsService {
         });
     }
     async getPendingVerifications() {
-        const allRequests = await this.prisma.verificationRequest.findMany({
-            orderBy: { createdAt: "desc" },
-            include: {
-                profile: {
-                    select: {
-                        id: true,
-                        firstName: true,
-                        lastName: true,
-                        photoUrl: true,
-                        photos: true,
-                        nativePlace: true,
-                        city: true,
-                        pargana: {
-                            select: {
-                                id: true,
-                                name: true,
-                                gujaratiName: true,
+        try {
+            const allRequests = await this.prisma.verificationRequest.findMany({
+                orderBy: { createdAt: "desc" },
+                include: {
+                    profile: {
+                        select: {
+                            id: true,
+                            firstName: true,
+                            lastName: true,
+                            photoUrl: true,
+                            photos: true,
+                            nativePlace: true,
+                            city: true,
+                            pargana: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    gujaratiName: true,
+                                },
                             },
-                        },
-                        user: {
-                            select: {
-                                id: true,
-                                phone: true,
-                                email: true,
-                                name: true,
-                                status: true,
+                            user: {
+                                select: {
+                                    id: true,
+                                    phone: true,
+                                    email: true,
+                                    name: true,
+                                    status: true,
+                                },
                             },
                         },
                     },
                 },
-            },
-        });
-        const seenProfileIds = new Set();
-        const deduplicated = [];
-        for (const req of allRequests) {
-            const key = req.profileId || (req.profile && req.profile.id);
-            if (!key)
-                continue;
-            if (!seenProfileIds.has(key)) {
-                seenProfileIds.add(key);
-                deduplicated.push(req);
+            });
+            const seenProfileIds = new Set();
+            const deduplicated = [];
+            for (const req of allRequests) {
+                const key = req.profileId || (req.profile && req.profile.id);
+                if (!key)
+                    continue;
+                if (!seenProfileIds.has(key)) {
+                    seenProfileIds.add(key);
+                    deduplicated.push(req);
+                }
             }
+            return deduplicated;
         }
-        return deduplicated;
+        catch (err) {
+            this.logger.error("Error retrieving pending verifications: " + (err.message || err));
+            return [];
+        }
     }
     async getMyVerificationStatus(userId) {
         const profile = await this.prisma.matrimonialProfile.findUnique({
@@ -391,7 +399,7 @@ let VerificationsService = class VerificationsService {
     }
 };
 exports.VerificationsService = VerificationsService;
-exports.VerificationsService = VerificationsService = __decorate([
+exports.VerificationsService = VerificationsService = VerificationsService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], VerificationsService);

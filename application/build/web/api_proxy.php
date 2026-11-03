@@ -126,6 +126,10 @@ function ensure_direct_schema_sync($project_dir) {
         if (!$col) {
             $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT NULL");
         }
+        $col2 = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'verification_requests' AND COLUMN_NAME = 'document_back_url'")->fetch();
+        if (!$col2) {
+            $pdo->exec("ALTER TABLE verification_requests ADD COLUMN document_back_url VARCHAR(255) NULL");
+        }
         @touch($flag);
     } catch (Exception $e) {
         // Silently continue

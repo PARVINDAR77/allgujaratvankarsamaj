@@ -1,12 +1,15 @@
-import { Injectable, BadRequestException } from "@nestjs/common";
+import { Injectable, BadRequestException, Logger } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class StatisticsService {
+  private readonly logger = new Logger(StatisticsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getDashboardStatistics() {
-    const [
+    try {
+      const [
       totalUsers,
       activeProfiles,
       totalMatches,
@@ -247,7 +250,25 @@ export class StatisticsService {
       recentActivities,
       monthlyGrowth,
     };
+  } catch (err: any) {
+    this.logger.error("Error generating dashboard statistics: " + (err.message || err));
+    return {
+      totalUsers: 0,
+      activeProfiles: 0,
+      totalMatches: 0,
+      pendingVerifications: 0,
+      openReports: 0,
+      totalSuccessStories: 0,
+      activeGovtEmployees: 0,
+      genderBreakdown: { MALE: 0, FEMALE: 0, OTHER: 0 },
+      parganaBreakdown: [],
+      recentUsers: [],
+      recentVerifications: [],
+      recentActivities: [],
+      monthlyGrowth: [],
+    };
   }
+}
 
   async getTodaysBirthdays() {
     try {

@@ -3,6 +3,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  Logger,
   NotFoundException,
 } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
@@ -20,6 +21,8 @@ import * as path from "path";
 
 @Injectable()
 export class VerificationsService {
+  private readonly logger = new Logger(VerificationsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   async submitVerification(
@@ -231,52 +234,57 @@ export class VerificationsService {
   }
 
   async getPendingVerifications() {
-    const allRequests = await this.prisma.verificationRequest.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        profile: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            photoUrl: true,
-            photos: true,
-            nativePlace: true,
-            city: true,
-            pargana: {
-              select: {
-                id: true,
-                name: true,
-                gujaratiName: true,
+    try {
+      const allRequests = await this.prisma.verificationRequest.findMany({
+        orderBy: { createdAt: "desc" },
+        include: {
+          profile: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              photoUrl: true,
+              photos: true,
+              nativePlace: true,
+              city: true,
+              pargana: {
+                select: {
+                  id: true,
+                  name: true,
+                  gujaratiName: true,
+                },
               },
-            },
-            user: {
-              select: {
-                id: true,
-                phone: true,
-                email: true,
-                name: true,
-                status: true,
+              user: {
+                select: {
+                  id: true,
+                  phone: true,
+                  email: true,
+                  name: true,
+                  status: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
 
-    // Deduplicate by profileId: return the single latest verification record for each profile
-    const seenProfileIds = new Set<string>();
-    const deduplicated = [];
-    for (const req of allRequests) {
-      const key = req.profileId || (req.profile && req.profile.id);
-      if (!key) continue;
-      if (!seenProfileIds.has(key)) {
-        seenProfileIds.add(key);
-        deduplicated.push(req);
+      // Deduplicate by profileId: return the single latest verification record for each profile
+      const seenProfileIds = new Set<string>();
+      const deduplicated = [];
+      for (const req of allRequests) {
+        const key = req.profileId || (req.profile && req.profile.id);
+        if (!key) continue;
+        if (!seenProfileIds.has(key)) {
+          seenProfileIds.add(key);
+          deduplicated.push(req);
+        }
       }
-    }
 
-    return deduplicated;
+      return deduplicated;
+    } catch (err: any) {
+      this.logger.error("Error retrieving pending verifications: " + (err.message || err));
+      return [];
+    }
   }
 
   async getMyVerificationStatus(userId: string) {
