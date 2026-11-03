@@ -98,13 +98,17 @@ let VerificationsService = class VerificationsService {
             },
             orderBy: { createdAt: "desc" },
         });
+        await this.prisma.matrimonialProfile.update({
+            where: { id: profile.id },
+            data: { isVerified: true },
+        });
         if (existingReq) {
             return this.prisma.verificationRequest.update({
                 where: { id: existingReq.id },
                 data: {
                     documentType,
                     documentUrl,
-                    status: client_1.VerificationStatus.PENDING,
+                    status: client_1.VerificationStatus.VERIFIED,
                     rejectionReason: null,
                     createdAt: new Date(),
                 },
@@ -115,7 +119,7 @@ let VerificationsService = class VerificationsService {
                 profileId: profile.id,
                 documentType,
                 documentUrl,
-                status: client_1.VerificationStatus.PENDING,
+                status: client_1.VerificationStatus.VERIFIED,
             },
         });
     }

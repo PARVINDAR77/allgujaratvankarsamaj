@@ -253,11 +253,6 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
     final lName = _lastName.trim();
     final dobVal = _dob?.trim() ?? '';
 
-    if (fName.isEmpty || lName.isEmpty || dobVal.isEmpty) {
-      AiDocumentVerifier.showMissingDetailsDialog(context);
-      return;
-    }
-
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image == null) return;

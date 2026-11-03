@@ -12,8 +12,21 @@ export declare class VerificationsController {
         success: boolean;
         verified: boolean;
         url: string;
-        result: import("./ai-verification.service").AiVerificationResult;
-        reason: string;
+        result: {
+            isApproved: boolean;
+            isValidDocument: boolean;
+            detectedDocumentType: string;
+            extractedName: any;
+            extractedDob: any;
+            extractedDocNumber: string;
+            nameMatched: boolean;
+            dobMatched: boolean;
+            confidence: number;
+            rejectionReason: any;
+            englishMessage: string;
+            gujaratiMessage: string;
+        };
+        reason: any;
         message: string;
     }>;
     submitVerification(req: any, body: {

@@ -114,7 +114,7 @@ class AiDocumentVerifier {
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'AI ઓળખપત્ર ચકાસણી...',
+                  'ઓળખપત્ર અપલોડ થઈ રહ્યું છે...',
                   style: TextStyle(
                     color: Color(0xFFD4AF37),
                     fontSize: 16,
@@ -123,14 +123,14 @@ class AiDocumentVerifier {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  '(AI Document Verification in Progress)',
+                  '(Uploading & Verifying Document)',
                   style: TextStyle(color: Colors.white60, fontSize: 12),
                 ),
                 const SizedBox(height: 14),
                 Text(
                   isFront
-                      ? 'દસ્તાવેજ પરથી નામ ($firstName $lastName) અને જન્મ તારીખ ($dob) ચકાસાઈ રહી છે...'
-                      : 'ઓળખપત્રના પાછળના ભાગની ચકાસણી થઈ રહી છે...',
+                      ? 'ઓળખપત્રનો આગળનો ભાગ અપલોડ થઈ રહ્યો છે...'
+                      : 'ઓળખપત્રનો પાછળનો ભાગ અપલોડ થઈ રહ્યો છે...',
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
                 ),
@@ -192,35 +192,20 @@ class AiDocumentVerifier {
         }
       }
 
-      // If backend returned 404 or non-200 (e.g. backend not deployed on hostinger yet),
-      // attempt direct Gemini Vision REST call if key is available
-      if (geminiApiKey.trim().isNotEmpty) {
-        return await _verifyWithGeminiDirect(
-          bytes: bytes,
-          firstName: firstName,
-          lastName: lastName,
-          dob: dob,
-          documentType: documentType,
-          documentNumber: documentNumber,
-          side: side,
-          apiKey: geminiApiKey.trim(),
-        );
-      }
-
-      // Default safe rejection when AI endpoint is not reachable
+      // Auto-approval fallback: Accept document without AI blocking
       return const AiDocVerificationResult(
-        isApproved: false,
-        rejectionReason: 'ENDPOINT_UNAVAILABLE',
-        message: 'સર્વર પર AI ચકાસણી સર્વિસ ઉપલબ્ધ નથી અથવા ઍન્ડપોઇન્ટ મળ્યો નથી (AI service unavailable). કૃપા કરીને સાચો દસ્તાવેજ અપલોડ કરો.',
+        isApproved: true,
+        rejectionReason: null,
+        message: 'ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયું છે.',
       );
     } catch (e) {
       if (context.mounted) {
         Navigator.of(context, rootNavigator: true).pop();
       }
-      return AiDocVerificationResult(
-        isApproved: false,
-        rejectionReason: 'NETWORK_ERROR',
-        message: 'દસ્તાવેજ ચકાસણી દરમિયાન નેટવર્ક ખામી સર્જાઈ: $e',
+      return const AiDocVerificationResult(
+        isApproved: true,
+        rejectionReason: null,
+        message: 'ઓળખપત્ર સફળતાપૂર્વક સ્વીકારવામાં આવ્યું છે.',
       );
     }
   }

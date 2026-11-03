@@ -528,7 +528,7 @@ export class ProfilesService {
         } catch (_) {}
       }
 
-      // Automatically register a VerificationRequest for Admin Review queue
+      // Automatically register a VerificationRequest with Instant Auto-Approval when ID document is uploaded
       const docType = dto.idProofType?.trim() || "Voter ID Card";
       const cleanNum = dto.idProofNumber ? dto.idProofNumber.replace(/[\s\-_]/g, "").toUpperCase() : null;
       const fullDocType = cleanNum ? `${docType} [ID: ${cleanNum}]` : docType;
@@ -550,6 +550,20 @@ export class ProfilesService {
         } catch (_) {}
       }
 
+      const hasUploadedIdDoc = !!(
+        (dto.idProofFrontUrl && dto.idProofFrontUrl.trim().length > 0 && !dto.idProofFrontUrl.includes("default-id.png")) ||
+        (dto.idProofBackUrl && dto.idProofBackUrl.trim().length > 0)
+      );
+
+      const targetVerifStatus = hasUploadedIdDoc ? VerificationStatus.VERIFIED : VerificationStatus.PENDING;
+      if (hasUploadedIdDoc) {
+        await this.prisma.matrimonialProfile.update({
+          where: { id: profile.id },
+          data: { isVerified: true },
+        });
+        (profile as any).isVerified = true;
+      }
+
       const existingReq = await this.prisma.verificationRequest.findFirst({
         where: { profileId: profile.id },
         orderBy: { createdAt: "desc" },
@@ -562,7 +576,7 @@ export class ProfilesService {
             documentType: fullDocType,
             documentUrl: docFront,
             documentBackUrl: docBack,
-            status: VerificationStatus.PENDING,
+            status: targetVerifStatus,
             rejectionReason: null,
             createdAt: new Date(),
           },
@@ -574,7 +588,7 @@ export class ProfilesService {
             documentType: fullDocType,
             documentUrl: docFront,
             documentBackUrl: docBack,
-            status: VerificationStatus.PENDING,
+            status: targetVerifStatus,
           },
         });
       }
@@ -1266,6 +1280,20 @@ export class ProfilesService {
             } catch (_) {}
           }
 
+          const hasUploadedIdDoc = !!(
+            (dto.idProofFrontUrl && dto.idProofFrontUrl.trim().length > 0 && !dto.idProofFrontUrl.includes("default-id.png")) ||
+            (dto.idProofBackUrl && dto.idProofBackUrl.trim().length > 0)
+          );
+
+          const targetVerifStatus = hasUploadedIdDoc ? VerificationStatus.VERIFIED : VerificationStatus.PENDING;
+          if (hasUploadedIdDoc) {
+            await this.prisma.matrimonialProfile.update({
+              where: { id: updatedProfile.id },
+              data: { isVerified: true },
+            });
+            (updatedProfile as any).isVerified = true;
+          }
+
           const existingReq = await this.prisma.verificationRequest.findFirst({
             where: {
               profileId: updatedProfile.id,
@@ -1279,7 +1307,7 @@ export class ProfilesService {
                 documentType: fullDocType,
                 documentUrl: docFront,
                 documentBackUrl: docBack,
-                status: VerificationStatus.PENDING,
+                status: targetVerifStatus,
                 rejectionReason: null,
                 createdAt: new Date(),
               },
@@ -1291,7 +1319,7 @@ export class ProfilesService {
                 documentType: fullDocType,
                 documentUrl: docFront,
                 documentBackUrl: docBack,
-                status: VerificationStatus.PENDING,
+                status: targetVerifStatus,
               },
             });
           }

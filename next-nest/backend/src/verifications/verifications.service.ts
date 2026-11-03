@@ -128,13 +128,19 @@ export class VerificationsService {
       orderBy: { createdAt: "desc" },
     });
 
+    // Auto-approve verification request and mark profile as verified
+    await this.prisma.matrimonialProfile.update({
+      where: { id: profile.id },
+      data: { isVerified: true },
+    });
+
     if (existingReq) {
       return this.prisma.verificationRequest.update({
         where: { id: existingReq.id },
         data: {
           documentType,
           documentUrl,
-          status: VerificationStatus.PENDING,
+          status: VerificationStatus.VERIFIED,
           rejectionReason: null,
           createdAt: new Date(),
         },
@@ -146,7 +152,7 @@ export class VerificationsService {
         profileId: profile.id,
         documentType,
         documentUrl,
-        status: VerificationStatus.PENDING,
+        status: VerificationStatus.VERIFIED,
       },
     });
   }

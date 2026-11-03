@@ -247,11 +247,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final lName = _lastName?.trim().isNotEmpty == true ? _lastName!.trim() : profile.lastName.trim();
     final dobVal = _dob?.trim().isNotEmpty == true ? _dob!.trim() : profile.dateOfBirth.trim();
 
-    if (fName.isEmpty || lName.isEmpty || dobVal.isEmpty) {
-      AiDocumentVerifier.showMissingDetailsDialog(context);
-      return;
-    }
-
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
       if (image == null) return;

@@ -59,7 +59,7 @@ const ADMIN_SECTIONS_CATALOG: SectionDef[] = [
     gujarati: "ઓળખપત્ર ચકાસણી (KYC)",
     icon: "🛡️",
     category: "Overview & Users",
-    description: "Review voter IDs, driving licenses, job cards with AI document verification",
+    description: "Review voter IDs, driving licenses, job cards and verify member documents",
     route: "/admin/verifications",
   },
   {

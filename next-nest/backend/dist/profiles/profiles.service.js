@@ -434,6 +434,16 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 }
                 catch (_) { }
             }
+            const hasUploadedIdDoc = !!((dto.idProofFrontUrl && dto.idProofFrontUrl.trim().length > 0 && !dto.idProofFrontUrl.includes("default-id.png")) ||
+                (dto.idProofBackUrl && dto.idProofBackUrl.trim().length > 0));
+            const targetVerifStatus = hasUploadedIdDoc ? client_1.VerificationStatus.VERIFIED : client_1.VerificationStatus.PENDING;
+            if (hasUploadedIdDoc) {
+                await this.prisma.matrimonialProfile.update({
+                    where: { id: profile.id },
+                    data: { isVerified: true },
+                });
+                profile.isVerified = true;
+            }
             const existingReq = await this.prisma.verificationRequest.findFirst({
                 where: { profileId: profile.id },
                 orderBy: { createdAt: "desc" },
@@ -445,7 +455,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         documentType: fullDocType,
                         documentUrl: docFront,
                         documentBackUrl: docBack,
-                        status: client_1.VerificationStatus.PENDING,
+                        status: targetVerifStatus,
                         rejectionReason: null,
                         createdAt: new Date(),
                     },
@@ -458,7 +468,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         documentType: fullDocType,
                         documentUrl: docFront,
                         documentBackUrl: docBack,
-                        status: client_1.VerificationStatus.PENDING,
+                        status: targetVerifStatus,
                     },
                 });
             }
@@ -1093,6 +1103,16 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         }
                         catch (_) { }
                     }
+                    const hasUploadedIdDoc = !!((dto.idProofFrontUrl && dto.idProofFrontUrl.trim().length > 0 && !dto.idProofFrontUrl.includes("default-id.png")) ||
+                        (dto.idProofBackUrl && dto.idProofBackUrl.trim().length > 0));
+                    const targetVerifStatus = hasUploadedIdDoc ? client_1.VerificationStatus.VERIFIED : client_1.VerificationStatus.PENDING;
+                    if (hasUploadedIdDoc) {
+                        await this.prisma.matrimonialProfile.update({
+                            where: { id: updatedProfile.id },
+                            data: { isVerified: true },
+                        });
+                        updatedProfile.isVerified = true;
+                    }
                     const existingReq = await this.prisma.verificationRequest.findFirst({
                         where: {
                             profileId: updatedProfile.id,
@@ -1106,7 +1126,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                                 documentType: fullDocType,
                                 documentUrl: docFront,
                                 documentBackUrl: docBack,
-                                status: client_1.VerificationStatus.PENDING,
+                                status: targetVerifStatus,
                                 rejectionReason: null,
                                 createdAt: new Date(),
                             },
@@ -1119,7 +1139,7 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                                 documentType: fullDocType,
                                 documentUrl: docFront,
                                 documentBackUrl: docBack,
-                                status: client_1.VerificationStatus.PENDING,
+                                status: targetVerifStatus,
                             },
                         });
                     }
