@@ -195,6 +195,7 @@ export default function AdminAdminsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<AdminSubAdminItem | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Form Fields
   const [currentAdminUser, setCurrentAdminUser] = useState<any>(null);
@@ -662,33 +663,39 @@ export default function AdminAdminsPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* CREATE / EDIT SUB-ADMIN MODAL WITH CHECKLIST */}
+      {/* CREATE / EDIT SUB-ADMIN MODAL WITH CHECKLIST (CYBERPUNK RBAC HUD) */}
       {/* ========================================================================= */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
-          <div className="relative w-full max-w-5xl bg-gradient-to-b from-[#091529] via-[#081224] to-[#040914] border border-[#D4AF37]/50 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/80 overflow-hidden my-6 max-h-[90vh] flex flex-col">
+          <div className="relative w-full max-w-5xl bg-[#070D18] border border-cyan-500/30 rounded-2xl sm:rounded-3xl shadow-[0_0_50px_rgba(6,182,212,0.15)] overflow-hidden my-6 max-h-[92vh] flex flex-col">
             
-            {/* Modal Header (Fixed at top) */}
-            <div className="shrink-0 flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0C1B33] via-[#142646] to-[#0C1B33] border-b border-[#D4AF37]/30 shadow-md">
+            {/* Modal Header */}
+            <div className="shrink-0 flex items-center justify-between px-6 py-4 bg-[#081224] border-b border-cyan-500/20">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/5 border border-[#D4AF37]/40 flex items-center justify-center shadow-inner">
-                  <span className="text-xl">{editingAdmin ? "✏️" : "👑"}</span>
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg text-black font-black text-xl">
+                  👑
                 </div>
                 <div>
-                  <h3 className="text-base sm:text-lg font-black text-[#F5E6A3] tracking-wide">
-                    {editingAdmin
-                      ? `Edit Sub-Admin Permissions: ${editingAdmin.name}`
-                      : "Create Sub-Admin Staff Account (નવો સબ-એડમિન એકાઉન્ટ)"}
-                  </h3>
-                  <p className="text-xs text-slate-300 font-medium">
-                    આ સબ-એડમિન કયા સેક્શનનો ઉપયોગ કરી શકશે તે નીચે આપેલા બોક્સ ટીક કરીને નક્કી કરો
+                  <div className="flex items-center gap-2.5">
+                    <h3 className="text-base sm:text-lg font-black text-white tracking-wide">
+                      {editingAdmin
+                        ? `Edit Sub-Admin Permissions: ${editingAdmin.name}`
+                        : "Create Sub-Admin Staff Account (નવો સબ-એડમિન એકાઉન્ટ)"}
+                    </h3>
+                    <span className="bg-cyan-950/80 text-cyan-400 border border-cyan-500/30 text-[10px] font-mono px-2 py-0.5 rounded tracking-wider font-bold">
+                      RBAC HUD V3.4
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-medium mt-0.5 flex items-center gap-1.5">
+                    <span className="text-cyan-400">ⓘ</span>
+                    <span>આ સબ-એડમિન કયા સેક્શનનો ઉપયોગ કરી શકશે તે નીચે આપેલા બોક્સ ટીક કરીને નક્કી કરો</span>
                   </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={closeModal}
-                className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 hover:text-rose-300 border border-slate-700/80 text-slate-400 flex items-center justify-center text-sm font-bold transition-all cursor-pointer"
+                className="w-9 h-9 rounded-xl bg-slate-900/80 hover:bg-rose-950/80 hover:text-rose-300 border border-slate-700/80 text-slate-400 flex items-center justify-center text-sm font-bold transition-all cursor-pointer"
                 title="Close"
               >
                 ✕
@@ -696,7 +703,7 @@ export default function AdminAdminsPage() {
             </div>
 
             {/* Modal Scrollable Body */}
-            <form onSubmit={handleSubmit} autoComplete="off" className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar">
+            <form onSubmit={handleSubmit} autoComplete="off" className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar bg-[#050A14]">
               
               {/* Error Alert Box inside Modal */}
               {modalError && (
@@ -707,17 +714,14 @@ export default function AdminAdminsPage() {
               )}
 
               {/* Personal Details Card */}
-              <div className="bg-[#050D1C]/90 p-4 sm:p-5 rounded-2xl border border-slate-800/90 shadow-inner">
-                <div className="text-xs font-black uppercase tracking-wider text-[#D4AF37] mb-3 flex items-center gap-2">
-                  <span>👤</span>
-                  <span>Staff Account Credentials (એકાઉન્ટ વિગતો)</span>
-                </div>
-
+              <div className="bg-[#081224] p-4 sm:p-5 rounded-2xl border border-slate-800/90 shadow-inner space-y-4">
+                
+                {/* Row 1: Full Name, Email Username, Assigned Role */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {/* Full Name */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                      Full Name (સ્ટાફનું નામ) <span className="text-amber-400">*</span>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                      Staff Full Name (નામ) <span className="text-cyan-400">*</span>
                     </label>
                     <input
                       type="text"
@@ -725,14 +729,14 @@ export default function AdminAdminsPage() {
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="e.g. Parmit Vankar"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#040812] border border-slate-800 text-white text-xs placeholder:text-slate-600 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all"
                     />
                   </div>
 
                   {/* Email Address */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                      Email Username (ઇમેઇલ લોગિન) <span className="text-amber-400">*</span>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                      Email Username (ઇમેઇલ લોગિન) <span className="text-cyan-400">*</span>
                     </label>
                     <input
                       type="email"
@@ -742,14 +746,14 @@ export default function AdminAdminsPage() {
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                       placeholder="staff@vankarsamaj.org"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#040812] border border-slate-800 text-white text-xs placeholder:text-slate-600 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
 
                   {/* Account Role */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                      Assigned Role (હોદ્દો) <span className="text-amber-400">*</span>
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                      Account Role (હોદ્દો) <span className="text-cyan-400">*</span>
                     </label>
                     <select
                       value={formData.role}
@@ -762,105 +766,131 @@ export default function AdminAdminsPage() {
                           permissions: newRole === "SUPER_ADMIN" ? ADMIN_SECTIONS_CATALOG.map((s) => s.key) : prev.permissions,
                         }));
                       }}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs font-medium focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#040812] border border-slate-800 text-white text-xs font-medium focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <option value="SUB_ADMIN">🛡️ Sub-Admin (નિયંત્રિત સેક્શન એક્સેસ)</option>
+                      <option value="SUB_ADMIN">🛡️ Sub-Admin (નિયંત્રિત સેક્શન)</option>
                       <option value="SUPER_ADMIN">👑 Super Admin (સંપૂર્ણ અધિકાર)</option>
                     </select>
                   </div>
+                </div>
 
-                  {/* Mobile Phone */}
+                {/* Row 2: Phone Number (OTP ENABLED) & Password (ENCRYPTED 256-BIT) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800/80">
+                  {/* Phone Number */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                      Phone Number (મોબાઇલ નંબર)
-                    </label>
-                    <input
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      placeholder="e.g. 9879859911"
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
-                    />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>📱</span>
+                        <span>Phone Number (મોબાઇલ નંબર)</span>
+                      </label>
+                      <span className="text-[10px] font-mono font-bold text-cyan-400 tracking-wider">
+                        OTP ENABLED
+                      </span>
+                    </div>
+                    <div className="flex items-center rounded-xl bg-[#040812] border border-slate-800 focus-within:border-cyan-400 focus-within:ring-1 focus-within:ring-cyan-400 overflow-hidden transition-all">
+                      <span className="px-3.5 py-2.5 text-xs font-mono font-bold text-slate-400 bg-slate-900/60 border-r border-slate-800 select-none">
+                        +91
+                      </span>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="9879859911"
+                        className="w-full px-3 py-2.5 bg-transparent text-white text-xs placeholder:text-slate-600 outline-none font-mono"
+                      />
+                    </div>
                   </div>
 
                   {/* Password */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                      {editingAdmin ? "Change Password (નવો પાસવર્ડ)" : "Password (પાસવર્ડ)"}{" "}
-                      {!editingAdmin && <span className="text-amber-400">*</span>}
-                    </label>
-                    <input
-                      type="password"
-                      autoComplete="new-password"
-                      required={!editingAdmin}
-                      value={formData.password}
-                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                      placeholder={editingAdmin ? "ખાલી રાખો જો બદલવો ન હોય" : "ઓછામાં ઓછા ૬ અક્ષર"}
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs placeholder:text-slate-500 focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm"
-                    />
-                  </div>
-
-                  {/* Account Status */}
-                  {editingAdmin && (
-                    <div>
-                      <label className="block text-xs font-bold text-slate-300 mb-1.5">
-                        Account Status (સ્થિતિ)
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>🔑</span>
+                        <span>{editingAdmin ? "Change Password (નવો પાસવર્ડ)" : "Password * (પાસવર્ડ *)"}</span>
                       </label>
-                      <select
-                        value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900/90 border border-slate-700/80 text-white text-xs font-medium focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] outline-none transition-all shadow-sm cursor-pointer"
-                      >
-                        <option value="ACTIVE">🟢 ACTIVE (સક્રિય)</option>
-                        <option value="INACTIVE">🔴 INACTIVE (નિષ્ક્રિય)</option>
-                      </select>
+                      <span className="text-[10px] font-mono font-bold text-emerald-400 tracking-wider">
+                        ENCRYPTED 256-BIT
+                      </span>
                     </div>
-                  )}
+                    <div className="relative flex items-center rounded-xl bg-[#040812] border border-slate-800 focus-within:border-cyan-400 focus-within:ring-1 focus-within:ring-cyan-400 overflow-hidden transition-all">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        autoComplete="new-password"
+                        required={!editingAdmin}
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder={editingAdmin ? "ખાલી રાખો જો બદલવો ન હોય" : "••••••••••••"}
+                        className="w-full px-3.5 py-2.5 bg-transparent text-white text-xs placeholder:text-slate-600 outline-none pr-12 font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 text-slate-400 hover:text-cyan-400 text-xs font-bold cursor-pointer transition-colors select-none"
+                      >
+                        {showPassword ? "🙈 Hide" : "👁️ Show"}
+                      </button>
+                    </div>
+                  </div>
                 </div>
+
+                {/* Account Status for Editing */}
+                {editingAdmin && (
+                  <div className="pt-2 border-t border-slate-800/80">
+                    <label className="block text-xs font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                      Account Status (સ્થિતિ)
+                    </label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
+                      className="w-full sm:w-1/3 px-3.5 py-2.5 rounded-xl bg-[#040812] border border-slate-800 text-white text-xs font-medium focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 outline-none transition-all cursor-pointer"
+                    >
+                      <option value="ACTIVE">🟢 ACTIVE (સક્રિય)</option>
+                      <option value="INACTIVE">🔴 INACTIVE (નિષ્ક્રિય)</option>
+                    </select>
+                  </div>
+                )}
               </div>
 
               {/* SECTION PERMISSIONS CHECKLIST HEADER */}
-              <div className="bg-[#050D1C]/90 p-4 sm:p-5 rounded-2xl border border-slate-800/90 shadow-inner space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-black text-[#D4AF37] uppercase tracking-wider flex items-center gap-2">
-                      <span>🛡️</span>
-                      <span>Admin Section Access Checklist (સેક્શન પરવાનગીઓ પસંદ કરો)</span>
+              <div className="space-y-4 pt-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-cyan-400 text-base">🛡️</span>
+                    <h4 className="text-xs sm:text-sm font-black text-white uppercase tracking-wider">
+                      Admin Section Access Checklist <span className="text-slate-400 font-medium text-xs">(સેક્શન પરવાનગીઓ પસંદ કરો)</span>
                     </h4>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      જે સેક્શન ટીક કરેલા હશે તે જ આ સબ-એડમિનની સ્ક્રીન પર દેખાશે અને વાપરી શકાશે
-                    </p>
                   </div>
 
                   {/* Bulk Select Toggles */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-extrabold px-3 py-1.5 rounded-lg bg-[#D4AF37]/15 text-[#F3E5AB] border border-[#D4AF37]/40 shadow-sm">
-                      {formData.permissions.length} / {ADMIN_SECTIONS_CATALOG.length} Selected
+                  <div className="flex items-center gap-2.5">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-950/70 border border-cyan-500/40 text-cyan-300 font-mono font-bold text-xs shadow-sm">
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                      <span>{formData.permissions.length} / {ADMIN_SECTIONS_CATALOG.length} Selected</span>
                     </span>
                     <button
                       type="button"
                       onClick={selectAllPermissions}
-                      className="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 hover:text-white font-bold text-xs border border-emerald-700/50 transition-all cursor-pointer flex items-center gap-1 shadow-sm"
+                      className="px-3 py-1.5 rounded-lg bg-[#0A162B] hover:bg-cyan-950 border border-slate-700/80 hover:border-cyan-500/60 text-slate-200 hover:text-cyan-300 font-bold text-xs transition-all cursor-pointer flex items-center gap-1"
                     >
-                      <span>✓</span>
+                      <span>✓✓</span>
                       <span>Select All (બધા પસંદ કરો)</span>
                     </button>
                     <button
                       type="button"
                       onClick={clearAllPermissions}
-                      className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/70 text-slate-300 hover:text-rose-200 font-bold text-xs border border-slate-700 transition-all cursor-pointer flex items-center gap-1"
+                      className="px-3 py-1.5 rounded-lg bg-[#0A162B] hover:bg-rose-950/60 border border-slate-700/80 hover:border-rose-500/60 text-slate-300 hover:text-rose-300 font-bold text-xs transition-all cursor-pointer flex items-center gap-1"
                     >
-                      <span>✕</span>
+                      <span>↺</span>
                       <span>Clear All</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Category Filter Tabs */}
-                <div className="flex flex-wrap items-center gap-2 pt-1">
+                <div className="flex flex-wrap items-center gap-2">
                   {[
                     { id: "ALL", label: "All Sections (બધા સેક્શન)", icon: "✨" },
-                    { id: "Overview & Users", label: "Overview & Users", icon: "📊" },
+                    { id: "Overview & Users", label: "Overview & Users", icon: "👥" },
                     { id: "Community & Directory", label: "Community & Directory", icon: "🤝" },
                     { id: "Content & Management", label: "Content & Settings", icon: "📢" },
                   ].map((tab) => {
@@ -877,16 +907,16 @@ export default function AdminAdminsPage() {
                         key={tab.id}
                         type="button"
                         onClick={() => setActiveCategoryTab(tab.id)}
-                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 border ${
+                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 border ${
                           isActive
-                            ? "bg-[#D4AF37] text-slate-950 border-[#D4AF37] shadow-md shadow-[#D4AF37]/20"
-                            : "bg-slate-900/80 text-slate-300 border-slate-700/70 hover:border-slate-500"
+                            ? "bg-cyan-950/80 text-cyan-300 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)]"
+                            : "bg-[#091120] text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200"
                         }`}
                       >
                         <span>{tab.icon}</span>
                         <span>{tab.label}</span>
-                        <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                          isActive ? "bg-black/20 text-black" : "bg-slate-800 text-slate-400"
+                        <span className={`text-[10px] px-1.5 py-0.2 rounded font-mono font-bold ${
+                          isActive ? "bg-cyan-500/20 text-cyan-200" : "bg-slate-800/80 text-slate-500"
                         }`}>
                           {catSelected}/{catCount}
                         </span>
@@ -895,8 +925,8 @@ export default function AdminAdminsPage() {
                   })}
                 </div>
 
-                {/* INTERACTIVE CHECKLIST CARDS GRID */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+                {/* INTERACTIVE CHECKLIST CARDS GRID (CYBERPUNK NEON CARDS) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
                   {ADMIN_SECTIONS_CATALOG
                     .filter((sec) => activeCategoryTab === "ALL" || sec.category === activeCategoryTab)
                     .map((sec) => {
@@ -908,17 +938,17 @@ export default function AdminAdminsPage() {
                           onClick={() => togglePermission(sec.key)}
                           className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 select-none relative group ${
                             isChecked
-                              ? "bg-gradient-to-br from-[#12284C] via-[#0E1E3A] to-[#0A162B] border-[#D4AF37] shadow-lg shadow-[#D4AF37]/15 ring-1 ring-[#D4AF37]/40"
-                              : "bg-[#081224]/70 border-slate-800/90 hover:border-slate-700 hover:bg-[#0C1B33]/80 opacity-70 hover:opacity-100"
+                              ? "bg-gradient-to-br from-[#0B1E38] to-[#071326] border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.25)] ring-1 ring-cyan-400/40"
+                              : "bg-[#081120]/90 border-slate-800/90 hover:border-slate-700 hover:bg-[#0B172B] opacity-80 hover:opacity-100"
                           }`}
                         >
-                          {/* Checkbox Icon */}
+                          {/* Custom Checkbox */}
                           <div className="pt-0.5 shrink-0">
                             <div
-                              className={`w-5 h-5 rounded-lg flex items-center justify-center border transition-all ${
+                              className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all ${
                                 isChecked
-                                  ? "bg-gradient-to-br from-[#D4AF37] to-[#F3E5AB] border-[#D4AF37] text-slate-950 font-black shadow-sm"
-                                  : "border-slate-600 bg-slate-900/90 text-transparent group-hover:border-slate-500"
+                                  ? "bg-cyan-400 border-cyan-400 text-slate-950 font-black shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                                  : "border-slate-700 bg-slate-900 text-transparent group-hover:border-slate-600"
                               }`}
                             >
                               <span className="text-xs leading-none">✓</span>
@@ -930,15 +960,17 @@ export default function AdminAdminsPage() {
                             <div className="flex items-center gap-1.5">
                               <span className="text-base shrink-0">{sec.icon}</span>
                               <span className={`text-xs font-black truncate ${
-                                isChecked ? "text-[#F5E6A3]" : "text-slate-200"
+                                isChecked ? "text-white" : "text-slate-200"
                               }`}>
                                 {sec.name}
                               </span>
                             </div>
-                            <div className="text-[11px] font-bold text-amber-300/90 mt-0.5">
+                            <div className={`text-[11px] font-bold mt-0.5 ${
+                              isChecked ? "text-cyan-300" : "text-slate-400"
+                            }`}>
                               {sec.gujarati}
                             </div>
-                            <p className="text-[10px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                            <p className="text-[10.5px] text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                               {sec.description}
                             </p>
                           </div>
@@ -950,12 +982,11 @@ export default function AdminAdminsPage() {
 
               {/* Modal Footer Controls */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800/80">
-                <div className="text-xs text-slate-400 font-medium">
-                  {formData.permissions.length === 0 ? (
-                    <span className="text-rose-400 font-bold">⚠️ કોઈ સેક્શન પસંદ કરેલ નથી (No sections selected)</span>
-                  ) : (
-                    <span className="text-emerald-400 font-bold">✓ {formData.permissions.length} સેક્શન સબ-એડમિનને સોંપાશે</span>
-                  )}
+                <div className="text-xs font-medium flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                  <span className="text-slate-300">
+                    <strong className="text-emerald-400">{formData.permissions.length}</strong> સેક્શન સબ-એડમિનને સોંપાશે (Ready to Provision)
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
@@ -963,19 +994,23 @@ export default function AdminAdminsPage() {
                     type="button"
                     onClick={closeModal}
                     disabled={submitting}
-                    className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer border border-slate-700/80 shadow-sm"
+                    className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-[#091120] hover:bg-slate-800 text-slate-300 font-bold text-xs uppercase tracking-wider transition-colors cursor-pointer border border-slate-700/80 shadow-sm"
                   >
-                    Cancel (રદ કરો)
+                    CANCEL (રદ કરો)
                   </button>
 
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2.5 px-8 py-3 rounded-xl bg-gradient-to-r from-[#D4AF37] via-[#F7E7A9] to-[#C59B27] text-[#041026] font-black text-xs sm:text-sm uppercase tracking-wider shadow-xl shadow-[#D4AF37]/25 hover:shadow-[#D4AF37]/40 hover:brightness-110 active:scale-95 transition-all cursor-pointer disabled:opacity-60 whitespace-nowrap"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-wider shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:shadow-[0_0_35px_rgba(6,182,212,0.6)] active:scale-95 transition-all cursor-pointer disabled:opacity-60 whitespace-nowrap"
                   >
-                    {submitting && <span className="animate-spin inline-block text-base">⚙️</span>}
+                    {submitting ? (
+                      <span className="animate-spin inline-block text-base">⚙️</span>
+                    ) : (
+                      <span className="text-base font-black">⊕</span>
+                    )}
                     <span>
-                      {editingAdmin ? "Save Permissions (પરવાનગી સાચવો)" : "CREATE SUB-ADMIN (સબ-એડમિન બનાવો)"}
+                      {editingAdmin ? "SAVE PERMISSIONS (પરવાનગી સાચવો)" : "CREATE SUB-ADMIN (સબ-એડમિન બનાવો)"}
                     </span>
                   </button>
                 </div>
