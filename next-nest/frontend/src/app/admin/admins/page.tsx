@@ -666,10 +666,10 @@ export default function AdminAdminsPage() {
       {/* ========================================================================= */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/85 backdrop-blur-md animate-in fade-in overflow-y-auto">
-          <div className="relative w-full max-w-5xl bg-gradient-to-b from-[#091529] via-[#081224] to-[#040914] border border-[#D4AF37]/50 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/80 overflow-hidden my-6 max-h-[92vh] flex flex-col">
+          <div className="relative w-full max-w-5xl bg-gradient-to-b from-[#091529] via-[#081224] to-[#040914] border border-[#D4AF37]/50 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/80 overflow-hidden my-6 max-h-[90vh] flex flex-col">
             
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0C1B33] via-[#142646] to-[#0C1B33] border-b border-[#D4AF37]/30 shadow-md">
+            {/* Modal Header (Fixed at top) */}
+            <div className="shrink-0 flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0C1B33] via-[#142646] to-[#0C1B33] border-b border-[#D4AF37]/30 shadow-md">
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#D4AF37]/30 to-[#D4AF37]/5 border border-[#D4AF37]/40 flex items-center justify-center shadow-inner">
                   <span className="text-xl">{editingAdmin ? "✏️" : "👑"}</span>
@@ -686,6 +686,7 @@ export default function AdminAdminsPage() {
                 </div>
               </div>
               <button
+                type="button"
                 onClick={closeModal}
                 className="w-9 h-9 rounded-xl bg-slate-800/80 hover:bg-rose-950/80 hover:text-rose-300 border border-slate-700/80 text-slate-400 flex items-center justify-center text-sm font-bold transition-all cursor-pointer"
                 title="Close"
@@ -695,7 +696,7 @@ export default function AdminAdminsPage() {
             </div>
 
             {/* Modal Scrollable Body */}
-            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar">
+            <form onSubmit={handleSubmit} autoComplete="off" className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-5 custom-scrollbar">
               
               {/* Error Alert Box inside Modal */}
               {modalError && (
@@ -736,6 +737,7 @@ export default function AdminAdminsPage() {
                     <input
                       type="email"
                       required
+                      autoComplete="new-password"
                       disabled={!!editingAdmin}
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -789,6 +791,7 @@ export default function AdminAdminsPage() {
                     </label>
                     <input
                       type="password"
+                      autoComplete="new-password"
                       required={!editingAdmin}
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
