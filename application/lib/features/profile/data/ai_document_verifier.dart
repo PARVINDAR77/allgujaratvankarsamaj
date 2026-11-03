@@ -28,49 +28,9 @@ class AiDocumentVerifier {
   /// if backend proxy endpoint is unavailable or not yet redeployed.
   static String geminiApiKey = const String.fromEnvironment('GEMINI_API_KEY', defaultValue: '');
 
-  /// Prompts candidate to fill Name and DOB first if missing
+  /// Prompts candidate to fill Name and DOB first if missing (Disabled)
   static void showMissingDetailsDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF041126),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.info_outline, color: Color(0xFFD4AF37), size: 24),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'વિગતો જરૂરી છે (Details Required)',
-                style: TextStyle(
-                  color: Color(0xFFD4AF37),
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-        content: const Text(
-          'AI દ્વારા ઓળખપત્ર આપમેળે ચકાસવા માટે કૃપા કરીને પહેલા તમારું "પ્રથમ નામ", "અટક" અને "જન્મ તારીખ" ભરો.\n\n(Please enter your First Name, Last Name, and Date of Birth first so AI can cross-verify your document.)',
-          style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(ctx),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFD4AF37),
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            ),
-            child: const Text('સમજાયું (OK)', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
+    // AI Missing Details dialog permanently disabled.
   }
 
   /// Sends document to AI verification endpoint with a scanning dialog overlay
