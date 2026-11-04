@@ -691,8 +691,8 @@ class WebHomeFooter extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 4.5),
       child: InkWell(
         onTap: () {
-          if (route == '/main-poster') {
-            context.go('/main-poster');
+          if (route == '/main-poster' || route == '/home') {
+            context.go(route);
           } else {
             context.push(route);
           }

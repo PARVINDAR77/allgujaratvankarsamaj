@@ -8,6 +8,7 @@ class FeaturedItemData {
   final String description;
   final String route;
   final IconData icon;
+  final String imageAsset;
 
   const FeaturedItemData({
     required this.number,
@@ -16,6 +17,7 @@ class FeaturedItemData {
     required this.description,
     required this.route,
     required this.icon,
+    required this.imageAsset,
   });
 }
 
@@ -26,26 +28,29 @@ class WebFeaturedContent extends StatelessWidget {
     FeaturedItemData(
       number: '1',
       title: 'પાવન પ્રેરણાદાતા',
-      subtitle: 'Pavan Prernadata',
-      description: 'Honoring the visionary mentors, guides, and spiritual pioneers who illuminate our community with wisdom and values.',
+      subtitle: 'PAVAN PRERNADATA',
+      description: 'સમાજ માટે પ્રેરણા આપનાર મહાન વ્યક્તિઓ',
       route: '/pavan-prernadata',
       icon: Icons.menu_book_rounded,
+      imageAsset: 'assets/images/portal_card_prernadata.png',
     ),
     FeaturedItemData(
       number: '2',
-      title: 'Samaj Super Stars',
-      subtitle: 'Achievers & Youth Icons',
-      description: 'Celebrating high achievers, academic toppers, sports icons, civil servants, and leaders elevating our community pride.',
+      title: 'સમાજ સુપર સ્ટાર્સ',
+      subtitle: 'SAMAJ SUPER STARS',
+      description: 'વિવિધ ક્ષેત્રોમાં ઉત્કૃષ્ટ સેવા અને સિદ્ધિ મેળવનાર',
       route: '/samaj-super-stars-poster',
       icon: Icons.auto_awesome_rounded,
+      imageAsset: 'assets/images/portal_card_superstars.png',
     ),
     FeaturedItemData(
       number: '3',
-      title: 'વણકર સમાજ રત્ન',
-      subtitle: 'Vankar Samaj Ratna',
-      description: 'Honoring prominent leaders, visionaries, philanthropists, and lifetime contributors who have elevated our Samaj with pride.',
+      title: 'સમાજ રત્ન',
+      subtitle: 'SAMAJ RATNA',
+      description: 'સમાજના હીરા સમાન અમૂલ્ય રત્નો',
       route: '/samaj-ratna',
       icon: Icons.military_tech_rounded,
+      imageAsset: 'assets/images/portal_card_ratna.png',
     ),
   ];
 
@@ -176,147 +181,38 @@ class _FeaturedCardState extends State<_FeaturedCard> {
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOut,
-        transform: Matrix4.translationValues(0.0, _isHovered ? -5.0 : 0.0, 0.0),
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        transform: Matrix4.translationValues(0.0, _isHovered ? -8.0 : 0.0, 0.0),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: _isHovered
-                ? const Color(0xFFA4143D)
-                : const Color(0xFFE5D5BA),
-            width: _isHovered ? 1.8 : 1.2,
+            color: _isHovered ? const Color(0xFFFFD700) : const Color(0xFFD4AF37),
+            width: _isHovered ? 2.5 : 1.5,
           ),
           boxShadow: [
             BoxShadow(
               color: _isHovered
-                  ? const Color(0xFFA4143D).withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: 0.06),
-              blurRadius: _isHovered ? 20 : 10,
-              offset: Offset(0, _isHovered ? 8 : 4),
+                  ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                  : Colors.black.withValues(alpha: 0.15),
+              blurRadius: _isHovered ? 24 : 12,
+              offset: Offset(0, _isHovered ? 10 : 5),
             ),
           ],
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: () => context.push(it.route),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Velvet Maroon & Gold Medallion Container
-                  Container(
-                    width: 62,
-                    height: 62,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFA4143D), Color(0xFF6B0E27)],
-                      ),
-                      border: Border.all(color: const Color(0xFFFFD54F), width: 1.8),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFA4143D).withValues(alpha: 0.45),
-                          blurRadius: 10,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Center(
-                      child: Icon(
-                        it.icon,
-                        color: const Color(0xFFFFDF73),
-                        size: 28,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Card Title
-                  Text(
-                    '${it.number}. ${it.title}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFF101B36),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                  const SizedBox(height: 5),
-
-                  // Subtitle
-                  Text(
-                    it.subtitle,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                      color: Color(0xFFA4143D),
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  // Description
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 52),
-                    child: Text(
-                      it.description,
-                      textAlign: TextAlign.center,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Color(0xFF4B5563),
-                        fontSize: 12.5,
-                        height: 1.45,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Velvet Maroon Action Button
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFA4143D),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: const Color(0xFFD6A34A), width: 1),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFA4143D).withValues(alpha: 0.35),
-                          blurRadius: 8,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Open Portal',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        SizedBox(width: 6),
-                        Icon(
-                          Icons.arrow_forward_rounded,
-                          size: 14,
-                          color: Color(0xFFFFD54F),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(20),
+              onTap: () => context.push(it.route),
+              child: AspectRatio(
+                aspectRatio: 160.0 / 260.0,
+                child: Image.asset(
+                  it.imageAsset,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),

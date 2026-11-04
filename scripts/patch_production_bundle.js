@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_remove_taglines_v73';
+const VERSION_TAG = '20261104_royal_portals_v74';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -193,6 +193,22 @@ function patchMainDartJs() {
     console.log('Removed Buddha tag line from web matrimony hero in main.dart.js');
   }
 
+  // 14. Fix Route not found: /home (Header and Footer Nav Links)
+  const navLinkPattern = 'if(s==="/main-poster")A.au(r).by(0,"/main-poster",null)\nelse A.au(r).b4(s,null,t.X)';
+  const navLinkReplace = 'if(s==="/main-poster"||s==="/home")A.au(r).by(0,s,null)\nelse A.au(r).b4(s,null,t.X)';
+  if (content.includes(navLinkPattern)) {
+    content = content.replaceAll(navLinkPattern, navLinkReplace);
+    console.log('Fixed Header & Footer navigation links to use context.go(/home) in main.dart.js');
+  }
+
+  // 15. Redesign Prominent Community Portals to Royal Gold Artworks
+  const portalCardTarget = 'A.a6u.prototype={\nK(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-5:0,0),h=A.d(18),g=l.d,f=g?B.w:B.bP\nf=A.w(f,B.j,g?1.8:1.2)\ng=g?B.w.u(0.2):B.q.u(0.06)\ns=l.d\nr=s?20:10\ns=s?8:4\nq=t.V\nr=A.a([new A.a2(0,B.t,g,new A.p(0,s),r)],q)\ns=A.d(18)\ng=A.w(B.cO,B.j,1.8)\np=A.a([new A.a2(0,B.t,B.w.u(0.45),B.aD,10)],q)\np=A.h(k,A.aD(A.ay(j.f,B.dP,k,k,28),k,k),B.f,k,k,new A.j(k,k,g,k,p,B.akc,B.F),k,62,k,k,k,k,62)\ng=A.l(j.a+". "+j.b,k,k,k,k,B.aIf,B.H,k,k)\no=A.l(j.c,k,k,k,k,B.aJk,B.H,k,k)\nn=A.l(j.d,3,B.D,k,k,B.Tt,B.H,k,k)\nm=A.d(10)\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,new A.a_(B.kc,A.v(A.a([p,B.N,g,B.rl,o,B.aO,new A.bi(B.AH,n,k),B.bb,A.h(k,B.axX,B.f,k,k,new A.j(B.w,k,A.w(B.E,B.j,1),m,A.a([new A.a2(0,B.t,B.w.u(0.35),B.aD,8)],q),k,B.k),k,k,k,B.cj,k,k,1/0)],t.p),B.h,B.c,B.y),k),k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  const portalCardReplace = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(20)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  if (content.includes(portalCardTarget)) {
+    content = content.replace(portalCardTarget, portalCardReplace);
+    console.log('Upgraded Prominent Community Portals to royal gold artworks in main.dart.js');
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main.dart.js');
 }
@@ -356,6 +372,41 @@ function patchMainDartLive() {
     'B.aNz=new A.n("\\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u2022 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 \\u0aab\\u0acb\\u0a9f\\u0acb (Optional \\u2022 Max 1 Photo \\u2022 Max 5 MB)"'
   );
 
+  // 15. Fix Route not found: /home (Header and Footer Nav Links)
+  const navLinkPattern = 'if(s==="/main-poster")A.au(r).by(0,"/main-poster",null)\nelse A.au(r).b4(s,null,t.X)';
+  const navLinkReplace = 'if(s==="/main-poster"||s==="/home")A.au(r).by(0,s,null)\nelse A.au(r).b4(s,null,t.X)';
+  if (content.includes(navLinkPattern)) {
+    content = content.replaceAll(navLinkPattern, navLinkReplace);
+    console.log('Fixed Header & Footer navigation links to use context.go(/home) in main_dart_live.js');
+  }
+
+  // 16. Redesign Prominent Community Portals to Royal Gold Artworks
+  const portalCardTarget = 'A.a6u.prototype={\nK(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-5:0,0),h=A.d(18),g=l.d,f=g?B.w:B.bP\nf=A.w(f,B.j,g?1.8:1.2)\ng=g?B.w.u(0.2):B.q.u(0.06)\ns=l.d\nr=s?20:10\ns=s?8:4\nq=t.V\nr=A.a([new A.a2(0,B.t,g,new A.p(0,s),r)],q)\ns=A.d(18)\ng=A.w(B.cO,B.j,1.8)\np=A.a([new A.a2(0,B.t,B.w.u(0.45),B.aD,10)],q)\np=A.h(k,A.aD(A.ay(j.f,B.dP,k,k,28),k,k),B.f,k,k,new A.j(k,k,g,k,p,B.akc,B.F),k,62,k,k,k,k,62)\ng=A.l(j.a+". "+j.b,k,k,k,k,B.aIf,B.H,k,k)\no=A.l(j.c,k,k,k,k,B.aJk,B.H,k,k)\nn=A.l(j.d,3,B.D,k,k,B.Tt,B.H,k,k)\nm=A.d(10)\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,new A.a_(B.kc,A.v(A.a([p,B.N,g,B.rl,o,B.aO,new A.bi(B.AH,n,k),B.bb,A.h(k,B.axX,B.f,k,k,new A.j(B.w,k,A.w(B.E,B.j,1),m,A.a([new A.a2(0,B.t,B.w.u(0.35),B.aD,8)],q),k,B.k),k,k,k,B.cj,k,k,1/0)],t.p),B.h,B.c,B.y),k),k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  const portalCardReplace = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(20)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  if (content.includes(portalCardTarget)) {
+    content = content.replace(portalCardTarget, portalCardReplace);
+    console.log('Upgraded Prominent Community Portals to royal gold artworks in main_dart_live.js');
+  }
+
+  // 17. Remove Buddha and Ambedkar Reverence Tag Lines below artwork cards
+  const targetBuddhaTag = 'A.v(A.a([o,B.Y,A.h(s,B.axV,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.6),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.fm,s,s,s)],l),B.h,B.c,B.y)';
+  if (content.includes(targetBuddhaTag)) {
+    content = content.replace(targetBuddhaTag, 'A.v(A.a([o],l),B.h,B.c,B.y)');
+    console.log('Removed Buddha tag line from web home hero in main_dart_live.js');
+  }
+
+  const targetAmbedkarTag = 'A.v(A.a([o,B.Y,A.h(s,B.ayi,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.6),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.fm,s,s,s)],l),B.h,B.c,B.y)';
+  if (content.includes(targetAmbedkarTag)) {
+    content = content.replace(targetAmbedkarTag, 'A.v(A.a([o],l),B.h,B.c,B.y)');
+    console.log('Removed Ambedkar tag line from web home hero in main_dart_live.js');
+  }
+
+  const targetMatrimonyBuddhaTag = 'A.v(A.a([o,B.aO,A.h(s,B.axN,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.7),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.a96,s,s,s)],l),B.h,B.c,B.y)';
+  if (content.includes(targetMatrimonyBuddhaTag)) {
+    content = content.replace(targetMatrimonyBuddhaTag, 'A.v(A.a([o],l),B.h,B.c,B.y)');
+    console.log('Removed Buddha tag line from web matrimony hero in main_dart_live.js');
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main_dart_live.js');
 }
@@ -394,10 +445,11 @@ function updateCacheBuster() {
 }
 
 try {
+  require('./register_portal_assets.js');
   patchMainDartJs();
   patchMainDartLive();
   updateCacheBuster();
-  console.log('ALL STRICT PHOTO LIMIT & ROUTE FIX PATCHES APPLIED SUCCESSFULLY!');
+  console.log('ALL ROYAL PORTALS & ROUTE FIX PATCHES APPLIED SUCCESSFULLY!');
 } catch (err) {
   console.error('Patching error:', err);
   process.exit(1);

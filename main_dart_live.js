@@ -64816,7 +64816,7 @@ $3(a,b,c){return B.afa},
 $S:38}
 A.aHw.prototype={
 $0(){var s=this.a,r=this.b
-if(s==="/main-poster")A.au(r).by(0,"/main-poster",null)
+if(s==="/main-poster"||s==="/home")A.au(r).by(0,s,null)
 else A.au(r).b4(s,null,t.X)},
 $S:0}
 A.ho.prototype={
@@ -64864,7 +64864,7 @@ $3(a,b,c){return B.FG},
 $S:38}
 A.aHE.prototype={
 $0(){var s=this.a,r=this.b
-if(s==="/main-poster")A.au(r).by(0,"/main-poster",null)
+if(s==="/main-poster"||s==="/home")A.au(r).by(0,s,null)
 else A.au(r).b4(s,null,t.X)},
 $S:0}
 A.aHF.prototype={

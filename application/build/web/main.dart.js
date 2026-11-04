@@ -64749,23 +64749,12 @@ $S:919}
 A.Ew.prototype={
 V(){return new A.a6u()}}
 A.a6u.prototype={
-K(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-5:0,0),h=A.d(18),g=l.d,f=g?B.w:B.bP
-f=A.w(f,B.j,g?1.8:1.2)
-g=g?B.w.u(0.2):B.q.u(0.06)
-s=l.d
-r=s?20:10
-s=s?8:4
-q=t.V
-r=A.a([new A.a2(0,B.t,g,new A.p(0,s),r)],q)
-s=A.d(18)
-g=A.w(B.cO,B.j,1.8)
-p=A.a([new A.a2(0,B.t,B.w.u(0.45),B.aD,10)],q)
-p=A.h(k,A.aD(A.ay(j.f,B.dP,k,k,28),k,k),B.f,k,k,new A.j(k,k,g,k,p,B.akc,B.F),k,62,k,k,k,k,62)
-g=A.l(j.a+". "+j.b,k,k,k,k,B.aIf,B.H,k,k)
-o=A.l(j.c,k,k,k,k,B.aJk,B.H,k,k)
-n=A.l(j.d,3,B.D,k,k,B.Tt,B.H,k,k)
-m=A.d(10)
-return A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,new A.a_(B.kc,A.v(A.a([p,B.N,g,B.rl,o,B.aO,new A.bi(B.AH,n,k),B.bb,A.h(k,B.axX,B.f,k,k,new A.j(B.w,k,A.w(B.E,B.j,1),m,A.a([new A.a2(0,B.t,B.w.u(0.35),B.aD,8)],q),k,B.k),k,k,k,B.cj,k,k,1/0)],t.p),B.h,B.c,B.y),k),k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}
+K(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)
+r=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)
+s=A.d(20)
+var img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");
+var cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);
+return A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}
 A.aUh.prototype={
 $1(a){var s=this.a
 return s.B(new A.aUf(s))},
@@ -64848,7 +64837,7 @@ $3(a,b,c){return B.afb},
 $S:38}
 A.aHw.prototype={
 $0(){var s=this.a,r=this.b
-if(s==="/main-poster")A.au(r).by(0,"/main-poster",null)
+if(s==="/main-poster"||s==="/home")A.au(r).by(0,s,null)
 else A.au(r).b4(s,null,t.X)},
 $S:0}
 A.hp.prototype={
@@ -64896,7 +64885,7 @@ $3(a,b,c){return B.FH},
 $S:38}
 A.aHE.prototype={
 $0(){var s=this.a,r=this.b
-if(s==="/main-poster")A.au(r).by(0,"/main-poster",null)
+if(s==="/main-poster"||s==="/home")A.au(r).by(0,s,null)
 else A.au(r).b4(s,null,t.X)},
 $S:0}
 A.aHF.prototype={

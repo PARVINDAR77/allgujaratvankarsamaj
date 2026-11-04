@@ -197,8 +197,8 @@ class WebHomeHeader extends ConsumerWidget implements PreferredSizeWidget {
       title: title,
       isActive: isActive,
       onTap: () {
-        if (route == '/main-poster') {
-          context.go('/main-poster');
+        if (route == '/main-poster' || route == '/home') {
+          context.go(route);
         } else {
           context.push(route);
         }
