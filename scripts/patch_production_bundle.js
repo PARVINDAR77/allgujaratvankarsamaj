@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_restore_assets_and_cards_v75';
+const VERSION_TAG = '20261104_perfect_portal_cards_v76';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -473,6 +473,7 @@ function updateCacheBuster() {
 try {
   patchMainDartJs();
   patchMainDartLive();
+  require('./patch_asset_manifest.js');
   updateCacheBuster();
   console.log('ALL RESTORED ASSETS & COMPACT CARDS PATCHES APPLIED SUCCESSFULLY!');
 } catch (err) {

@@ -2341,7 +2341,6 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       ),
     );
   }
-  }
 
   Widget _buildIdProofBox() {
     final hasFront = _idFrontBytes != null;
