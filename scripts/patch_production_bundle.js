@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_photo_limit_strict_1main_1sub_v70';
+const VERSION_TAG = '20261104_strict_photos_no_ai_v71';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -43,7 +43,6 @@ function patchMainDartJs() {
     console.log('Cleaned top-level route definitions in main.dart.js');
   }
 
-  // Also clean if b_adv only was present:
   const defPatternAdvOnly = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b2=A.dv(new A.beU(),';
   if (content.includes(defPatternAdvOnly)) {
     content = content.replace(defPatternAdvOnly, cleanDef);
@@ -315,14 +314,28 @@ function patchMainDartLive() {
 }
 
 function updateCacheBuster() {
-  const files = [
-    'application/build/web/flutter_bootstrap.js',
+  const htmlFiles = [
     'application/build/web/index.html',
-    'application/web/flutter_bootstrap.js',
     'application/web/index.html'
   ];
 
-  for (const relPath of files) {
+  for (const relPath of htmlFiles) {
+    const absPath = path.join(__dirname, '..', relPath);
+    if (fs.existsSync(absPath)) {
+      let content = fs.readFileSync(absPath, 'utf8');
+      content = content.replace(/var CURRENT_BUILD = '[^']+';/g, `var CURRENT_BUILD = '${VERSION_TAG}';`);
+      content = content.replace(/flutter_bootstrap\.js\?v=[a-zA-Z0-9_-]+/g, `flutter_bootstrap.js?v=${VERSION_TAG}`);
+      fs.writeFileSync(absPath, content, 'utf8');
+      console.log(`Updated cache buster in ${relPath} to v=${VERSION_TAG}`);
+    }
+  }
+
+  const jsFiles = [
+    'application/build/web/flutter_bootstrap.js',
+    'application/web/flutter_bootstrap.js'
+  ];
+
+  for (const relPath of jsFiles) {
     const absPath = path.join(__dirname, '..', relPath);
     if (fs.existsSync(absPath)) {
       let content = fs.readFileSync(absPath, 'utf8');

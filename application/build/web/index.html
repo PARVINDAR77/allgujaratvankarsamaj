@@ -40,7 +40,16 @@
   <script>
     (function() {
       var BUILD_KEY = 'agvs_web_build';
-      var CURRENT_BUILD = '20261103_no_ai_v57';
+      var CURRENT_BUILD = '20261104_strict_photos_no_ai_v71';
+      // Always unregister any lingering service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          for (var i = 0; i < regs.length; i++) {
+            regs[i].unregister();
+          }
+        });
+      }
+
       var last = localStorage.getItem(BUILD_KEY);
       if (last !== CURRENT_BUILD) {
         localStorage.setItem(BUILD_KEY, CURRENT_BUILD);
@@ -58,8 +67,8 @@
             }
           });
         }
-        if (last && !sessionStorage.getItem('build_auto_reloaded')) {
-          sessionStorage.setItem('build_auto_reloaded', '1');
+        if (last && !sessionStorage.getItem('build_auto_reloaded_20261104_strict_photos_no_ai_v71')) {
+          sessionStorage.setItem('build_auto_reloaded_20261104_strict_photos_no_ai_v71', '1');
           window.location.reload(true);
         }
       }
@@ -194,6 +203,6 @@
     });
     splashObserver.observe(document.body, { childList: true, subtree: true });
   </script>
-  <script src="flutter_bootstrap.js?v=20261104_advsearch_no_ai_v60" async></script>
+  <script src="flutter_bootstrap.js?v=20261104_strict_photos_no_ai_v71" async></script>
 </body>
 </html>
