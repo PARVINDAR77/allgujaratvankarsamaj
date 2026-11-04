@@ -135,6 +135,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
       if (minAge != null) 'minAge': minAge.toString(),
       if (maxAge != null) 'maxAge': maxAge.toString(),
       if (district != null) 'districtId': district,
+      if (occCat != null) 'occupationCategory': occCat,
       if (keyword.isNotEmpty) 'search': keyword,
     };
     final uri = Uri(path: '/search-results', queryParameters: qParams);

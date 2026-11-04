@@ -317,9 +317,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) {
           final gender = state.uri.queryParameters['gender'];
           final marital = state.uri.queryParameters['maritalStatus'] ?? state.uri.queryParameters['status'];
+          final minAge = int.tryParse(state.uri.queryParameters['minAge'] ?? '');
+          final maxAge = int.tryParse(state.uri.queryParameters['maxAge'] ?? '');
+          final district = state.uri.queryParameters['districtId'] ?? state.uri.queryParameters['district'];
+          final occ = state.uri.queryParameters['occupation'] ?? state.uri.queryParameters['occupationCategory'];
+          final search = state.uri.queryParameters['search'] ?? state.uri.queryParameters['q'];
+
           return SearchResultsScreen(
             initialGender: gender,
             initialMaritalStatus: marital,
+            initialMinAge: minAge,
+            initialMaxAge: maxAge,
+            initialDistrict: district,
+            initialOccupation: occ,
+            initialSearch: search,
           );
         },
       ),
@@ -426,9 +437,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     gender = state.uri.queryParameters['gender'];
                   }
                   final marital = state.uri.queryParameters['maritalStatus'] ?? state.uri.queryParameters['status'];
+                  final minAge = int.tryParse(state.uri.queryParameters['minAge'] ?? '');
+                  final maxAge = int.tryParse(state.uri.queryParameters['maxAge'] ?? '');
+                  final district = state.uri.queryParameters['districtId'] ?? state.uri.queryParameters['district'];
+                  final occ = state.uri.queryParameters['occupation'] ?? state.uri.queryParameters['occupationCategory'];
+                  final search = state.uri.queryParameters['search'] ?? state.uri.queryParameters['q'];
+
                   return SearchResultsScreen(
                     initialGender: gender,
                     initialMaritalStatus: marital,
+                    initialMinAge: minAge,
+                    initialMaxAge: maxAge,
+                    initialDistrict: district,
+                    initialOccupation: occ,
+                    initialSearch: search,
                   );
                 },
               ),

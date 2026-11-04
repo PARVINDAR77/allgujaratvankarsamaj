@@ -40,6 +40,7 @@ export class ProfilesController {
   }
 
   @Public()
+  @Public()
   @Post("search-query")
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: "Search candidate profiles with detailed query (POST)" })

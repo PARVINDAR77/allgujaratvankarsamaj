@@ -14,11 +14,21 @@ import '../../../../shared/widgets/full_screen_image_viewer.dart';
 class SearchResultsScreen extends ConsumerStatefulWidget {
   final String? initialGender;
   final String? initialMaritalStatus;
+  final int? initialMinAge;
+  final int? initialMaxAge;
+  final String? initialDistrict;
+  final String? initialOccupation;
+  final String? initialSearch;
 
   const SearchResultsScreen({
     super.key,
     this.initialGender,
     this.initialMaritalStatus,
+    this.initialMinAge,
+    this.initialMaxAge,
+    this.initialDistrict,
+    this.initialOccupation,
+    this.initialSearch,
   });
 
   @override
@@ -33,6 +43,8 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
   late String _selectedGender; // 'MALE', 'FEMALE', or 'ALL'
   String _selectedMaritalStatus = 'ALL';
   RangeValues _ageRange = const RangeValues(18, 55);
+  String? _selectedDistrict;
+  String? _selectedOccupation;
 
   @override
   void initState() {
@@ -51,6 +63,20 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       }
     }
 
+    if (widget.initialSearch != null && widget.initialSearch!.trim().isNotEmpty) {
+      _searchController.text = widget.initialSearch!.trim();
+    }
+
+    final double startAge = (widget.initialMinAge != null && widget.initialMinAge! >= 18 && widget.initialMinAge! <= 70)
+        ? widget.initialMinAge!.toDouble()
+        : 18.0;
+    final double endAge = (widget.initialMaxAge != null && widget.initialMaxAge! >= startAge && widget.initialMaxAge! <= 70)
+        ? widget.initialMaxAge!.toDouble()
+        : 55.0;
+    _ageRange = RangeValues(startAge, endAge);
+    _selectedDistrict = widget.initialDistrict;
+    _selectedOccupation = widget.initialOccupation;
+
     _scrollController.addListener(() {
       if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
         ref.read(profileNotifierProvider.notifier).fetchNextPage();
@@ -59,10 +85,21 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final activeGender = _selectedGender == 'ALL' ? '' : _selectedGender;
-      final currentInProvider = ref.read(profileNotifierProvider.notifier).currentGender ?? '';
-      if (currentInProvider != activeGender || ref.read(profileNotifierProvider).profiles.isEmpty) {
-        ref.read(profileNotifierProvider.notifier).updateFilters(gender: activeGender, occupationCategory: null);
-      }
+      final status = _selectedMaritalStatus == 'ALL' ? null : _selectedMaritalStatus;
+      final minAge = _ageRange.start.round();
+      final maxAge = _ageRange.end.round();
+      final keyword = _searchController.text.trim();
+
+      ref.read(profileNotifierProvider.notifier).updateFilters(
+        search: keyword.isNotEmpty ? keyword : (widget.initialSearch?.isNotEmpty == true ? widget.initialSearch : null),
+        gender: activeGender,
+        maritalStatus: status,
+        status: status,
+        minAge: minAge > 18 ? minAge : widget.initialMinAge,
+        maxAge: maxAge < 55 ? maxAge : widget.initialMaxAge,
+        districtId: _selectedDistrict,
+        occupationCategory: _selectedOccupation,
+      );
     });
   }
 
@@ -105,9 +142,10 @@ class _SearchResultsScreenState extends ConsumerState<SearchResultsScreen> {
       gender: apiGender,
       maritalStatus: status,
       status: status,
-      minAge: minAge > 18 ? minAge : null,
-      maxAge: maxAge < 55 ? maxAge : null,
-      occupationCategory: null,
+      minAge: minAge > 18 ? minAge : widget.initialMinAge,
+      maxAge: maxAge < 55 ? maxAge : widget.initialMaxAge,
+      districtId: _selectedDistrict,
+      occupationCategory: _selectedOccupation,
     );
   }
 

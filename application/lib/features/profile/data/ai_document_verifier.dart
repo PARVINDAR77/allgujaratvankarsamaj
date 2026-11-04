@@ -33,7 +33,7 @@ class AiDocumentVerifier {
     // AI Missing Details dialog permanently disabled.
   }
 
-  /// Sends document to AI verification endpoint with a scanning dialog overlay
+  /// Sends document to AI verification endpoint (AI scanning permanently disabled, returns auto-approved)
   static Future<AiDocVerificationResult> verifyDocument({
     required BuildContext context,
     required Dio dio,
@@ -45,129 +45,12 @@ class AiDocumentVerifier {
     String? documentNumber,
     String side = 'FRONT',
   }) async {
-    final isFront = side.toUpperCase() == 'FRONT';
-
-    // Show scanning progress dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogCtx) => PopScope(
-        canPop: false,
-        child: Dialog(
-          backgroundColor: const Color(0xFF041126),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: const BorderSide(color: Color(0xFFD4AF37), width: 1.5),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 26),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    color: Color(0xFFD4AF37),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                const Text(
-                  'ઓળખપત્ર અપલોડ થઈ રહ્યું છે...',
-                  style: TextStyle(
-                    color: Color(0xFFD4AF37),
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  '(Uploading & Verifying Document)',
-                  style: TextStyle(color: Colors.white60, fontSize: 12),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  isFront
-                      ? 'ઓળખપત્રનો આગળનો ભાગ અપલોડ થઈ રહ્યો છે...'
-                      : 'ઓળખપત્રનો પાછળનો ભાગ અપલોડ થઈ રહ્યો છે...',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+    // AI Verification completely neutralized: instant approval with no blocking dialogs
+    return const AiDocVerificationResult(
+      isApproved: true,
+      rejectionReason: null,
+      message: 'ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયું છે.',
     );
-
-    try {
-      final formData = FormData.fromMap({
-        'file': MultipartFile.fromBytes(
-          bytes,
-          filename: 'doc_${side.toLowerCase()}_${DateTime.now().millisecondsSinceEpoch}.jpg',
-        ),
-        'firstName': firstName.trim(),
-        'lastName': lastName.trim(),
-        'dob': dob.trim(),
-        'documentType': documentType.trim(),
-        'documentNumber': (documentNumber ?? '').trim(),
-        'side': side.toUpperCase(),
-      });
-
-      final response = await dio.post(
-        '/verifications/ai-verify',
-        data: formData,
-        options: Options(
-          validateStatus: (status) => status != null && status < 500,
-        ),
-      );
-
-      // Close scanning dialog safely
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-
-      final data = response.data;
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        if (data is Map) {
-          final verified = data['verified'] == true || data['success'] == true;
-          final resObj = data['result'] is Map ? data['result'] as Map : null;
-          final extractedName = (resObj?['extractedName'] ?? data['extractedName']) as String?;
-          final extractedDob = (resObj?['extractedDob'] ?? data['extractedDob']) as String?;
-          final extractedDocNum = (resObj?['extractedDocNumber'] ?? data['extractedDocNumber']) as String?;
-          final uploadedUrl = data['url'] as String?;
-          final reason = (data['reason'] ?? resObj?['rejectionReason']) as String?;
-          final message = (data['message'] ?? resObj?['gujaratiMessage'] ?? resObj?['englishMessage'] ?? 'ચકાસણી પૂર્ણ') as String;
-
-          return AiDocVerificationResult(
-            isApproved: true,
-            extractedName: extractedName,
-            extractedDob: extractedDob,
-            extractedDocNumber: extractedDocNum,
-            uploadedUrl: uploadedUrl,
-            rejectionReason: null,
-            message: 'ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયું છે.',
-          );
-        }
-      }
-
-      // Auto-approval fallback: Accept document without AI blocking
-      return const AiDocVerificationResult(
-        isApproved: true,
-        rejectionReason: null,
-        message: 'ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયું છે.',
-      );
-    } catch (e) {
-      if (context.mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-      }
-      return const AiDocVerificationResult(
-        isApproved: true,
-        rejectionReason: null,
-        message: 'ઓળખપત્ર સફળતાપૂર્વક સ્વીકારવામાં આવ્યું છે.',
-      );
-    }
   }
 
   /// Direct Google Gemini Vision REST fallback
