@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_no_ai_advsearch_v66';
+const VERSION_TAG = '20261104_matrimony_home_fixed_v67';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -16,25 +16,42 @@ function patchMainDartJs() {
   }
   content = content.replace(targetVw, replaceVw);
 
-  // 2. Ensure /advanced-search route is in top-level routes
-  const targetRouteDef = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b2=A.dv(new A.beU(),"candidate-profile-details","/candidate-profile-details",s)';
-  const replaceRouteDef = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b2=A.dv(new A.beU(),"candidate-profile-details","/candidate-profile-details",s)';
-  if (content.includes(targetRouteDef)) {
-    content = content.replace(targetRouteDef, replaceRouteDef);
-    console.log('Added b_adv definition in main.dart.js');
+  // 2. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
+  if (content.includes('b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s)')) {
+    if (!content.includes('b_home=')) {
+      content = content.replace(
+        'b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s)',
+        'b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.bf_(),"home","/home",s),b_search=A.dv(new A.bf0(),"search","/search",s)'
+      );
+      console.log('Added b_home and b_search definitions in main.dart.js');
+    }
+  } else {
+    const targetRouteDef = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b2=A.dv(new A.beU(),"candidate-profile-details","/candidate-profile-details",s)';
+    const replaceRouteDef = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.bf_(),"home","/home",s),b_search=A.dv(new A.bf0(),"search","/search",s),b2=A.dv(new A.beU(),"candidate-profile-details","/candidate-profile-details",s)';
+    if (content.includes(targetRouteDef)) {
+      content = content.replace(targetRouteDef, replaceRouteDef);
+      console.log('Added b_adv, b_home, and b_search definitions in main.dart.js');
+    }
   }
 
-  const targetRouteArray = 'b0,b1,b2,b3,b4,b5,b6,new A.yL(';
-  const replaceRouteArray = 'b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(';
-  if (content.includes(targetRouteArray)) {
-    content = content.replace(targetRouteArray, replaceRouteArray);
-    console.log('Added b_adv to top-level routes array in main.dart.js');
+  // Update top-level route array q
+  if (content.includes('b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(')) {
+    content = content.replace(
+      'b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(',
+      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
+    );
+    console.log('Added b_home and b_search to top-level routes array in main.dart.js');
+  } else if (content.includes('b0,b1,b2,b3,b4,b5,b6,new A.yL(')) {
+    content = content.replace(
+      'b0,b1,b2,b3,b4,b5,b6,new A.yL(',
+      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
+    );
+    console.log('Added b_adv, b_home, and b_search to top-level routes array in main.dart.js');
   }
 
   // 3. Remove IntrinsicHeight from search TextField
   const targetJ8 = 'h=A.h(a6,new A.J8(A.r(A.a([B.bi,B.adC,B.a5,';
   if (content.includes(targetJ8)) {
-    // Find the matching closing ),a6)
     const idx = content.indexOf(targetJ8);
     const endPattern = ',B.aM,B.c,B.e,0),a6)';
     const endIdx = content.indexOf(endPattern, idx);
@@ -81,19 +98,37 @@ function patchMainDartLive() {
     console.log('Removed blocking Details Required check from Edit Profile in main_dart_live.js');
   }
 
-  // 5. Ensure /advanced-search route is in top-level routes
-  const targetRouteDef = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b2=A.dv(new A.beS(),"candidate-profile-details","/candidate-profile-details",s)';
-  const replaceRouteDef = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s),b2=A.dv(new A.beS(),"candidate-profile-details","/candidate-profile-details",s)';
-  if (content.includes(targetRouteDef)) {
-    content = content.replace(targetRouteDef, replaceRouteDef);
-    console.log('Added b_adv definition in main_dart_live.js');
+  // 5. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
+  if (content.includes('b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s)')) {
+    if (!content.includes('b_home=')) {
+      content = content.replace(
+        'b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s)',
+        'b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.beY(),"home","/home",s),b_search=A.dv(new A.beZ(),"search","/search",s)'
+      );
+      console.log('Added b_home and b_search definitions in main_dart_live.js');
+    }
+  } else {
+    const targetRouteDef = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b2=A.dv(new A.beS(),"candidate-profile-details","/candidate-profile-details",s)';
+    const replaceRouteDef = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.beY(),"home","/home",s),b_search=A.dv(new A.beZ(),"search","/search",s),b2=A.dv(new A.beS(),"candidate-profile-details","/candidate-profile-details",s)';
+    if (content.includes(targetRouteDef)) {
+      content = content.replace(targetRouteDef, replaceRouteDef);
+      console.log('Added b_adv, b_home, and b_search definitions in main_dart_live.js');
+    }
   }
 
-  const targetRouteArray = 'b0,b1,b2,b3,b4,b5,b6,new A.yL(';
-  const replaceRouteArray = 'b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(';
-  if (content.includes(targetRouteArray)) {
-    content = content.replace(targetRouteArray, replaceRouteArray);
-    console.log('Added b_adv to top-level routes array in main_dart_live.js');
+  // Update top-level route array q
+  if (content.includes('b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(')) {
+    content = content.replace(
+      'b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(',
+      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
+    );
+    console.log('Added b_home and b_search to top-level routes array in main_dart_live.js');
+  } else if (content.includes('b0,b1,b2,b3,b4,b5,b6,new A.yL(')) {
+    content = content.replace(
+      'b0,b1,b2,b3,b4,b5,b6,new A.yL(',
+      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
+    );
+    console.log('Added b_adv, b_home, and b_search to top-level routes array in main_dart_live.js');
   }
 
   // 6. Remove IntrinsicHeight from search TextField
