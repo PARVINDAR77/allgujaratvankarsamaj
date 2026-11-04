@@ -176,41 +176,44 @@ class _FeaturedCardState extends State<_FeaturedCard> {
   Widget build(BuildContext context) {
     final it = widget.item;
 
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        transform: Matrix4.translationValues(0.0, _isHovered ? -8.0 : 0.0, 0.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: _isHovered ? const Color(0xFFFFD700) : const Color(0xFFD4AF37),
-            width: _isHovered ? 2.5 : 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: _isHovered
-                  ? const Color(0xFFFFD700).withValues(alpha: 0.35)
-                  : Colors.black.withValues(alpha: 0.15),
-              blurRadius: _isHovered ? 24 : 12,
-              offset: Offset(0, _isHovered ? 10 : 5),
+    return Center(
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          width: 270,
+          height: 438,
+          transform: Matrix4.translationValues(0.0, _isHovered ? -8.0 : 0.0, 0.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _isHovered ? const Color(0xFFFFD700) : const Color(0xFFD4AF37),
+              width: _isHovered ? 2.5 : 1.5,
             ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(20),
-              onTap: () => context.push(it.route),
-              child: AspectRatio(
-                aspectRatio: 160.0 / 260.0,
+            boxShadow: [
+              BoxShadow(
+                color: _isHovered
+                    ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                    : Colors.black.withValues(alpha: 0.15),
+                blurRadius: _isHovered ? 24 : 12,
+                offset: Offset(0, _isHovered ? 10 : 5),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(18),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () => context.push(it.route),
                 child: Image.asset(
                   it.imageAsset,
+                  width: 270,
+                  height: 438,
                   fit: BoxFit.cover,
                 ),
               ),

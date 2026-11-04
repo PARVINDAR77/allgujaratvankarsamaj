@@ -109470,7 +109470,7 @@ A.zb.prototype={
 ahe(a){var s,r,q,p=this.b
 if(!p.aG(0,a)){s=this.a
 r=J.aB(s)
-if(r.h(s,a)==null)return null
+if(r.h(s,a)==null){if(typeof a==="string"&&a.indexOf("assets/images/portal_card_")===0){var v=A.a([new A.rZ(null,a)],t.pE);p.p(0,a,v);return v}return null}
 q=r.h(s,a)
 if(q==null)q=[]
 q=J.Aa(t.VG.a(q),t.pE)

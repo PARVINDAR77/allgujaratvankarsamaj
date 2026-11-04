@@ -64749,12 +64749,12 @@ $S:919}
 A.Ew.prototype={
 V(){return new A.a6u()}}
 A.a6u.prototype={
-K(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)
+K(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(20),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)
 r=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)
-s=A.d(20)
+s=A.d(18)
 var img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");
-var cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);
-return A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}
+var cardImg=A.f2(s,A.cw(img,B.z,k,k,new A.bc3(),B.aw,270,438),B.aG);
+return A.aD(A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,438,k,k,i,270),B.cG,k,new A.aUh(l),new A.aUi(l),k),k,k)}}
 A.aUh.prototype={
 $1(a){var s=this.a
 return s.B(new A.aUf(s))},
@@ -109499,7 +109499,7 @@ A.zb.prototype={
 ahe(a){var s,r,q,p=this.b
 if(!p.aG(0,a)){s=this.a
 r=J.aB(s)
-if(r.h(s,a)==null)return null
+if(r.h(s,a)==null){if(typeof a==="string"&&a.indexOf("assets/images/portal_card_")===0){var v=A.a([new A.rZ(null,a)],t.pE);p.p(0,a,v);return v}return null}
 q=r.h(s,a)
 if(q==null)q=[]
 q=J.Aa(t.VG.a(q),t.pE)

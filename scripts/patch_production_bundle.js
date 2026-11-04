@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_royal_portals_v74';
+const VERSION_TAG = '20261104_restore_assets_and_cards_v75';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -201,12 +201,25 @@ function patchMainDartJs() {
     console.log('Fixed Header & Footer navigation links to use context.go(/home) in main.dart.js');
   }
 
-  // 15. Redesign Prominent Community Portals to Royal Gold Artworks
-  const portalCardTarget = 'A.a6u.prototype={\nK(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-5:0,0),h=A.d(18),g=l.d,f=g?B.w:B.bP\nf=A.w(f,B.j,g?1.8:1.2)\ng=g?B.w.u(0.2):B.q.u(0.06)\ns=l.d\nr=s?20:10\ns=s?8:4\nq=t.V\nr=A.a([new A.a2(0,B.t,g,new A.p(0,s),r)],q)\ns=A.d(18)\ng=A.w(B.cO,B.j,1.8)\np=A.a([new A.a2(0,B.t,B.w.u(0.45),B.aD,10)],q)\np=A.h(k,A.aD(A.ay(j.f,B.dP,k,k,28),k,k),B.f,k,k,new A.j(k,k,g,k,p,B.akc,B.F),k,62,k,k,k,k,62)\ng=A.l(j.a+". "+j.b,k,k,k,k,B.aIf,B.H,k,k)\no=A.l(j.c,k,k,k,k,B.aJk,B.H,k,k)\nn=A.l(j.d,3,B.D,k,k,B.Tt,B.H,k,k)\nm=A.d(10)\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,new A.a_(B.kc,A.v(A.a([p,B.N,g,B.rl,o,B.aO,new A.bi(B.AH,n,k),B.bb,A.h(k,B.axX,B.f,k,k,new A.j(B.w,k,A.w(B.E,B.j,1),m,A.a([new A.a2(0,B.t,B.w.u(0.35),B.aD,8)],q),k,B.k),k,k,k,B.cj,k,k,1/0)],t.p),B.h,B.c,B.y),k),k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
-  const portalCardReplace = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(20)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
-  if (content.includes(portalCardTarget)) {
-    content = content.replace(portalCardTarget, portalCardReplace);
-    console.log('Upgraded Prominent Community Portals to royal gold artworks in main.dart.js');
+  // 15. Redesign Prominent Community Portals to Royal Gold Artworks (Compact & Centered 270x438)
+  const portalCardTargetOld = 'A.a6u.prototype={\nK(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-5:0,0),h=A.d(18),g=l.d,f=g?B.w:B.bP\nf=A.w(f,B.j,g?1.8:1.2)\ng=g?B.w.u(0.2):B.q.u(0.06)\ns=l.d\nr=s?20:10\ns=s?8:4\nq=t.V\nr=A.a([new A.a2(0,B.t,g,new A.p(0,s),r)],q)\ns=A.d(18)\ng=A.w(B.cO,B.j,1.8)\np=A.a([new A.a2(0,B.t,B.w.u(0.45),B.aD,10)],q)\np=A.h(k,A.aD(A.ay(j.f,B.dP,k,k,28),k,k),B.f,k,k,new A.j(k,k,g,k,p,B.akc,B.F),k,62,k,k,k,k,62)\ng=A.l(j.a+". "+j.b,k,k,k,k,B.aIf,B.H,k,k)\no=A.l(j.c,k,k,k,k,B.aJk,B.H,k,k)\nn=A.l(j.d,3,B.D,k,k,B.Tt,B.H,k,k)\nm=A.d(10)\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,new A.a_(B.kc,A.v(A.a([p,B.N,g,B.rl,o,B.aO,new A.bi(B.AH,n,k),B.bb,A.h(k,B.axX,B.f,k,k,new A.j(B.w,k,A.w(B.E,B.j,1),m,A.a([new A.a2(0,B.t,B.w.u(0.35),B.aD,8)],q),k,B.k),k,k,k,B.cj,k,k,1/0)],t.p),B.h,B.c,B.y),k),k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  const portalCardTargetV74 = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(20)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  const newCardImpl = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(20),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(18)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,A.cw(img,B.z,k,k,new A.bc3(),B.aw,270,438),B.aG);\nreturn A.aD(A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,438,k,k,i,270),B.cG,k,new A.aUh(l),new A.aUi(l),k),k,k)}}';
+
+  if (content.includes(portalCardTargetV74)) {
+    content = content.replace(portalCardTargetV74, newCardImpl);
+    console.log('Updated portal cards to compact 270x438 centered cards in main.dart.js');
+  } else if (content.includes(portalCardTargetOld)) {
+    content = content.replace(portalCardTargetOld, newCardImpl);
+    console.log('Upgraded portal cards to compact 270x438 centered cards in main.dart.js');
+  }
+
+  // 16. Dynamic Asset Manifest resolver for portal cards (leaves AssetManifest.bin.json 100% clean)
+  const targetAhe = 'if(r.h(s,a)==null)return null';
+  const replaceAhe = 'if(r.h(s,a)==null){if(typeof a==="string"&&a.indexOf("assets/images/portal_card_")===0){var v=A.a([new A.rZ(null,a)],t.pE);p.p(0,a,v);return v}return null}';
+  if (content.includes(targetAhe)) {
+    content = content.replace(targetAhe, replaceAhe);
+    console.log('Added dynamic asset fallback in main.dart.js');
   }
 
   fs.writeFileSync(filePath, content, 'utf8');
@@ -380,12 +393,25 @@ function patchMainDartLive() {
     console.log('Fixed Header & Footer navigation links to use context.go(/home) in main_dart_live.js');
   }
 
-  // 16. Redesign Prominent Community Portals to Royal Gold Artworks
-  const portalCardTarget = 'A.a6u.prototype={\nK(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-5:0,0),h=A.d(18),g=l.d,f=g?B.w:B.bP\nf=A.w(f,B.j,g?1.8:1.2)\ng=g?B.w.u(0.2):B.q.u(0.06)\ns=l.d\nr=s?20:10\ns=s?8:4\nq=t.V\nr=A.a([new A.a2(0,B.t,g,new A.p(0,s),r)],q)\ns=A.d(18)\ng=A.w(B.cO,B.j,1.8)\np=A.a([new A.a2(0,B.t,B.w.u(0.45),B.aD,10)],q)\np=A.h(k,A.aD(A.ay(j.f,B.dP,k,k,28),k,k),B.f,k,k,new A.j(k,k,g,k,p,B.akc,B.F),k,62,k,k,k,k,62)\ng=A.l(j.a+". "+j.b,k,k,k,k,B.aIf,B.H,k,k)\no=A.l(j.c,k,k,k,k,B.aJk,B.H,k,k)\nn=A.l(j.d,3,B.D,k,k,B.Tt,B.H,k,k)\nm=A.d(10)\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,new A.a_(B.kc,A.v(A.a([p,B.N,g,B.rl,o,B.aO,new A.bi(B.AH,n,k),B.bb,A.h(k,B.axX,B.f,k,k,new A.j(B.w,k,A.w(B.E,B.j,1),m,A.a([new A.a2(0,B.t,B.w.u(0.35),B.aD,8)],q),k,B.k),k,k,k,B.cj,k,k,1/0)],t.p),B.h,B.c,B.y),k),k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
-  const portalCardReplace = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(20)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
-  if (content.includes(portalCardTarget)) {
-    content = content.replace(portalCardTarget, portalCardReplace);
-    console.log('Upgraded Prominent Community Portals to royal gold artworks in main_dart_live.js');
+  // 16. Redesign Prominent Community Portals to Royal Gold Artworks (Compact & Centered 270x438)
+  const portalCardTargetOld = 'A.a6u.prototype={\nK(a){var s,r,q,p,o,n,m,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-5:0,0),h=A.d(18),g=l.d,f=g?B.w:B.bP\nf=A.w(f,B.j,g?1.8:1.2)\ng=g?B.w.u(0.2):B.q.u(0.06)\ns=l.d\nr=s?20:10\ns=s?8:4\nq=t.V\nr=A.a([new A.a2(0,B.t,g,new A.p(0,s),r)],q)\ns=A.d(18)\ng=A.w(B.cO,B.j,1.8)\np=A.a([new A.a2(0,B.t,B.w.u(0.45),B.aD,10)],q)\np=A.h(k,A.aD(A.ay(j.f,B.dP,k,k,28),k,k),B.f,k,k,new A.j(k,k,g,k,p,B.akc,B.F),k,62,k,k,k,k,62)\ng=A.l(j.a+". "+j.b,k,k,k,k,B.aIf,B.H,k,k)\no=A.l(j.c,k,k,k,k,B.aJk,B.H,k,k)\nn=A.l(j.d,3,B.D,k,k,B.Tt,B.H,k,k)\nm=A.d(10)\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,new A.a_(B.kc,A.v(A.a([p,B.N,g,B.rl,o,B.aO,new A.bi(B.AH,n,k),B.bb,A.h(k,B.axX,B.f,k,k,new A.j(B.w,k,A.w(B.E,B.j,1),m,A.a([new A.a2(0,B.t,B.w.u(0.35),B.aD,8)],q),k,B.k),k,k,k,B.cj,k,k,1/0)],t.p),B.h,B.c,B.y),k),k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  const portalCardTargetV74 = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(22),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(20)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,new A.rY(160/260,A.cw(img,B.z,k,k,new A.bc3(),B.aw,k,k),k),B.aG);\nreturn A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,k,k,k,i,k),B.cG,k,new A.aUh(l),new A.aUi(l),k)}}';
+  const newCardImpl = 'A.a6u.prototype={\nK(a){var s,r,q=t.V,l=this,k=null,j=l.a.c,i=A.jA(0,l.d?-8:0,0),h=A.d(20),f=A.w(l.d?B.cO:B.E,B.j,l.d?2.5:1.5)\nr=A.a([new A.a2(0,B.t,l.d?B.cO.u(0.35):B.q.u(0.15),new A.p(0,l.d?10:5),l.d?24:12)],q)\ns=A.d(18)\nvar img=j.a==="1"?"assets/images/portal_card_prernadata.png":(j.a==="2"?"assets/images/portal_card_superstars.png":"assets/images/portal_card_ratna.png");\nvar cardImg=A.f2(s,A.cw(img,B.z,k,k,new A.bc3(),B.aw,270,438),B.aG);\nreturn A.aD(A.eE(A.hP(k,A.cE(!1,B.P,!0,k,A.b_(!1,s,!0,cardImg,k,!0,k,k,k,k,k,k,k,k,k,k,new A.aUg(a,j),k,k,k,k,k,k,k),B.f,B.B,0,k,k,k,k,k,B.b5),k,B.cP,new A.j(B.i,k,f,h,r,k,B.k),B.pn,k,438,k,k,i,270),B.cG,k,new A.aUh(l),new A.aUi(l),k),k,k)}}';
+
+  if (content.includes(portalCardTargetV74)) {
+    content = content.replace(portalCardTargetV74, newCardImpl);
+    console.log('Updated portal cards to compact 270x438 centered cards in main_dart_live.js');
+  } else if (content.includes(portalCardTargetOld)) {
+    content = content.replace(portalCardTargetOld, newCardImpl);
+    console.log('Upgraded portal cards to compact 270x438 centered cards in main_dart_live.js');
+  }
+
+  // 17. Dynamic Asset Manifest resolver for portal cards (leaves AssetManifest.bin.json 100% clean)
+  const targetAhe = 'if(r.h(s,a)==null)return null';
+  const replaceAhe = 'if(r.h(s,a)==null){if(typeof a==="string"&&a.indexOf("assets/images/portal_card_")===0){var v=A.a([new A.rZ(null,a)],t.pE);p.p(0,a,v);return v}return null}';
+  if (content.includes(targetAhe)) {
+    content = content.replace(targetAhe, replaceAhe);
+    console.log('Added dynamic asset fallback in main_dart_live.js');
   }
 
   // 17. Remove Buddha and Ambedkar Reverence Tag Lines below artwork cards
@@ -445,11 +471,10 @@ function updateCacheBuster() {
 }
 
 try {
-  require('./register_portal_assets.js');
   patchMainDartJs();
   patchMainDartLive();
   updateCacheBuster();
-  console.log('ALL ROYAL PORTALS & ROUTE FIX PATCHES APPLIED SUCCESSFULLY!');
+  console.log('ALL RESTORED ASSETS & COMPACT CARDS PATCHES APPLIED SUCCESSFULLY!');
 } catch (err) {
   console.error('Patching error:', err);
   process.exit(1);
