@@ -31,6 +31,9 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Uint8List? _profileImageBytes;
+  String? _existingMainPhotoUrl;
+  Uint8List? _newSubPhotoBytes;
+  String? _existingSubPhotoUrl;
   List<String> _existingPhotoUrls = [];
   final List<Uint8List> _newGalleryPhotosBytes = [];
   String _idProofType = 'Voter ID Card (ચૂંટણી કાર્ડ)';
@@ -167,79 +170,59 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   String? _nativePlace;
   String? _aboutMe;
 
-  Future<void> _pickGalleryPhotos() async {
-    final totalPhotos = _existingPhotoUrls.length + _newGalleryPhotosBytes.length;
-    if (totalPhotos >= 5) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('તમે વધુમાં વધુ ૫ ફોટા ઉમેરી શકો છો (Maximum 5 candidate photos allowed)'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
+  Future<void> _pickSubPhoto() async {
     try {
-      final List<XFile> pickedFiles = await _picker.pickMultiImage();
-      if (pickedFiles.isNotEmpty) {
-        int skippedTooLarge = 0;
-        for (final file in pickedFiles) {
-          if (_existingPhotoUrls.length + _newGalleryPhotosBytes.length >= 5) break;
-          final bytes = await file.readAsBytes();
-          if (bytes.length > 5 * 1024 * 1024) {
-            skippedTooLarge++;
-            continue;
-          }
-          _newGalleryPhotosBytes.add(bytes);
-        }
-        setState(() {});
-        if (skippedTooLarge > 0) {
+      final XFile? single = await _picker.pickImage(source: ImageSource.gallery);
+      if (single != null) {
+        final bytes = await single.readAsBytes();
+        if (bytes.length > 5 * 1024 * 1024) {
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$skippedTooLarge ફોટો 5 MB કરતાં મોટો હોવાથી રદ કરવામાં આવ્યો (Images > 5 MB were skipped)'),
+            const SnackBar(
+              content: Text('ગૌણ ફોટો સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (Sub photo must be under 5 MB)'),
               backgroundColor: Colors.red,
             ),
           );
+          return;
         }
-      } else {
-        final XFile? single = await _picker.pickImage(source: ImageSource.gallery);
-        if (single != null) {
-          final bytes = await single.readAsBytes();
-          if (bytes.length > 5 * 1024 * 1024) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('ફોટો સાઈઝ 5 MB કરતાં ઓછી હોવી જોઈએ (Image must be under 5 MB)'),
-                backgroundColor: Colors.red,
-              ),
-            );
-            return;
-          }
-          if (_existingPhotoUrls.length + _newGalleryPhotosBytes.length < 5) {
-            setState(() {
-              _newGalleryPhotosBytes.add(bytes);
-            });
-          }
-        }
+        setState(() {
+          _newSubPhotoBytes = bytes;
+          _existingSubPhotoUrl = null;
+        });
       }
     } catch (e) {
-      debugPrint('Error picking gallery photos: $e');
+      debugPrint('Error picking sub photo: $e');
     }
   }
 
+  void _removeSubPhoto() {
+    setState(() {
+      _newSubPhotoBytes = null;
+      _existingSubPhotoUrl = null;
+    });
+  }
+
+  void _removeMainPhoto() {
+    setState(() {
+      _profileImageBytes = null;
+      _existingMainPhotoUrl = null;
+    });
+  }
+
+  Future<void> _pickGalleryPhotos() async {
+    await _pickSubPhoto();
+  }
+
   void _removeExistingPhoto(int index) {
-    if (index >= 0 && index < _existingPhotoUrls.length) {
-      setState(() {
-        _existingPhotoUrls.removeAt(index);
-      });
+    if (index == 0) {
+      _removeMainPhoto();
+    } else {
+      _removeSubPhoto();
     }
   }
 
   void _removeNewPhoto(int index) {
-    if (index >= 0 && index < _newGalleryPhotosBytes.length) {
-      setState(() {
-        _newGalleryPhotosBytes.removeAt(index);
-      });
-    }
+    _removeSubPhoto();
   }
 
   Future<void> _pickIdFront(ProfileModel profile) async {
@@ -763,8 +746,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
               if (profile.photos != null && profile.photos!.isNotEmpty) {
                 _existingPhotoUrls = List.from(profile.photos!);
+                _existingMainPhotoUrl ??= _existingPhotoUrls.isNotEmpty ? _existingPhotoUrls[0] : null;
+                _existingSubPhotoUrl ??= _existingPhotoUrls.length > 1 ? _existingPhotoUrls[1] : null;
               } else if (profile.fullPhotoUrl != null) {
                 _existingPhotoUrls = [profile.fullPhotoUrl!];
+                _existingMainPhotoUrl ??= profile.fullPhotoUrl;
+              } else if (profile.photoUrl != null) {
+                _existingMainPhotoUrl ??= profile.photoUrl;
               }
               _existingIdFrontUrl = profile.idProofFrontUrl;
               _existingIdBackUrl = profile.idProofBackUrl;
@@ -1381,11 +1369,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     if (_abroadCountry != null) updateData['abroadCountry'] = _abroadCountry;
                     if (_aboutMe != null) updateData['about'] = _aboutMe;
 
-                    final totalPhotos = _existingPhotoUrls.length + _newGalleryPhotosBytes.length;
-                    if (totalPhotos > 5) {
+                    final hasMain = _profileImageBytes != null || (_existingMainPhotoUrl != null && _existingMainPhotoUrl!.isNotEmpty);
+                    if (!hasMain) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('ઉમેદવારના વધુમાં વધુ ૫ ફોટા માન્ય છે (Maximum 5 candidate photos allowed)'),
+                          content: Text('મુખ્ય પ્રોફાઇલ ફોટો ફરજિયાત છે (Main profile photo is mandatory)'),
                           backgroundColor: Colors.red,
                         ),
                       );
@@ -1457,13 +1445,27 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       return null;
                     }
 
-                    // Upload new gallery photos
-                    final List<String> allFinalPhotos = List.from(_existingPhotoUrls);
-                    for (int i = 0; i < _newGalleryPhotosBytes.length; i++) {
-                      final u = await uploadBytes(_newGalleryPhotosBytes[i], 'profile_gallery_new_$i');
-                      if (u != null) {
-                        allFinalPhotos.add(u);
-                      }
+                    // Upload main profile photo if changed
+                    String? finalMainPhoto = _existingMainPhotoUrl;
+                    if (_profileImageBytes != null) {
+                      final u = await uploadBytes(_profileImageBytes!, 'profile_main');
+                      if (u != null) finalMainPhoto = u;
+                    }
+
+                    // Upload sub photo if changed
+                    String? finalSubPhoto = _existingSubPhotoUrl;
+                    if (_newSubPhotoBytes != null) {
+                      final u = await uploadBytes(_newSubPhotoBytes!, 'profile_sub');
+                      if (u != null) finalSubPhoto = u;
+                    }
+
+                    // Final photos list: [Main, Sub (if available)] - max 2
+                    final List<String> allFinalPhotos = [];
+                    if (finalMainPhoto != null && finalMainPhoto.isNotEmpty) {
+                      allFinalPhotos.add(finalMainPhoto);
+                    }
+                    if (finalSubPhoto != null && finalSubPhoto.isNotEmpty && !allFinalPhotos.contains(finalSubPhoto)) {
+                      allFinalPhotos.add(finalSubPhoto);
                     }
 
                     // Upload ID proof front & back
@@ -1479,23 +1481,8 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       if (u != null) finalIdBack = u;
                     }
 
-                    // Upload main profile photo if changed
-                    if (_profileImageBytes != null) {
-                      final u = await uploadBytes(_profileImageBytes!, 'profile_main');
-                      if (u != null) {
-                        updateData['photoUrl'] = u;
-                        if (!allFinalPhotos.contains(u)) {
-                          allFinalPhotos.insert(0, u);
-                        }
-                      }
-                    } else if (allFinalPhotos.isNotEmpty) {
-                      updateData['photoUrl'] = allFinalPhotos[0];
-                    }
-
+                    updateData['photoUrl'] = finalMainPhoto ?? (allFinalPhotos.isNotEmpty ? allFinalPhotos[0] : null);
                     updateData['photos'] = allFinalPhotos;
-                    if (updateData['photoUrl'] == null && allFinalPhotos.isNotEmpty) {
-                      updateData['photoUrl'] = allFinalPhotos[0];
-                    }
                     if (profile.isVerified != true) {
                       updateData['idProofType'] = _idProofType;
                       if (_idProofNumber != null && _idProofNumber!.trim().isNotEmpty) {
@@ -2071,8 +2058,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildCandidatePhotosBox() {
-    final totalCount = _existingPhotoUrls.length + _newGalleryPhotosBytes.length;
-    final isCountValid = totalCount >= 2 && totalCount <= 5;
+    final hasMain = _profileImageBytes != null || (_existingMainPhotoUrl != null && _existingMainPhotoUrl!.isNotEmpty);
+    final hasSub = _newSubPhotoBytes != null || (_existingSubPhotoUrl != null && _existingSubPhotoUrl!.isNotEmpty);
+    final totalCount = (hasMain ? 1 : 0) + (hasSub ? 1 : 0);
 
     return Container(
       width: double.infinity,
@@ -2081,7 +2069,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isCountValid ? const Color(0xFFD4AF37) : Colors.amber.shade400,
+          color: hasMain ? const Color(0xFFD4AF37) : Colors.amber.shade600,
           width: 1.5,
         ),
         boxShadow: [
@@ -2111,7 +2099,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Candidate Photos / ઉમેદવારના ફોટા (૨ થી ૫ ફોટો)',
+                      'Candidate Photos / ઉમેદવારના ફોટા (૧ મુખ્ય + ૧ ગૌણ)',
                       style: TextStyle(
                         color: Colors.black87,
                         fontWeight: FontWeight.bold,
@@ -2119,7 +2107,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                     ),
                     Text(
-                      'ઓછામાં ઓછા ૨ અને વધુમાં વધુ ૫ ફોટો (Min 2, Max 5 • Max 5 MB each)',
+                      '૧ મુખ્ય ફોટો ફરજિયાત + ૧ ગૌણ ફોટો વૈકલ્પિક (1 Main Mandatory + 1 Sub Optional)',
                       style: TextStyle(color: Colors.black54, fontSize: 12),
                     ),
                   ],
@@ -2128,16 +2116,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isCountValid ? Colors.green.shade50 : Colors.amber.shade50,
+                  color: hasMain ? Colors.green.shade50 : Colors.amber.shade50,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isCountValid ? Colors.green.shade400 : Colors.amber.shade600,
+                    color: hasMain ? Colors.green.shade400 : Colors.amber.shade600,
                   ),
                 ),
                 child: Text(
-                  '$totalCount / 5',
+                  '$totalCount / 2',
                   style: TextStyle(
-                    color: isCountValid ? Colors.green.shade800 : Colors.amber.shade900,
+                    color: hasMain ? Colors.green.shade800 : Colors.amber.shade900,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,
                   ),
@@ -2145,146 +2133,259 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
-          // Grid of existing + new photos
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              // 1. Existing photos from server
-              for (int i = 0; i < _existingPhotoUrls.length; i++)
-                Stack(
-                  children: [
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: i == 0 ? const Color(0xFFD4AF37) : Colors.grey.shade300,
-                          width: i == 0 ? 2 : 1,
-                        ),
-                        image: DecorationImage(
-                          image: NetworkImage(
-                            _existingPhotoUrls[i].startsWith('http')
-                                ? _existingPhotoUrls[i]
-                                : 'https://allgujaratvankarsamaj.com${_existingPhotoUrls[i]}',
-                          ),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    if (i == 0)
-                      Positioned(
-                        bottom: 4,
-                        left: 4,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD4AF37),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            'Main',
-                            style: TextStyle(color: Colors.black, fontSize: 9, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ),
-                    Positioned(
-                      top: 2,
-                      right: 2,
-                      child: GestureDetector(
-                        onTap: () => _removeExistingPhoto(i),
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.close, color: Colors.white, size: 14),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-              // 2. Newly added photos
-              for (int i = 0; i < _newGalleryPhotosBytes.length; i++)
-                Stack(
-                  children: [
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
-                        image: DecorationImage(
-                          image: MemoryImage(_newGalleryPhotosBytes[i]),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 2,
-                      right: 2,
-                      child: GestureDetector(
-                        onTap: () => _removeNewPhoto(i),
-                        child: Container(
-                          padding: const EdgeInsets.all(3),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.close, color: Colors.white, size: 14),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-              // 3. Add button if < 5
-              if (totalCount < 5)
-                GestureDetector(
-                  onTap: _pickGalleryPhotos,
+          // Dual Photo Slots (Main Image + Sub Image)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 420;
+              final children = [
+                // Slot 1: Main Photo (Mandatory)
+                Expanded(
+                  flex: isNarrow ? 0 : 1,
                   child: Container(
-                    width: 90,
-                    height: 90,
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF9FAFB),
+                      color: const Color(0xFFFFFDF5),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFFD4AF37),
-                        style: BorderStyle.solid,
+                        color: hasMain ? const Color(0xFFD4AF37) : Colors.amber.shade400,
                         width: 1.5,
                       ),
                     ),
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_photo_alternate_outlined, color: Color(0xFFD4AF37), size: 28),
-                        SizedBox(height: 4),
-                        Text(
-                          '+ Add Photo',
-                          style: TextStyle(
-                            color: Color(0xFFD4AF37),
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD4AF37),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'મુખ્ય ફોટો (Main Photo) *',
+                                style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 8),
+                        if (hasMain) ...[
+                          Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: _profileImageBytes != null
+                                    ? Image.memory(
+                                        _profileImageBytes!,
+                                        width: 130,
+                                        height: 140,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.network(
+                                        _existingMainPhotoUrl!.startsWith('http')
+                                            ? _existingMainPhotoUrl!
+                                            : 'https://allgujaratvankarsamaj.com$_existingMainPhotoUrl',
+                                        width: 130,
+                                        height: 140,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          width: 130,
+                                          height: 140,
+                                          color: Colors.grey.shade200,
+                                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                                        ),
+                                      ),
+                              ),
+                              GestureDetector(
+                                onTap: _removeMainPhoto,
+                                child: Container(
+                                  margin: const EdgeInsets.all(4),
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close, color: Colors.white, size: 14),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: _pickImage,
+                            icon: const Icon(Icons.refresh, size: 16, color: Color(0xFFD4AF37)),
+                            label: const Text('બદલો (Change)', style: TextStyle(color: Color(0xFFD4AF37), fontSize: 12, fontWeight: FontWeight.bold)),
+                          ),
+                        ] else ...[
+                          GestureDetector(
+                            onTap: _pickImage,
+                            child: Container(
+                              width: double.infinity,
+                              height: 140,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.amber.shade300, style: BorderStyle.solid),
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_a_photo_outlined, color: Colors.amber.shade800, size: 36),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    '+ મુખ્ય ફોટો પસંદ કરો',
+                                    style: TextStyle(color: Colors.amber.shade900, fontWeight: FontWeight.bold, fontSize: 12),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  const Text('(Mandatory • Max 5MB)', style: TextStyle(color: Colors.black45, fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
                 ),
-            ],
+                SizedBox(width: isNarrow ? 0 : 12, height: isNarrow ? 12 : 0),
+
+                // Slot 2: Sub Photo (Optional)
+                Expanded(
+                  flex: isNarrow ? 0 : 1,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF9FAFB),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: hasSub ? const Color(0xFF1E3A8A) : Colors.grey.shade300,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E3A8A).withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'ગૌણ ફોટો (Sub Photo)',
+                                style: TextStyle(color: Color(0xFF1E3A8A), fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        if (hasSub) ...[
+                          Stack(
+                            alignment: Alignment.topRight,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: _newSubPhotoBytes != null
+                                    ? Image.memory(
+                                        _newSubPhotoBytes!,
+                                        width: 130,
+                                        height: 140,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.network(
+                                        _existingSubPhotoUrl!.startsWith('http')
+                                            ? _existingSubPhotoUrl!
+                                            : 'https://allgujaratvankarsamaj.com$_existingSubPhotoUrl',
+                                        width: 130,
+                                        height: 140,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) => Container(
+                                          width: 130,
+                                          height: 140,
+                                          color: Colors.grey.shade200,
+                                          child: const Icon(Icons.broken_image, color: Colors.grey),
+                                        ),
+                                      ),
+                              ),
+                              GestureDetector(
+                                onTap: _removeSubPhoto,
+                                child: Container(
+                                  margin: const EdgeInsets.all(4),
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.red,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close, color: Colors.white, size: 14),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: _pickSubPhoto,
+                            icon: const Icon(Icons.refresh, size: 16, color: Color(0xFF1E3A8A)),
+                            label: const Text('બદલો (Change)', style: TextStyle(color: Color(0xFF1E3A8A), fontSize: 12, fontWeight: FontWeight.bold)),
+                          ),
+                        ] else ...[
+                          GestureDetector(
+                            onTap: _pickSubPhoto,
+                            child: Container(
+                              width: double.infinity,
+                              height: 140,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                              ),
+                              child: const Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.add_photo_alternate_outlined, color: Colors.black45, size: 36),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    '+ ગૌણ ફોટો ઉમેરો',
+                                    style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 12),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text('(Optional • Max 1)', style: TextStyle(color: Colors.black45, fontSize: 10)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+              ];
+
+              if (isNarrow) {
+                return Column(children: children);
+              }
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: children,
+              );
+            },
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
           Text(
-            totalCount < 2
-                ? '⚠️ હજી ઓછામાં ઓછો ${2 - totalCount} ફોટો ઉમેરવો જરૂરી છે. (Please add ${2 - totalCount} more photo)'
-                : '✓ ફોટો બરાબર છે ($totalCount પસંદ કર્યા). તમે ઈચ્છો તો વધુ ${5 - totalCount} ઉમેરી શકો છો.',
+            hasMain
+                ? (hasSub
+                    ? '✓ બંને ફોટા (૧ મુખ્ય + ૧ ગૌણ) સફળતાપૂર્વક સાચવેલ છે.'
+                    : '✓ મુખ્ય ફોટો ઉમેરાયેલ છે. જો ઈચ્છો તો બીજો ૧ ગૌણ ફોટો ઉમેરી શકો છો.')
+                : '⚠️ પ્રોફાઇલ સાચવવા માટે મુખ્ય ફોટો અપલોડ કરવો ફરજિયાત છે.',
             style: TextStyle(
-              color: totalCount < 2 ? Colors.amber.shade900 : Colors.green.shade800,
+              color: hasMain ? Colors.green.shade800 : Colors.amber.shade900,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -2434,7 +2535,6 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     final hasFront = _idFrontBytes != null || (_existingIdFrontUrl != null && _existingIdFrontUrl!.isNotEmpty);
     final hasBack = _idBackBytes != null || (_existingIdBackUrl != null && _existingIdBackUrl!.isNotEmpty);
     final isBothUploaded = hasFront && hasBack;
-    final isBothAiVerified = isBothUploaded && (_isIdFrontAiVerified || (_existingIdFrontUrl != null && _idFrontBytes == null)) && (_isIdBackAiVerified || (_existingIdBackUrl != null && _idBackBytes == null));
 
     return Container(
       width: double.infinity,
@@ -2443,7 +2543,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isBothAiVerified ? Colors.green.shade500 : (isBothUploaded ? Colors.orange.shade400 : const Color(0xFF1E3A8A).withOpacity(0.35)),
+          color: isBothUploaded ? Colors.green.shade500 : const Color(0xFF1E3A8A).withOpacity(0.35),
           width: 1.5,
         ),
         boxShadow: [
@@ -2463,12 +2563,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isBothAiVerified ? Colors.green.shade50 : const Color(0xFF1E3A8A).withOpacity(0.1),
+                  color: isBothUploaded ? Colors.green.shade50 : const Color(0xFF1E3A8A).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  isBothAiVerified ? Icons.verified_user : Icons.badge_outlined,
-                  color: isBothAiVerified ? Colors.green.shade700 : const Color(0xFF1E3A8A),
+                  isBothUploaded ? Icons.verified_user : Icons.badge_outlined,
+                  color: isBothUploaded ? Colors.green.shade700 : const Color(0xFF1E3A8A),
                   size: 22,
                 ),
               ),
@@ -2488,7 +2588,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     Text(
                       'સરકારી ઓળખપત્રના આગળ અને પાછળ બંને ફોટા ફરજિયાત છે *',
                       style: TextStyle(
-                        color: isBothAiVerified ? Colors.green.shade700 : (isBothUploaded ? Colors.orange.shade800 : Colors.red.shade700),
+                        color: isBothUploaded ? Colors.green.shade700 : (hasFront || hasBack ? Colors.orange.shade800 : Colors.red.shade700),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2499,16 +2599,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: isBothAiVerified ? Colors.green.shade50 : (isBothUploaded || hasFront || hasBack ? Colors.orange.shade50 : Colors.red.shade50),
+                  color: isBothUploaded ? Colors.green.shade50 : (hasFront || hasBack ? Colors.orange.shade50 : Colors.red.shade50),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isBothAiVerified ? Colors.green.shade400 : (isBothUploaded || hasFront || hasBack ? Colors.orange.shade400 : Colors.red.shade300),
+                    color: isBothUploaded ? Colors.green.shade400 : (hasFront || hasBack ? Colors.orange.shade400 : Colors.red.shade300),
                   ),
                 ),
                 child: Text(
-                  isBothAiVerified ? '✓ AI Verified' : (isBothUploaded ? '⚠️ AI Checking' : (hasFront || hasBack ? '⚠️ 1/2 Uploaded' : 'Required *')),
+                  isBothUploaded ? '✓ Uploaded' : (hasFront || hasBack ? '⚠️ 1/2 Uploaded' : 'Required *'),
                   style: TextStyle(
-                    color: isBothAiVerified ? Colors.green.shade800 : (isBothUploaded || hasFront || hasBack ? Colors.orange.shade900 : Colors.red.shade800),
+                    color: isBothUploaded ? Colors.green.shade800 : (hasFront || hasBack ? Colors.orange.shade900 : Colors.red.shade800),
                     fontWeight: FontWeight.bold,
                     fontSize: 11,
                   ),
@@ -2670,16 +2770,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             decoration: BoxDecoration(
-              color: isBothAiVerified
+              color: isBothUploaded
                   ? const Color(0xFFECFDF5)
-                  : (isBothUploaded || hasFront || hasBack)
+                  : (hasFront || hasBack)
                       ? const Color(0xFFFFFBEB)
                       : const Color(0xFFFEF2F2),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: isBothAiVerified
+                color: isBothUploaded
                     ? const Color(0xFF10B981)
-                    : (isBothUploaded || hasFront || hasBack)
+                    : (hasFront || hasBack)
                         ? const Color(0xFFF59E0B)
                         : const Color(0xFFFCA5A5),
                 width: 1,
@@ -2689,14 +2789,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
-                  isBothAiVerified
+                  isBothUploaded
                       ? Icons.check_circle_rounded
-                      : (isBothUploaded || hasFront || hasBack)
+                      : (hasFront || hasBack)
                           ? Icons.warning_amber_rounded
                           : Icons.info_outline_rounded,
-                  color: isBothAiVerified
+                  color: isBothUploaded
                       ? const Color(0xFF059669)
-                      : (isBothUploaded || hasFront || hasBack)
+                      : (hasFront || hasBack)
                           ? const Color(0xFFD97706)
                           : const Color(0xFFDC2626),
                   size: 20,
@@ -2707,15 +2807,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isBothAiVerified
-                            ? '✓ ઓળખપત્ર AI દ્વારા ચકાસાયેલ છે (ID Proof AI Verified)'
-                            : (isBothUploaded
-                                ? '⚠️ ઓળખપત્ર AI દ્વારા ચકાસવું જરૂરી છે (AI Verification Required)'
-                                : (!hasFront && !hasBack)
-                                    ? '⚠️ આગળ અને પાછળ બંને બાજુના ફોટા અપલોડ કરવા જરૂરી છે'
-                                    : (!hasFront)
-                                        ? '⚠️ આગળનો ફોટો (Front Side) અપલોડ કરવાનો બાકી છે'
-                                        : '⚠️ પાછળનો ફોટો (Back Side) અપલોડ કરવાનો બાકી છે'),
+                        isBothUploaded
+                            ? '✓ ઓળખપત્ર સફળતાપૂર્વક અપલોડ થયેલ છે (ID Proof Attached)'
+                            : (!hasFront && !hasBack)
+                                ? '⚠️ આગળ અને પાછળ બંને બાજુના ફોટા અપલોડ કરવા જરૂરી છે'
+                                : (!hasFront)
+                                    ? '⚠️ આગળનો ફોટો (Front Side) અપલોડ કરવાનો બાકી છે'
+                                    : '⚠️ પાછળનો ફોટો (Back Side) અપલોડ કરવાનો બાકી છે',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
@@ -2728,15 +2826,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        isBothAiVerified
-                            ? '$_idProofType પરનું નામ અને જન્મ તારીખ સફળતાપૂર્વક ચકાસાઈ ગયા છે.'
-                            : (isBothUploaded
-                                ? 'કૃપા કરીને ખાતરી કરો કે દસ્તાવેજ પરનું નામ ઉમેદવાર સાથે મેળ ખાાય છે.'
-                                : (!hasFront && !hasBack)
-                                    ? 'કૃપા કરીને $_idProofType ના બંને ફોટા સ્પષ્ટ દેખાય તે રીતે અપલોડ કરો.'
-                                    : (!hasFront)
-                                        ? 'કૃપા કરીને $_idProofType નો આગળનો ભાગ (Front Side) અપલોડ કરો.'
-                                        : 'કૃપા કરીને $_idProofType નો પાછળનો ભાગ (Back Side) અપલોડ કરો.'),
+                        isBothUploaded
+                            ? '$_idProofType સફળતાપૂર્વક જોડાયેલ છે.'
+                            : (!hasFront && !hasBack)
+                                ? 'કૃપા કરીને $_idProofType ના બંને ફોટા સ્પષ્ટ દેખાય તે રીતે અપલોડ કરો.'
+                                : (!hasFront)
+                                    ? 'કૃપા કરીને $_idProofType નો આગળનો ભાગ (Front Side) અપલોડ કરો.'
+                                    : 'કૃપા કરીને $_idProofType નો પાછળનો ભાગ (Back Side) અપલોડ કરો.',
                         style: TextStyle(
                           fontSize: 11,
                           color: isBothUploaded

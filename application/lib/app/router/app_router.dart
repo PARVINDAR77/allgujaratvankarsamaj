@@ -460,7 +460,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/home',
-                name: 'home',
                 builder: (context, state) => const HomeScreen(),
               ),
             ],
@@ -469,7 +468,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/search',
-                name: 'search',
                 builder: (context, state) {
                   final lookingFor = state.uri.queryParameters['lookingFor'];
                   String? gender;

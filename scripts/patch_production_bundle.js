@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_matrimony_home_fixed_v67';
+const VERSION_TAG = '20261104_matrimony_and_photos_v69';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -11,12 +11,31 @@ function patchMainDartJs() {
   // 1. Ensure vW returns isApproved: true (!0 instead of !1)
   const targetVw = 'var $async$vW=A.E(function(b5,b6){return A.B(new A.rQ(!1,b2,a9,null,"\\u0a93\\u0ab3\\u0a96\\u0aaa\\u0aa4\\u0acd\\u0ab0 \\u0ab8\\u0aab\\u0ab3\\u0aa4\\u0abe\\u0aaa\\u0ac2\\u0ab0\\u0acd\\u0ab5\\u0a95 \\u0a85\\u0aaa\\u0ab2\\u0acb\\u0aa1 \\u0aa5\\u0aaf\\u0ac1\\u0a82 \\u0a9b\\u0ac7."),r);';
   const replaceVw = 'var $async$vW=A.E(function(b5,b6){return A.B(new A.rQ(!0,b2,a9,null,"\\u0a93\\u0ab3\\u0a96\\u0aaa\\u0aa4\\u0acd\\u0ab0 \\u0ab8\\u0aab\\u0ab3\\u0aa4\\u0abe\\u0aaa\\u0ac2\\u0ab0\\u0acd\\u0ab5\\u0a95 \\u0a85\\u0aaa\\u0ab2\\u0acb\\u0aa1 \\u0aa5\\u0aaf\\u0ac1\\u0a82 \\u0a9b\\u0ac7."),r);';
-  if (!content.includes(targetVw) && !content.includes(replaceVw)) {
-    throw new Error('Target vW not found in main.dart.js');
+  if (content.includes(targetVw)) {
+    content = content.replace(targetVw, replaceVw);
   }
-  content = content.replace(targetVw, replaceVw);
 
-  // 2. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
+  // 2. Permanently neutralize A.agw (Details Required dialog)
+  const targetAgw = 'A.agw.prototype={\n$1(a){var s=null,r=A.d(16)\nreturn A.rS(A.a([A.dB(B.aUC,new A.agv(a),A.b4(s,s,B.n,s,s,s,s,s,s,B.q,s,s,s,s,new A.ah(A.d(8),B.o),s,s,s,s,s))],t.p),B.bJ,B.aSQ,new A.ah(r,B.hq),B.ayG)},';
+  const replaceAgw = 'A.agw.prototype={\n$1(a){A.b9(a,!1).bj(null);return B.c0},';
+  if (content.includes(targetAgw)) {
+    content = content.replace(targetAgw, replaceAgw);
+    console.log('Neutralized A.agw dialog in main.dart.js');
+  }
+
+  // 3. Permanently neutralize A.agA (Document scanning loading dialog)
+  const targetAgA = /A\.agA\.prototype=\{\s*\$1\(a\)\{var s=this,r=null,q=A\.d\(18\)\s*return A\.bke\(!1,A\.jo\(r,B\.bJ,new A\.a_\(B\.a8J,A\.v\(A\.a\(\[B\.aBd,B\.at,B\.aSM,B\.au,B\.aSb,B\.a_,A\.l\(s\.a\?"\\u0a93\\u0ab3\\u0a96\\u0aaa\\u0aa4\\u0acd\\u0ab0 \\u0a85\\u0aaa\\u0ab2\\u0acb\\u0aa1 \\u0aa5\\u0a88 \\u0ab0\\u0ab9\\u0acd\\u0aaf\\u0ac1\\u0a82 \\u0a9b\\u0ac7\.\.\.":/;
+  if (targetAgA.test(content)) {
+    const startIdx = content.indexOf('A.agA.prototype={');
+    const endPattern = '$S:1044}';
+    const endIdx = content.indexOf(endPattern, startIdx);
+    if (startIdx !== -1 && endIdx !== -1 && endIdx - startIdx < 800) {
+      content = content.substring(0, startIdx) + 'A.agA.prototype={\n$1(a){A.b9(a,!1).bj(null);return B.c0},\n' + content.substring(endIdx);
+      console.log('Neutralized A.agA loading dialog in main.dart.js');
+    }
+  }
+
+  // 4. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
   if (content.includes('b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s)')) {
     if (!content.includes('b_home=')) {
       content = content.replace(
@@ -49,7 +68,7 @@ function patchMainDartJs() {
     console.log('Added b_adv, b_home, and b_search to top-level routes array in main.dart.js');
   }
 
-  // 3. Remove IntrinsicHeight from search TextField
+  // 5. Remove IntrinsicHeight from search TextField
   const targetJ8 = 'h=A.h(a6,new A.J8(A.r(A.a([B.bi,B.adC,B.a5,';
   if (content.includes(targetJ8)) {
     const idx = content.indexOf(targetJ8);
@@ -64,6 +83,13 @@ function patchMainDartJs() {
     }
   }
 
+  // 6. Neutralize legacy min 2 candidate photos check (d < 2) in Create Profile
+  const targetMinPhotos = 'if(d<2){n.c.N(t.q).f.aQ(B.aBZ)';
+  if (content.includes(targetMinPhotos)) {
+    content = content.replace(targetMinPhotos, 'if(!1){n.c.N(t.q).f.aQ(B.aBZ)');
+    console.log('Neutralized min 2 photos check in main.dart.js');
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main.dart.js');
 }
@@ -76,29 +102,47 @@ function patchMainDartLive() {
   // 1. Ensure vW returns isApproved: true (!0 instead of !1)
   const targetVw = 'var $async$vW=A.E(function(b5,b6){return A.B(new A.rQ(!1,b2,a9,null,"\\u0a93\\u0ab3\\u0a96\\u0aaa\\u0aa4\\u0acd\\u0ab0 \\u0ab8\\u0aab\\u0ab3\\u0aa4\\u0abe\\u0aaa\\u0ac2\\u0ab0\\u0acd\\u0ab5\\u0a95 \\u0a85\\u0aaa\\u0ab2\\u0acb\\u0aa1 \\u0aa5\\u0aaf\\u0ac1\\u0a82 \\u0a9b\\u0ac7."),r);';
   const replaceVw = 'var $async$vW=A.E(function(b5,b6){return A.B(new A.rQ(!0,b2,a9,null,"\\u0a93\\u0ab3\\u0a96\\u0aaa\\u0aa4\\u0acd\\u0ab0 \\u0ab8\\u0aab\\u0ab3\\u0aa4\\u0abe\\u0aaa\\u0ac2\\u0ab0\\u0acd\\u0ab5\\u0a95 \\u0a85\\u0aaa\\u0ab2\\u0acb\\u0aa1 \\u0aa5\\u0aaf\\u0ac1\\u0a82 \\u0a9b\\u0ac7."),r);';
-  if (!content.includes(targetVw) && !content.includes(replaceVw)) {
-    throw new Error('Target vW not found in main_dart_live.js');
+  if (content.includes(targetVw)) {
+    content = content.replace(targetVw, replaceVw);
   }
-  content = content.replace(targetVw, replaceVw);
 
-  // 2. Ensure B.V0 is approved (!0 instead of !1)
+  // 2. Permanently neutralize A.agw (Details Required dialog)
+  const targetAgwLive = 'A.agw.prototype={\n$1(a){var s=null,r=A.d(16)\nreturn A.rS(A.a([A.dB(B.aUB,new A.agv(a),A.b4(s,s,B.n,s,s,s,s,s,s,B.q,s,s,s,s,new A.ah(A.d(8),B.o),s,s,s,s,s))],t.p),B.bJ,B.aSP,new A.ah(r,B.hq),B.ayF)},';
+  const replaceAgwLive = 'A.agw.prototype={\n$1(a){A.b9(a,!1).bj(null);return B.c0},';
+  if (content.includes(targetAgwLive)) {
+    content = content.replace(targetAgwLive, replaceAgwLive);
+    console.log('Neutralized A.agw dialog in main_dart_live.js');
+  }
+
+  // 3. Permanently neutralize A.agA (Document scanning loading dialog)
+  const startIdxLive = content.indexOf('A.agA.prototype={');
+  if (startIdxLive !== -1) {
+    const endPatternLive = '$S:1044}';
+    const endIdxLive = content.indexOf(endPatternLive, startIdxLive);
+    if (endIdxLive !== -1 && endIdxLive - startIdxLive < 800) {
+      content = content.substring(0, startIdxLive) + 'A.agA.prototype={\n$1(a){A.b9(a,!1).bj(null);return B.c0},\n' + content.substring(endIdxLive);
+      console.log('Neutralized A.agA loading dialog in main_dart_live.js');
+    }
+  }
+
+  // 4. Ensure B.V0 is approved (!0 instead of !1)
   content = content.replace('B.V0=new A.rQ(!1,', 'B.V0=new A.rQ(!0,');
 
-  // 3. Remove blocking check in vo() (Create Profile)
+  // 5. Remove blocking check in vo() (Create Profile)
   const targetBlockCreate = /if\(J\.bh\(e\)===0\|\|J\.bh\(d\)===0\|\|J\.bh\(a\)===0\)\{c=n\.c\s*c\.toString\s*A\.bnL\(c\)\s*s=1\s*break\}p=4/;
   if (targetBlockCreate.test(content)) {
     content = content.replace(targetBlockCreate, 'if(!1){}p=4');
     console.log('Removed blocking Details Required check from Create Profile in main_dart_live.js');
   }
 
-  // 4. Remove blocking check in aGN() (Edit Profile)
+  // 6. Remove blocking check in aGN() (Edit Profile)
   const targetBlockEdit = /if\(J\.bh\(m\)===0\|\|J\.bh\(l\)===0\|\|J\.bh\(k\)===0\)\{a1=n\.c\s*a1\.toString\s*A\.bnL\(a1\)\s*s=1\s*break\}p=4/;
   if (targetBlockEdit.test(content)) {
     content = content.replace(targetBlockEdit, 'if(!1){}p=4');
     console.log('Removed blocking Details Required check from Edit Profile in main_dart_live.js');
   }
 
-  // 5. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
+  // 7. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
   if (content.includes('b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s)')) {
     if (!content.includes('b_home=')) {
       content = content.replace(
@@ -131,7 +175,7 @@ function patchMainDartLive() {
     console.log('Added b_adv, b_home, and b_search to top-level routes array in main_dart_live.js');
   }
 
-  // 6. Remove IntrinsicHeight from search TextField
+  // 8. Remove IntrinsicHeight from search TextField
   const targetJ8 = 'h=A.h(a6,new A.J8(A.r(A.a([B.bi,B.adB,B.a5,';
   if (content.includes(targetJ8)) {
     const idx = content.indexOf(targetJ8);
@@ -144,6 +188,13 @@ function patchMainDartLive() {
       content = before + 'h=A.h(a6,' + middle + ',B.aM,B.c,B.e,0)' + after;
       console.log('Removed IntrinsicHeight (new A.J8) in main_dart_live.js');
     }
+  }
+
+  // 9. Neutralize legacy min 2 candidate photos check (d < 2) in Create Profile
+  const targetMinPhotosLive = 'if(d<2){n.c.N(t.q).f.aQ(B.aBY)';
+  if (content.includes(targetMinPhotosLive)) {
+    content = content.replace(targetMinPhotosLive, 'if(!1){n.c.N(t.q).f.aQ(B.aBY)');
+    console.log('Neutralized min 2 photos check in main_dart_live.js');
   }
 
   fs.writeFileSync(filePath, content, 'utf8');

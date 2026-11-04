@@ -741,10 +741,10 @@ export default function AdminProfilesPage() {
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-base">📸</span>
-                    <span className="font-extrabold text-white text-xs uppercase tracking-wider">Candidate Photos Box</span>
+                    <span className="font-extrabold text-white text-xs uppercase tracking-wider">Candidate Photos (૧ મુખ્ય + ૧ ગૌણ)</span>
                   </div>
                   <span className="text-[11px] font-bold text-admin-gold bg-admin-gold/15 px-2.5 py-0.5 rounded-full border border-admin-gold/30">
-                    {getCandidatePhotos(selectedProfile).length} of 2-5 Photos
+                    {getCandidatePhotos(selectedProfile).length} of 2 Photos (1 Main + 1 Sub)
                   </span>
                 </div>
 
@@ -766,7 +766,7 @@ export default function AdminProfilesPage() {
                           />
                           <div className="absolute inset-0 bg-black/25 group-hover:bg-transparent transition-colors" />
                           <span className="absolute bottom-1 right-1 bg-black/80 text-[10px] font-extrabold text-admin-gold px-1.5 py-0.5 rounded">
-                            #{idx + 1}
+                            {idx === 0 ? "⭐ Main" : "🖼️ Sub"}
                           </span>
                           <span className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity bg-admin-gold text-black text-[9px] font-bold px-1 rounded">
                             Zoom 🔍

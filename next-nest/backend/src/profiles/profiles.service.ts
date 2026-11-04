@@ -354,19 +354,32 @@ export class ProfilesService {
     }
 
     let photosJson: string | null = null;
+    let photosList: string[] = [];
     if (dto.photos) {
       if (Array.isArray(dto.photos)) {
-        photosJson = JSON.stringify(dto.photos);
+        photosList = dto.photos.filter((p) => typeof p === "string" && p.trim().length > 0);
       } else if (typeof dto.photos === "string") {
-        photosJson = dto.photos.trim().startsWith("[")
-          ? dto.photos.trim()
-          : JSON.stringify([dto.photos.trim()]);
+        const trimmed = dto.photos.trim();
+        if (trimmed.startsWith("[")) {
+          try {
+            photosList = JSON.parse(trimmed);
+          } catch (_) {
+            photosList = [trimmed];
+          }
+        } else if (trimmed.length > 0) {
+          photosList = [trimmed];
+        }
       }
+      // Enforce max 2 photos: 1 Main Photo + 1 Sub Photo
+      if (photosList.length > 2) {
+        photosList = photosList.slice(0, 2);
+      }
+      photosJson = JSON.stringify(photosList);
     }
 
     const primaryPhoto =
       dto.photoUrl ||
-      (Array.isArray(dto.photos) && dto.photos.length > 0 ? dto.photos[0] : null);
+      (photosList.length > 0 ? photosList[0] : null);
 
     const isGirlCandidate =
       gender === Gender.FEMALE ||
@@ -1109,15 +1122,27 @@ export class ProfilesService {
         updateData.about = dto.about ? dto.about.trim() : null;
       if (dto.photoUrl !== undefined) updateData.photoUrl = dto.photoUrl;
       if (dto.photos !== undefined) {
+        let updatePhotosList: string[] = [];
         if (Array.isArray(dto.photos)) {
-          updateData.photos = JSON.stringify(dto.photos);
-          if (!updateData.photoUrl && dto.photos.length > 0) {
-            updateData.photoUrl = dto.photos[0];
-          }
+          updatePhotosList = dto.photos.filter((p) => typeof p === "string" && p.trim().length > 0);
         } else if (typeof dto.photos === "string") {
-          updateData.photos = dto.photos.trim().startsWith("[")
-            ? dto.photos.trim()
-            : JSON.stringify([dto.photos.trim()]);
+          const trimmed = dto.photos.trim();
+          if (trimmed.startsWith("[")) {
+            try {
+              updatePhotosList = JSON.parse(trimmed);
+            } catch (_) {
+              updatePhotosList = [trimmed];
+            }
+          } else if (trimmed.length > 0) {
+            updatePhotosList = [trimmed];
+          }
+        }
+        if (updatePhotosList.length > 2) {
+          updatePhotosList = updatePhotosList.slice(0, 2);
+        }
+        updateData.photos = JSON.stringify(updatePhotosList);
+        if (!updateData.photoUrl && updatePhotosList.length > 0) {
+          updateData.photoUrl = updatePhotosList[0];
         }
       }
 
