@@ -293,6 +293,7 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
 
                   // Search by ID/Name Pill
                   Container(
+                    height: 48,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         begin: Alignment.topCenter,
@@ -309,59 +310,59 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
                         ),
                       ],
                     ),
-                    child: IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(width: 14),
-                          const Icon(Icons.badge_rounded, color: Color(0xFF006D77), size: 22),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              controller: _idSearchController,
-                              style: const TextStyle(
-                                color: Color(0xFF0F172A),
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w600,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const SizedBox(width: 14),
+                        const Icon(Icons.badge_rounded, color: Color(0xFF006D77), size: 22),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: TextField(
+                            controller: _idSearchController,
+                            style: const TextStyle(
+                              color: Color(0xFF0F172A),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Search Name or ID (નામ અથવા આઈડી)',
+                              hintStyle: TextStyle(color: Color(0xFF64748B), fontSize: 13),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(vertical: 10),
+                            ),
+                            onSubmitted: (_) => _executeSearch(),
+                          ),
+                        ),
+                        Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: _executeSearch,
+                            borderRadius: const BorderRadius.horizontal(right: Radius.circular(28)),
+                            child: Container(
+                              height: 48,
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [Color(0xFF007580), Color(0xFF004B54)],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.horizontal(right: Radius.circular(28)),
                               ),
-                              decoration: const InputDecoration(
-                                hintText: 'Search Name or ID (નામ અથવા આઈડી)',
-                                hintStyle: TextStyle(color: Color(0xFF64748B), fontSize: 13),
-                                border: InputBorder.none,
-                                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                              child: const Text(
+                                'Find',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13.5,
+                                ),
                               ),
-                              onSubmitted: (_) => _executeSearch(),
                             ),
                           ),
-                          Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: _executeSearch,
-                              borderRadius: const BorderRadius.horizontal(right: Radius.circular(28)),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                                alignment: Alignment.center,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Color(0xFF007580), Color(0xFF004B54)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.horizontal(right: Radius.circular(28)),
-                                ),
-                                child: const Text(
-                                  'Find',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13.5,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -673,7 +674,6 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
       appBar: kIsWeb ? const WebHomeHeader(activeRoute: '/search') : null,
       body: Container(
         width: double.infinity,
-        height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -685,32 +685,30 @@ class _AdvancedSearchScreenState extends ConsumerState<AdvancedSearchScreen> {
             ],
           ),
         ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              if (!kIsWeb) _buildRoyalHeader(context),
-              Expanded(
-                child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 860),
-                      child: Column(
-                        children: [
-                          formContent,
-                          if (kIsWeb) ...[
-                            const SizedBox(height: 32),
-                            const WebHomeFooter(),
-                          ],
+        child: Column(
+          children: [
+            if (!kIsWeb) SafeArea(bottom: false, child: _buildRoyalHeader(context)),
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 860),
+                    child: Column(
+                      children: [
+                        formContent,
+                        if (kIsWeb) ...[
+                          const SizedBox(height: 32),
+                          const WebHomeFooter(),
                         ],
-                      ),
+                      ],
                     ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

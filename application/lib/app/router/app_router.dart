@@ -335,6 +335,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: '/advanced-search',
+        name: 'advanced-search',
+        builder: (context, state) {
+          final lookingFor = state.uri.queryParameters['lookingFor'] ?? 'Groom';
+          return AdvancedSearchScreen(initialLookingFor: lookingFor);
+        },
+      ),
+      GoRoute(
         path: '/candidate-profile-details',
         name: 'candidate-profile-details',
         builder: (context, state) {
@@ -452,14 +460,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                     initialOccupation: occ,
                     initialSearch: search,
                   );
-                },
-              ),
-              GoRoute(
-                path: '/advanced-search',
-                name: 'advanced-search',
-                builder: (context, state) {
-                  final lookingFor = state.uri.queryParameters['lookingFor'] ?? 'Groom';
-                  return AdvancedSearchScreen(initialLookingFor: lookingFor);
                 },
               ),
             ],
