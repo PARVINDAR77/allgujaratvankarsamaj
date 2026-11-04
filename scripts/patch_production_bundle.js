@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_matrimony_and_photos_v69';
+const VERSION_TAG = '20261104_photo_limit_strict_1main_1sub_v70';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -35,37 +35,33 @@ function patchMainDartJs() {
     }
   }
 
-  // 4. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
-  if (content.includes('b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s)')) {
-    if (!content.includes('b_home=')) {
-      content = content.replace(
-        'b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s)',
-        'b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.bf_(),"home","/home",s),b_search=A.dv(new A.bf0(),"search","/search",s)'
-      );
-      console.log('Added b_home and b_search definitions in main.dart.js');
-    }
-  } else {
-    const targetRouteDef = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b2=A.dv(new A.beU(),"candidate-profile-details","/candidate-profile-details",s)';
-    const replaceRouteDef = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.bf_(),"home","/home",s),b_search=A.dv(new A.bf0(),"search","/search",s),b2=A.dv(new A.beU(),"candidate-profile-details","/candidate-profile-details",s)';
-    if (content.includes(targetRouteDef)) {
-      content = content.replace(targetRouteDef, replaceRouteDef);
-      console.log('Added b_adv, b_home, and b_search definitions in main.dart.js');
-    }
+  // 4. Revert any extra top-level route definitions to eliminate duplicate route collision ("Route not found: /home")
+  const defPattern = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.bf_(),"home","/home",s),b_search=A.dv(new A.bf0(),"search","/search",s),b2=A.dv(new A.beU(),';
+  const cleanDef = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b2=A.dv(new A.beU(),';
+  if (content.includes(defPattern)) {
+    content = content.replace(defPattern, cleanDef);
+    console.log('Cleaned top-level route definitions in main.dart.js');
   }
 
-  // Update top-level route array q
-  if (content.includes('b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(')) {
+  // Also clean if b_adv only was present:
+  const defPatternAdvOnly = 'b1=A.dv(new A.beT(),"search-results","/search-results",s),b_adv=A.dv(new A.bf1(),"advanced-search","/advanced-search",s),b2=A.dv(new A.beU(),';
+  if (content.includes(defPatternAdvOnly)) {
+    content = content.replace(defPatternAdvOnly, cleanDef);
+    console.log('Cleaned b_adv route definition in main.dart.js');
+  }
+
+  if (content.includes('b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL(')) {
+    content = content.replace(
+      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL(',
+      'b0,b1,b2,b3,b4,b5,b6,new A.yL('
+    );
+    console.log('Restored clean top-level routes array in main.dart.js');
+  } else if (content.includes('b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(')) {
     content = content.replace(
       'b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(',
-      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
+      'b0,b1,b2,b3,b4,b5,b6,new A.yL('
     );
-    console.log('Added b_home and b_search to top-level routes array in main.dart.js');
-  } else if (content.includes('b0,b1,b2,b3,b4,b5,b6,new A.yL(')) {
-    content = content.replace(
-      'b0,b1,b2,b3,b4,b5,b6,new A.yL(',
-      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
-    );
-    console.log('Added b_adv, b_home, and b_search to top-level routes array in main.dart.js');
+    console.log('Restored clean top-level routes array in main.dart.js');
   }
 
   // 5. Remove IntrinsicHeight from search TextField
@@ -89,6 +85,67 @@ function patchMainDartJs() {
     content = content.replace(targetMinPhotos, 'if(!1){n.c.N(t.q).f.aQ(B.aBZ)');
     console.log('Neutralized min 2 photos check in main.dart.js');
   }
+
+  // 7. STRICT PHOTO LIMIT: Force SINGLE image picker in Create Profile (disable pickMultiImage)
+  const createPickerTarget = /case 0:d=n\.x\s*if\(d\.length>=5\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}p=4\s*f=n\.db\s*s=7\s*return A\.t\(f\.L_\(\),\$async\$rO\)/;
+  if (createPickerTarget.test(content)) {
+    content = content.replace(createPickerTarget, (match, errConst) => {
+      return `case 0:d=n.x\nif(d.length>=1){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}p=4\nf=n.db\ns=10\nbreak`;
+    });
+    console.log('Enforced single image picker & max 1 sub photo in Create Profile (main.dart.js)');
+  }
+  const createCase17 = /case 17:h=b\s*if\(J\.bh\(h\)>5242880\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}if\(d\.length<5\)/;
+  if (createCase17.test(content)) {
+    content = content.replace(createCase17, (match, errConst) => {
+      return `case 17:h=b\nif(J.bh(h)>5242880){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}if(d.length<1)`;
+    });
+    console.log('Capped Create Profile case 17 to d.length < 1 (main.dart.js)');
+  }
+
+  // 8. STRICT PHOTO LIMIT: Force SINGLE image picker in Edit Profile (disable pickMultiImage)
+  const editPickerTarget = /case 0:d=n\.y\s*if\(n\.x\.length\+d\.length>=5\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}p=4\s*f=n\.fr\s*s=7\s*return A\.t\(f\.L_\(\),\$async\$t0\)/;
+  if (editPickerTarget.test(content)) {
+    content = content.replace(editPickerTarget, (match, errConst) => {
+      return `case 0:d=n.y\nif(n.x.length+d.length>=1){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}p=4\nf=n.fr\ns=10\nbreak`;
+    });
+    console.log('Enforced single image picker & max 1 sub photo in Edit Profile (main.dart.js)');
+  }
+  const editCase17 = /case 17:h=b\s*if\(J\.bh\(h\)>5242880\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}if\(n\.x\.length\+d\.length<5\)/;
+  if (editCase17.test(content)) {
+    content = content.replace(editCase17, (match, errConst) => {
+      return `case 17:h=b\nif(J.bh(h)>5242880){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}if(n.x.length+d.length<1)`;
+    });
+    console.log('Capped Edit Profile case 17 to n.x.length+d.length < 1 (main.dart.js)');
+  }
+
+  // 9. UI: Limit counters and hide "Add Photo" button once 1 sub photo is added
+  content = content.replace(/d\+" \/ 5"/g, 'd+" / 1"');
+  content = content.replace(/c\+" \/ 5"/g, 'c+" / 1"');
+  content = content.replace(/if\(g<5\)\{n=A\.d\(12\)/g, 'if(g<1){n=A.d(12)');
+  content = content.replace(/if\(l<5\)\{m=A\.d\(12\)/g, 'if(l<1){m=A.d(12)');
+
+  // 10. UI: Replace warning text ("Please add more photos") with optional sub photo message
+  const createUiText = /h=m<2\s*if\(h\)\{g=""+(?:\(2-m\)|2-m)\s*g="\\u26a0\\ufe0f[^\"]+"\+g\+"[^\"]+"\}else g="\\u2713[^\"]+"\+d\+"[^\"]+"\+(?:\(5-m\)|5-m)\+"[^\"]+"/;
+  if (createUiText.test(content)) {
+    content = content.replace(createUiText, 'h=!1\ng=m===0?"\\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u0a9b\\u0ac7 (\\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 - Sub Photo Optional)":"\\u2713 \\u0ae7 \\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0aaa\\u0ab8\\u0a82\\u0aa6 \\u0aa5\\u0aaf\\u0ac7\\u0ab2 \\u0a9b\\u0ac7 (1 Sub Photo Selected)"');
+    console.log('Updated Create Profile UI status text in main.dart.js');
+  }
+
+  const editUiText = /g=l<2\s*if\(g\)\{f=""+(?:\(2-l\)|2-l)\s*f="\\u26a0\\ufe0f[^\"]+"\+f\+"[^\"]+"\}else f="\\u2713[^\"]+"\+c\+"[^\"]+"\+(?:\(5-l\)|5-l)\+"[^\"]+"/;
+  if (editUiText.test(content)) {
+    content = content.replace(editUiText, 'g=!1\nf=l===0?"\\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u0a9b\\u0ac7 (\\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 - Sub Photo Optional)":"\\u2713 \\u0ae7 \\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0aaa\\u0ab8\\u0a82\\u0aa6 \\u0aa5\\u0aaf\\u0ac7\\u0ab2 \\u0a9b\\u0ac7 (1 Sub Photo Selected)"');
+    console.log('Updated Edit Profile UI status text in main.dart.js');
+  }
+
+  // 11. Header Text Constants: Rename Candidate Photos box to Sub Photo (Optional, Max 1)
+  content = content.replace(
+    'B.aSE=new A.n("Candidate Photos / \\u0a89\\u0aae\\u0ac7\\u0aa6\\u0ab5\\u0abe\\u0ab0\\u0aa8\\u0abe \\u0aab\\u0acb\\u0a9f\\u0abe (\\u0ae8 \\u0aa5\\u0ac0 \\u0aeb \\u0aab\\u0acb\\u0a9f\\u0acb)"',
+    'B.aSE=new A.n("Sub Photo / \\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb (\\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u2022 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7)"'
+  );
+  content = content.replace(
+    'B.aNA=new A.n("\\u0a93\\u0a9b\\u0abe\\u0aae\\u0abe\\u0a82 \\u0a93\\u0a9b\\u0abe \\u0ae8 \\u0a85\\u0aa8\\u0ac7 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0aeb \\u0aab\\u0acb\\u0a9f\\u0acb (Min 2, Max 5 \\u2022 Max 5 MB each)"',
+    'B.aNA=new A.n("\\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u2022 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 \\u0aab\\u0acb\\u0a9f\\u0acb (Optional \\u2022 Max 1 Photo \\u2022 Max 5 MB)"'
+  );
 
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main.dart.js');
@@ -142,37 +199,32 @@ function patchMainDartLive() {
     console.log('Removed blocking Details Required check from Edit Profile in main_dart_live.js');
   }
 
-  // 7. Ensure /advanced-search, /home, and /search routes are defined and in top-level routes
-  if (content.includes('b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s)')) {
-    if (!content.includes('b_home=')) {
-      content = content.replace(
-        'b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s)',
-        'b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.beY(),"home","/home",s),b_search=A.dv(new A.beZ(),"search","/search",s)'
-      );
-      console.log('Added b_home and b_search definitions in main_dart_live.js');
-    }
-  } else {
-    const targetRouteDef = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b2=A.dv(new A.beS(),"candidate-profile-details","/candidate-profile-details",s)';
-    const replaceRouteDef = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.beY(),"home","/home",s),b_search=A.dv(new A.beZ(),"search","/search",s),b2=A.dv(new A.beS(),"candidate-profile-details","/candidate-profile-details",s)';
-    if (content.includes(targetRouteDef)) {
-      content = content.replace(targetRouteDef, replaceRouteDef);
-      console.log('Added b_adv, b_home, and b_search definitions in main_dart_live.js');
-    }
+  // 7. Revert extra top-level route definitions to eliminate duplicate route collision ("Route not found: /home")
+  const defPatternLive = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s),b_home=A.dv(new A.beY(),"home","/home",s),b_search=A.dv(new A.beZ(),"search","/search",s),b2=A.dv(new A.beS(),';
+  const cleanDefLive = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b2=A.dv(new A.beS(),';
+  if (content.includes(defPatternLive)) {
+    content = content.replace(defPatternLive, cleanDefLive);
+    console.log('Cleaned top-level route definitions in main_dart_live.js');
   }
 
-  // Update top-level route array q
-  if (content.includes('b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(')) {
+  const defPatternLiveAdvOnly = 'b1=A.dv(new A.beR(),"search-results","/search-results",s),b_adv=A.dv(new A.bf_(),"advanced-search","/advanced-search",s),b2=A.dv(new A.beS(),';
+  if (content.includes(defPatternLiveAdvOnly)) {
+    content = content.replace(defPatternLiveAdvOnly, cleanDefLive);
+    console.log('Cleaned b_adv route definition in main_dart_live.js');
+  }
+
+  if (content.includes('b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL(')) {
+    content = content.replace(
+      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL(',
+      'b0,b1,b2,b3,b4,b5,b6,new A.yL('
+    );
+    console.log('Restored clean top-level routes array in main_dart_live.js');
+  } else if (content.includes('b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(')) {
     content = content.replace(
       'b0,b1,b_adv,b2,b3,b4,b5,b6,new A.yL(',
-      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
+      'b0,b1,b2,b3,b4,b5,b6,new A.yL('
     );
-    console.log('Added b_home and b_search to top-level routes array in main_dart_live.js');
-  } else if (content.includes('b0,b1,b2,b3,b4,b5,b6,new A.yL(')) {
-    content = content.replace(
-      'b0,b1,b2,b3,b4,b5,b6,new A.yL(',
-      'b0,b1,b_adv,b_home,b_search,b2,b3,b4,b5,b6,new A.yL('
-    );
-    console.log('Added b_adv, b_home, and b_search to top-level routes array in main_dart_live.js');
+    console.log('Restored clean top-level routes array in main_dart_live.js');
   }
 
   // 8. Remove IntrinsicHeight from search TextField
@@ -191,11 +243,72 @@ function patchMainDartLive() {
   }
 
   // 9. Neutralize legacy min 2 candidate photos check (d < 2) in Create Profile
-  const targetMinPhotosLive = 'if(d<2){n.c.N(t.q).f.aQ(B.aBY)';
-  if (content.includes(targetMinPhotosLive)) {
-    content = content.replace(targetMinPhotosLive, 'if(!1){n.c.N(t.q).f.aQ(B.aBY)');
+  const targetMinPhotos = 'if(d<2){n.c.N(t.q).f.aQ(B.aBZ)';
+  if (content.includes(targetMinPhotos)) {
+    content = content.replace(targetMinPhotos, 'if(!1){n.c.N(t.q).f.aQ(B.aBZ)');
     console.log('Neutralized min 2 photos check in main_dart_live.js');
   }
+
+  // 10. STRICT PHOTO LIMIT: Force SINGLE image picker in Create Profile (disable pickMultiImage)
+  const createPickerTarget = /case 0:d=n\.x\s*if\(d\.length>=5\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}p=4\s*f=n\.db\s*s=7\s*return A\.t\(f\.L_\(\),\$async\$rO\)/;
+  if (createPickerTarget.test(content)) {
+    content = content.replace(createPickerTarget, (match, errConst) => {
+      return `case 0:d=n.x\nif(d.length>=1){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}p=4\nf=n.db\ns=10\nbreak`;
+    });
+    console.log('Enforced single image picker & max 1 sub photo in Create Profile (main_dart_live.js)');
+  }
+  const createCase17 = /case 17:h=b\s*if\(J\.bh\(h\)>5242880\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}if\(d\.length<5\)/;
+  if (createCase17.test(content)) {
+    content = content.replace(createCase17, (match, errConst) => {
+      return `case 17:h=b\nif(J.bh(h)>5242880){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}if(d.length<1)`;
+    });
+    console.log('Capped Create Profile case 17 to d.length < 1 (main_dart_live.js)');
+  }
+
+  // 11. STRICT PHOTO LIMIT: Force SINGLE image picker in Edit Profile (disable pickMultiImage)
+  const editPickerTarget = /case 0:d=n\.y\s*if\(n\.x\.length\+d\.length>=5\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}p=4\s*f=n\.fr\s*s=7\s*return A\.t\(f\.L_\(\),\$async\$t0\)/;
+  if (editPickerTarget.test(content)) {
+    content = content.replace(editPickerTarget, (match, errConst) => {
+      return `case 0:d=n.y\nif(n.x.length+d.length>=1){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}p=4\nf=n.fr\ns=10\nbreak`;
+    });
+    console.log('Enforced single image picker & max 1 sub photo in Edit Profile (main_dart_live.js)');
+  }
+  const editCase17 = /case 17:h=b\s*if\(J\.bh\(h\)>5242880\)\{n\.c\.N\(t\.q\)\.f\.aQ\(([^)]+)\)\s*s=1\s*break\}if\(n\.x\.length\+d\.length<5\)/;
+  if (editCase17.test(content)) {
+    content = content.replace(editCase17, (match, errConst) => {
+      return `case 17:h=b\nif(J.bh(h)>5242880){n.c.N(t.q).f.aQ(${errConst})\ns=1\nbreak}if(n.x.length+d.length<1)`;
+    });
+    console.log('Capped Edit Profile case 17 to n.x.length+d.length < 1 (main_dart_live.js)');
+  }
+
+  // 12. UI: Limit counters and hide "Add Photo" button once 1 sub photo is added
+  content = content.replace(/d\+" \/ 5"/g, 'd+" / 1"');
+  content = content.replace(/c\+" \/ 5"/g, 'c+" / 1"');
+  content = content.replace(/if\(g<5\)\{n=A\.d\(12\)/g, 'if(g<1){n=A.d(12)');
+  content = content.replace(/if\(l<5\)\{m=A\.d\(12\)/g, 'if(l<1){m=A.d(12)');
+
+  // 13. UI: Replace warning text ("Please add more photos") with optional sub photo message
+  const createUiText = /h=m<2\s*if\(h\)\{g=""+(?:\(2-m\)|2-m)\s*g="\\u26a0\\ufe0f[^\"]+"\+g\+"[^\"]+"\}else g="\\u2713[^\"]+"\+d\+"[^\"]+"\+(?:\(5-m\)|5-m)\+"[^\"]+"/;
+  if (createUiText.test(content)) {
+    content = content.replace(createUiText, 'h=!1\ng=m===0?"\\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u0a9b\\u0ac7 (\\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 - Sub Photo Optional)":"\\u2713 \\u0ae7 \\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0aaa\\u0ab8\\u0a82\\u0aa6 \\u0aa5\\u0aaf\\u0ac7\\u0ab2 \\u0a9b\\u0ac7 (1 Sub Photo Selected)"');
+    console.log('Updated Create Profile UI status text in main_dart_live.js');
+  }
+
+  const editUiText = /g=l<2\s*if\(g\)\{f=""+(?:\(2-l\)|2-l)\s*f="\\u26a0\\ufe0f[^\"]+"\+f\+"[^\"]+"\}else f="\\u2713[^\"]+"\+c\+"[^\"]+"\+(?:\(5-l\)|5-l)\+"[^\"]+"/;
+  if (editUiText.test(content)) {
+    content = content.replace(editUiText, 'g=!1\nf=l===0?"\\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u0a9b\\u0ac7 (\\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 - Sub Photo Optional)":"\\u2713 \\u0ae7 \\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb \\u0aaa\\u0ab8\\u0a82\\u0aa6 \\u0aa5\\u0aaf\\u0ac7\\u0ab2 \\u0a9b\\u0ac7 (1 Sub Photo Selected)"');
+    console.log('Updated Edit Profile UI status text in main_dart_live.js');
+  }
+
+  // 14. Header Text Constants: Rename Candidate Photos box to Sub Photo (Optional, Max 1)
+  content = content.replace(
+    'B.aSD=new A.n("Candidate Photos / \\u0a89\\u0aae\\u0ac7\\u0aa6\\u0ab5\\u0abe\\u0ab0\\u0aa8\\u0abe \\u0aab\\u0acb\\u0a9f\\u0abe (\\u0ae8 \\u0aa5\\u0ac0 \\u0aeb \\u0aab\\u0acb\\u0a9f\\u0acb)"',
+    'B.aSD=new A.n("Sub Photo / \\u0a97\\u0acc\\u0aa3 \\u0aab\\u0acb\\u0a9f\\u0acb (\\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u2022 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7)"'
+  );
+  content = content.replace(
+    'B.aNz=new A.n("\\u0a93\\u0a9b\\u0abe\\u0aae\\u0abe\\u0a82 \\u0a93\\u0a9b\\u0abe \\u0ae8 \\u0a85\\u0aa8\\u0ac7 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0aeb \\u0aab\\u0acb\\u0a9f\\u0acb (Min 2, Max 5 \\u2022 Max 5 MB each)"',
+    'B.aNz=new A.n("\\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u2022 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 \\u0aab\\u0acb\\u0a9f\\u0acb (Optional \\u2022 Max 1 Photo \\u2022 Max 5 MB)"'
+  );
 
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main_dart_live.js');
@@ -224,7 +337,7 @@ try {
   patchMainDartJs();
   patchMainDartLive();
   updateCacheBuster();
-  console.log('ALL PATCHES APPLIED SUCCESSFULLY!');
+  console.log('ALL STRICT PHOTO LIMIT & ROUTE FIX PATCHES APPLIED SUCCESSFULLY!');
 } catch (err) {
   console.error('Patching error:', err);
   process.exit(1);
