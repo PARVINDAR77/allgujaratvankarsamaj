@@ -466,44 +466,6 @@ class _WebHomeHeroState extends State<WebHomeHero> {
               ),
             ],
           ),
-
-          const SizedBox(height: 8),
-
-          // Symmetrical Reverence Badge (Mirrors Buddha's badge on the left)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAF8F5),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFD6A34A).withValues(alpha: 0.6),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF101B36).withValues(alpha: 0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.auto_awesome_rounded, color: Color(0xFFA4143D), size: 12),
-                SizedBox(width: 6),
-                Text(
-                  'ભારતરત્ન • બોધિસત્વ ડૉ. બાબાસાહેબ આંબેડકર',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFA4143D),
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -592,44 +554,6 @@ class _WebHomeHeroState extends State<WebHomeHero> {
                 ),
               ),
             ],
-          ),
-
-          const SizedBox(height: 8),
-
-          // Symmetrical Reverence Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAF8F5),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFD6A34A).withValues(alpha: 0.6),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF101B36).withValues(alpha: 0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.auto_awesome_rounded, color: Color(0xFFA4143D), size: 12),
-                SizedBox(width: 6),
-                Text(
-                  'પાવન પ્રેરણાદાતા • ભગવાન ગૌતમ બુદ્ધ',
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFA4143D),
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),

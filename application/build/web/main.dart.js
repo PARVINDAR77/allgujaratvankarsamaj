@@ -64966,11 +64966,11 @@ return A.v(A.a([r,B.a7,A.h(s,B.aVl,B.f,s,s,new A.j(s,s,A.w(B.E,B.j,1.2),q,s,B.mV
 a_q(a){var s=null,r=A.h(s,s,B.f,s,s,B.AL,s,a*1.199063231850117*0.95,s,s,s,s,a*0.95),q=A.d(22),p=t.V,o=A.a([new A.a2(2,B.t,B.E.u(0.35),B.v,26),new A.a2(0,B.t,B.I.u(0.18),B.qP,20)],p),n=A.d(19),m=A.w(B.I,B.j,1.5),l=t.p
 o=A.cu(B.z,A.a([r,A.h(s,A.h(s,A.f2(A.d(17.5),new A.rY(0.833984375,A.cw("assets/images/babasaheb_ambedkar_poster.jpg",B.z,s,s,new A.bc3(),B.aw,s,s),s),B.aG),B.f,s,s,new A.j(B.uo,s,m,n,s,s,B.k),s,s,s,s,s,s,s),B.f,s,s,new A.j(s,s,s,q,o,B.x4,B.k),s,s,s,B.hG,s,s,s)],l),B.x,B.ax,s)
 q=A.d(12)
-return new A.bi(new A.am(0,a,0,1/0),A.v(A.a([o,B.Y,A.h(s,B.ayi,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.6),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.fm,s,s,s)],l),B.h,B.c,B.y),s)},
+return new A.bi(new A.am(0,a,0,1/0),A.v(A.a([o],l),B.h,B.c,B.y),s)},
 a_u(a){var s=null,r=A.h(s,s,B.f,s,s,B.AL,s,a*1.199063231850117*0.95,s,s,s,s,a*0.95),q=A.d(22),p=t.V,o=A.a([new A.a2(2,B.t,B.E.u(0.35),B.v,26),new A.a2(0,B.t,B.I.u(0.18),B.qP,20)],p),n=A.d(19),m=A.w(B.I,B.j,1.5),l=t.p
 o=A.cu(B.z,A.a([r,A.h(s,A.h(s,A.f2(A.d(17.5),new A.rY(0.833984375,A.cw(u.x,B.z,s,s,new A.bc4(),B.aw,s,s),s),B.aG),B.f,s,s,new A.j(B.uo,s,m,n,s,s,B.k),s,s,s,s,s,s,s),B.f,s,s,new A.j(s,s,s,q,o,B.x4,B.k),s,s,s,B.hG,s,s,s)],l),B.x,B.ax,s)
 q=A.d(12)
-return new A.bi(new A.am(0,a,0,1/0),A.v(A.a([o,B.Y,A.h(s,B.axV,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.6),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.fm,s,s,s)],l),B.h,B.c,B.y),s)},
+return new A.bi(new A.am(0,a,0,1/0),A.v(A.a([o],l),B.h,B.c,B.y),s)},
 Sb(a,b){var s=null
 return A.r(A.a([A.ay(a,B.w,s,s,15),B.a2,A.l(b,s,s,s,s,B.TA,s,s,s)],t.p),B.h,B.c,B.y,0)}}
 A.bca.prototype={
@@ -65153,7 +65153,7 @@ return A.bK(B.adq,B.aVy,new A.bcJ(this,a),A.b4(s,s,B.w,s,s,s,3,s,s,B.i,s,s,B.a8E
 a9B(a){var s=null,r=A.h(s,s,B.f,s,s,B.WU,s,a*0.69140625*0.96,s,s,s,s,a*0.96),q=A.d(22),p=t.V,o=A.a([new A.a2(2,B.t,B.E.u(0.35),B.v,26),new A.a2(0,B.t,B.I.u(0.18),B.qP,20)],p),n=A.d(19),m=A.w(B.I,B.j,1.5),l=t.p
 o=A.cu(B.z,A.a([r,A.h(s,A.h(s,A.f2(A.d(17.5),new A.rY(1.4463276836158192,A.cw(u.x,B.z,s,s,new A.bcu(),B.aw,s,s),s),B.aG),B.f,s,s,new A.j(B.uo,s,m,n,s,s,B.k),s,s,s,s,s,s,s),B.f,s,s,new A.j(s,s,s,q,o,B.x4,B.k),s,s,s,B.Ds,s,s,s)],l),B.x,B.ax,s)
 q=A.d(12)
-return new A.bi(new A.am(0,a,0,1/0),A.v(A.a([o,B.aO,A.h(s,B.axN,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.7),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.a96,s,s,s)],l),B.h,B.c,B.y),s)},
+return new A.bi(new A.am(0,a,0,1/0),A.v(A.a([o],l),B.h,B.c,B.y),s)},
 Sc(a,b){var s=null
 return A.r(A.a([A.ay(a,B.w,s,s,15),B.a2,A.l(b,s,s,s,s,B.TA,s,s,s)],t.p),B.h,B.c,B.y,0)}}
 A.bcK.prototype={

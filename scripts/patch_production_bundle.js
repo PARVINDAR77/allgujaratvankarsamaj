@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_image_zoom_v72';
+const VERSION_TAG = '20261104_remove_taglines_v73';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -172,6 +172,25 @@ function patchMainDartJs() {
   if (content.includes(ratnaAvatarTarget)) {
     content = content.replace(ratnaAvatarTarget, ratnaAvatarReplace);
     console.log('Wrapped Samaj Ratna avatar with click-to-zoom InkWell in main.dart.js');
+  }
+
+  // 13. Remove Buddha and Ambedkar Reverence Tag Lines below artwork cards
+  const targetBuddhaTag = 'A.v(A.a([o,B.Y,A.h(s,B.axV,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.6),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.fm,s,s,s)],l),B.h,B.c,B.y)';
+  if (content.includes(targetBuddhaTag)) {
+    content = content.replace(targetBuddhaTag, 'A.v(A.a([o],l),B.h,B.c,B.y)');
+    console.log('Removed Buddha tag line from web home hero in main.dart.js');
+  }
+
+  const targetAmbedkarTag = 'A.v(A.a([o,B.Y,A.h(s,B.ayi,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.6),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.fm,s,s,s)],l),B.h,B.c,B.y)';
+  if (content.includes(targetAmbedkarTag)) {
+    content = content.replace(targetAmbedkarTag, 'A.v(A.a([o],l),B.h,B.c,B.y)');
+    console.log('Removed Ambedkar tag line from web home hero in main.dart.js');
+  }
+
+  const targetMatrimonyBuddhaTag = 'A.v(A.a([o,B.aO,A.h(s,B.axN,B.f,s,s,new A.j(B.a6,s,A.w(B.E.u(0.7),B.j,1),q,A.a([new A.a2(0,B.t,B.I.u(0.04),B.cn,4)],p),s,B.k),s,s,s,B.a96,s,s,s)],l),B.h,B.c,B.y)';
+  if (content.includes(targetMatrimonyBuddhaTag)) {
+    content = content.replace(targetMatrimonyBuddhaTag, 'A.v(A.a([o],l),B.h,B.c,B.y)');
+    console.log('Removed Buddha tag line from web matrimony hero in main.dart.js');
   }
 
   fs.writeFileSync(filePath, content, 'utf8');

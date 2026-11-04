@@ -729,44 +729,6 @@ class _WebMatrimonyHeroState extends State<WebMatrimonyHero> {
               ),
             ],
           ),
-
-          const SizedBox(height: 10),
-
-          // Symmetrical Reverence Badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
-            decoration: BoxDecoration(
-              color: const Color(0xFFFAF8F5),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFFD6A34A).withValues(alpha: 0.7),
-                width: 1.0,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF101B36).withValues(alpha: 0.04),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.auto_awesome_rounded, color: Color(0xFFA4143D), size: 13),
-                SizedBox(width: 6),
-                Text(
-                  'પાવન પ્રેરણાદાતા • ભગવાન બુદ્ધ (સર્વ મંગલમ્)',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFFA4143D),
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
