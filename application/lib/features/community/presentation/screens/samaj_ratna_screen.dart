@@ -60,6 +60,77 @@ class _SamajRatnaScreenState extends ConsumerState<SamajRatnaScreen> {
     }
   }
 
+  void _openPhotoLightbox(BuildContext context, SamajRatna item) {
+    if (item.photoUrl == null || item.photoUrl!.trim().isEmpty) return;
+
+    final displayName = item.gujaratiName?.isNotEmpty == true
+        ? item.gujaratiName!
+        : item.name;
+
+    showDialog(
+      context: context,
+      barrierColor: const Color(0xEB000000),
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(12),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4.0,
+                child: Hero(
+                  tag: 'ratna-photo-${item.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      item.photoUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: Icon(Icons.broken_image, size: 64, color: Colors.white54),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xE6041126),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                  ),
+                  child: Text(
+                    displayName,
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   // ===========================================================================
   // ============================== BUILD DISPATCHER ===========================
   // ===========================================================================
@@ -320,19 +391,26 @@ class _SamajRatnaScreenState extends ConsumerState<SamajRatnaScreen> {
                           ),
                         ],
                       ),
-                      child: Image.network(
-                        ratna.photoUrl!,
-                        fit: BoxFit.contain,
-                        alignment: Alignment.center,
-                        loadingBuilder: (context, child, progress) {
-                          if (progress == null) return child;
-                          return const Center(
-                            child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return _buildFallbackPlaque(ratna);
-                        },
+                      child: GestureDetector(
+                        onTap: () => _openPhotoLightbox(context, ratna),
+                        child: InteractiveViewer(
+                          minScale: 1.0,
+                          maxScale: 4.0,
+                          child: Image.network(
+                            ratna.photoUrl!,
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return _buildFallbackPlaque(ratna);
+                            },
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -1221,33 +1299,82 @@ class _SamajRatnaScreenState extends ConsumerState<SamajRatnaScreen> {
             ),
           ),
 
-          // 2. Avatar / Photo Section
+          // 2. Avatar / Photo Section (Clickable to Zoom)
           Container(
             height: 140,
             color: const Color(0xFFF8FAFC),
             child: Center(
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Golden Laurel Glow
-                  Container(
-                    width: 104,
-                    height: 104,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFD4AF37), width: 2),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          spreadRadius: 1,
+              child: MouseRegion(
+                cursor: (ratna.photoUrl != null && ratna.photoUrl!.trim().isNotEmpty)
+                    ? SystemMouseCursors.click
+                    : SystemMouseCursors.basic,
+                child: GestureDetector(
+                  onTap: () {
+                    if (ratna.photoUrl != null && ratna.photoUrl!.trim().isNotEmpty) {
+                      _openPhotoLightbox(context, ratna);
+                    } else {
+                      _showCitationModal(context, ratna);
+                    }
+                  },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    alignment: Alignment.center,
+                    children: [
+                      // Golden Laurel Glow
+                      Container(
+                        width: 104,
+                        height: 104,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      // Photo or Fallback Crest
+                      _buildRatnaAvatar(ratna),
+                      if (ratna.photoUrl != null && ratna.photoUrl!.trim().isNotEmpty)
+                        Positioned(
+                          bottom: 2,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xE6041126),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 4,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.zoom_in, color: Color(0xFFD4AF37), size: 12),
+                                SizedBox(width: 3),
+                                Text(
+                                  'મોટું જુઓ',
+                                  style: TextStyle(
+                                    color: Color(0xFFFFF2C2),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  // Photo or Fallback Crest
-                  _buildRatnaAvatar(ratna),
-                ],
+                ),
               ),
             ),
           ),

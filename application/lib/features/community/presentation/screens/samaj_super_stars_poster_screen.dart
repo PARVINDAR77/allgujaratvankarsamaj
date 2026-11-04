@@ -73,6 +73,77 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
     );
   }
 
+  void _openPhotoLightbox(BuildContext context, SamajSuperStar item) {
+    if (item.photoUrl == null || item.photoUrl!.trim().isEmpty) return;
+
+    final displayName = item.gujaratiName?.isNotEmpty == true
+        ? item.gujaratiName!
+        : item.name;
+
+    showDialog(
+      context: context,
+      barrierColor: const Color(0xEB000000),
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(12),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4.0,
+                child: Hero(
+                  tag: 'super-star-photo-${item.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      item.photoUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: Icon(Icons.broken_image, size: 64, color: Colors.white54),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xE6041126),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                  ),
+                  child: Text(
+                    displayName,
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -1198,38 +1269,92 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Circular Portrait Frame with Star aura
-                Container(
-                  width: 112,
-                  height: 112,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [
-                        Color(0xFFFFEA88),
-                        Color(0xFFD4AF37),
-                        Color(0xFF8B5A10),
-                        Color(0xFFFFD700),
+                // Circular Portrait Frame with Star aura & Click to Zoom
+                MouseRegion(
+                  cursor: (item.photoUrl != null && item.photoUrl!.isNotEmpty)
+                      ? SystemMouseCursors.click
+                      : SystemMouseCursors.basic,
+                  child: GestureDetector(
+                    onTap: () {
+                      if (item.photoUrl != null && item.photoUrl!.isNotEmpty) {
+                        _openPhotoLightbox(context, item);
+                      } else {
+                        _showWebStarDetailModal(context, item);
+                      }
+                    },
+                    child: Stack(
+                      clipBehavior: Clip.none,
+                      alignment: Alignment.center,
+                      children: [
+                        Container(
+                          width: 112,
+                          height: 112,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFFEA88),
+                                Color(0xFFD4AF37),
+                                Color(0xFF8B5A10),
+                                Color(0xFFFFD700),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                                blurRadius: 10,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          padding: const EdgeInsets.all(3.0),
+                          child: Container(
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF041126),
+                            ),
+                            child: ClipOval(
+                              child: _buildStarPhoto(item),
+                            ),
+                          ),
+                        ),
+                        if (item.photoUrl != null && item.photoUrl!.isNotEmpty)
+                          Positioned(
+                            bottom: -4,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xE6041126),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.zoom_in, color: Color(0xFFD4AF37), size: 12),
+                                  SizedBox(width: 3),
+                                  Text(
+                                    'મોટું જુઓ',
+                                    style: TextStyle(
+                                      color: Color(0xFFFFF2C2),
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(3.0),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFF041126),
-                    ),
-                    child: ClipOval(
-                      child: _buildStarPhoto(item),
                     ),
                   ),
                 ),
@@ -1479,6 +1604,52 @@ class _SamajSuperStarsPosterScreenState extends ConsumerState<SamajSuperStarsPos
                 padding: const EdgeInsets.all(24.0),
                 child: Column(
                   children: [
+                    if (item.photoUrl != null && item.photoUrl!.isNotEmpty) ...[
+                      MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: GestureDetector(
+                          onTap: () {
+                            Navigator.of(ctx).pop();
+                            _openPhotoLightbox(context, item);
+                          },
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: const Color(0xFFD4AF37), width: 2),
+                                  boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
+                                ),
+                                child: ClipOval(child: _buildStarPhoto(item)),
+                              ),
+                              Positioned(
+                                bottom: -2,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xE6041126),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.zoom_in, color: Color(0xFFD4AF37), size: 12),
+                                      SizedBox(width: 3),
+                                      Text('મોટું જુઓ', style: TextStyle(color: Color(0xFFFFF2C2), fontSize: 9.5, fontWeight: FontWeight.w600)),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                    ],
                     if (item.designation != null && item.designation!.isNotEmpty) ...[
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),

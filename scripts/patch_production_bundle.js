@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_strict_photos_no_ai_v71';
+const VERSION_TAG = '20261104_image_zoom_v72';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -145,6 +145,34 @@ function patchMainDartJs() {
     'B.aNA=new A.n("\\u0a93\\u0a9b\\u0abe\\u0aae\\u0abe\\u0a82 \\u0a93\\u0a9b\\u0abe \\u0ae8 \\u0a85\\u0aa8\\u0ac7 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0aeb \\u0aab\\u0acb\\u0a9f\\u0acb (Min 2, Max 5 \\u2022 Max 5 MB each)"',
     'B.aNA=new A.n("\\u0ab5\\u0ac8\\u0a95\\u0ab2\\u0acd\\u0aaa\\u0abf\\u0a95 \\u2022 \\u0ab5\\u0aa7\\u0ac1\\u0aae\\u0abe\\u0a82 \\u0ab5\\u0aa7\\u0ac1 \\u0ae7 \\u0aab\\u0acb\\u0a9f\\u0acb (Optional \\u2022 Max 1 Photo \\u2022 Max 5 MB)"'
   );
+
+  // 12. Enable Click-to-Zoom Lightbox for Samaj Super Stars & Samaj Ratna
+  const b0EStart = content.indexOf('A.b0E.prototype={');
+  if (b0EStart !== -1) {
+    const b0EEnd = content.indexOf('$S:0}', b0EStart);
+    if (b0EEnd !== -1 && b0EEnd - b0EStart < 200) {
+      const fullB0E = content.substring(b0EStart, b0EEnd + 5);
+      const newB0E = 'A.b0E.prototype={\n$0(){var s=this.b,r=this.a,q=this.c;\nif(s&&s.d!=null&&s.d.length!==0){\n  var u=s.c;\n  if((u==null?null:u.length!==0)===!0){u.toString; u=u;} else u=s.b;\n  A.fl(null,B.a2p,!0,null,new A.b0O(s,u),q,null,!0,t.z);\n} else if(r&&r.a7z) {\n  r.a7z(q,s);\n} else if(r&&r.aK0) {\n  r.aK0(q,s);\n} else if(r&&r.aJR) {\n  r.aJR(q,s);\n}\n},\n$S:0}';
+      content = content.substring(0, b0EStart) + newB0E + content.substring(b0EEnd + 5);
+      console.log('Upgraded A.b0E to universal click-to-zoom photo lightbox in main.dart.js');
+    }
+  }
+
+  // Samaj Super Stars avatar click-to-zoom
+  const starAvatarTarget = 'o=A.a([A.h(f,A.h(f,A.f1(g.ar9(b)),B.f,f,f,B.oi,f,f,f,f,f,f,f),B.f,f,f,new A.j(f,f,f,f,o,B.kJ,B.F),f,112,f,B.hG,f,f,112),B.N,A.l(r,2,B.D,f,f,B.aJx,B.H,f,f)],m)';
+  const starAvatarReplace = 'o=A.a([A.b_(!1,A.d(60),!0,A.h(f,A.h(f,A.f1(g.ar9(b)),B.f,f,f,B.oi,f,f,f,f,f,f,f),B.f,f,f,new A.j(f,f,f,f,o,B.kJ,B.F),f,112,f,B.hG,f,f,112),f,!0,f,f,f,f,f,f,f,f,f,f,new A.b0E(g,b,a),f,f,f,f,f,f,f),B.N,A.l(r,2,B.D,f,f,B.aJx,B.H,f,f)],m)';
+  if (content.includes(starAvatarTarget)) {
+    content = content.replace(starAvatarTarget, starAvatarReplace);
+    console.log('Wrapped Samaj Super Stars avatar with click-to-zoom InkWell in main.dart.js');
+  }
+
+  // Samaj Ratna avatar click-to-zoom
+  const ratnaAvatarTarget = ',104),i.aqY(b)],j),B.x,B.ax,h),h,h)';
+  const ratnaAvatarReplace = ',104),A.b_(!1,A.d(50),!0,i.aqY(b),h,!0,h,h,h,h,h,h,h,h,h,h,new A.b0E(i,b,a),h,h,h,h,h,h,h)],j),B.x,B.ax,h),h,h)';
+  if (content.includes(ratnaAvatarTarget)) {
+    content = content.replace(ratnaAvatarTarget, ratnaAvatarReplace);
+    console.log('Wrapped Samaj Ratna avatar with click-to-zoom InkWell in main.dart.js');
+  }
 
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main.dart.js');

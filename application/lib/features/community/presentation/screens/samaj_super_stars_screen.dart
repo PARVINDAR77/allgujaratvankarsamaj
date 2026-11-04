@@ -20,6 +20,77 @@ class _SamajSuperStarsScreenState extends ConsumerState<SamajSuperStarsScreen> {
     });
   }
 
+  void _openPhotoLightbox(BuildContext context, SamajSuperStar item) {
+    if (item.photoUrl == null || item.photoUrl!.trim().isEmpty) return;
+
+    final displayName = item.gujaratiName?.isNotEmpty == true
+        ? item.gujaratiName!
+        : item.name;
+
+    showDialog(
+      context: context,
+      barrierColor: const Color(0xEB000000),
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(12),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              InteractiveViewer(
+                minScale: 0.8,
+                maxScale: 4.0,
+                child: Hero(
+                  tag: 'super-star-list-photo-${item.id}',
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Image.network(
+                      item.photoUrl!,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Center(
+                        child: Icon(Icons.broken_image, size: 64, color: Colors.white54),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                  ),
+                  onPressed: () => Navigator.of(ctx).pop(),
+                ),
+              ),
+              Positioned(
+                bottom: 12,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xE6041126),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFD4AF37), width: 1),
+                  ),
+                  child: Text(
+                    displayName,
+                    style: const TextStyle(
+                      color: Color(0xFFD4AF37),
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final asyncData = ref.watch(samajSuperStarsProvider);
@@ -100,15 +171,59 @@ class _SamajSuperStarsScreenState extends ConsumerState<SamajSuperStarsScreen> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: const Color(0xFF041126),
-                          backgroundImage: item.photoUrl != null && item.photoUrl!.isNotEmpty 
-                            ? NetworkImage(item.photoUrl!) 
-                            : null,
-                          child: item.photoUrl == null || item.photoUrl!.isEmpty
-                            ? const Icon(Icons.person, size: 40, color: Color(0xFFD4AF37))
-                            : null,
+                        MouseRegion(
+                          cursor: (item.photoUrl != null && item.photoUrl!.isNotEmpty)
+                              ? SystemMouseCursors.click
+                              : SystemMouseCursors.basic,
+                          child: GestureDetector(
+                            onTap: () {
+                              if (item.photoUrl != null && item.photoUrl!.isNotEmpty) {
+                                _openPhotoLightbox(context, item);
+                              }
+                            },
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CircleAvatar(
+                                  radius: 40,
+                                  backgroundColor: const Color(0xFF041126),
+                                  backgroundImage: item.photoUrl != null && item.photoUrl!.isNotEmpty 
+                                    ? NetworkImage(item.photoUrl!) 
+                                    : null,
+                                  child: item.photoUrl == null || item.photoUrl!.isEmpty
+                                    ? const Icon(Icons.person, size: 40, color: Color(0xFFD4AF37))
+                                    : null,
+                                ),
+                                if (item.photoUrl != null && item.photoUrl!.isNotEmpty)
+                                  Positioned(
+                                    bottom: 0,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xE6041126),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFD4AF37), width: 0.8),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.zoom_in, color: Color(0xFFD4AF37), size: 10),
+                                          SizedBox(width: 2),
+                                          Text(
+                                            'મોટું જુઓ',
+                                            style: TextStyle(
+                                              color: Color(0xFFFFF2C2),
+                                              fontSize: 8.5,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
