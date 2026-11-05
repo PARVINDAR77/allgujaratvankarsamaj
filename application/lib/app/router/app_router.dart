@@ -193,42 +193,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         redirect: (context, state) => '/main-poster',
       ),
       GoRoute(
-        path: '/home',
-        name: 'home',
-        builder: (context, state) => const HomeScreen(),
-      ),
-      GoRoute(
-        path: '/search',
-        name: 'search',
-        builder: (context, state) {
-          final lookingFor = state.uri.queryParameters['lookingFor'];
-          String? gender;
-          if (lookingFor != null) {
-            gender = (lookingFor.toLowerCase() == 'groom' || lookingFor.toLowerCase() == 'boy')
-                ? 'MALE'
-                : 'FEMALE';
-          } else {
-            gender = state.uri.queryParameters['gender'];
-          }
-          final marital = state.uri.queryParameters['maritalStatus'] ?? state.uri.queryParameters['status'];
-          final minAge = int.tryParse(state.uri.queryParameters['minAge'] ?? '');
-          final maxAge = int.tryParse(state.uri.queryParameters['maxAge'] ?? '');
-          final district = state.uri.queryParameters['districtId'] ?? state.uri.queryParameters['district'];
-          final occ = state.uri.queryParameters['occupation'] ?? state.uri.queryParameters['occupationCategory'];
-          final search = state.uri.queryParameters['search'] ?? state.uri.queryParameters['q'];
-
-          return SearchResultsScreen(
-            initialGender: gender,
-            initialMaritalStatus: marital,
-            initialMinAge: minAge,
-            initialMaxAge: maxAge,
-            initialDistrict: district,
-            initialOccupation: occ,
-            initialSearch: search,
-          );
-        },
-      ),
-      GoRoute(
         path: '/statistics',
         name: 'statistics',
         builder: (context, state) => const LiveStatisticsScreen(),
@@ -267,11 +231,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/verified-profile',
         name: 'verified-profile',
         builder: (context, state) => const VerifiedProfileScreen(),
-      ),
-      GoRoute(
-        path: '/profile',
-        name: 'profile',
-        builder: (context, state) => const ProfileScreen(),
       ),
       GoRoute(
         path: '/profile/create',
@@ -460,6 +419,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/home',
+                name: 'home',
                 builder: (context, state) => const HomeScreen(),
               ),
             ],
@@ -468,6 +428,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/search',
+                name: 'search',
                 builder: (context, state) {
                   final lookingFor = state.uri.queryParameters['lookingFor'];
                   String? gender;
@@ -521,6 +482,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: '/messages',
                 name: 'messages',
                 builder: (context, state) => const ConversationsListScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                name: 'profile',
+                builder: (context, state) => const ProfileScreen(),
               ),
             ],
           ),
