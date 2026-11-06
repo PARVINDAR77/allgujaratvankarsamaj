@@ -952,8 +952,11 @@ if ($action === 'restart' || $action === 'start') {
 
 if ($action === 'meminfo') {
     header('Content-Type: text/plain; charset=utf-8');
-    echo "=== ULIMIT ===\n";
-    echo @shell_exec("ulimit -a 2>&1") . "\n";
+    echo "=== ULIMIT SOFT VS HARD ===\n";
+    echo "Soft -v: " . @shell_exec("ulimit -S -v 2>&1") . "\n";
+    echo "Hard -v: " . @shell_exec("ulimit -H -v 2>&1") . "\n";
+    echo "=== ATTEMPT UNLIMITED ===\n";
+    echo @shell_exec("ulimit -v unlimited 2>&1; ulimit -v 2>&1") . "\n";
     echo "=== PS (SORTED BY RSS) ===\n";
     echo @shell_exec("ps -u $(whoami) -o pid,ppid,rss,vsz,%mem,comm,args --sort=-rss 2>&1") . "\n";
     echo "=== TOTAL RSS ===\n";
