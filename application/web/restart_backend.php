@@ -606,25 +606,69 @@ if (!$callerAuth || empty($callerAuth['authorized'])) {
         exit;
     }
 
-    if ($action === 'recover') {
+    if ($action === 'recover' || $action === 'clean_start') {
         @touch($trigger_file);
+        $daemon_pid_file = $project_dir . '/backend_daemon.pid';
+        $node_pid_file = $project_dir . '/backend_node.pid';
+        
+        // Remove stale lock files
+        @unlink('/home/u796269890/domains/allgujaratvankarsamaj.com/keep_alive.lock');
+        @unlink($project_dir . '/keep_alive.lock');
+        
         if (function_exists('shell_exec')) {
-            @shell_exec("bash " . escapeshellarg($project_dir . "/keep_backend_alive.sh") . " --force </dev/null > /dev/null 2>&1 &");
+            // Terminate any old/stuck node dist/main.js processes cleanly
+            @shell_exec('pkill -9 -f "dist/main.js" 2>/dev/null');
+            @shell_exec('pkill -9 -f "start_backend_daemon" 2>/dev/null');
+            @unlink($daemon_pid_file);
+            @unlink($node_pid_file);
+            @unlink($socket_file);
+            
+            // Cleanly launch start_backend_daemon.sh fully detached
+            @shell_exec("nohup bash " . escapeshellarg($project_dir . "/start_backend_daemon.sh") . " </dev/null >> " . escapeshellarg($log_file) . " 2>&1 &");
+            
+            // Wait up to 3 seconds for socket readiness
+            for ($i = 0; $i < 6; $i++) {
+                usleep(500000);
+                if (file_exists($socket_file)) {
+                    $probe = check_socket($socket_stream, 1);
+                    if (!empty($probe['connected']) && ($probe['http_status'] ?? 0) === 200) {
+                        $isHealthy = true;
+                        break;
+                    }
+                }
+            }
         }
+        
         if ($format === 'json') {
+            $logTail = '';
+            if (file_exists($log_file)) {
+                $lines = @file($log_file);
+                if ($lines) $logTail = implode('', array_slice($lines, -25));
+            }
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
-                'status' => 'RECOVERING',
-                'message' => 'Schema checked and watchdog recovery triggered.',
+                'status' => $isHealthy ? 'UP' : 'RECOVERING',
+                'socket_exists' => file_exists($socket_file),
+                'message' => 'Clean backend restart triggered.',
+                'log_tail' => $logTail,
                 'timestamp' => date('c')
             ]);
             exit;
         }
     }
     if ($format === 'json') {
+        $logTail = '';
+        if (file_exists($log_file)) {
+            $lines = @file($log_file);
+            if ($lines) $logTail = implode('', array_slice($lines, -20));
+        }
+        $nodeRunning = function_exists('shell_exec') ? trim(@shell_exec('pgrep -f "dist/main.js" 2>/dev/null') ?? '') : '';
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
             'status' => $isHealthy ? 'UP' : 'DOWN',
+            'socket_exists' => file_exists($socket_file),
+            'node_pids' => $nodeRunning ?: 'none',
+            'log_tail' => $logTail,
             'timestamp' => date('c')
         ]);
         exit;
@@ -833,6 +877,7 @@ if ($action === 'check_user') {
 
         $st3 = $pdo->query("SELECT * FROM otp_logs ORDER BY created_at DESC LIMIT 10");
         $results['recent_otp_logs'] = $st3->fetchAll(PDO::FETCH_ASSOC);
+
     } catch (Exception $e) {
         $results['db_error'] = $e->getMessage();
     }
