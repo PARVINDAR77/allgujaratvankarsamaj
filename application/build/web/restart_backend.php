@@ -534,6 +534,7 @@ $sensitiveActions = [
     'fix_db_manual',
     'fix_db',
     'tail_log',
+    'meminfo',
     'check_verif',
     'check_user',
     'test_mail',
@@ -947,6 +948,15 @@ if ($action === 'restart' || $action === 'start') {
     }
     $results['ready'] = $ready;
     $results['status'] = $ready ? 'UP' : 'DOWN';
+}
+
+if ($action === 'meminfo') {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "=== PS (SORTED BY RSS) ===\n";
+    echo @shell_exec("ps -u $(whoami) -o pid,ppid,rss,vsz,%mem,comm,args --sort=-rss 2>&1") . "\n";
+    echo "=== TOTAL RSS ===\n";
+    echo @shell_exec("ps -u $(whoami) -o rss | awk '{sum+=$1} END {print sum/1024 \" MB\"}' 2>&1") . "\n";
+    exit;
 }
 
 if ($action === 'tail_log') {
