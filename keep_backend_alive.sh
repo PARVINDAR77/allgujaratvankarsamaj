@@ -23,16 +23,21 @@ DAEMON_PID_FILE="$SCRIPT_DIR/backend_daemon.pid"
 NODE_PID_FILE="$SCRIPT_DIR/backend_node.pid"
 RESTART_STATE_FILE="/home/u796269890/domains/allgujaratvankarsamaj.com/last_restart.time"
 
-# Single-instance lock with PID command line validation to prevent cron overlap
+# Single-instance lock with PID command line validation and max 120s timeout
 if [ -f "$LOCK_FILE" ]; then
-    OLD_PID=$(cat "$LOCK_FILE" 2>/dev/null || echo "")
-    if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
-        if [ -f "/proc/$OLD_PID/cmdline" ]; then
-            if grep -qa "keep_backend_alive" "/proc/$OLD_PID/cmdline" 2>/dev/null; then
+    LOCK_AGE=$(( $(date +%s) - $(stat -c %Y "$LOCK_FILE" 2>/dev/null || stat -f %m "$LOCK_FILE" 2>/dev/null || echo 0) ))
+    if [ "$LOCK_AGE" -gt 120 ]; then
+        rm -f "$LOCK_FILE"
+    else
+        OLD_PID=$(cat "$LOCK_FILE" 2>/dev/null || echo "")
+        if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null; then
+            if [ -f "/proc/$OLD_PID/cmdline" ]; then
+                if grep -qa "keep_backend_alive" "/proc/$OLD_PID/cmdline" 2>/dev/null; then
+                    exit 0
+                fi
+            elif ps -p "$OLD_PID" -o args= 2>/dev/null | grep -q "keep_backend_alive"; then
                 exit 0
             fi
-        elif ps -p "$OLD_PID" -o args= 2>/dev/null | grep -q "keep_backend_alive"; then
-            exit 0
         fi
     fi
 fi
@@ -146,15 +151,29 @@ stop_backend_node() {
 pkill -f "npx prisma" 2>/dev/null || true
 pkill -f "npm install" 2>/dev/null || true
 
-# 1. Explicit deployment / trigger file check
+# 1. Git Deployment Check (rate limited to once every 300s, or immediate on TRIGGER_FILE)
 SYNC_ASSETS=0
-if [ -f "$TRIGGER_FILE" ]; then
-    rm -f "$TRIGGER_FILE"
-    FORCE_RESTART=1
-    SYNC_ASSETS=1
-    log "🔔 Explicit restart trigger file detected. Setting FORCE_RESTART=1."
-    (cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
-    chmod +x "$SCRIPT_DIR/keep_backend_alive.sh" "$SCRIPT_DIR/start_backend_daemon.sh" 2>/dev/null || true
+LAST_GIT_CHECK_FILE="$SCRIPT_DIR/last_git_check.time"
+NOW_SEC=$(date +%s)
+LAST_GIT_CHECK=$(cat "$LAST_GIT_CHECK_FILE" 2>/dev/null || echo 0)
+
+if [ $((NOW_SEC - LAST_GIT_CHECK)) -gt 300 ] || [ -f "$TRIGGER_FILE" ]; then
+    echo "$NOW_SEC" > "$LAST_GIT_CHECK_FILE" 2>/dev/null || true
+    if [ -f "$TRIGGER_FILE" ]; then
+        rm -f "$TRIGGER_FILE"
+        FORCE_RESTART=1
+        SYNC_ASSETS=1
+        log "🔔 Explicit restart trigger file detected."
+    fi
+    UPSTREAM_COMMIT=$(cd "$SCRIPT_DIR" && git ls-remote origin main 2>/dev/null | awk '{print $1}')
+    LOCAL_COMMIT=$(cd "$SCRIPT_DIR" && git rev-parse HEAD 2>/dev/null)
+    if [ -n "$UPSTREAM_COMMIT" ] && [ "$UPSTREAM_COMMIT" != "$LOCAL_COMMIT" ]; then
+        log "🚀 New commit detected on main ($UPSTREAM_COMMIT vs $LOCAL_COMMIT). Auto-pulling..."
+        (cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
+        chmod +x "$SCRIPT_DIR/keep_backend_alive.sh" "$SCRIPT_DIR/start_backend_daemon.sh" 2>/dev/null || true
+        FORCE_RESTART=1
+        SYNC_ASSETS=1
+    fi
 fi
 
 # Ensure web proxy, .htaccess, and management scripts are synced to public_html only on explicit deployment/trigger
@@ -238,7 +257,7 @@ fi
 # 5. Recovery Execution
 log "⚠️ Backend confirmed unhealthy (Socket exists: $([ -S "$SOCKET_FILE" ] && echo YES || echo NO)). Initiating recovery..."
 
-if [ "$DAEMON_RUNNING" -eq 1 ]; then
+if [ "$DAEMON_RUNNING" -eq 1 ] && [ -S "$SOCKET_FILE" ]; then
     if ! can_restart; then
         log "⏳ Backend not responding, but currently inside restart cooldown/grace period. Allowing supervisor daemon (PID: $DPID) time to boot."
         exit 0
@@ -247,10 +266,14 @@ if [ "$DAEMON_RUNNING" -eq 1 ]; then
     record_restart
     stop_backend_node
 else
-    # Daemon is NOT running: Start supervisor daemon IMMEDIATELY (no cooldown delay when completely offline!)
-    log "ℹ️ Supervisor daemon not running. Spawning new supervisor daemon immediately..."
+    # Socket is missing OR supervisor is offline: Cleanly respawn supervisor daemon
+    log "ℹ️ Backend socket missing or supervisor offline. Cleanly respawning supervisor daemon..."
     record_restart
+    if [ -n "${DPID:-}" ]; then
+        kill -9 "$DPID" 2>/dev/null || true
+    fi
     stop_backend_node
+    rm -f "$DAEMON_PID_FILE" "$NODE_PID_FILE" "$SOCKET_FILE"
     nohup bash "$SCRIPT_DIR/start_backend_daemon.sh" >> "$BACKEND_DIR/backend.log" 2>&1 &
 fi
 

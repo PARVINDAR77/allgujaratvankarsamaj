@@ -72,35 +72,48 @@ async function bootstrap() {
     if (process.env.SOCKET_PATH) {
         const socketPath = process.env.SOCKET_PATH;
         const fs = await Promise.resolve().then(() => require("fs"));
-        if (fs.existsSync(socketPath)) {
-            try {
-                fs.unlinkSync(socketPath);
-                logger.log(`Cleaned up stale socket at ${socketPath}`);
-            }
-            catch (e) {
-                logger.warn(`Failed to unlink existing socket: ${e}`);
-            }
-        }
-        await app.listen(socketPath);
+        let socketBound = false;
         try {
-            fs.chmodSync(socketPath, 0o777);
-        }
-        catch (e) {
-            logger.warn(`Failed to chmod socket: ${e}`);
-        }
-        const elapsed = Date.now() - bootstrapStartTime;
-        logger.log(`Application is running on Unix Socket: ${socketPath} (Bootstrap ready in ${elapsed}ms)`);
-        const gracefulShutdown = () => {
-            try {
-                if (fs.existsSync(socketPath)) {
+            if (fs.existsSync(socketPath)) {
+                try {
                     fs.unlinkSync(socketPath);
+                    logger.log(`Cleaned up stale socket at ${socketPath}`);
+                }
+                catch (e) {
+                    logger.warn(`Failed to unlink existing socket: ${e}`);
                 }
             }
-            catch (_) { }
-            process.exit(0);
-        };
-        process.on("SIGTERM", gracefulShutdown);
-        process.on("SIGINT", gracefulShutdown);
+            await app.listen(socketPath);
+            try {
+                fs.chmodSync(socketPath, 0o777);
+            }
+            catch (e) {
+                logger.warn(`Failed to chmod socket: ${e}`);
+            }
+            socketBound = true;
+            const elapsed = Date.now() - bootstrapStartTime;
+            logger.log(`Application is running on Unix Socket: ${socketPath} (Bootstrap ready in ${elapsed}ms)`);
+            const gracefulShutdown = () => {
+                try {
+                    if (fs.existsSync(socketPath)) {
+                        fs.unlinkSync(socketPath);
+                    }
+                }
+                catch (_) { }
+                process.exit(0);
+            };
+            process.on("SIGTERM", gracefulShutdown);
+            process.on("SIGINT", gracefulShutdown);
+        }
+        catch (sockErr) {
+            logger.error(`Failed to bind Unix socket at ${socketPath}: ${sockErr}. Falling back to TCP port 3000...`);
+        }
+        if (!socketBound) {
+            const port = 3000;
+            await app.listen(port, '127.0.0.1');
+            const elapsed = Date.now() - bootstrapStartTime;
+            logger.log(`Application running on TCP fallback: http://127.0.0.1:${port}/api/v1 (Bootstrap ready in ${elapsed}ms)`);
+        }
     }
     else {
         const port = process.env.PORT || configService.get("PORT", 3000);
