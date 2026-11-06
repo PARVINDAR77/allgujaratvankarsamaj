@@ -952,6 +952,8 @@ if ($action === 'restart' || $action === 'start') {
 
 if ($action === 'meminfo') {
     header('Content-Type: text/plain; charset=utf-8');
+    echo "=== ULIMIT ===\n";
+    echo @shell_exec("ulimit -a 2>&1") . "\n";
     echo "=== PS (SORTED BY RSS) ===\n";
     echo @shell_exec("ps -u $(whoami) -o pid,ppid,rss,vsz,%mem,comm,args --sort=-rss 2>&1") . "\n";
     echo "=== TOTAL RSS ===\n";
