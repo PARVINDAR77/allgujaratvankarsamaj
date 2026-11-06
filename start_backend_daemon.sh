@@ -8,8 +8,8 @@
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
 export PATH="/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH"
-export UV_THREADPOOL_SIZE=2
-export NODE_OPTIONS="--max-old-space-size=192"
+export UV_THREADPOOL_SIZE=4
+export NODE_OPTIONS="--max-old-space-size=384"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/next-nest/backend"
@@ -83,19 +83,35 @@ cleanup() {
 trap '' HUP
 trap cleanup SIGTERM SIGINT
 
+FAST_CRASH_COUNT=0
 while true; do
-    echo "[$(date)] Starting NestJS backend with --max-old-space-size=192..." >> "$LOG_FILE"
+    START_TIME=$(date +%s)
+    echo "[$(date)] Starting NestJS backend with --max-old-space-size=384..." >> "$LOG_FILE"
     ALLOWED_ORIGINS="https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com" \
     SOCKET_PATH="$SOCKET_FILE" \
     NODE_ENV=production \
-    node --max-old-space-size=192 dist/main.js >> "$LOG_FILE" 2>&1 &
+    node --max-old-space-size=384 dist/main.js >> "$LOG_FILE" 2>&1 &
     
     NODE_PID=$!
     echo "$NODE_PID" > "$NODE_PID_FILE"
     wait "$NODE_PID" 2>/dev/null
     EXIT_CODE=$?
     rm -f "$NODE_PID_FILE"
-    echo "[$(date)] Backend process ($NODE_PID) stopped with exit code $EXIT_CODE. Restarting in 2 seconds..." >> "$LOG_FILE"
     rm -f "$SOCKET_FILE"
-    sleep 2
+    
+    UPTIME=$(( $(date +%s) - START_TIME ))
+    if [ "$UPTIME" -lt 10 ]; then
+        FAST_CRASH_COUNT=$((FAST_CRASH_COUNT + 1))
+    else
+        FAST_CRASH_COUNT=0
+    fi
+    
+    if [ "$FAST_CRASH_COUNT" -ge 3 ]; then
+        echo "[$(date)] Backend crashed $FAST_CRASH_COUNT times rapidly. Backing off for 20 seconds..." >> "$LOG_FILE"
+        sleep 20
+        FAST_CRASH_COUNT=0
+    else
+        echo "[$(date)] Backend process ($NODE_PID) stopped with exit code $EXIT_CODE (uptime: ${UPTIME}s). Restarting in 4 seconds..." >> "$LOG_FILE"
+        sleep 4
+    fi
 done

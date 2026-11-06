@@ -58,17 +58,18 @@ for arg in "$@"; do
 done
 
 can_restart() {
-    if [ "$FORCE_RESTART" = "1" ]; then
-        return 0
-    fi
     if [ -f "$RESTART_STATE_FILE" ]; then
         local last_restart
         last_restart=$(cat "$RESTART_STATE_FILE" 2>/dev/null || echo 0)
         local now
         now=$(date +%s)
         local elapsed=$((now - last_restart))
-        if [ "$elapsed" -lt "$COOLDOWN_SECONDS" ]; then
-            log "⏳ Restart suppressed: within cooldown window (${elapsed}s elapsed, min ${COOLDOWN_SECONDS}s)."
+        local min_wait=$COOLDOWN_SECONDS
+        if [ "$FORCE_RESTART" = "1" ]; then
+            min_wait=20
+        fi
+        if [ "$elapsed" -lt "$min_wait" ]; then
+            log "⏳ Restart suppressed: within cooldown window (${elapsed}s elapsed, min ${min_wait}s)."
             return 1
         fi
     fi
@@ -145,32 +146,20 @@ stop_backend_node() {
 pkill -f "npx prisma" 2>/dev/null || true
 pkill -f "npm install" 2>/dev/null || true
 
-# 1. Automatic Git Deployment Check:
-# If GitHub main has a new commit, automatically pull and restart!
-UPSTREAM_COMMIT=$(cd "$SCRIPT_DIR" && git ls-remote origin main 2>/dev/null | awk '{print $1}')
-LOCAL_COMMIT=$(cd "$SCRIPT_DIR" && git rev-parse HEAD 2>/dev/null)
-if [ -n "$UPSTREAM_COMMIT" ] && [ "$UPSTREAM_COMMIT" != "$LOCAL_COMMIT" ]; then
-    log "🚀 New git commit detected on origin main ($UPSTREAM_COMMIT vs $LOCAL_COMMIT). Auto-pulling..."
-    (cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
-    chmod +x "$SCRIPT_DIR/keep_backend_alive.sh" "$SCRIPT_DIR/start_backend_daemon.sh" 2>/dev/null || true
-    FORCE_RESTART=1
-fi
-
-# Explicit trigger file check
+# 1. Explicit deployment / trigger file check
+SYNC_ASSETS=0
 if [ -f "$TRIGGER_FILE" ]; then
     rm -f "$TRIGGER_FILE"
     FORCE_RESTART=1
+    SYNC_ASSETS=1
     log "🔔 Explicit restart trigger file detected. Setting FORCE_RESTART=1."
     (cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
+    chmod +x "$SCRIPT_DIR/keep_backend_alive.sh" "$SCRIPT_DIR/start_backend_daemon.sh" 2>/dev/null || true
 fi
 
-# Ensure MySQL database schema is synchronized via direct PHP PDO
-if [ -f "$SCRIPT_DIR/sync_db_schema.php" ]; then
-    php "$SCRIPT_DIR/sync_db_schema.php" >> "$LOG_FILE" 2>&1 || true
-fi
-
-# Ensure web proxy, .htaccess, and management scripts are synced to public_html
-if [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
+# Ensure web proxy, .htaccess, and management scripts are synced to public_html only on explicit deployment/trigger
+if [ "$SYNC_ASSETS" -eq 1 ] && [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
+    log "📦 Syncing web assets and scripts to public_html..."
     [ -f "$SCRIPT_DIR/application/build/web/restart_backend.php" ] && cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/api_proxy.php" ] && cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/.htaccess" ] && cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>/dev/null || true
@@ -187,23 +176,24 @@ if [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
     [ -d "$SCRIPT_DIR/next-nest/frontend/out/admin" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/admin" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
 fi
 
-# 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 8s budget)
+# Ensure basic critical symlink and proxy exist (lightweight check, no file copy)
+if [ -d "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html" ]; then
+    if [ ! -f "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php" ]; then
+        cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
+    fi
+    if [ ! -f "/home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php" ]; then
+        cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
+    fi
+fi
+
+# 2. Test Socket Health with dedicated Liveness endpoint (2-strike check, 10s budget)
 IS_HEALTHY=0
 LIVENESS_URL="http://localhost/api/v1/health/liveness"
 
 check_liveness_probe() {
     local resp
-    resp=$(curl -s --max-time 4 --unix-socket "$SOCKET_FILE" "$LIVENESS_URL" 2>/dev/null || echo "")
+    resp=$(curl -s --max-time 6 --unix-socket "$SOCKET_FILE" "$LIVENESS_URL" 2>/dev/null || echo "")
     if echo "$resp" | grep -q '"status"' && echo "$resp" | grep -q '"ok"'; then
-        return 0
-    fi
-    return 1
-}
-
-check_db_health_probe() {
-    local resp
-    resp=$(curl -s --max-time 4 --unix-socket "$SOCKET_FILE" "http://localhost/api/v1/health" 2>/dev/null || echo "")
-    if echo "$resp" | grep -q '"database"' && echo "$resp" | grep -q '"connected"'; then
         return 0
     fi
     return 1
@@ -211,24 +201,13 @@ check_db_health_probe() {
 
 if [ -S "$SOCKET_FILE" ] && [ "$FORCE_RESTART" -ne 1 ]; then
     if check_liveness_probe; then
-        if check_db_health_probe; then
-            IS_HEALTHY=1
-        else
-            log "⚠️ Liveness passed but DB probe failed or timed out. Waiting 2s before strike 2..."
-            sleep 2
-            if check_db_health_probe; then
-                IS_HEALTHY=1
-                log "✅ Database probe succeeded on strike 2."
-            else
-                log "❌ Database probe failed twice. Backend database connection pool is unresponsive."
-            fi
-        fi
+        IS_HEALTHY=1
     else
-        log "⚠️ First liveness probe failed or timed out. Waiting 2 seconds before strike 2..."
-        sleep 2
-        if check_liveness_probe && check_db_health_probe; then
+        log "⚠️ First liveness probe failed or timed out. Waiting 3 seconds before strike 2..."
+        sleep 3
+        if check_liveness_probe; then
             IS_HEALTHY=1
-            log "✅ Second liveness and DB probe succeeded. Backend is healthy."
+            log "✅ Second liveness probe succeeded. Backend is healthy."
         else
             log "❌ Second consecutive probe failed. Backend is confirmed unresponsive."
         fi
@@ -258,30 +237,6 @@ fi
 
 # 5. Recovery Execution
 log "⚠️ Backend confirmed unhealthy (Socket exists: $([ -S "$SOCKET_FILE" ] && echo YES || echo NO)). Initiating recovery..."
-
-# Pull latest repository changes
-(cd "$SCRIPT_DIR" && git fetch origin main 2>&1 && git reset --hard origin/main 2>&1) >> "$LOG_FILE" 2>&1 || true
-
-# Direct MySQL schema check and sync via PHP PDO
-if [ -f "$SCRIPT_DIR/sync_db_schema.php" ]; then
-    php "$SCRIPT_DIR/sync_db_schema.php" >> "$LOG_FILE" 2>&1 || true
-fi
-
-# Sync web scripts and htaccess to public_html
-cp -f "$SCRIPT_DIR/application/build/web/restart_backend.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/restart_backend.php 2>/dev/null || true
-cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
-cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>/dev/null || true
-cp -f "$SCRIPT_DIR/application/build/web/index.html" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/index.html 2>/dev/null || true
-cp -f "$SCRIPT_DIR/application/build/web/main.dart.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/main.dart.js 2>/dev/null || true
-cp -f "$SCRIPT_DIR/application/build/web/flutter_bootstrap.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter_bootstrap.js 2>/dev/null || true
-cp -f "$SCRIPT_DIR/application/build/web/flutter.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter.js 2>/dev/null || true
-[ -d "$SCRIPT_DIR/application/build/web/assets" ] && cp -rf "$SCRIPT_DIR/application/build/web/assets" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
-[ -d "$SCRIPT_DIR/application/build/web/canvaskit" ] && cp -rf "$SCRIPT_DIR/application/build/web/canvaskit" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
-mkdir -p /home/u796269890/domains/allgujaratvankarsamaj.com/uploads 2>/dev/null || true
-ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/uploads 2>/dev/null || true
-ln -sfn /home/u796269890/domains/allgujaratvankarsamaj.com/uploads "$BACKEND_DIR/uploads" 2>/dev/null || true
-[ -d "$SCRIPT_DIR/next-nest/frontend/out/_next" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/_next" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
-[ -d "$SCRIPT_DIR/next-nest/frontend/out/admin" ] && cp -rf "$SCRIPT_DIR/next-nest/frontend/out/admin" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
 
 if [ "$DAEMON_RUNNING" -eq 1 ]; then
     if ! can_restart; then

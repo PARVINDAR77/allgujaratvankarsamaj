@@ -14,9 +14,9 @@ $restart_state_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/last_r
 
 define('MAX_REQUEST_BYTES', 10 * 1024 * 1024);   // 10 MB limit on request body
 define('MAX_RESPONSE_BYTES', 10 * 1024 * 1024);  // 10 MB limit on response body
-define('CONNECT_TIMEOUT_SECS', 1);
-define('TRANSFER_TIMEOUT_SECS', 8);
-define('WATCHDOG_COOLDOWN_SECS', 45);
+define('CONNECT_TIMEOUT_SECS', 4);
+define('TRANSFER_TIMEOUT_SECS', 25);
+define('WATCHDOG_COOLDOWN_SECS', 60);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $uri = $_SERVER['REQUEST_URI'] ?? '/api/v1';
@@ -293,30 +293,21 @@ if (strlen($body) > 0) {
     $forwardHeaders[] = 'Content-Length: ' . strlen($body);
 }
 
-// 5. Watchdog Cooldown & Auto-Recovery Trigger (Non-blocking)
+// 5. Watchdog Cooldown & Auto-Recovery Trigger (Passive & Non-blocking)
 function trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir) {
     $now = time();
     
-    // Prevent multiple requests within 8s from concurrently spawning watchdogs
-    if (file_exists($lock_file)) {
-        $lockMtime = (int)@filemtime($lock_file);
-        if (($now - $lockMtime) < 15) {
+    // Rate limit trigger file creation to once per 60 seconds
+    if (file_exists($trigger_file)) {
+        $trigMtime = (int)@filemtime($trigger_file);
+        if (($now - $trigMtime) < 60) {
             return false;
         }
     }
     
-    @touch($lock_file);
+    // Safely touch trigger file for the scheduled background watchdog cron
+    // Strictly ZERO shell_exec / background process spawning from HTTP requests
     @touch($trigger_file);
-    
-    $watchdog_script = $project_dir . '/keep_backend_alive.sh';
-    if (file_exists($watchdog_script)) {
-        $cmd = "nohup /bin/bash " . escapeshellarg($watchdog_script) . " --force </dev/null >/dev/null 2>&1 &";
-        if (function_exists('shell_exec')) {
-            @shell_exec($cmd);
-        } elseif (function_exists('exec')) {
-            @exec($cmd);
-        }
-    }
     return true;
 }
 

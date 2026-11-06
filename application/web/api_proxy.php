@@ -14,12 +14,27 @@ $restart_state_file = '/home/u796269890/domains/allgujaratvankarsamaj.com/last_r
 
 define('MAX_REQUEST_BYTES', 10 * 1024 * 1024);   // 10 MB limit on request body
 define('MAX_RESPONSE_BYTES', 10 * 1024 * 1024);  // 10 MB limit on response body
-define('CONNECT_TIMEOUT_SECS', 3);
-define('TRANSFER_TIMEOUT_SECS', 15);
-define('WATCHDOG_COOLDOWN_SECS', 45);
+define('CONNECT_TIMEOUT_SECS', 4);
+define('TRANSFER_TIMEOUT_SECS', 25);
+define('WATCHDOG_COOLDOWN_SECS', 60);
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 $uri = $_SERVER['REQUEST_URI'] ?? '/api/v1';
+
+// Normalize endpoint paths so un-prefixed requests reach NestJS /api/v1 routes
+$known_prefixes = [
+    'verifications', 'advertisements', 'auth', 'profiles', 'storage',
+    'interests', 'chat', 'notifications', 'master-data', 'parganas',
+    'locations', 'education', 'government-employees', 'samaj-services',
+    'samaj-super-stars', 'samaj-ratna', 'pavan-prernadata', 'shortlists',
+    'reports', 'settings', 'health', 'admin'
+];
+$prefix_regex = implode('|', $known_prefixes);
+if (preg_match('#^/(' . $prefix_regex . ')(?:[/?].*)?$#i', $uri)) {
+    $uri = '/api/v1' . $uri;
+} elseif (preg_match('#^/api/(?!v1/)(.*)$#i', $uri, $m)) {
+    $uri = '/api/v1/' . $m[1];
+}
 
 // Strict Origin & CORS validation (Exact scheme, hostname, and port)
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
@@ -110,6 +125,10 @@ function ensure_direct_schema_sync($project_dir) {
         $col = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'permissions'")->fetch();
         if (!$col) {
             $pdo->exec("ALTER TABLE users ADD COLUMN permissions TEXT NULL");
+        }
+        $col2 = $pdo->query("SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'verification_requests' AND COLUMN_NAME = 'document_back_url'")->fetch();
+        if (!$col2) {
+            $pdo->exec("ALTER TABLE verification_requests ADD COLUMN document_back_url VARCHAR(255) NULL");
         }
         @touch($flag);
     } catch (Exception $e) {
@@ -274,30 +293,21 @@ if (strlen($body) > 0) {
     $forwardHeaders[] = 'Content-Length: ' . strlen($body);
 }
 
-// 5. Watchdog Cooldown & Auto-Recovery Trigger (Non-blocking)
+// 5. Watchdog Cooldown & Auto-Recovery Trigger (Passive & Non-blocking)
 function trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir) {
     $now = time();
     
-    // Prevent multiple requests within 8s from concurrently spawning watchdogs
-    if (file_exists($lock_file)) {
-        $lockMtime = (int)@filemtime($lock_file);
-        if (($now - $lockMtime) < 15) {
+    // Rate limit trigger file creation to once per 60 seconds
+    if (file_exists($trigger_file)) {
+        $trigMtime = (int)@filemtime($trigger_file);
+        if (($now - $trigMtime) < 60) {
             return false;
         }
     }
     
-    @touch($lock_file);
+    // Safely touch trigger file for the scheduled background watchdog cron
+    // Strictly ZERO shell_exec / background process spawning from HTTP requests
     @touch($trigger_file);
-    
-    $watchdog_script = $project_dir . '/keep_backend_alive.sh';
-    if (file_exists($watchdog_script)) {
-        $cmd = "nohup /bin/bash " . escapeshellarg($watchdog_script) . " --force </dev/null >/dev/null 2>&1 &";
-        if (function_exists('shell_exec')) {
-            @shell_exec($cmd);
-        } elseif (function_exists('exec')) {
-            @exec($cmd);
-        }
-    }
     return true;
 }
 
@@ -473,6 +483,21 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
     }
     
     $hasSocket = file_exists($socket_file);
+    if (!$hasSocket) {
+        $tcpTest = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 0.5);
+        if (!$tcpTest) {
+            trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
+            http_response_code(502);
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'statusCode' => 502,
+                'message' => 'Bad Gateway: Backend service is currently starting. Please retry in a few seconds.',
+                'restartUrl' => 'https://allgujaratvankarsamaj.com/restart_backend.php'
+            ]);
+            exit;
+        }
+        fclose($tcpTest);
+    }
     $upstreamUrl = $hasSocket ? ('http://localhost' . $uri) : ('http://127.0.0.1:3000' . $uri);
     
     $ch = curl_init();
@@ -553,19 +578,25 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
     }
     
     if ($execResult === false) {
+        trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
         if ($curlErrno === CURLE_OPERATION_TIMEDOUT || $curlErrno === 28) {
-            trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
             http_response_code(504);
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode([
                 'statusCode' => 504,
-                'message' => 'Gateway Timeout: Backend request timed out after 15 seconds.'
+                'message' => 'Gateway Timeout: Backend request timed out after 8 seconds.'
             ]);
             exit;
         }
         
-        // Fallback to stream proxy with auto-recovery retry loop
-        return proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $trigger_file, $restart_state_file, $lock_file, $project_dir);
+        http_response_code(502);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'statusCode' => 502,
+            'message' => 'Bad Gateway: Backend connection failed. Automatic restart triggered.',
+            'restartUrl' => 'https://allgujaratvankarsamaj.com/restart_backend.php'
+        ]);
+        exit;
     }
     
     http_response_code($finalStatusCode);
