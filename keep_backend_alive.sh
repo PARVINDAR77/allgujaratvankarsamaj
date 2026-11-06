@@ -210,8 +210,13 @@ IS_HEALTHY=0
 LIVENESS_URL="http://localhost/api/v1/health/liveness"
 
 check_liveness_probe() {
-    local resp
-    resp=$(curl -s --max-time 6 --unix-socket "$SOCKET_FILE" "$LIVENESS_URL" 2>/dev/null || echo "")
+    local resp=""
+    if [ -S "$SOCKET_FILE" ]; then
+        resp=$(curl -s --max-time 6 --unix-socket "$SOCKET_FILE" "$LIVENESS_URL" 2>/dev/null || echo "")
+    fi
+    if [ -z "$resp" ]; then
+        resp=$(curl -s --max-time 6 "http://127.0.0.1:3000/api/v1/health/liveness" 2>/dev/null || echo "")
+    fi
     if echo "$resp" | grep -q '"status"' && echo "$resp" | grep -q '"ok"'; then
         return 0
     fi
@@ -269,11 +274,11 @@ else
     # Socket is missing OR supervisor is offline: Cleanly respawn supervisor daemon
     log "ℹ️ Backend socket missing or supervisor offline. Cleanly respawning supervisor daemon..."
     record_restart
-    if [ -n "${DPID:-}" ]; then
-        kill -9 "$DPID" 2>/dev/null || true
-    fi
-    stop_backend_node
-    rm -f "$DAEMON_PID_FILE" "$NODE_PID_FILE" "$SOCKET_FILE"
+    # Kill any and all duplicate supervisor loops and orphaned node processes
+    pkill -9 -f "start_backend_daemon" 2>/dev/null || true
+    pkill -9 -f "dist/main\.js" 2>/dev/null || true
+    rm -f "$DAEMON_PID_FILE" "$NODE_PID_FILE" "$SOCKET_FILE" "$SCRIPT_DIR/backend_daemon.lock"
+    sleep 1
     nohup bash "$SCRIPT_DIR/start_backend_daemon.sh" >> "$BACKEND_DIR/backend.log" 2>&1 &
 fi
 

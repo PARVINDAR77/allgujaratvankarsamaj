@@ -9,7 +9,7 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
 export PATH="/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH"
 export UV_THREADPOOL_SIZE=4
-export NODE_OPTIONS="--max-old-space-size=384"
+export NODE_OPTIONS="--max-old-space-size=280"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/next-nest/backend"
@@ -17,6 +17,30 @@ SOCKET_FILE="/home/u796269890/domains/allgujaratvankarsamaj.com/backend.sock"
 LOG_FILE="$BACKEND_DIR/backend.log"
 PID_FILE="$SCRIPT_DIR/backend_daemon.pid"
 NODE_PID_FILE="$SCRIPT_DIR/backend_node.pid"
+LOCK_FILE="$SCRIPT_DIR/backend_daemon.lock"
+
+# 1. Acquire exclusive supervisor lock to prevent duplicate while-true loops
+if command -v flock >/dev/null 2>&1; then
+    exec 9>"$LOCK_FILE"
+    if ! flock -n 9; then
+        echo "[$(date)] Supervisor daemon is already active (locked via flock). Exiting duplicate process $$." >> "$LOG_FILE"
+        exit 0
+    fi
+fi
+
+# 2. Strict PID validation fallback
+if [ -f "$PID_FILE" ]; then
+    OLD_PID=$(cat "$PID_FILE" 2>/dev/null || echo "")
+    if [ -n "$OLD_PID" ] && [ "$OLD_PID" != "$$" ] && kill -0 "$OLD_PID" 2>/dev/null; then
+        if [ -f "/proc/$OLD_PID/cmdline" ] && grep -qa "start_backend_daemon" "/proc/$OLD_PID/cmdline" 2>/dev/null; then
+            echo "[$(date)] Supervisor daemon already active (PID: $OLD_PID). Exiting duplicate process $$." >> "$LOG_FILE"
+            exit 0
+        elif ps -p "$OLD_PID" -o args= 2>/dev/null | grep -q "start_backend_daemon"; then
+            echo "[$(date)] Supervisor daemon already active (PID: $OLD_PID). Exiting duplicate process $$." >> "$LOG_FILE"
+            exit 0
+        fi
+    fi
+fi
 
 echo "$$" > "$PID_FILE"
 
@@ -60,6 +84,8 @@ if [ -f "$NODE_PID_FILE" ]; then
     fi
     rm -f "$NODE_PID_FILE"
 fi
+# Terminate any stray orphaned node processes to guarantee strict single-process operation
+pkill -9 -f "dist/main\.js" 2>/dev/null || true
 rm -f "$SOCKET_FILE"
 
 echo "[$(date)] Supervisor daemon started (PID: $$)" >> "$LOG_FILE"
@@ -68,6 +94,7 @@ echo "[$(date)] Supervisor daemon started (PID: $$)" >> "$LOG_FILE"
 cleanup() {
     echo "[$(date)] Supervisor daemon exiting..." >> "$LOG_FILE"
     rm -f "$PID_FILE"
+    rm -f "$LOCK_FILE"
     if [ -f "$NODE_PID_FILE" ]; then
         local npid
         npid=$(cat "$NODE_PID_FILE" 2>/dev/null || echo "")
@@ -77,6 +104,7 @@ cleanup() {
         fi
         rm -f "$NODE_PID_FILE"
     fi
+    pkill -9 -f "dist/main\.js" 2>/dev/null || true
     rm -f "$SOCKET_FILE"
     exit 0
 }
@@ -86,11 +114,22 @@ trap cleanup SIGTERM SIGINT
 FAST_CRASH_COUNT=0
 while true; do
     START_TIME=$(date +%s)
-    echo "[$(date)] Starting NestJS backend with --max-old-space-size=384..." >> "$LOG_FILE"
+    # Ensure no duplicate/rogue Node process is lingering before launch
+    OTHER_PIDS=$(pgrep -f "dist/main\.js" 2>/dev/null || echo "")
+    if [ -n "$OTHER_PIDS" ]; then
+        for opid in $OTHER_PIDS; do
+            kill -9 "$opid" 2>/dev/null || true
+        done
+        sleep 1
+    fi
+    rm -f "$SOCKET_FILE"
+
+    echo "[$(date)] Starting NestJS backend with --max-old-space-size=280 and PORT=3000..." >> "$LOG_FILE"
     ALLOWED_ORIGINS="https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com" \
     SOCKET_PATH="$SOCKET_FILE" \
+    PORT=3000 \
     NODE_ENV=production \
-    node --max-old-space-size=384 dist/main.js >> "$LOG_FILE" 2>&1 &
+    node --max-old-space-size=280 dist/main.js >> "$LOG_FILE" 2>&1 &
     
     NODE_PID=$!
     echo "$NODE_PID" > "$NODE_PID_FILE"

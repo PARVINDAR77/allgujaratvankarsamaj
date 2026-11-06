@@ -567,6 +567,57 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
     $curlError  = curl_error($ch);
     curl_close($ch);
     
+    // Automatic Seamless Failover: If Unix Socket failed, immediately retry over TCP port 3000
+    if ($execResult === false && $hasSocket) {
+        $ch2 = curl_init();
+        curl_setopt($ch2, CURLOPT_URL, 'http://127.0.0.1:3000' . $uri);
+        curl_setopt($ch2, CURLOPT_CUSTOMREQUEST, $method);
+        curl_setopt($ch2, CURLOPT_CONNECTTIMEOUT, 2);
+        curl_setopt($ch2, CURLOPT_TIMEOUT, TRANSFER_TIMEOUT_SECS);
+        curl_setopt($ch2, CURLOPT_FOLLOWLOCATION, false);
+        curl_setopt($ch2, CURLOPT_HTTPHEADER, $forwardHeaders);
+        if (in_array($method, ['POST', 'PUT', 'PATCH'], true) || strlen($body) > 0) {
+            curl_setopt($ch2, CURLOPT_POSTFIELDS, $body);
+        }
+        $capturedHeaders = [];
+        $finalStatusCode = 200;
+        curl_setopt($ch2, CURLOPT_HEADERFUNCTION, function($curlHandle, $headerLine) use (&$capturedHeaders, &$finalStatusCode) {
+            $len = strlen($headerLine);
+            $trimmed = trim($headerLine);
+            if (empty($trimmed)) return $len;
+            if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/i', $trimmed, $matches)) {
+                $status = (int)$matches[1];
+                if ($status !== 100) $finalStatusCode = $status;
+                return $len;
+            }
+            $colonPos = strpos($trimmed, ':');
+            if ($colonPos !== false) {
+                $hdrName = strtolower(substr($trimmed, 0, $colonPos));
+                if (in_array($hdrName, ['transfer-encoding', 'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'upgrade'], true)) return $len;
+                if (strpos($hdrName, 'access-control-') === 0) return $len;
+                $capturedHeaders[] = $trimmed;
+            }
+            return $len;
+        });
+        $responseBody = '';
+        $responseSize = 0;
+        $responseOversized = false;
+        curl_setopt($ch2, CURLOPT_WRITEFUNCTION, function($curlHandle, $chunk) use (&$responseBody, &$responseSize, &$responseOversized) {
+            $chunkLen = strlen($chunk);
+            $responseSize += $chunkLen;
+            if ($responseSize > MAX_RESPONSE_BYTES) {
+                $responseOversized = true;
+                return 0;
+            }
+            $responseBody .= $chunk;
+            return $chunkLen;
+        });
+        $execResult = curl_exec($ch2);
+        $curlErrno  = curl_errno($ch2);
+        $curlError  = curl_error($ch2);
+        curl_close($ch2);
+    }
+    
     if ($responseOversized) {
         http_response_code(502);
         header('Content-Type: application/json; charset=utf-8');

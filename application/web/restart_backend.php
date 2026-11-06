@@ -337,6 +337,13 @@ function terminate_verified_backend_processes($project_dir, $socket_file, &$acti
         @unlink($socket_file);
         $actions[] = "Removed socket file";
     }
+
+    // 4. Clean up any orphaned supervisor loops or duplicate dist/main.js processes
+    if (function_exists('shell_exec')) {
+        @shell_exec('pkill -9 -f "dist/main\.js" 2>/dev/null; pkill -9 -f "start_backend_daemon" 2>/dev/null');
+        $actions[] = "Enforced kill of any duplicate/orphaned node or supervisor processes";
+    }
+    @unlink($project_dir . '/backend_daemon.lock');
 }
 
 function fix_database_genders_transactional($project_dir, &$results) {
