@@ -669,7 +669,7 @@ if (!$callerAuth || empty($callerAuth['authorized'])) {
             $lines = @file($log_file);
             if ($lines) $logTail = implode('', array_slice($lines, -20));
         }
-        $nodeRunning = function_exists('shell_exec') ? trim(@shell_exec('pgrep -f "dist/main.js" 2>/dev/null') ?? '') : '';
+        $nodeRunning = function_exists('shell_exec') ? trim(@shell_exec('pgrep -x "node" 2>/dev/null') ?? '') : '';
         header('Content-Type: application/json; charset=utf-8');
         echo json_encode([
             'status' => $isHealthy ? 'UP' : 'DOWN',
