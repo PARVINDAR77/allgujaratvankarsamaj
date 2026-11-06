@@ -106,23 +106,26 @@ async function bootstrap() {
   // Global API Prefix /api/v1
   app.setGlobalPrefix("api/v1");
 
-  // Swagger OpenAPI Documentation at /api/docs
-  const config = new DocumentBuilder()
-    .setTitle("All Gujarat Vankar Samaj Matrimony API")
-    .setDescription(
-      "REST API documentation for the All Gujarat Vankar Samaj Matrimony platform",
-    )
-    .setVersion("1.0")
-    .addTag("Health", "Health check and connectivity verification")
-    .addTag(
-      "Authentication",
-      "User registration, login, and profile verification",
-    )
-    .addBearerAuth()
-    .build();
+  // Swagger OpenAPI Documentation at /api/docs (only in dev or when explicitly enabled)
+  if (process.env.ENABLE_SWAGGER === "true" || process.env.NODE_ENV !== "production") {
+    const config = new DocumentBuilder()
+      .setTitle("All Gujarat Vankar Samaj Matrimony API")
+      .setDescription(
+        "REST API documentation for the All Gujarat Vankar Samaj Matrimony platform",
+      )
+      .setVersion("1.0")
+      .addTag("Health", "Health check and connectivity verification")
+      .addTag(
+        "Authentication",
+        "User registration, login, and profile verification",
+      )
+      .addBearerAuth()
+      .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("api/docs", app, document);
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup("api/docs", app, document);
+    logger.log(`Swagger documentation available at: /api/docs`);
+  }
 
   // Listen on Unix Socket if specified (for Hostinger), with automatic TCP fallback
   if (process.env.SOCKET_PATH) {
@@ -197,9 +200,14 @@ async function bootstrap() {
     logger.error("Uncaught Exception in process:", error?.stack || error);
   });
 
-  logger.log(
-    `Swagger documentation available at: /api/docs`,
-  );
+  if ((global as any).gc) {
+    setInterval(() => {
+      try {
+        (global as any).gc();
+        logger.debug("Periodic Garbage Collection invoked successfully");
+      } catch (_) {}
+    }, 10 * 60 * 1000).unref();
+  }
 }
 
 bootstrap();

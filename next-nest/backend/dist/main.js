@@ -59,16 +59,19 @@ async function bootstrap() {
     app.use("/uploads", static_media_middleware_1.servePublicStaticMedia);
     app.use("/api/v1/uploads", static_media_middleware_1.servePublicStaticMedia);
     app.setGlobalPrefix("api/v1");
-    const config = new swagger_1.DocumentBuilder()
-        .setTitle("All Gujarat Vankar Samaj Matrimony API")
-        .setDescription("REST API documentation for the All Gujarat Vankar Samaj Matrimony platform")
-        .setVersion("1.0")
-        .addTag("Health", "Health check and connectivity verification")
-        .addTag("Authentication", "User registration, login, and profile verification")
-        .addBearerAuth()
-        .build();
-    const document = swagger_1.SwaggerModule.createDocument(app, config);
-    swagger_1.SwaggerModule.setup("api/docs", app, document);
+    if (process.env.ENABLE_SWAGGER === "true" || process.env.NODE_ENV !== "production") {
+        const config = new swagger_1.DocumentBuilder()
+            .setTitle("All Gujarat Vankar Samaj Matrimony API")
+            .setDescription("REST API documentation for the All Gujarat Vankar Samaj Matrimony platform")
+            .setVersion("1.0")
+            .addTag("Health", "Health check and connectivity verification")
+            .addTag("Authentication", "User registration, login, and profile verification")
+            .addBearerAuth()
+            .build();
+        const document = swagger_1.SwaggerModule.createDocument(app, config);
+        swagger_1.SwaggerModule.setup("api/docs", app, document);
+        logger.log(`Swagger documentation available at: /api/docs`);
+    }
     if (process.env.SOCKET_PATH) {
         const socketPath = process.env.SOCKET_PATH;
         const fs = await Promise.resolve().then(() => require("fs"));
@@ -140,7 +143,15 @@ async function bootstrap() {
     process.on("uncaughtException", (error) => {
         logger.error("Uncaught Exception in process:", error?.stack || error);
     });
-    logger.log(`Swagger documentation available at: /api/docs`);
+    if (global.gc) {
+        setInterval(() => {
+            try {
+                global.gc();
+                logger.debug("Periodic Garbage Collection invoked successfully");
+            }
+            catch (_) { }
+        }, 10 * 60 * 1000).unref();
+    }
 }
 bootstrap();
 //# sourceMappingURL=main.js.map
