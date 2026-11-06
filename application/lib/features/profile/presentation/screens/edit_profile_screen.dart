@@ -678,7 +678,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               _showInMatrimony = profile.showInMatrimony;
               _bloodGroup = profile.bloodGroup;
               _isVankar = profile.isVankar == true ? 'Yes (હા)' : 'No (ના)';
-              _religion = (profile.religion != null && profile.religion!.isNotEmpty) ? profile.religion! : 'Hindu (હિન્દુ)';
+              _religion = ProfileModel.normalizeReligionToDisplay(profile.religion);
               _casteCategory = profile.caste;
               _dob = profile.dateOfBirth;
               _isPhysicallyDisabled = profile.isPhysicallyDisabled ?? false;
@@ -900,7 +900,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 'Select Religion (ધર્મ પસંદ કરો)',
                 Icons.settings_brightness,
                 masterData.religionOptions,
-                value: masterData.religionOptions.contains(_religion) ? _religion : (masterData.religionOptions.contains(profile.religion) ? profile.religion : 'Select Religion'),
+                value: masterData.religionOptions.contains(_religion)
+                    ? _religion
+                    : (masterData.religionOptions.contains(ProfileModel.normalizeReligionToDisplay(_religion))
+                        ? ProfileModel.normalizeReligionToDisplay(_religion)
+                        : (masterData.religionOptions.contains(ProfileModel.normalizeReligionToDisplay(profile.religion))
+                            ? ProfileModel.normalizeReligionToDisplay(profile.religion)
+                            : 'Select Religion')),
                 onChanged: (v) => setState(() => _religion = v ?? 'Select Religion'),
               ),
               _buildDropdownField(

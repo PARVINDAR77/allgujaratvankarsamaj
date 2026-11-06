@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261104_perfect_portal_cards_v76';
+const VERSION_TAG = '20261106_all_religions_v77';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -222,6 +222,14 @@ function patchMainDartJs() {
     console.log('Added dynamic asset fallback in main.dart.js');
   }
 
+  // 17. Ensure religionOptions always falls back to full list if backend returns < 10
+  const targetReligions = 'o.sbC(0,new A.n0(i,h,g,e,d,c,b==null?o.f.r:b))';
+  const replaceReligions = 'o.sbC(0,new A.n0(i,h,g,e,d,c,(b==null||b.length<10)?o.f.r:b))';
+  if (content.includes(targetReligions)) {
+    content = content.replace(targetReligions, replaceReligions);
+    console.log('Protected religionOptions against truncated backend lists in main.dart.js');
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main.dart.js');
 }
@@ -431,6 +439,14 @@ function patchMainDartLive() {
   if (content.includes(targetMatrimonyBuddhaTag)) {
     content = content.replace(targetMatrimonyBuddhaTag, 'A.v(A.a([o],l),B.h,B.c,B.y)');
     console.log('Removed Buddha tag line from web matrimony hero in main_dart_live.js');
+  }
+
+  // 17. Ensure religionOptions always falls back to full list if backend returns < 10
+  const targetReligionsLive = 'o.sbC(0,new A.n0(i,h,g,e,d,c,b==null?o.f.r:b))';
+  const replaceReligionsLive = 'o.sbC(0,new A.n0(i,h,g,e,d,c,(b==null||b.length<10)?o.f.r:b))';
+  if (content.includes(targetReligionsLive)) {
+    content = content.replace(targetReligionsLive, replaceReligionsLive);
+    console.log('Protected religionOptions against truncated backend lists in main_dart_live.js');
   }
 
   fs.writeFileSync(filePath, content, 'utf8');

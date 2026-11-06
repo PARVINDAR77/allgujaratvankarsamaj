@@ -1984,6 +1984,13 @@ export class ProfilesService {
       });
     }
 
+    const religion = cleanFilter((query as any).religion);
+    if (religion) {
+      andConditions.push({
+        religion: { contains: religion },
+      });
+    }
+
     if (andConditions.length > 0) {
       where.AND = andConditions;
     }

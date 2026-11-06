@@ -354,6 +354,27 @@ class ProfileModel {
     return 'NEVER_MARRIED';
   }
 
+  static String normalizeReligionToDisplay(dynamic val) {
+    if (val == null) return 'Select Religion';
+    final s = val.toString().trim();
+    if (s.isEmpty || s.toLowerCase() == 'null' || s == 'Select Religion') {
+      return 'Select Religion';
+    }
+    final lower = s.toLowerCase();
+    if (lower.contains('hindu') || lower.contains('હિન્દુ')) return 'હિન્દુ ધર્મ (Hinduism)';
+    if (lower.contains('buddh') || lower.contains('બૌદ્ધ')) return 'બૌદ્ધ ધર્મ (Buddhism)';
+    if (lower.contains('islam') || lower.contains('muslim') || lower.contains('ઇસ્લામ')) return 'ઇસ્લામ ધર્મ (Islam)';
+    if (lower.contains('christ') || lower.contains('ખ્રિસ્તી')) return 'ખ્રિસ્તી ધર્મ (Christianity)';
+    if (lower.contains('sikh') || lower.contains('શીખ')) return 'શીખ ધર્મ (Sikhism)';
+    if (lower.contains('jain') || lower.contains('જૈન')) return 'જૈન ધર્મ (Jainism)';
+    if (lower.contains('juda') || lower.contains('યહૂદી')) return 'યહૂદી ધર્મ (Judaism)';
+    if (lower.contains('parsi') || lower.contains('zoroastr') || lower.contains('પારસી')) return 'પારસી / ઝોરાષ્ટ્રિયન ધર્મ (Zoroastrianism)';
+    if (lower.contains('bahai') || lower.contains('baháʼí') || lower.contains('બહાઈ')) return 'બહાઈ ધર્મ (Baháʼí Faith)';
+    if (lower.contains('other') || lower.contains('આદિવાસી') || lower.contains('અન્ય')) return 'અન્ય ધર્મો / આદિવાસી પરંપરાઓ';
+    if (lower.contains('no religion') || lower.contains('કોઈ ધર્મ નહીં')) return 'કોઈ ધર્મ નહીં / ધર્મ જાહેર નથી (No religion / Not stated)';
+    return s;
+  }
+
   String? get fullPhotoUrl {
     String? raw = photoUrl?.trim();
     // Fallback if photoUrl is missing or points to known orphaned test UUIDs that 404

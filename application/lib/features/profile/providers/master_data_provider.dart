@@ -69,7 +69,9 @@ class MasterDataNotifier extends StateNotifier<MasterDataState> {
         privateSectors: _parseList(data['privateSectors']) ?? state.privateSectors,
         businessSectors: _parseList(data['businessSectors']) ?? state.businessSectors,
         incomeRanges: _parseList(data['incomeRanges']) ?? state.incomeRanges,
-        religionOptions: _parseList(data['religionOptions']) ?? state.religionOptions,
+        religionOptions: (_parseList(data['religionOptions']) != null && _parseList(data['religionOptions'])!.length >= 10)
+            ? _parseList(data['religionOptions'])!
+            : AppData.religionOptions,
         isLoading: false,
       );
     } catch (e) {

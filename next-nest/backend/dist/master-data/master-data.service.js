@@ -344,7 +344,16 @@ let MasterDataService = class MasterDataService {
         const religionOptions = [
             "Select Religion",
             "હિન્દુ ધર્મ (Hinduism)",
+            "ઇસ્લામ ધર્મ (Islam)",
+            "ખ્રિસ્તી ધર્મ (Christianity)",
+            "શીખ ધર્મ (Sikhism)",
             "બૌદ્ધ ધર્મ (Buddhism)",
+            "જૈન ધર્મ (Jainism)",
+            "યહૂદી ધર્મ (Judaism)",
+            "પારસી / ઝોરાષ્ટ્રિયન ધર્મ (Zoroastrianism)",
+            "બહાઈ ધર્મ (Baháʼí Faith)",
+            "અન્ય ધર્મો / આદિવાસી પરંપરાઓ",
+            "કોઈ ધર્મ નહીં / ધર્મ જાહેર નથી (No religion / Not stated)",
         ];
         return {
             gujaratDistricts,

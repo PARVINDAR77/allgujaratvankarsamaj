@@ -279,8 +279,8 @@ __decorate([
 ], CreateProfileDto.prototype, "photoUrl", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: "Multiple photos (2 to 5 images) uploaded by candidate",
-        example: ["https://example.com/p1.jpg", "https://example.com/p2.jpg"],
+        description: "Candidate photos: 1 Main photo (mandatory) + up to 1 Sub photo (optional, maximum 2 photos total)",
+        example: ["https://example.com/main.jpg", "https://example.com/sub.jpg"],
     }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Object)

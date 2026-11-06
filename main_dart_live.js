@@ -71697,7 +71697,7 @@ if(d==null)d=o.f.e
 c=o.pV(J.H(m,"incomeRanges"))
 if(c==null)c=o.f.f
 b=o.pV(J.H(m,"religionOptions"))
-o.sbC(0,new A.n0(i,h,g,e,d,c,b==null?o.f.r:b))
+o.sbC(0,new A.n0(i,h,g,e,d,c,(b==null||b.length<10)?o.f.r:b))
 q=1
 s=5
 break

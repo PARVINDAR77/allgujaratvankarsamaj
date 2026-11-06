@@ -73,6 +73,7 @@ __decorate([
 ], ProfilesController.prototype, "getProfiles", null);
 __decorate([
     (0, public_decorator_1.Public)(),
+    (0, public_decorator_1.Public)(),
     (0, common_1.Post)("search-query"),
     (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, swagger_1.ApiOperation)({ summary: "Search candidate profiles with detailed query (POST)" }),

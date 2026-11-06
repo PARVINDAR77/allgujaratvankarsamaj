@@ -409,9 +409,18 @@ function SearchContent() {
                 onChange={handleChange}
                 className="w-full bg-[#070c18] border border-[#c9a227]/60 rounded-xl p-3 text-white text-xs font-semibold"
               >
-                <option value="All">All Religions (તમામ)</option>
-                <option value="Hindu">Hindu (હિન્દુ વણકર)</option>
-                <option value="Buddhist">Buddhist (બૌદ્ધ)</option>
+                <option value="All">All Religions (તમામ ધર્મો)</option>
+                <option value="હિન્દુ ધર્મ (Hinduism)">હિન્દુ ધર્મ (Hinduism)</option>
+                <option value="ઇસ્લામ ધર્મ (Islam)">ઇસ્લામ ધર્મ (Islam)</option>
+                <option value="ખ્રિસ્તી ધર્મ (Christianity)">ખ્રિસ્તી ધર્મ (Christianity)</option>
+                <option value="શીખ ધર્મ (Sikhism)">શીખ ધર્મ (Sikhism)</option>
+                <option value="બૌદ્ધ ધર્મ (Buddhism)">બૌદ્ધ ધર્મ (Buddhism)</option>
+                <option value="જૈન ધર્મ (Jainism)">જૈન ધર્મ (Jainism)</option>
+                <option value="યહૂદી ધર્મ (Judaism)">યહૂદી ધર્મ (Judaism)</option>
+                <option value="પારસી / ઝોરાષ્ટ્રિયન ધર્મ (Zoroastrianism)">પારસી / ઝોરાષ્ટ્રિયન ધર્મ (Zoroastrianism)</option>
+                <option value="બહાઈ ધર્મ (Baháʼí Faith)">બહાઈ ધર્મ (Baháʼí Faith)</option>
+                <option value="અન્ય ધર્મો / આદિવાસી પરંપરાઓ">અન્ય ધર્મો / આદિવાસી પરંપરાઓ</option>
+                <option value="કોઈ ધર્મ નહીં / ધર્મ જાહેર નથી (No religion / Not stated)">કોઈ ધર્મ નહીં / ધર્મ જાહેર નથી (No religion / Not stated)</option>
               </select>
             </div>
 

@@ -567,7 +567,9 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
       dateOfBirth: _dob ?? '2000-01-01',
       bloodGroup: _bloodGroup != null && _bloodGroup != 'Select Blood Group' ? _bloodGroup : null,
       isVankar: _isVankar != 'No (ના)',
-      religion: _religion != 'Select Religion' ? _religion : 'Hindu (હિન્દુ)',
+      religion: _religion != 'Select Religion'
+          ? _religion
+          : 'હિન્દુ ધર્મ (Hinduism)',
       caste: _casteCategory ?? 'Hindu-Vankar (હિન્દુ-વણકર)',
       education: _education == 'Other Qualification (અન્ય)' ? _customEducation : (_education != 'Select Degree' ? _education : 'Not Specified'),
       employmentType: _employmentType,
@@ -1165,7 +1167,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 'Select Religion (ધર્મ પસંદ કરો)',
                 Icons.settings_brightness,
                 masterData.religionOptions,
-                value: masterData.religionOptions.contains(_religion) ? _religion : 'Select Religion',
+                value: masterData.religionOptions.contains(_religion)
+                    ? _religion
+                    : (masterData.religionOptions.contains(ProfileModel.normalizeReligionToDisplay(_religion))
+                        ? ProfileModel.normalizeReligionToDisplay(_religion)
+                        : 'Select Religion'),
                 onChanged: (v) => setState(() => _religion = v ?? 'Select Religion'),
               ),
               _buildDropdownField('Caste Category (જ્ઞાતિ પસંદ કરો) *', 'Hindu-vankar (હિન્દુ-વણકર)', Icons.groups_outlined, ['Hindu-Vankar (હિન્દુ-વણકર)', 'Buddhist-Vankar (બૌદ્ધ-વણકર)', 'Christian-Vankar (ખ્રિસ્તી-વણકર)', 'Muslim-Vankar (મુસ્લિમ-વણકર)', 'Other (અન્ય)'], value: _casteCategory, onChanged: (v) => setState(() => _casteCategory = v)),
