@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../providers/profile_provider.dart';
 import '../../../../shared/models/profile_model.dart';
 
@@ -129,8 +130,8 @@ class _PrivacyContactScreenState extends ConsumerState<PrivacyContactScreen> {
             if (Navigator.of(context).canPop()) {
               Navigator.of(context).pop();
             } else {
-              ref.read(profileNotifierProvider.notifier).loadMyProfile();
-              Navigator.of(context).pushReplacementNamed('/profile');
+              ref.invalidate(myProfileProvider);
+              context.go('/profile');
             }
           },
         ),
