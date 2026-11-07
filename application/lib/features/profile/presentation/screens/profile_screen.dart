@@ -220,7 +220,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
       const SizedBox(width: 10),
 
-      // 2. Deactivation / Deletion Requests Button (Red)
+      // 2. Privacy & Contact Button (Gold / Navy)
+      ElevatedButton.icon(
+        onPressed: () => context.push('/privacy-contact'),
+        icon: const Icon(Icons.shield_outlined, size: 18),
+        label: const Text(
+          'Privacy & Contact (ગોપનીયતા)',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFC49B24),
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      ),
+      const SizedBox(width: 10),
+
+      // 3. Deactivation / Deletion Requests Button (Red)
       ElevatedButton.icon(
         onPressed: () => _showDeleteAccountReasons(context, ref),
         icon: const Icon(Icons.delete_outline_rounded, size: 18),
@@ -572,15 +590,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                children: const [
-                  Icon(Icons.contacts_rounded, color: Color(0xFF1E3A5F), size: 19),
-                  SizedBox(width: 8),
-                  Text(
-                    'Contact Details',
-                    style: TextStyle(
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0F172A),
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: const [
+                      Icon(Icons.contacts_rounded, color: Color(0xFF1E3A5F), size: 19),
+                      SizedBox(width: 8),
+                      Text(
+                        'Contact Details',
+                        style: TextStyle(
+                          fontSize: 16.5,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  InkWell(
+                    onTap: () => context.push('/privacy-contact'),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF9E7),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFFC49B24).withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: const [
+                          Icon(Icons.shield_outlined, size: 14, color: Color(0xFFC49B24)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Privacy Settings (ગોપનીયતા)',
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFC49B24)),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -611,7 +657,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 icon: Icons.apartment_rounded,
                 label: 'PERMANENT ADDRESS',
                 value: permanentAddress,
-                isLast: true,
+                isLast: false,
+              ),
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () => context.push('/privacy-contact'),
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.lock_outline_rounded, size: 16, color: Color(0xFFD4AF37)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'ગોપનીયતા: મોબાઈલ (${profile.effectiveMobilePrivacy}), ઈમેઈલ (${profile.effectiveEmailPrivacy})',
+                          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF475569)),
+                        ),
+                      ),
+                      const Text(
+                        'બદલો >',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFFC49B24)),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

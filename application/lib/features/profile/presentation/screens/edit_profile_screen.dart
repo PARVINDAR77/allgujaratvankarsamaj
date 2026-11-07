@@ -921,6 +921,50 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               const SizedBox(height: 24),
               // Contact Details Section
               _buildSectionHeader(Icons.phone_android, 'Contact Details (સંપર્ક માહિતી)'),
+              const SizedBox(height: 12),
+              // Privacy Settings Shortcut Banner
+              InkWell(
+                onTap: () => context.push('/privacy-contact'),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF9E7),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFD4AF37).withValues(alpha: 0.6)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF041126),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.shield_outlined, color: Color(0xFFD4AF37), size: 18),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Privacy & Contact (સંપર્ક ગોપનીયતા સેટિંગ્સ)',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF041126)),
+                            ),
+                            SizedBox(height: 2),
+                            Text(
+                              'મોબાઈલ, ઈમેઈલ અને સરનામું કોણ જોઈ શકે તે સેટ કરવા અહીં ક્લિક કરો.',
+                              style: TextStyle(fontSize: 11, color: Colors.black54),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios, size: 14, color: Color(0xFFD4AF37)),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 16),
               _buildTextField(
                 'Mobile Number (મોબાઈલ નંબર - 10 અંક) *',

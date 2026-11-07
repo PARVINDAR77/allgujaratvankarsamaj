@@ -123,6 +123,17 @@ class _PrivacyContactScreenState extends ConsumerState<PrivacyContactScreen> {
       backgroundColor: const Color(0xFFF9F7F2), // Light cream background
       appBar: AppBar(
         backgroundColor: const Color(0xFFF9F7F2),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              ref.read(profileNotifierProvider.notifier).loadMyProfile();
+              Navigator.of(context).pushReplacementNamed('/profile');
+            }
+          },
+        ),
         title: const Text(
           'Privacy & Contact (સંપર્ક)',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
@@ -281,6 +292,33 @@ class _PrivacyContactScreenState extends ConsumerState<PrivacyContactScreen> {
                             ],
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: _isSaving ? null : () => _updatePrivacySetting(),
+                              icon: _isSaving
+                                  ? const SizedBox(
+                                      width: 18,
+                                      height: 18,
+                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                    )
+                                  : const Icon(Icons.check_circle_outline, size: 20),
+                              label: Text(
+                                _isSaving ? 'સાચવી રહ્યું છે...' : 'સેટિંગ્સ સાચવો (Save Settings)',
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF1565C0),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                elevation: 1,
+                              ),
+                            ),
+                          ),
+                        ),
                         const SizedBox(height: 16),
                       ],
                     ),
@@ -371,6 +409,7 @@ class _PrivacyContactScreenState extends ConsumerState<PrivacyContactScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(height: 50),
                 ],
               ),
             ),
