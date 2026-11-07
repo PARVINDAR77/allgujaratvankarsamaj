@@ -7,14 +7,15 @@
 
 ulimit -v unlimited 2>/dev/null || true
 ulimit -m unlimited 2>/dev/null || true
-ulimit -s 4096 2>/dev/null || true
+ulimit -s 2048 2>/dev/null || true
 
+export MALLOC_ARENA_MAX=2
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
 export PATH="/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH"
 export UV_THREADPOOL_SIZE=2
 export PRISMA_CLIENT_ENGINE_TYPE="library"
-export NODE_OPTIONS="--max-old-space-size=256"
+export NODE_OPTIONS="--max-old-space-size=160 --heapsnapshot-near-heap-limit=0"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="$SCRIPT_DIR/next-nest/backend"
@@ -129,12 +130,12 @@ while true; do
     fi
     rm -f "$SOCKET_FILE"
 
-    echo "[$(date)] Starting NestJS backend with --max-old-space-size=256 --expose-gc, and PORT=3000..." >> "$LOG_FILE"
+    echo "[$(date)] Starting NestJS backend with --max-old-space-size=160 --expose-gc, and PORT=3000..." >> "$LOG_FILE"
     ALLOWED_ORIGINS="https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com" \
     SOCKET_PATH="$SOCKET_FILE" \
     PORT=3000 \
     NODE_ENV=production \
-    node --max-old-space-size=256 --expose-gc dist/main.js >> "$LOG_FILE" 2>&1 &
+    node --max-old-space-size=160 --expose-gc --heapsnapshot-near-heap-limit=0 dist/main.js >> "$LOG_FILE" 2>&1 &
     
     NODE_PID=$!
     echo "$NODE_PID" > "$NODE_PID_FILE"

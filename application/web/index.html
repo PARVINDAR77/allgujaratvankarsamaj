@@ -40,7 +40,7 @@
   <script>
     (function() {
       var BUILD_KEY = 'agvs_web_build';
-      var CURRENT_BUILD = '20261107_privacy_contact_v78';
+      var CURRENT_BUILD = '20261107_clean_console_v79';
       // Always unregister any lingering service worker
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(function(regs) {
@@ -160,6 +160,30 @@
       letter-spacing: 0.4px;
     }
   </style>
+  <script>
+    // Production Console Privacy Shield
+    // Silences sensitive debugging logs, API payload dumps, and telemetry on production hostnames.
+    (function() {
+      try {
+        var h = window.location.hostname;
+        var isLocal = h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local') || h.startsWith('192.168.');
+        if (!isLocal) {
+          var noop = function() {};
+          window.console.log = noop;
+          window.console.info = noop;
+          window.console.debug = noop;
+          window.console.warn = noop;
+          var origErr = window.console.error;
+          window.console.error = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var str = args.join(' ');
+            if (str.indexOf('[API]') !== -1 || str.indexOf('privateSectors') !== -1) return;
+            origErr.apply(window.console, args);
+          };
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <div id="loading-splash">
@@ -203,6 +227,6 @@
     });
     splashObserver.observe(document.body, { childList: true, subtree: true });
   </script>
-  <script src="flutter_bootstrap.js?v=20261107_privacy_contact_v78" async></script>
+  <script src="flutter_bootstrap.js?v=20261107_clean_console_v79" async></script>
 </body>
 </html>

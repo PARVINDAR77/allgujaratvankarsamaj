@@ -8669,7 +8669,7 @@ bf1:function bf1(){},
 bf3:function bf3(){},
 bJG(a){var s=A.WH(A.biH(A.UJ(),B.mm,A.ak(["Accept","application/json","Cache-Control","no-cache, no-store, must-revalidate","Pragma","no-cache"],t.N,t.z),B.mm,B.mm)),r=s.acg$
 r.J(r,new A.Yx(new A.bdt(a),new A.bdu(),new A.bdv(),null,null,null))
-r.J(r,new A.JA(!1,!0,!0,new A.bdw()))
+/* neutralized LogInterceptor */null
 return s},
 bev:function bev(){},
 beg:function beg(){},
@@ -56295,7 +56295,7 @@ A.bdv.prototype={
 $2(a,b){return b.jX(0,a)},
 $S:121}
 A.bdw.prototype={
-$1(a){return A.A5("[API] "+A.q(a))},
+$1(a){return null},
 $S:157}
 A.kP.prototype={
 P(){return"ApiFailureType."+this.b}}

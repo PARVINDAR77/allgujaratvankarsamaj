@@ -364,21 +364,30 @@ if (strlen($body) > 0) {
     $forwardHeaders[] = 'Content-Length: ' . strlen($body);
 }
 
-// 5. Watchdog Cooldown & Auto-Recovery Trigger (Passive & Non-blocking)
+// 5. Watchdog Cooldown & Auto-Recovery Trigger (Self-Healing On-Demand)
 function trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir) {
     $now = time();
+    $spawnLock = sys_get_temp_dir() . '/vankar_backend_spawn.lock';
     
-    // Rate limit trigger file creation to once per 60 seconds
-    if (file_exists($trigger_file)) {
-        $trigMtime = (int)@filemtime($trigger_file);
-        if (($now - $trigMtime) < 60) {
+    // Rate limit respawn attempts to at most once per 15 seconds
+    if (file_exists($spawnLock)) {
+        $lockAge = $now - (int)@filemtime($spawnLock);
+        if ($lockAge < 15) {
             return false;
         }
     }
-    
-    // Safely touch trigger file for the scheduled background watchdog cron
-    // Strictly ZERO shell_exec / background process spawning from HTTP requests
+    @touch($spawnLock);
     @touch($trigger_file);
+
+    // Clean up any stale lock or dead socket
+    @unlink('/home/u796269890/domains/allgujaratvankarsamaj.com/keep_alive.lock');
+    @unlink($project_dir . '/backend_daemon.lock');
+
+    // Asynchronously launch supervisor in the background detached
+    if (function_exists('shell_exec')) {
+        $log_file = $project_dir . '/next-nest/backend/backend.log';
+        @shell_exec("nohup bash " . escapeshellarg($project_dir . "/start_backend_daemon.sh") . " </dev/null >> " . escapeshellarg($log_file) . " 2>&1 &");
+    }
     return true;
 }
 

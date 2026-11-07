@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
@@ -66,14 +67,14 @@ Dio _buildDioClient(SecureStorageService storage) {
     ),
   );
 
-  // Request/response logging — development only.
-  if (AppConfig.isDevelopment) {
+  // Request/response logging — development only in debug mode.
+  if (kDebugMode && AppConfig.isDevelopment) {
     dio.interceptors.add(
       LogInterceptor(
         requestBody: true,
         responseBody: true,
         requestHeader: false,
-        logPrint: (obj) => print('[API] $obj'),
+        logPrint: (obj) => debugPrint('[API] $obj'),
       ),
     );
   }

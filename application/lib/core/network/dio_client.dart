@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/app_config.dart';
@@ -72,8 +73,8 @@ final dioProvider = Provider<Dio>((ref) {
 
   dio.interceptors.add(AuthInterceptor(storage, ref));
   
-  // For debugging in development
-  if (AppConfig.environment == 'development') {
+  // For debugging in development (debug mode only)
+  if (kDebugMode && AppConfig.environment == 'development') {
     dio.interceptors.add(LogInterceptor(
       request: true,
       requestHeader: true,

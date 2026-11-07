@@ -7,14 +7,15 @@
 
 ulimit -v unlimited 2>/dev/null || true
 ulimit -m unlimited 2>/dev/null || true
-ulimit -s 4096 2>/dev/null || true
+ulimit -s 2048 2>/dev/null || true
 
+export MALLOC_ARENA_MAX=2
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
 export PATH="/home/u796269890/bin:$HOME/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$PATH"
 export UV_THREADPOOL_SIZE=2
 export PRISMA_CLIENT_ENGINE_TYPE="library"
-export NODE_OPTIONS="--max-old-space-size=256"
+export NODE_OPTIONS="--max-old-space-size=160 --heapsnapshot-near-heap-limit=0"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)"
 if [ -z "$SCRIPT_DIR" ] || [ "$SCRIPT_DIR" = "/" ] || [ ! -d "$SCRIPT_DIR/next-nest/backend" ]; then
@@ -269,7 +270,12 @@ fi
 # 5. Recovery Execution
 log "⚠️ Backend confirmed unhealthy (Socket exists: $([ -S "$SOCKET_FILE" ] && echo YES || echo NO)). Initiating recovery..."
 
-if [ "$DAEMON_RUNNING" -eq 1 ] && [ -S "$SOCKET_FILE" ]; then
+NODE_RUNNING=0
+if [ -f "$NODE_PID_FILE" ] && is_backend_node_process "$(cat "$NODE_PID_FILE" 2>/dev/null)"; then
+    NODE_RUNNING=1
+fi
+
+if [ "$DAEMON_RUNNING" -eq 1 ] && [ "$NODE_RUNNING" -eq 1 ] && [ -S "$SOCKET_FILE" ]; then
     if ! can_restart; then
         log "⏳ Backend not responding, but currently inside restart cooldown/grace period. Allowing supervisor daemon (PID: $DPID) time to boot."
         exit 0
@@ -278,8 +284,8 @@ if [ "$DAEMON_RUNNING" -eq 1 ] && [ -S "$SOCKET_FILE" ]; then
     record_restart
     stop_backend_node
 else
-    # Socket is missing OR supervisor is offline: Cleanly respawn supervisor daemon
-    log "ℹ️ Backend socket missing or supervisor offline. Cleanly respawning supervisor daemon..."
+    # Socket is missing, Node is dead, OR supervisor is offline: Cleanly respawn supervisor daemon
+    log "ℹ️ Backend node dead or supervisor offline. Cleanly respawning supervisor daemon..."
     record_restart
     # Kill any and all duplicate supervisor loops and orphaned node processes
     pkill -9 -f "start_backend_daemon" 2>/dev/null || true

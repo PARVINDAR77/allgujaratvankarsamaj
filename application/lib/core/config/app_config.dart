@@ -39,8 +39,8 @@ class AppConfig {
   static const Duration receiveTimeout = Duration(seconds: 15);
   static const Duration sendTimeout = Duration(seconds: 15);
 
-  static bool get isDevelopment => environment == 'development';
-  static bool get isProduction => environment == 'production';
+  static bool get isDevelopment => !kReleaseMode && environment == 'development';
+  static bool get isProduction => kReleaseMode || environment == 'production';
 
   /// Resolves media and upload URLs into fully qualified HTTPS URLs
   static String resolveMediaUrl(String? url) {

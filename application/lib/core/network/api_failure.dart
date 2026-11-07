@@ -47,7 +47,7 @@ class ApiFailure {
   static String _defaultMessageFor(ApiFailureType type) {
     return switch (type) {
       ApiFailureType.unauthorized => 'Session expired. Please log in again. (સેશન પૂરું થયું છે. કૃપા કરીને ફરીથી લોગિન કરો.)',
-      ApiFailureType.forbidden => 'You do not have permission to perform this action. (તમને આ કાર્ય કરવા માટે પરવાનગી નથી.)',
+      ApiFailureType.forbidden => 'Access restricted. Please log in or verify your account. (આ સુવિધા માટે લોગિન અથવા એકાઉન્ટ વેરિફિકેશન જરૂરી છે.)',
       ApiFailureType.notFound => 'The requested resource was not found. (માહિતી મળી નથી.)',
       ApiFailureType.serverError => 'A server error occurred. Please try again later. (સર્વર ભૂલ. કૃપા કરીને થોડા સમય પછી ફરી પ્રયાસ કરો.)',
       ApiFailureType.networkTimeout => 'Connection timed out. Please check your internet. (કનેક્શન સમય સમાપ્ત થયો. કૃપા કરીને તમારું ઇન્ટરનેટ તપાસો.)',

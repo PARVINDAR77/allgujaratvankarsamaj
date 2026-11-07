@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261106_all_religions_v77';
+const VERSION_TAG = '20261107_clean_console_v79';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -230,6 +230,18 @@ function patchMainDartJs() {
     console.log('Protected religionOptions against truncated backend lists in main.dart.js');
   }
 
+  // 18. Silence [API] LogInterceptor and console data dump
+  const targetApiLog = '$1(a){return A.A2("[API] "+A.q(a))},';
+  if (content.includes(targetApiLog)) {
+    content = content.replace(targetApiLog, '$1(a){return null},');
+    console.log('Neutralized A.bdQ API logger in main.dart.js');
+  }
+  const targetInterceptorReg = 'r.J(r,new A.JB(!1,!0,!0,new A.bdQ()))';
+  if (content.includes(targetInterceptorReg)) {
+    content = content.replace(targetInterceptorReg, '/* neutralized LogInterceptor */null');
+    console.log('Removed LogInterceptor registration in main.dart.js');
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main.dart.js');
 }
@@ -449,6 +461,18 @@ function patchMainDartLive() {
     console.log('Protected religionOptions against truncated backend lists in main_dart_live.js');
   }
 
+  // 18. Silence [API] LogInterceptor and console data dump
+  const targetApiLogLive = '$1(a){return A.A5("[API] "+A.q(a))},';
+  if (content.includes(targetApiLogLive)) {
+    content = content.replace(targetApiLogLive, '$1(a){return null},');
+    console.log('Neutralized A.bdw API logger in main_dart_live.js');
+  }
+  const targetInterceptorRegLive = 'r.J(r,new A.JA(!1,!0,!0,new A.bdw()))';
+  if (content.includes(targetInterceptorRegLive)) {
+    content = content.replace(targetInterceptorRegLive, '/* neutralized LogInterceptor */null');
+    console.log('Removed LogInterceptor registration in main_dart_live.js');
+  }
+
   fs.writeFileSync(filePath, content, 'utf8');
   console.log('Successfully patched main_dart_live.js');
 }
@@ -459,12 +483,42 @@ function updateCacheBuster() {
     'application/web/index.html'
   ];
 
+  const privacyShield = `  <script>
+    // Production Console Privacy Shield
+    // Silences sensitive debugging logs, API payload dumps, and telemetry on production hostnames.
+    (function() {
+      try {
+        var h = window.location.hostname;
+        var isLocal = h === 'localhost' || h === '127.0.0.1' || h.endsWith('.local') || h.startsWith('192.168.');
+        if (!isLocal) {
+          var noop = function() {};
+          window.console.log = noop;
+          window.console.info = noop;
+          window.console.debug = noop;
+          window.console.warn = noop;
+          var origErr = window.console.error;
+          window.console.error = function() {
+            var args = Array.prototype.slice.call(arguments);
+            var str = args.join(' ');
+            if (str.indexOf('[API]') !== -1 || str.indexOf('privateSectors') !== -1) return;
+            origErr.apply(window.console, args);
+          };
+        }
+      } catch (e) {}
+    })();
+  </script>`;
+
   for (const relPath of htmlFiles) {
     const absPath = path.join(__dirname, '..', relPath);
     if (fs.existsSync(absPath)) {
       let content = fs.readFileSync(absPath, 'utf8');
       content = content.replace(/var CURRENT_BUILD = '[^']+';/g, `var CURRENT_BUILD = '${VERSION_TAG}';`);
       content = content.replace(/flutter_bootstrap\.js\?v=[a-zA-Z0-9_-]+/g, `flutter_bootstrap.js?v=${VERSION_TAG}`);
+
+      if (!content.includes('Production Console Privacy Shield')) {
+        content = content.replace('</head>', `${privacyShield}\n</head>`);
+        console.log(`Injected Production Console Privacy Shield into ${relPath}`);
+      }
       fs.writeFileSync(absPath, content, 'utf8');
       console.log(`Updated cache buster in ${relPath} to v=${VERSION_TAG}`);
     }

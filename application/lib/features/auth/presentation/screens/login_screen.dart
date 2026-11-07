@@ -1437,12 +1437,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(40),
-                                  onTap: () => _showCategoryInfo(
-                                    'Private Job',
-                                    'Business | Professional | Self Employed | Career Opportunities',
-                                    Icons.business_center,
-                                    const Color(0xFF1565C0),
-                                  ),
+                                  onTap: () => context.push('/private-employees'),
                                 ),
                               ),
                             ),
