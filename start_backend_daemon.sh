@@ -7,7 +7,7 @@
 
 ulimit -v unlimited 2>/dev/null || true
 ulimit -m unlimited 2>/dev/null || true
-ulimit -s 8192 2>/dev/null || true
+ulimit -s 4096 2>/dev/null || true
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" 2>/dev/null || true
@@ -129,12 +129,12 @@ while true; do
     fi
     rm -f "$SOCKET_FILE"
 
-    echo "[$(date)] Starting NestJS backend with --disable-wasm-trap-handler --max-semi-space-size=2 --max-old-space-size=256 --expose-gc, and PORT=3000..." >> "$LOG_FILE"
+    echo "[$(date)] Starting NestJS backend with --max-old-space-size=256 --expose-gc, and PORT=3000..." >> "$LOG_FILE"
     ALLOWED_ORIGINS="https://allgujaratvankarsamaj.com,https://www.allgujaratvankarsamaj.com" \
     SOCKET_PATH="$SOCKET_FILE" \
     PORT=3000 \
     NODE_ENV=production \
-    node --disable-wasm-trap-handler --max-semi-space-size=2 --max-old-space-size=256 --expose-gc dist/main.js >> "$LOG_FILE" 2>&1 &
+    node --max-old-space-size=256 --expose-gc dist/main.js >> "$LOG_FILE" 2>&1 &
     
     NODE_PID=$!
     echo "$NODE_PID" > "$NODE_PID_FILE"

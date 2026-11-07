@@ -200,10 +200,14 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({
     }
   }, []);
 
-  // Initial fetch and 30-second live polling
+  // Initial fetch and 60-second live polling (only when page is actively visible)
   useEffect(() => {
     fetchLiveNotifications();
-    const interval = setInterval(fetchLiveNotifications, 30000);
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchLiveNotifications();
+      }
+    }, 60000);
     return () => clearInterval(interval);
   }, [fetchLiveNotifications]);
 

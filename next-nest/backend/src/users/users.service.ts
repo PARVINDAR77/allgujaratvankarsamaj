@@ -146,6 +146,7 @@ export class UsersService {
   async getAllUsersForAdmin() {
     try {
       const users = await this.prisma.user.findMany({
+        take: 250,
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
@@ -335,6 +336,7 @@ export class UsersService {
   async getAllProfilesForAdmin() {
     try {
       const profiles = await this.prisma.matrimonialProfile.findMany({
+        take: 250,
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
