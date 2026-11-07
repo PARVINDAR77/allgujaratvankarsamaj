@@ -700,7 +700,7 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
     }
     async searchPublicGovtEmployees(query) {
         const page = Math.max(1, Number(query.page) || 1);
-        const limit = Math.min(50, Math.max(1, Number(query.limit) || 20));
+        const limit = Math.min(50, Math.max(1, Number(query.limit) || 15));
         const skip = (page - 1) * limit;
         try {
             const whereCondition = {
@@ -964,7 +964,7 @@ let GovernmentEmployeesService = GovernmentEmployeesService_1 = class Government
         }
         return this.transformToPublicDto(item);
     }
-    async getAdminGovtEmployees(page = 1, limit = 20, status, forceSync = false) {
+    async getAdminGovtEmployees(page = 1, limit = 15, status, forceSync = false) {
         if (forceSync) {
             await this.triggerAdminSync();
         }

@@ -168,25 +168,37 @@ export declare class SamajServicesService {
         taluka?: string;
         village?: string;
         search?: string;
+        page?: number;
+        limit?: number;
     }): Promise<{
-        id: string;
-        serviceId: string;
-        name: string;
-        gujaratiName: string;
-        photoUrl: string;
-        phone: string;
-        address: string;
-        city: string;
-        description: string;
-        experience: string;
-        isActive: boolean;
-        service: {
+        data: {
             id: string;
-            title: string;
-            category: string;
-            icon: string;
+            serviceId: string;
+            name: string;
+            gujaratiName: string;
+            photoUrl: string;
+            phone: string;
+            address: string;
+            city: string;
+            description: string;
+            experience: string;
+            isActive: boolean;
+            service: {
+                id: string;
+                title: string;
+                category: string;
+                icon: string;
+            };
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
         };
-    }[]>;
+    }>;
     getAllAdminServices(): Promise<{
         id: string;
         title: string;
@@ -258,25 +270,35 @@ export declare class SamajServicesService {
         icon: string;
         contactPerson: string | null;
     }>;
-    getAllAdminServicePersons(serviceId?: string): Promise<{
-        id: string;
-        serviceId: string;
-        name: string;
-        gujaratiName: string;
-        photoUrl: string;
-        phone: string;
-        address: string;
-        city: string;
-        description: string;
-        experience: string;
-        isActive: boolean;
-        service: {
+    getAllAdminServicePersons(serviceId?: string, page?: number, limit?: number): Promise<{
+        data: {
             id: string;
-            title: string;
-            category: string;
-            icon: string;
+            serviceId: string;
+            name: string;
+            gujaratiName: string;
+            photoUrl: string;
+            phone: string;
+            address: string;
+            city: string;
+            description: string;
+            experience: string;
+            isActive: boolean;
+            service: {
+                id: string;
+                title: string;
+                category: string;
+                icon: string;
+            };
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
         };
-    }[]>;
+    }>;
     createServicePerson(dto: CreateServicePersonDto): Promise<{
         service: {
             title: string;

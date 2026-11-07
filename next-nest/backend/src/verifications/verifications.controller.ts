@@ -7,6 +7,7 @@ import {
   Post,
   Request,
   Res,
+  Query,
   UseGuards,
   UseInterceptors,
   UploadedFile,
@@ -167,32 +168,16 @@ export class AdminVerificationsController {
   @Get()
   @ApiOperation({ summary: "Get all pending verification requests (Admin)" })
   @ApiResponse({ status: 200, description: "List of pending requests" })
-  async getPendingVerificationsAdmin() {
-    const requests = await this.verificationsService.getPendingVerifications();
-    return requests.map((req: any) => ({
-      id: req.id,
-      profileId: req.profileId,
-      documentType: req.documentType,
-      documentUrl: req.documentUrl,
-      documentBackUrl: req.documentBackUrl || null,
-      status: req.status,
-      rejectionReason: req.rejectionReason,
-      createdAt: req.createdAt,
-      profile: req.profile
-        ? {
-            id: req.profile.id,
-            name: `${req.profile.firstName || ""} ${req.profile.lastName || ""}`.trim() || req.profile.user?.name || "Candidate",
-            firstName: req.profile.firstName,
-            lastName: req.profile.lastName,
-            photoUrl: req.profile.photoUrl,
-            photos: req.profile.photos,
-            nativePlace: req.profile.nativePlace,
-            city: req.profile.city,
-            pargana: req.profile.pargana,
-            user: req.profile.user,
-          }
-        : null,
-    }));
+  async getPendingVerificationsAdmin(
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("status") status?: string,
+  ) {
+    return this.verificationsService.getPendingVerifications(
+      Number(page) || 1,
+      Number(limit) || 15,
+      status,
+    );
   }
 
   @Permissions(Permission.VERIFICATION_READ)

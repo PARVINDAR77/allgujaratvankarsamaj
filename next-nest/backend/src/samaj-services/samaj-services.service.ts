@@ -1069,8 +1069,14 @@ export class SamajServicesService {
       taluka?: string;
       village?: string;
       search?: string;
+      page?: number;
+      limit?: number;
     },
   ) {
+    const validPage = Math.max(1, Number(filters?.page) || 1);
+    const validLimit = Math.max(1, Math.min(100, Number(filters?.limit) || 15));
+    const skip = (validPage - 1) * validLimit;
+
     try {
       // Resolve service if ID or slug was provided
       let targetServiceId = serviceId;
@@ -1131,45 +1137,82 @@ export class SamajServicesService {
         });
       }
 
-      const res = await this.prisma.samajServicePerson.findMany({
-        where: { AND },
-        include: {
-          service: {
-            select: {
-              id: true,
-              title: true,
-              category: true,
-              icon: true,
+      const [total, res] = await this.prisma.$transaction([
+        this.prisma.samajServicePerson.count({ where: { AND } }),
+        this.prisma.samajServicePerson.findMany({
+          where: { AND },
+          skip,
+          take: validLimit,
+          include: {
+            service: {
+              select: {
+                id: true,
+                title: true,
+                category: true,
+                icon: true,
+              },
+            },
+            district: {
+              select: { id: true, name: true, gujaratiName: true },
+            },
+            taluka: {
+              select: { id: true, name: true, gujaratiName: true },
             },
           },
-          district: {
-            select: { id: true, name: true, gujaratiName: true },
-          },
-          taluka: {
-            select: { id: true, name: true, gujaratiName: true },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
 
       if (res && res.length > 0) {
-        return res;
+        const totalPages = Math.ceil(total / validLimit) || 1;
+        return {
+          data: res,
+          meta: {
+            page: validPage,
+            limit: validLimit,
+            total,
+            totalPages,
+            hasNextPage: validPage < totalPages,
+            hasPreviousPage: validPage > 1,
+          },
+        };
       }
 
       // If DB has no persons for this serviceId yet, return matching fallback
       const matchingFallbacks = this.defaultPersons.filter(
         (p) => p.serviceId === targetServiceId || targetServiceId === "all",
       );
-      if (matchingFallbacks.length > 0) {
-        return matchingFallbacks;
-      }
-
-      return res;
+      const fbTotal = matchingFallbacks.length;
+      const fbPages = Math.ceil(fbTotal / validLimit) || 1;
+      return {
+        data: matchingFallbacks.slice(skip, skip + validLimit),
+        meta: {
+          page: validPage,
+          limit: validLimit,
+          total: fbTotal,
+          totalPages: fbPages,
+          hasNextPage: validPage < fbPages,
+          hasPreviousPage: validPage > 1,
+        },
+      };
     } catch (err: any) {
       this.logger.warn(`Error in getPublicPersonsByServiceId: ${err?.message || err}`);
-      return this.defaultPersons.filter(
+      const fallbacks = this.defaultPersons.filter(
         (p) => p.serviceId === serviceId || serviceId === "all",
       );
+      const fbTotal = fallbacks.length;
+      const fbPages = Math.ceil(fbTotal / validLimit) || 1;
+      return {
+        data: fallbacks.slice(skip, skip + validLimit),
+        meta: {
+          page: validPage,
+          limit: validLimit,
+          total: fbTotal,
+          totalPages: fbPages,
+          hasNextPage: validPage < fbPages,
+          hasPreviousPage: validPage > 1,
+        },
+      };
     }
   }
 
@@ -1270,25 +1313,61 @@ export class SamajServicesService {
   // ADMIN SERVICE PERSON ENDPOINTS
   // ==========================================
 
-  async getAllAdminServicePersons(serviceId?: string) {
+  async getAllAdminServicePersons(serviceId?: string, page = 1, limit = 15) {
+    const validPage = Math.max(1, Number(page) || 1);
+    const validLimit = Math.max(1, Math.min(100, Number(limit) || 15));
+    const skip = (validPage - 1) * validLimit;
+    const where = serviceId && serviceId !== "all" ? { serviceId } : undefined;
+
     try {
-      return await this.prisma.samajServicePerson.findMany({
-        where: serviceId ? { serviceId } : undefined,
-        include: {
-          service: {
-            select: {
-              id: true,
-              title: true,
-              category: true,
-              icon: true,
+      const [total, persons] = await this.prisma.$transaction([
+        this.prisma.samajServicePerson.count({ where }),
+        this.prisma.samajServicePerson.findMany({
+          where,
+          skip,
+          take: validLimit,
+          include: {
+            service: {
+              select: {
+                id: true,
+                title: true,
+                category: true,
+                icon: true,
+              },
             },
           },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
+
+      const totalPages = Math.ceil(total / validLimit) || 1;
+      return {
+        data: persons,
+        meta: {
+          page: validPage,
+          limit: validLimit,
+          total,
+          totalPages,
+          hasNextPage: validPage < totalPages,
+          hasPreviousPage: validPage > 1,
         },
-        orderBy: { createdAt: "desc" },
-      });
+      };
     } catch (err: any) {
       this.logger.warn(`getAllAdminServicePersons error: ${err?.message || err}`);
-      return this.defaultPersons.filter((p) => !serviceId || p.serviceId === serviceId);
+      const fallbacks = this.defaultPersons.filter((p) => !serviceId || serviceId === "all" || p.serviceId === serviceId);
+      const fbTotal = fallbacks.length;
+      const fbPages = Math.ceil(fbTotal / validLimit) || 1;
+      return {
+        data: fallbacks.slice(skip, skip + validLimit),
+        meta: {
+          page: validPage,
+          limit: validLimit,
+          total: fbTotal,
+          totalPages: fbPages,
+          hasNextPage: validPage < fbPages,
+          hasPreviousPage: validPage > 1,
+        },
+      };
     }
   }
 

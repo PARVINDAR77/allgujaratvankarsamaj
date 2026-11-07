@@ -159,25 +159,35 @@ export declare class SamajServicesController {
         description: string;
         isActive: true;
     }>;
-    getPublicPersonsByServiceId(serviceId: string, district?: string, taluka?: string, village?: string, search?: string): Promise<{
-        id: string;
-        serviceId: string;
-        name: string;
-        gujaratiName: string;
-        photoUrl: string;
-        phone: string;
-        address: string;
-        city: string;
-        description: string;
-        experience: string;
-        isActive: boolean;
-        service: {
+    getPublicPersonsByServiceId(serviceId: string, district?: string, taluka?: string, village?: string, search?: string, page?: number, limit?: number): Promise<{
+        data: {
             id: string;
-            title: string;
-            category: string;
-            icon: string;
+            serviceId: string;
+            name: string;
+            gujaratiName: string;
+            photoUrl: string;
+            phone: string;
+            address: string;
+            city: string;
+            description: string;
+            experience: string;
+            isActive: boolean;
+            service: {
+                id: string;
+                title: string;
+                category: string;
+                icon: string;
+            };
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
         };
-    }[]>;
+    }>;
     registerPublicServicePerson(dto: CreateServicePersonDto): Promise<{
         service: {
             title: string;
@@ -258,25 +268,35 @@ export declare class SamajServicesController {
         icon: string;
         contactPerson: string | null;
     }>;
-    getAdminServicePersons(serviceId?: string): Promise<{
-        id: string;
-        serviceId: string;
-        name: string;
-        gujaratiName: string;
-        photoUrl: string;
-        phone: string;
-        address: string;
-        city: string;
-        description: string;
-        experience: string;
-        isActive: boolean;
-        service: {
+    getAdminServicePersons(serviceId?: string, page?: number, limit?: number): Promise<{
+        data: {
             id: string;
-            title: string;
-            category: string;
-            icon: string;
+            serviceId: string;
+            name: string;
+            gujaratiName: string;
+            photoUrl: string;
+            phone: string;
+            address: string;
+            city: string;
+            description: string;
+            experience: string;
+            isActive: boolean;
+            service: {
+                id: string;
+                title: string;
+                category: string;
+                icon: string;
+            };
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
         };
-    }[]>;
+    }>;
     createServicePerson(dto: CreateServicePersonDto): Promise<{
         service: {
             title: string;

@@ -25,8 +25,8 @@ let AdminUsersController = class AdminUsersController {
     constructor(usersService) {
         this.usersService = usersService;
     }
-    async getUsersAdmin() {
-        return this.usersService.getAllUsersForAdmin();
+    async getUsersAdmin(page, limit, search, role, status) {
+        return this.usersService.getAllUsersForAdmin(Number(page) || 1, Number(limit) || 15, search, role, status);
     }
     async updateUserStatusAdmin(req, id, status) {
         const ipAddress = req.ip || req.connection?.remoteAddress || null;
@@ -39,8 +39,8 @@ let AdminUsersController = class AdminUsersController {
         const ipAddress = req.ip || req.connection?.remoteAddress || null;
         return this.usersService.updateUserRoleAdmin(id, req.user.id, role, ipAddress);
     }
-    async getProfilesAdmin() {
-        return this.usersService.getAllProfilesForAdmin();
+    async getProfilesAdmin(page, limit, search, status, category) {
+        return this.usersService.getAllProfilesForAdmin(Number(page) || 1, Number(limit) || 15, search, status, category);
     }
     async updateProfileStatusAdmin(req, id, status) {
         const ipAddress = req.ip || req.connection?.remoteAddress || null;
@@ -98,8 +98,13 @@ __decorate([
     (0, common_1.Get)("users"),
     (0, swagger_1.ApiOperation)({ summary: "Get list of all registered users (Admin)" }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "List of users" }),
+    __param(0, (0, common_1.Query)("page")),
+    __param(1, (0, common_1.Query)("limit")),
+    __param(2, (0, common_1.Query)("search")),
+    __param(3, (0, common_1.Query)("role")),
+    __param(4, (0, common_1.Query)("status")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Number, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AdminUsersController.prototype, "getUsersAdmin", null);
 __decorate([
@@ -131,8 +136,13 @@ __decorate([
     (0, common_1.Get)("profiles"),
     (0, swagger_1.ApiOperation)({ summary: "Get list of all matrimonial profiles (Admin)" }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "List of profiles" }),
+    __param(0, (0, common_1.Query)("page")),
+    __param(1, (0, common_1.Query)("limit")),
+    __param(2, (0, common_1.Query)("search")),
+    __param(3, (0, common_1.Query)("status")),
+    __param(4, (0, common_1.Query)("category")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Number, String, String, String]),
     __metadata("design:returntype", Promise)
 ], AdminUsersController.prototype, "getProfilesAdmin", null);
 __decorate([

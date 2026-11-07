@@ -187,61 +187,103 @@ let VerificationsService = VerificationsService_1 = class VerificationsService {
             return updatedRequest;
         });
     }
-    async getPendingVerifications() {
-        const now = Date.now();
-        if (this.pendingVerificationsCache && now < this.pendingVerificationsCache.expiresAt) {
-            return this.pendingVerificationsCache.data;
+    async getPendingVerifications(page = 1, limit = 15, status) {
+        const validPage = Math.max(1, Number(page) || 1);
+        const validLimit = Math.max(1, Math.min(100, Number(limit) || 15));
+        const skip = (validPage - 1) * validLimit;
+        const where = {};
+        if (status && status !== "ALL") {
+            where.status = status;
         }
         try {
-            const allRequests = await this.prisma.verificationRequest.findMany({
-                orderBy: { createdAt: "desc" },
-                include: {
-                    profile: {
-                        select: {
-                            id: true,
-                            firstName: true,
-                            lastName: true,
-                            photoUrl: true,
-                            photos: true,
-                            nativePlace: true,
-                            city: true,
-                            pargana: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    gujaratiName: true,
+            const [total, requests] = await this.prisma.$transaction([
+                this.prisma.verificationRequest.count({ where }),
+                this.prisma.verificationRequest.findMany({
+                    where,
+                    skip,
+                    take: validLimit,
+                    orderBy: { createdAt: "desc" },
+                    include: {
+                        profile: {
+                            select: {
+                                id: true,
+                                firstName: true,
+                                lastName: true,
+                                photoUrl: true,
+                                photos: true,
+                                nativePlace: true,
+                                city: true,
+                                pargana: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        gujaratiName: true,
+                                    },
                                 },
-                            },
-                            user: {
-                                select: {
-                                    id: true,
-                                    phone: true,
-                                    email: true,
-                                    name: true,
-                                    status: true,
+                                user: {
+                                    select: {
+                                        id: true,
+                                        phone: true,
+                                        email: true,
+                                        name: true,
+                                        status: true,
+                                    },
                                 },
                             },
                         },
                     },
+                }),
+            ]);
+            const data = requests.map((req) => ({
+                id: req.id,
+                profileId: req.profileId,
+                documentType: req.documentType,
+                documentUrl: req.documentUrl,
+                documentBackUrl: req.documentBackUrl || null,
+                status: req.status,
+                rejectionReason: req.rejectionReason,
+                createdAt: req.createdAt,
+                profile: req.profile
+                    ? {
+                        id: req.profile.id,
+                        name: `${req.profile.firstName || ""} ${req.profile.lastName || ""}`.trim() || req.profile.user?.name || "Candidate",
+                        firstName: req.profile.firstName,
+                        lastName: req.profile.lastName,
+                        photoUrl: req.profile.photoUrl,
+                        photos: req.profile.photos,
+                        nativePlace: req.profile.nativePlace,
+                        city: req.profile.city,
+                        pargana: req.profile.pargana,
+                        user: req.profile.user,
+                    }
+                    : null,
+            }));
+            const totalPages = Math.ceil(total / validLimit) || 1;
+            return {
+                data,
+                meta: {
+                    page: validPage,
+                    limit: validLimit,
+                    total,
+                    totalPages,
+                    hasNextPage: validPage < totalPages,
+                    hasPreviousPage: validPage > 1,
                 },
-            });
-            const seenProfileIds = new Set();
-            const deduplicated = [];
-            for (const req of allRequests) {
-                const key = req.profileId || (req.profile && req.profile.id);
-                if (!key)
-                    continue;
-                if (!seenProfileIds.has(key)) {
-                    seenProfileIds.add(key);
-                    deduplicated.push(req);
-                }
-            }
-            this.pendingVerificationsCache = { data: deduplicated, expiresAt: now + this.CACHE_TTL };
-            return deduplicated;
+            };
         }
         catch (err) {
             this.logger.error("Error retrieving pending verifications: " + (err.message || err));
-            return [];
+            return {
+                data: [],
+                meta: {
+                    page: validPage,
+                    limit: validLimit,
+                    total: 0,
+                    totalPages: 1,
+                    hasNextPage: false,
+                    hasPreviousPage: false,
+                },
+            };
         }
     }
     async getMyVerificationStatus(userId) {

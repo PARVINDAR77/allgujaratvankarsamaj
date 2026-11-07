@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../profile/providers/profile_provider.dart';
 import '../../../../shared/constants/app_data.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/widgets/community_pagination_bar.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 
 class PrivateEmployeesScreen extends ConsumerStatefulWidget {
@@ -21,6 +22,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
   String _post = 'All';
   String _district = 'All';
   String _taluka = 'All';
+  int _currentPage = 1;
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -1399,6 +1401,15 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                       _buildFiltersSection(isDesktop),
                       // Table Section
                       _buildTableSection(isDesktop),
+                      CommunityPaginationBar(
+                        currentPage: _currentPage,
+                        totalPages: (_filteredData.length / 15).ceil().clamp(1, 99999),
+                        totalItems: _filteredData.length,
+                        pageSize: 15,
+                        onPageChanged: (newPage) {
+                          setState(() => _currentPage = newPage);
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -1821,23 +1832,29 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
                       ),
                     ),
                   )
-                else
-                  ..._filteredData.asMap().entries.map((entry) {
-                    final idx = entry.key;
-                    final data = entry.value;
-                    final isEven = idx % 2 == 0;
-                    return _buildTableRow(
-                      data,
-                      isEven,
-                      baseIndex: baseIndex,
-                      basePhoto: basePhoto,
-                      nameWidth: nameWidth,
-                      deptWidth: deptWidth,
-                      postWidth: postWidth,
-                      districtWidth: districtWidth,
-                      baseAction: baseAction,
-                    );
-                  }),
+                else ...[
+                  ...() {
+                    final allItems = _filteredData;
+                    final startIndex = (_currentPage - 1) * 15;
+                    final paged = allItems.skip(startIndex).take(15).toList();
+                    return paged.asMap().entries.map((entry) {
+                      final idx = startIndex + entry.key;
+                      final data = entry.value;
+                      final isEven = idx % 2 == 0;
+                      return _buildTableRow(
+                        data,
+                        isEven,
+                        baseIndex: baseIndex,
+                        basePhoto: basePhoto,
+                        nameWidth: nameWidth,
+                        deptWidth: deptWidth,
+                        postWidth: postWidth,
+                        districtWidth: districtWidth,
+                        baseAction: baseAction,
+                      );
+                    });
+                  }(),
+                ],
                 Container(
                   width: tableWidth,
                   padding: const EdgeInsets.symmetric(vertical: 14),

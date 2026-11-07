@@ -284,6 +284,18 @@ export interface AdminMatchResponse {
   items: AdminMatchItem[];
 }
 
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNextPage?: boolean;
+    hasPreviousPage?: boolean;
+  };
+}
+
 export const adminApi = {
   async login(email: string, password: string): Promise<{ message: string; user: any; accessToken?: string }> {
     const res = await adminFetch(`${API_BASE_URL}/auth/login`, {
@@ -316,11 +328,22 @@ export const adminApi = {
     } catch (error) { throw error; }
   },
 
-  async getVerifications(): Promise<any[]> {
+  async getVerifications(page = 1, limit = 15, status?: string): Promise<PaginatedResult<any>> {
     try {
-      const res = await adminFetch(`${API_BASE_URL}/admin/verifications`, { headers: getAuthHeaders() });
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      if (status && status !== "ALL") params.set("status", status);
+      const res = await adminFetch(`${API_BASE_URL}/admin/verifications?${params.toString()}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return await res.json();
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        return {
+          data: json,
+          meta: { page, limit, total: json.length, totalPages: Math.ceil(json.length / limit) || 1 }
+        };
+      }
+      return json;
     } catch (error) { throw error; }
   },
 
@@ -337,11 +360,24 @@ export const adminApi = {
     return await res.json();
   },
 
-  async getUsers(): Promise<AdminUserItem[]> {
+  async getUsers(page = 1, limit = 15, search?: string, role?: string, status?: string): Promise<PaginatedResult<AdminUserItem>> {
     try {
-      const res = await adminFetch(`${API_BASE_URL}/admin/users`, { headers: getAuthHeaders() });
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      if (search) params.set("search", search);
+      if (role && role !== "ALL") params.set("role", role);
+      if (status && status !== "ALL") params.set("status", status);
+      const res = await adminFetch(`${API_BASE_URL}/admin/users?${params.toString()}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return await res.json();
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        return {
+          data: json,
+          meta: { page, limit, total: json.length, totalPages: Math.ceil(json.length / limit) || 1 }
+        };
+      }
+      return json;
     } catch (error) { throw error; }
   },
 
@@ -395,12 +431,24 @@ export const adminApi = {
     return res.json();
   },
 
-  async getProfiles(category?: string): Promise<AdminProfileItem[]> {
+  async getProfiles(page = 1, limit = 15, category?: string, search?: string, status?: string): Promise<PaginatedResult<AdminProfileItem>> {
     try {
-      const query = category ? `?category=${encodeURIComponent(category)}` : '';
-      const res = await adminFetch(`${API_BASE_URL}/admin/profiles${query}`, { headers: getAuthHeaders() });
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      if (category && category !== "ALL") params.set("category", category);
+      if (search) params.set("search", search);
+      if (status && status !== "ALL") params.set("status", status);
+      const res = await adminFetch(`${API_BASE_URL}/admin/profiles?${params.toString()}`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return await res.json();
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        return {
+          data: json,
+          meta: { page, limit, total: json.length, totalPages: Math.ceil(json.length / limit) || 1 }
+        };
+      }
+      return json;
     } catch (error) { throw error; }
   },
 

@@ -55,7 +55,7 @@ let GovernmentEmployeesController = class GovernmentEmployeesController {
             throw new common_1.ForbiddenException("Administrative access required");
         }
         const forceSync = sync === "true" || sync === "1";
-        return this.govtEmployeesService.getAdminGovtEmployees(Number(page) || 1, Number(limit) || 20, status, forceSync);
+        return this.govtEmployeesService.getAdminGovtEmployees(Number(page) || 1, Number(limit) || 15, status, forceSync);
     }
     triggerAdminSync(req) {
         if (req.user?.role !== client_1.Role.ADMIN && req.user?.role !== client_1.Role.SUPER_ADMIN) {

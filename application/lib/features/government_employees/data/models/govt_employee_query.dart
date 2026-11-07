@@ -17,7 +17,7 @@ class GovtEmployeeQuery {
 
   const GovtEmployeeQuery({
     this.page = 1,
-    this.limit = 20,
+    this.limit = 15,
     this.search,
     this.gender,
     this.departmentId,

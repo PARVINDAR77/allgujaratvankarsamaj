@@ -934,7 +934,7 @@ export class GovernmentEmployeesService {
 
   async searchPublicGovtEmployees(query: GovtEmployeeSearchQueryDto) {
     const page = Math.max(1, Number(query.page) || 1);
-    const limit = Math.min(50, Math.max(1, Number(query.limit) || 20));
+    const limit = Math.min(50, Math.max(1, Number(query.limit) || 15));
     const skip = (page - 1) * limit;
 
     try {
@@ -1234,7 +1234,7 @@ export class GovernmentEmployeesService {
 
   async getAdminGovtEmployees(
     page = 1,
-    limit = 20,
+    limit = 15,
     status?: string,
     forceSync = false,
   ) {

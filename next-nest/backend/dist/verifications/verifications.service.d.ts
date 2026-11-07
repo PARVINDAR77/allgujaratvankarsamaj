@@ -28,7 +28,38 @@ export declare class VerificationsService {
         documentBackUrl: string | null;
         rejectionReason: string | null;
     }>;
-    getPendingVerifications(): Promise<any>;
+    getPendingVerifications(page?: number, limit?: number, status?: string): Promise<{
+        data: {
+            id: any;
+            profileId: any;
+            documentType: any;
+            documentUrl: any;
+            documentBackUrl: any;
+            status: any;
+            rejectionReason: any;
+            createdAt: any;
+            profile: {
+                id: any;
+                name: any;
+                firstName: any;
+                lastName: any;
+                photoUrl: any;
+                photos: any;
+                nativePlace: any;
+                city: any;
+                pargana: any;
+                user: any;
+            };
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+        };
+    }>;
     getMyVerificationStatus(userId: string): Promise<{
         hasProfile: boolean;
         isVerified: boolean;

@@ -153,32 +153,8 @@ let AdminVerificationsController = class AdminVerificationsController {
     constructor(verificationsService) {
         this.verificationsService = verificationsService;
     }
-    async getPendingVerificationsAdmin() {
-        const requests = await this.verificationsService.getPendingVerifications();
-        return requests.map((req) => ({
-            id: req.id,
-            profileId: req.profileId,
-            documentType: req.documentType,
-            documentUrl: req.documentUrl,
-            documentBackUrl: req.documentBackUrl || null,
-            status: req.status,
-            rejectionReason: req.rejectionReason,
-            createdAt: req.createdAt,
-            profile: req.profile
-                ? {
-                    id: req.profile.id,
-                    name: `${req.profile.firstName || ""} ${req.profile.lastName || ""}`.trim() || req.profile.user?.name || "Candidate",
-                    firstName: req.profile.firstName,
-                    lastName: req.profile.lastName,
-                    photoUrl: req.profile.photoUrl,
-                    photos: req.profile.photos,
-                    nativePlace: req.profile.nativePlace,
-                    city: req.profile.city,
-                    pargana: req.profile.pargana,
-                    user: req.profile.user,
-                }
-                : null,
-        }));
+    async getPendingVerificationsAdmin(page, limit, status) {
+        return this.verificationsService.getPendingVerifications(Number(page) || 1, Number(limit) || 15, status);
     }
     async getVerificationDocumentAdmin(filename, res) {
         return this.verificationsService.servePrivateDocument(filename, res);
@@ -194,8 +170,11 @@ __decorate([
     (0, common_1.Get)(),
     (0, swagger_1.ApiOperation)({ summary: "Get all pending verification requests (Admin)" }),
     (0, swagger_1.ApiResponse)({ status: 200, description: "List of pending requests" }),
+    __param(0, (0, common_1.Query)("page")),
+    __param(1, (0, common_1.Query)("limit")),
+    __param(2, (0, common_1.Query)("status")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Number, Number, String]),
     __metadata("design:returntype", Promise)
 ], AdminVerificationsController.prototype, "getPendingVerificationsAdmin", null);
 __decorate([

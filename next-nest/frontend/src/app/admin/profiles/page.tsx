@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { AdminPagination, PaginationMeta } from "@/components/admin/AdminPagination";
 import { adminApi, AdminProfileItem } from "@/lib/admin-api";
 
 export default function AdminProfilesPage() {
@@ -11,15 +12,33 @@ export default function AdminProfilesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta>({
+    page: 1,
+    limit: 15,
+    total: 0,
+    totalPages: 1,
+  });
   const [selectedProfile, setSelectedProfile] = useState<AdminProfileItem | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
-  const loadProfiles = async () => {
+  const loadProfiles = async (targetPage = page) => {
     setLoading(true);
     try {
-      const data = await adminApi.getProfiles(selectedCategory);
-      setProfiles(Array.isArray(data) ? data : []);
+      const res = await adminApi.getProfiles(targetPage, 15, selectedCategory, search);
+      const items = Array.isArray(res) ? res : (res.data || []);
+      setProfiles(items);
+      if (res && res.meta) {
+        setMeta(res.meta);
+      } else {
+        setMeta({
+          page: targetPage,
+          limit: 15,
+          total: items.length,
+          totalPages: Math.ceil(items.length / 15) || 1,
+        });
+      }
       setError(null);
     } catch (e: any) {
       console.error(e);
@@ -31,7 +50,8 @@ export default function AdminProfilesPage() {
   };
 
   useEffect(() => {
-    loadProfiles();
+    setPage(1);
+    loadProfiles(1);
   }, [selectedCategory]);
 
   useEffect(() => {
@@ -264,7 +284,7 @@ export default function AdminProfilesPage() {
             }}
           >
             <span>Total Profiles:</span>
-            <span style={{ fontSize: "18px" }}>{profiles.length}</span>
+            <span style={{ fontSize: "18px" }}>{meta.total}</span>
           </div>
         </div>
 
@@ -625,6 +645,18 @@ export default function AdminProfilesPage() {
             })}
           </div>
         )}
+
+        <AdminPagination
+          meta={meta}
+          isLoading={loading}
+          onPageChange={(newPage) => {
+            setPage(newPage);
+            loadProfiles(newPage);
+            if (typeof window !== "undefined") {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            }
+          }}
+        />
 
         {/* Profile Detail Modal */}
         {selectedProfile && (

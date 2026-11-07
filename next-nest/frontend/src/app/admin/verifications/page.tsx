@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { AdminPagination, PaginationMeta } from "@/components/admin/AdminPagination";
 import { adminApi } from "@/lib/admin-api";
 
 function isPdf(url?: string): boolean {
@@ -137,26 +138,38 @@ export default function AdminVerificationsPage() {
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState("ALL");
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta>({
+    page: 1,
+    limit: 15,
+    total: 0,
+    totalPages: 1,
+  });
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
   const [rejectingItem, setRejectingItem] = useState<{ id: string; name: string } | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [updating, setUpdating] = useState(false);
 
-  const fetchVerifications = async () => {
+  const fetchVerifications = async (targetPage = page) => {
     try {
       setLoading(true);
-      const data = await adminApi.getVerifications();
-      const raw = Array.isArray(data) ? data : ((data as any).data || []);
-      const seen = new Set();
-      const unique = [];
-      for (const item of raw) {
-        const key = item.profileId || item.profile?.id || item.id;
-        if (key && !seen.has(key)) {
-          seen.add(key);
-          unique.push(item);
-        }
+      const res = await adminApi.getVerifications(
+        targetPage,
+        15,
+        filter !== "ALL" ? filter : undefined,
+      );
+      const raw = Array.isArray(res) ? res : (res.data || []);
+      setItems(raw);
+      if (res && res.meta) {
+        setMeta(res.meta);
+      } else {
+        setMeta({
+          page: targetPage,
+          limit: 15,
+          total: raw.length,
+          totalPages: Math.ceil(raw.length / 15) || 1,
+        });
       }
-      setItems(unique);
       setError(null);
     } catch (err: any) {
       console.error(err);
@@ -167,8 +180,9 @@ export default function AdminVerificationsPage() {
   };
 
   useEffect(() => {
-    fetchVerifications();
-  }, []);
+    setPage(1);
+    fetchVerifications(1);
+  }, [filter]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -512,6 +526,18 @@ export default function AdminVerificationsPage() {
               </table>
             </div>
           )}
+
+          <AdminPagination
+            meta={meta}
+            isLoading={loading}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              fetchVerifications(newPage);
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+          />
         </div>
 
         {/* Lightbox Image Preview Modal */}

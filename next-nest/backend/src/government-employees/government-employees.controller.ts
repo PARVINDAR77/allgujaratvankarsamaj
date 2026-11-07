@@ -142,7 +142,7 @@ export class GovernmentEmployeesController {
     const forceSync = sync === "true" || sync === "1";
     return this.govtEmployeesService.getAdminGovtEmployees(
       Number(page) || 1,
-      Number(limit) || 20,
+      Number(limit) || 15,
       status,
       forceSync,
     );

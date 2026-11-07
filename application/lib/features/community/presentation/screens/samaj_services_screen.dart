@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/models/samaj_service_person.dart';
+import '../../../../shared/widgets/community_pagination_bar.dart';
 import '../../../../shared/widgets/whatsapp_icon.dart';
 
 import '../../providers/samaj_services_provider.dart';
@@ -26,6 +27,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
   final TextEditingController _villageController = TextEditingController();
   String _searchQuery = '';
   int _selectedTabIndex = 0; // 0 = Professionals Directory, 1 = Categories
+  int _currentDirPage = 1;
 
   @override
   void dispose() {
@@ -1066,8 +1068,14 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
           );
         }
 
+        final totalCount = filtered.length;
+        final totalDirPages = (totalCount / 15).ceil().clamp(1, 99999);
+        final startDirIndex = (_currentDirPage - 1) * 15;
+        final pagedList = filtered.skip(startDirIndex).take(15).toList();
+
+        Widget contentWidget;
         if (isDesktop) {
-          return GridView.builder(
+          contentWidget = GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
@@ -1077,21 +1085,36 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
               mainAxisSpacing: 16,
               mainAxisExtent: 215,
             ),
-            itemCount: filtered.length,
-            itemBuilder: (context, index) => _buildProfessionalDirectoryCard(context, filtered[index]),
+            itemCount: pagedList.length,
+            itemBuilder: (context, index) => _buildProfessionalDirectoryCard(context, pagedList[index]),
+          );
+        } else {
+          contentWidget = ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+            itemCount: pagedList.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) => SizedBox(
+              height: 215,
+              child: _buildProfessionalDirectoryCard(context, pagedList[index]),
+            ),
           );
         }
 
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-          itemCount: filtered.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 12),
-          itemBuilder: (context, index) => SizedBox(
-            height: 215,
-            child: _buildProfessionalDirectoryCard(context, filtered[index]),
-          ),
+        return Column(
+          children: [
+            contentWidget,
+            CommunityPaginationBar(
+              currentPage: _currentDirPage,
+              totalPages: totalDirPages,
+              totalItems: totalCount,
+              pageSize: 15,
+              onPageChanged: (newPage) {
+                setState(() => _currentDirPage = newPage);
+              },
+            ),
+          ],
         );
       },
       loading: () => const Padding(

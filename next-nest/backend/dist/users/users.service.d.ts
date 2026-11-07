@@ -96,17 +96,27 @@ export declare class UsersService {
         isEmailVerified?: boolean;
         isPhoneVerified?: boolean;
     }): Promise<User>;
-    getAllUsersForAdmin(): Promise<{
-        id: any;
-        name: any;
-        email: any;
-        phone: any;
-        pargana: any;
-        status: any;
-        role: any;
-        permissions: any;
-        createdAt: any;
-    }[]>;
+    getAllUsersForAdmin(page?: number, limit?: number, search?: string, role?: string, status?: string): Promise<{
+        data: {
+            id: any;
+            name: any;
+            email: any;
+            phone: any;
+            pargana: any;
+            status: any;
+            role: any;
+            permissions: any;
+            createdAt: any;
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
+        };
+    }>;
     updateUserStatusAdmin(userId: string, adminId: string, status: Status, ipAddress?: string): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.Status;
@@ -115,35 +125,45 @@ export declare class UsersService {
         id: string;
         role: import(".prisma/client").$Enums.Role;
     }>;
-    getAllProfilesForAdmin(): Promise<{
-        id: string;
-        userId: string;
-        name: string;
-        age: number;
-        gender: import(".prisma/client").$Enums.Gender;
-        pargana: string;
-        city: string;
-        education: string;
-        occupation: string;
-        photoUrl: string;
-        photos: string[];
-        verification: {
-            status: import(".prisma/client").$Enums.VerificationStatus;
+    getAllProfilesForAdmin(page?: number, limit?: number, search?: string, status?: string, category?: string): Promise<{
+        data: {
             id: string;
+            userId: string;
+            name: string;
+            age: number;
+            gender: import(".prisma/client").$Enums.Gender;
+            pargana: string;
+            city: string;
+            education: string;
+            occupation: string;
+            photoUrl: string;
+            photos: string[];
+            verification: {
+                status: import(".prisma/client").$Enums.VerificationStatus;
+                id: string;
+                createdAt: Date;
+                documentType: string;
+                documentUrl: string;
+                documentBackUrl: string;
+            };
+            user: {
+                email: string;
+                phone: string;
+            };
+            status: import(".prisma/client").$Enums.ProfileStatus;
+            isVerified: boolean;
+            isFeatured: boolean;
             createdAt: Date;
-            documentType: string;
-            documentUrl: string;
-            documentBackUrl: string;
+        }[];
+        meta: {
+            page: number;
+            limit: number;
+            total: number;
+            totalPages: number;
+            hasNextPage: boolean;
+            hasPreviousPage: boolean;
         };
-        user: {
-            email: string;
-            phone: string;
-        };
-        status: import(".prisma/client").$Enums.ProfileStatus;
-        isVerified: boolean;
-        isFeatured: boolean;
-        createdAt: Date;
-    }[]>;
+    }>;
     updateProfileStatusAdmin(profileId: string, adminId: string, status: string, ipAddress?: string): Promise<{
         id: string;
         status: import(".prisma/client").$Enums.ProfileStatus;

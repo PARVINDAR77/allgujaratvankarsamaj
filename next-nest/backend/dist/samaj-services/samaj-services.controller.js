@@ -32,12 +32,14 @@ let SamajServicesController = class SamajServicesController {
     async getPublicServiceById(id) {
         return this.samajServicesService.getPublicServiceById(id);
     }
-    async getPublicPersonsByServiceId(serviceId, district, taluka, village, search) {
+    async getPublicPersonsByServiceId(serviceId, district, taluka, village, search, page, limit) {
         return this.samajServicesService.getPublicPersonsByServiceId(serviceId, {
             district,
             taluka,
             village,
             search,
+            page: Number(page) || 1,
+            limit: Number(limit) || 15,
         });
     }
     async registerPublicServicePerson(dto) {
@@ -55,8 +57,8 @@ let SamajServicesController = class SamajServicesController {
     async deleteService(id) {
         return this.samajServicesService.deleteService(id);
     }
-    async getAdminServicePersons(serviceId) {
-        return this.samajServicesService.getAllAdminServicePersons(serviceId);
+    async getAdminServicePersons(serviceId, page, limit) {
+        return this.samajServicesService.getAllAdminServicePersons(serviceId, Number(page) || 1, Number(limit) || 15);
     }
     async createServicePerson(dto) {
         return this.samajServicesService.createServicePerson(dto);
@@ -111,8 +113,10 @@ __decorate([
     __param(2, (0, common_1.Query)("taluka")),
     __param(3, (0, common_1.Query)("village")),
     __param(4, (0, common_1.Query)("search")),
+    __param(5, (0, common_1.Query)("page")),
+    __param(6, (0, common_1.Query)("limit")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, String, String]),
+    __metadata("design:paramtypes", [String, String, String, String, String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], SamajServicesController.prototype, "getPublicPersonsByServiceId", null);
 __decorate([
@@ -173,8 +177,10 @@ __decorate([
         summary: "Get all service persons for Admin Panel management",
     }),
     __param(0, (0, common_1.Query)("serviceId")),
+    __param(1, (0, common_1.Query)("page")),
+    __param(2, (0, common_1.Query)("limit")),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], SamajServicesController.prototype, "getAdminServicePersons", null);
 __decorate([

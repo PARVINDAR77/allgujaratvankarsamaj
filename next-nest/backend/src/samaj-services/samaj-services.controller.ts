@@ -62,12 +62,16 @@ export class SamajServicesController {
     @Query("taluka") taluka?: string,
     @Query("village") village?: string,
     @Query("search") search?: string,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
   ) {
     return this.samajServicesService.getPublicPersonsByServiceId(serviceId, {
       district,
       taluka,
       village,
       search,
+      page: Number(page) || 1,
+      limit: Number(limit) || 15,
     });
   }
 
@@ -121,8 +125,16 @@ export class SamajServicesController {
   @ApiOperation({
     summary: "Get all service persons for Admin Panel management",
   })
-  async getAdminServicePersons(@Query("serviceId") serviceId?: string) {
-    return this.samajServicesService.getAllAdminServicePersons(serviceId);
+  async getAdminServicePersons(
+    @Query("serviceId") serviceId?: string,
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+  ) {
+    return this.samajServicesService.getAllAdminServicePersons(
+      serviceId,
+      Number(page) || 1,
+      Number(limit) || 15,
+    );
   }
 
   @ApiBearerAuth()

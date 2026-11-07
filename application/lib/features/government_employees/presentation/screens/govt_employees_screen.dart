@@ -10,6 +10,7 @@ import '../../../../core/network/api_failure.dart';
 import '../../../profile/providers/master_data_provider.dart';
 import '../../../../shared/constants/app_data.dart';
 import '../../../../shared/models/profile_model.dart';
+import '../../../../shared/widgets/community_pagination_bar.dart';
 import '../../../home/presentation/widgets/web_home_header.dart';
 
 class GovtEmployeesScreen extends ConsumerStatefulWidget {
@@ -53,15 +54,7 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
   }
 
   void _onScroll() {
-    if (_scrollController.hasClients &&
-        _scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 300) {
-      final empState = ref.read(govtEmployeesProvider);
-      if (empState.meta.hasNextPage &&
-          empState.status == GovtEmployeesStatus.success) {
-        ref.read(govtEmployeesProvider.notifier).loadMore();
-      }
-    }
+    // Controlled page-based navigation via bottom CommunityPaginationBar
   }
 
   @override
@@ -892,7 +885,29 @@ class _GovtEmployeesScreenState extends ConsumerState<GovtEmployeesScreen>
         if (validItems.isEmpty && empState.status == GovtEmployeesStatus.success) {
           return _buildEmptyState();
         }
-        return _buildTable(empState, validItems, isDesktop);
+        return Column(
+          children: [
+            _buildTable(empState, validItems, isDesktop),
+            CommunityPaginationBar(
+              currentPage: empState.meta.page,
+              totalPages: empState.meta.totalPages,
+              totalItems: empState.meta.total,
+              pageSize: 15,
+              isLoading: empState.status == GovtEmployeesStatus.loading ||
+                  empState.status == GovtEmployeesStatus.loadingMore,
+              onPageChanged: (newPage) {
+                ref.read(govtEmployeesProvider.notifier).goToPage(newPage);
+                if (_scrollController.hasClients) {
+                  _scrollController.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              },
+            ),
+          ],
+        );
     }
   }
 

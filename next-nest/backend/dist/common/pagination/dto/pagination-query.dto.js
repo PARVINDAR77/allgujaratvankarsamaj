@@ -16,7 +16,7 @@ const class_validator_1 = require("class-validator");
 class PaginationQueryDto {
     constructor() {
         this.page = 1;
-        this.limit = 20;
+        this.limit = 15;
     }
 }
 exports.PaginationQueryDto = PaginationQueryDto;
@@ -33,7 +33,7 @@ __decorate([
         description: "Number of items per page",
         minimum: 1,
         maximum: 100,
-        default: 20,
+        default: 15,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_transformer_1.Type)(() => Number),

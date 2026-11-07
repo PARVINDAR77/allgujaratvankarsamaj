@@ -98,6 +98,19 @@ class GovtEmployeesNotifier extends StateNotifier<GovtEmployeesState> {
     await _fetch(nextQuery, replaceItems: false);
   }
 
+  /// Jump directly to a specific 15-item page.
+  Future<void> goToPage(int targetPage) async {
+    final maxPages = state.meta.totalPages > 0 ? state.meta.totalPages : 1;
+    final validPage = targetPage.clamp(1, maxPages);
+    final nextQuery = state.query.copyWith(page: validPage);
+    state = state.copyWith(
+      status: GovtEmployeesStatus.loading,
+      query: nextQuery,
+      clearFailure: true,
+    );
+    await _fetch(nextQuery, replaceItems: true);
+  }
+
   /// Apply a new filter — always resets to page 1 to avoid stale results.
   Future<void> applyFilter(GovtEmployeeQuery newQuery) async {
     final resetQuery = newQuery.resetPage();

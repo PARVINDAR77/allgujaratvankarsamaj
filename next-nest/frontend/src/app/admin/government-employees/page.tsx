@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatCard } from "@/components/admin/StatCard";
+import { AdminPagination, PaginationMeta } from "@/components/admin/AdminPagination";
 
 interface GovtEmployeeAdminItem {
   id: string;
@@ -43,6 +44,12 @@ export default function GovernmentEmployeesAdminPage() {
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta>({
+    page: 1,
+    limit: 15,
+    total: 0,
+    totalPages: 1,
+  });
   const [selectedProof, setSelectedProof] = useState<GovtEmployeeAdminItem | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [actionLoading, setActionLoading] = useState(false);
@@ -62,12 +69,22 @@ export default function GovernmentEmployeesAdminPage() {
         setStats(statsData);
       }
 
-      // Fetch profiles list
-      const listRes = await fetch(`${API_BASE}/admin/government-employees?page=${page}&limit=10&status=${statusFilter}`, { headers });
+      // Fetch profiles list (15 items per page)
+      const listRes = await fetch(`${API_BASE}/admin/government-employees?page=${page}&limit=15&status=${statusFilter}`, { headers });
       if (listRes.ok) {
         const listData = await listRes.json();
-        setProfiles(listData.data || listData.items || []);
-        setTotalPages(listData.meta?.totalPages || 1);
+        const items = listData.data || listData.items || [];
+        setProfiles(items);
+        const resolvedPages = listData.meta?.totalPages || 1;
+        setTotalPages(resolvedPages);
+        setMeta(
+          listData.meta || {
+            page,
+            limit: 15,
+            total: listData.meta?.total || items.length,
+            totalPages: resolvedPages,
+          },
+        );
       }
     } catch (err) {
       console.error("Failed to load govt employees admin data", err);
@@ -374,26 +391,17 @@ export default function GovernmentEmployeesAdminPage() {
           </div>
 
           {/* Pagination Controls */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", backgroundColor: "rgba(4, 16, 38, 0.6)", borderTop: "1px solid rgba(212, 175, 55, 0.2)" }}>
-            <span style={{ fontSize: "13px", color: "#8E9BAE", fontWeight: 600 }}>Page <strong style={{ color: "#FFFFFF" }}>{page}</strong> of <strong style={{ color: "#FFFFFF" }}>{totalPages}</strong></span>
-            <div style={{ display: "flex", gap: "10px" }}>
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                style={{ padding: "8px 16px", borderRadius: "8px", backgroundColor: "rgba(4, 16, 38, 0.8)", color: page <= 1 ? "#475569" : "#D4AF37", border: "1px solid rgba(212, 175, 55, 0.3)", cursor: page <= 1 ? "not-allowed" : "pointer", fontSize: "12px", fontWeight: 700, transition: "all 0.2s" }}
-                className={page > 1 ? "hover:bg-[#D4AF37] hover:text-black" : ""}
-              >
-                Previous
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                style={{ padding: "8px 16px", borderRadius: "8px", backgroundColor: "rgba(4, 16, 38, 0.8)", color: page >= totalPages ? "#475569" : "#D4AF37", border: "1px solid rgba(212, 175, 55, 0.3)", cursor: page >= totalPages ? "not-allowed" : "pointer", fontSize: "12px", fontWeight: 700, transition: "all 0.2s" }}
-                className={page < totalPages ? "hover:bg-[#D4AF37] hover:text-black" : ""}
-              >
-                Next
-              </button>
-            </div>
+          <div className="p-4 bg-[rgba(4,16,38,0.6)] border-t border-[rgba(212,175,55,0.2)]">
+            <AdminPagination
+              meta={meta}
+              isLoading={loading}
+              onPageChange={(newPage) => {
+                setPage(newPage);
+                if (typeof window !== "undefined") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+              }}
+            />
           </div>
         </div>
 

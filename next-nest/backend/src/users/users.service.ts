@@ -143,31 +143,65 @@ export class UsersService {
 
   // --- Admin Endpoints ---
 
-  async getAllUsersForAdmin() {
+  async getAllUsersForAdmin(
+    page = 1,
+    limit = 15,
+    search?: string,
+    role?: string,
+    status?: string,
+  ) {
+    const validPage = Math.max(1, Number(page) || 1);
+    const validLimit = Math.max(1, Math.min(100, Number(limit) || 15));
+    const skip = (validPage - 1) * validLimit;
+
+    const where: any = {};
+    if (status && status !== "ALL") {
+      where.status = status;
+    }
+    if (role && role !== "ALL") {
+      where.role = role;
+    }
+    if (search && search.trim().length > 0) {
+      const term = search.trim();
+      where.OR = [
+        { name: { contains: term } },
+        { email: { contains: term } },
+        { phone: { contains: term } },
+        { profile: { firstName: { contains: term } } },
+        { profile: { lastName: { contains: term } } },
+      ];
+    }
+
     try {
-      const users = await this.prisma.user.findMany({
-        take: 250,
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          status: true,
-          role: true,
-          permissions: true,
-          createdAt: true,
-          profile: {
-            select: {
-              firstName: true,
-              lastName: true,
-              city: true,
-              nativePlace: true,
+      const [total, users] = await this.prisma.$transaction([
+        this.prisma.user.count({ where }),
+        this.prisma.user.findMany({
+          where,
+          skip,
+          take: validLimit,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            status: true,
+            role: true,
+            permissions: true,
+            createdAt: true,
+            profile: {
+              select: {
+                firstName: true,
+                lastName: true,
+                city: true,
+                nativePlace: true,
+              },
             },
           },
-        },
-      });
-      return users.map((u: any) => ({
+        }),
+      ]);
+
+      const data = users.map((u: any) => ({
         id: u.id,
         name:
           u.name ||
@@ -182,6 +216,19 @@ export class UsersService {
         permissions: u.permissions ? (typeof u.permissions === "string" ? JSON.parse(u.permissions) : u.permissions) : [],
         createdAt: u.createdAt,
       }));
+
+      const totalPages = Math.ceil(total / validLimit) || 1;
+      return {
+        data,
+        meta: {
+          page: validPage,
+          limit: validLimit,
+          total,
+          totalPages,
+          hasNextPage: validPage < totalPages,
+          hasPreviousPage: validPage > 1,
+        },
+      };
     } catch (err: any) {
       this.logger.warn(`Failed to query admin users with profiles (${err?.message || err}). Falling back to safe raw query.`);
       try {
@@ -190,9 +237,10 @@ export class UsersService {
                  mp.first_name as firstName, mp.last_name as lastName, mp.city, mp.native_place as nativePlace
           FROM users u
           LEFT JOIN matrimonial_profiles mp ON mp.user_id = u.id
-          ORDER BY u.created_at DESC;
+          ORDER BY u.created_at DESC
+          LIMIT ${validLimit} OFFSET ${skip};
         `);
-        return (rawUsers || []).map((u: any) => ({
+        const data = (rawUsers || []).map((u: any) => ({
           id: u.id,
           name: u.name || (u.firstName ? `${u.firstName} ${u.lastName || ""}`.trim() : u.email || "Member"),
           email: u.email || "",
@@ -203,6 +251,17 @@ export class UsersService {
           permissions: [],
           createdAt: u.createdAt,
         }));
+        return {
+          data,
+          meta: {
+            page: validPage,
+            limit: validLimit,
+            total: data.length,
+            totalPages: 1,
+            hasNextPage: false,
+            hasPreviousPage: validPage > 1,
+          },
+        };
       } catch (rawErr: any) {
         this.logger.error("Raw user query fallback also failed", rawErr);
         throw rawErr;
@@ -333,49 +392,94 @@ export class UsersService {
     });
   }
 
-  async getAllProfilesForAdmin() {
+  async getAllProfilesForAdmin(
+    page = 1,
+    limit = 15,
+    search?: string,
+    status?: string,
+    category?: string,
+  ) {
+    const validPage = Math.max(1, Number(page) || 1);
+    const validLimit = Math.max(1, Math.min(100, Number(limit) || 15));
+    const skip = (validPage - 1) * validLimit;
+
+    const where: any = {};
+    if (status && status !== "ALL") {
+      where.status = status;
+    }
+    if (category && category !== "ALL") {
+      if (category === "MALE" || category === "FEMALE") {
+        where.gender = category;
+      } else if (category === "VERIFIED") {
+        where.isVerified = true;
+      } else if (category === "FEATURED") {
+        where.isFeatured = true;
+      } else if (category === "PENDING") {
+        where.status = "PENDING";
+      }
+    }
+    if (search && search.trim().length > 0) {
+      const term = search.trim();
+      where.OR = [
+        { firstName: { contains: term } },
+        { lastName: { contains: term } },
+        { city: { contains: term } },
+        { nativePlace: { contains: term } },
+        { education: { contains: term } },
+        { occupation: { contains: term } },
+        { user: { phone: { contains: term } } },
+        { user: { email: { contains: term } } },
+      ];
+    }
+
     try {
-      const profiles = await this.prisma.matrimonialProfile.findMany({
-        take: 250,
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          userId: true,
-          firstName: true,
-          lastName: true,
-          dateOfBirth: true,
-          gender: true,
-          nativePlace: true,
-          city: true,
-          education: true,
-          occupation: true,
-          photoUrl: true,
-          photos: true,
-          status: true,
-          isVerified: true,
-          isFeatured: true,
-          createdAt: true,
-          user: {
-            select: {
-              email: true,
-              phone: true,
+      const [total, profiles] = await this.prisma.$transaction([
+        this.prisma.matrimonialProfile.count({ where }),
+        this.prisma.matrimonialProfile.findMany({
+          where,
+          skip,
+          take: validLimit,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            userId: true,
+            firstName: true,
+            lastName: true,
+            dateOfBirth: true,
+            gender: true,
+            nativePlace: true,
+            city: true,
+            education: true,
+            occupation: true,
+            photoUrl: true,
+            photos: true,
+            status: true,
+            isVerified: true,
+            isFeatured: true,
+            createdAt: true,
+            user: {
+              select: {
+                email: true,
+                phone: true,
+              },
+            },
+            verificationRequests: {
+              orderBy: { createdAt: "desc" },
+              take: 1,
+              select: {
+                id: true,
+                documentType: true,
+                documentUrl: true,
+                documentBackUrl: true,
+                status: true,
+                createdAt: true,
+              },
             },
           },
-          verificationRequests: {
-            orderBy: { createdAt: "desc" },
-            take: 1,
-            select: {
-              id: true,
-              documentType: true,
-              documentUrl: true,
-              documentBackUrl: true,
-              status: true,
-              createdAt: true,
-            },
-          },
-        },
-      });
-      return profiles.map((p) => {
+        }),
+      ]);
+
+      const data = profiles.map((p) => {
         let parsedPhotos: string[] = [];
         if (p.photos) {
           try {
@@ -412,9 +516,32 @@ export class UsersService {
           createdAt: p.createdAt,
         };
       });
+
+      const totalPages = Math.ceil(total / validLimit) || 1;
+      return {
+        data,
+        meta: {
+          page: validPage,
+          limit: validLimit,
+          total,
+          totalPages,
+          hasNextPage: validPage < totalPages,
+          hasPreviousPage: validPage > 1,
+        },
+      };
     } catch (err) {
       this.logger.error("Failed to query admin matrimonial profiles", err);
-      return [];
+      return {
+        data: [],
+        meta: {
+          page: validPage,
+          limit: validLimit,
+          total: 0,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
     }
   }
 

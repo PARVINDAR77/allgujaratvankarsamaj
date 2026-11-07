@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
   Request,
   ForbiddenException,
@@ -34,8 +35,20 @@ export class AdminUsersController {
   @Get("users")
   @ApiOperation({ summary: "Get list of all registered users (Admin)" })
   @ApiResponse({ status: 200, description: "List of users" })
-  async getUsersAdmin() {
-    return this.usersService.getAllUsersForAdmin();
+  async getUsersAdmin(
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("search") search?: string,
+    @Query("role") role?: string,
+    @Query("status") status?: string,
+  ) {
+    return this.usersService.getAllUsersForAdmin(
+      Number(page) || 1,
+      Number(limit) || 15,
+      search,
+      role,
+      status,
+    );
   }
 
   @Permissions(Permission.MEMBERS_UPDATE)
@@ -81,8 +94,20 @@ export class AdminUsersController {
   @Get("profiles")
   @ApiOperation({ summary: "Get list of all matrimonial profiles (Admin)" })
   @ApiResponse({ status: 200, description: "List of profiles" })
-  async getProfilesAdmin() {
-    return this.usersService.getAllProfilesForAdmin();
+  async getProfilesAdmin(
+    @Query("page") page?: number,
+    @Query("limit") limit?: number,
+    @Query("search") search?: string,
+    @Query("status") status?: string,
+    @Query("category") category?: string,
+  ) {
+    return this.usersService.getAllProfilesForAdmin(
+      Number(page) || 1,
+      Number(limit) || 15,
+      search,
+      status,
+      category,
+    );
   }
 
   @Permissions(Permission.MEMBERS_UPDATE)

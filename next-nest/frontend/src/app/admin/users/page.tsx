@@ -3,12 +3,20 @@
 import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { AdminPagination, PaginationMeta } from "@/components/admin/AdminPagination";
 import { adminApi, AdminUserItem } from "@/lib/admin-api";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState<AdminUserItem[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
+  const [page, setPage] = useState(1);
+  const [meta, setMeta] = useState<PaginationMeta>({
+    page: 1,
+    limit: 15,
+    total: 0,
+    totalPages: 1,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -21,11 +29,28 @@ export default function AdminUsersPage() {
     password: "",
   });
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (targetPage = page) => {
     setLoading(true);
     try {
-      const data = await adminApi.getUsers();
-      setUsers(data || []);
+      const res = await adminApi.getUsers(
+        targetPage,
+        15,
+        search,
+        undefined,
+        statusFilter !== "ALL" ? statusFilter : undefined,
+      );
+      const items = Array.isArray(res) ? res : (res.data || []);
+      setUsers(items);
+      if (res && res.meta) {
+        setMeta(res.meta);
+      } else {
+        setMeta({
+          page: targetPage,
+          limit: 15,
+          total: items.length,
+          totalPages: Math.ceil(items.length / 15) || 1,
+        });
+      }
       setError(null);
     } catch (err: any) {
       console.error(err);
@@ -36,8 +61,9 @@ export default function AdminUsersPage() {
   };
 
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    setPage(1);
+    fetchUsers(1);
+  }, [statusFilter]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -441,6 +467,18 @@ export default function AdminUsersPage() {
               </table>
             </div>
           )}
+
+          <AdminPagination
+            meta={meta}
+            isLoading={loading}
+            onPageChange={(newPage) => {
+              setPage(newPage);
+              fetchUsers(newPage);
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            }}
+          />
         </div>
       </div>
 
