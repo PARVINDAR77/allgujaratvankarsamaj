@@ -23,6 +23,10 @@ import * as path from "path";
 export class VerificationsService {
   private readonly logger = new Logger(VerificationsService.name);
 
+  // In-memory cache to eliminate redundant database hits during admin navigation
+  private pendingVerificationsCache: { data: any; expiresAt: number } | null = null;
+  private readonly CACHE_TTL = 15 * 1000; // 15 seconds
+
   constructor(private readonly prisma: PrismaService) {}
 
   async submitVerification(
@@ -30,6 +34,7 @@ export class VerificationsService {
     documentType: string,
     documentUrl: string,
   ) {
+    this.pendingVerificationsCache = null;
     if (!documentUrl || documentUrl.trim().length === 0) {
       throw new BadRequestException("કૃપા કરીને દસ્તાવેજ અપલોડ કરો (Please upload a document)");
     }
@@ -166,6 +171,7 @@ export class VerificationsService {
     dto: UpdateVerificationStatusDto,
     ipAddress?: string,
   ) {
+    this.pendingVerificationsCache = null;
     const request = await this.prisma.verificationRequest.findUnique({
       where: { id: requestId },
       include: {
@@ -234,6 +240,11 @@ export class VerificationsService {
   }
 
   async getPendingVerifications() {
+    const now = Date.now();
+    if (this.pendingVerificationsCache && now < this.pendingVerificationsCache.expiresAt) {
+      return this.pendingVerificationsCache.data;
+    }
+
     try {
       const allRequests = await this.prisma.verificationRequest.findMany({
         orderBy: { createdAt: "desc" },
@@ -280,6 +291,7 @@ export class VerificationsService {
         }
       }
 
+      this.pendingVerificationsCache = { data: deduplicated, expiresAt: now + this.CACHE_TTL };
       return deduplicated;
     } catch (err: any) {
       this.logger.error("Error retrieving pending verifications: " + (err.message || err));

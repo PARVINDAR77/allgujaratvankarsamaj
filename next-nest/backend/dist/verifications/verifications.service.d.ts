@@ -3,6 +3,8 @@ import { UpdateVerificationStatusDto } from "./dto/update-verification.dto";
 export declare class VerificationsService {
     private readonly prisma;
     private readonly logger;
+    private pendingVerificationsCache;
+    private readonly CACHE_TTL;
     constructor(prisma: PrismaService);
     submitVerification(userId: string, documentType: string, documentUrl: string): Promise<{
         status: import(".prisma/client").$Enums.VerificationStatus;
@@ -26,7 +28,7 @@ export declare class VerificationsService {
         documentBackUrl: string | null;
         rejectionReason: string | null;
     }>;
-    getPendingVerifications(): Promise<any[]>;
+    getPendingVerifications(): Promise<any>;
     getMyVerificationStatus(userId: string): Promise<{
         hasProfile: boolean;
         isVerified: boolean;

@@ -5,9 +5,27 @@ import { PrismaService } from "../prisma/prisma.service";
 export class StatisticsService {
   private readonly logger = new Logger(StatisticsService.name);
 
+  // In-memory performance caches to drastically cut database load and avoid CloudLinux virtual memory spikes
+  private dashboardStatsCache: { data: any; expiresAt: number } | null = null;
+  private readonly DASHBOARD_CACHE_TTL = 60 * 1000; // 60 seconds
+
+  private publicLiveStatsCache: { data: any; expiresAt: number } | null = null;
+  private readonly PUBLIC_CACHE_TTL = 60 * 1000; // 60 seconds
+
+  private sectionViewsCache: { data: any; expiresAt: number } | null = null;
+  private readonly SECTION_VIEWS_CACHE_TTL = 30 * 1000; // 30 seconds
+
+  private birthdaysCache: { data: any; expiresAt: number } | null = null;
+  private readonly BIRTHDAYS_CACHE_TTL = 300 * 1000; // 5 minutes
+
   constructor(private readonly prisma: PrismaService) {}
 
   async getDashboardStatistics() {
+    const now = Date.now();
+    if (this.dashboardStatsCache && now < this.dashboardStatsCache.expiresAt) {
+      return this.dashboardStatsCache.data;
+    }
+
     try {
       const [
       totalUsers,
@@ -235,7 +253,7 @@ export class StatisticsService {
       { month: "Jun", users: totalUsers, profiles: activeProfiles },
     ];
 
-    return {
+    const result = {
       totalUsers,
       activeProfiles,
       totalMatches,
@@ -250,6 +268,9 @@ export class StatisticsService {
       recentActivities,
       monthlyGrowth,
     };
+
+    this.dashboardStatsCache = { data: result, expiresAt: now + this.DASHBOARD_CACHE_TTL };
+    return result;
   } catch (err: any) {
     this.logger.error("Error generating dashboard statistics: " + (err.message || err));
     return {
@@ -271,6 +292,11 @@ export class StatisticsService {
 }
 
   async getTodaysBirthdays() {
+    const now = Date.now();
+    if (this.birthdaysCache && now < this.birthdaysCache.expiresAt) {
+      return this.birthdaysCache.data;
+    }
+
     try {
       const today = new Date();
       const currentMonth = today.getMonth() + 1;
@@ -287,27 +313,39 @@ export class StatisticsService {
       `;
 
       if (!matchingRows || matchingRows.length === 0) {
+        this.birthdaysCache = { data: [], expiresAt: now + this.BIRTHDAYS_CACHE_TTL };
         return [];
       }
 
       const ids = matchingRows.map((row) => row.id);
 
       // Fetch the full mapped profiles for the matching IDs
-      return await this.prisma.matrimonialProfile.findMany({
+      const result = await this.prisma.matrimonialProfile.findMany({
         where: {
           id: { in: ids },
         },
       });
+
+      this.birthdaysCache = { data: result, expiresAt: now + this.BIRTHDAYS_CACHE_TTL };
+      return result;
     } catch (error) {
       console.error("Error fetching today's birthdays:", error);
       return []; // Return empty array instead of throwing 500 to keep the UI functional
     }
   }
+
   async getSectionViews() {
-    return await this.prisma.sectionViewCount.findMany();
+    const now = Date.now();
+    if (this.sectionViewsCache && now < this.sectionViewsCache.expiresAt) {
+      return this.sectionViewsCache.data;
+    }
+    const data = await this.prisma.sectionViewCount.findMany();
+    this.sectionViewsCache = { data, expiresAt: now + this.SECTION_VIEWS_CACHE_TTL };
+    return data;
   }
 
   async incrementSectionView(sectionName: string) {
+    this.sectionViewsCache = null; // Invalidate cache immediately on increment
     const allowedSections = [
       "HOME_EDUCATION",
       "HOME_UNITY",
@@ -342,6 +380,11 @@ export class StatisticsService {
   }
 
   async getPublicLiveStatistics() {
+    const now = Date.now();
+    if (this.publicLiveStatsCache && now < this.publicLiveStatsCache.expiresAt) {
+      return this.publicLiveStatsCache.data;
+    }
+
     try {
       // Count all active / registered candidates (APPROVED and PENDING)
       const validStatusFilter = { in: ["APPROVED", "PENDING"] as any };
@@ -365,9 +408,9 @@ export class StatisticsService {
       ]);
 
       // Calculate start of today in IST (Indian Standard Time: UTC+5:30)
-      const now = new Date();
+      const nowDate = new Date();
       const istOffsetMs = 5.5 * 60 * 60 * 1000;
-      const istTime = new Date(now.getTime() + istOffsetMs);
+      const istTime = new Date(nowDate.getTime() + istOffsetMs);
       const istYear = istTime.getUTCFullYear();
       const istMonth = istTime.getUTCMonth();
       const istDate = istTime.getUTCDate();
@@ -544,7 +587,7 @@ export class StatisticsService {
         ];
       }
 
-      return {
+      const result = {
         totalCandidates,
         totalBoys,
         totalGirls,
@@ -558,6 +601,9 @@ export class StatisticsService {
           private: privateStats,
         },
       };
+
+      this.publicLiveStatsCache = { data: result, expiresAt: now + this.PUBLIC_CACHE_TTL };
+      return result;
     } catch (globalError: any) {
       console.error("Critical error in getPublicLiveStatistics:", globalError);
       return {

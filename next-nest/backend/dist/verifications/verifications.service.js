@@ -21,8 +21,11 @@ let VerificationsService = VerificationsService_1 = class VerificationsService {
     constructor(prisma) {
         this.prisma = prisma;
         this.logger = new common_1.Logger(VerificationsService_1.name);
+        this.pendingVerificationsCache = null;
+        this.CACHE_TTL = 15 * 1000;
     }
     async submitVerification(userId, documentType, documentUrl) {
+        this.pendingVerificationsCache = null;
         if (!documentUrl || documentUrl.trim().length === 0) {
             throw new common_1.BadRequestException("કૃપા કરીને દસ્તાવેજ અપલોડ કરો (Please upload a document)");
         }
@@ -126,6 +129,7 @@ let VerificationsService = VerificationsService_1 = class VerificationsService {
         });
     }
     async updateVerificationStatus(requestId, adminId, dto, ipAddress) {
+        this.pendingVerificationsCache = null;
         const request = await this.prisma.verificationRequest.findUnique({
             where: { id: requestId },
             include: {
@@ -184,6 +188,10 @@ let VerificationsService = VerificationsService_1 = class VerificationsService {
         });
     }
     async getPendingVerifications() {
+        const now = Date.now();
+        if (this.pendingVerificationsCache && now < this.pendingVerificationsCache.expiresAt) {
+            return this.pendingVerificationsCache.data;
+        }
         try {
             const allRequests = await this.prisma.verificationRequest.findMany({
                 orderBy: { createdAt: "desc" },
@@ -228,6 +236,7 @@ let VerificationsService = VerificationsService_1 = class VerificationsService {
                     deduplicated.push(req);
                 }
             }
+            this.pendingVerificationsCache = { data: deduplicated, expiresAt: now + this.CACHE_TTL };
             return deduplicated;
         }
         catch (err) {

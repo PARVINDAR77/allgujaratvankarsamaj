@@ -326,9 +326,9 @@ function proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $
     if (!$fp) {
         trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
         
-        // Wait up to 10 seconds (25 iterations * 400ms) for socket readiness
-        for ($retry = 0; $retry < 3; $retry++) {
-            usleep(250000); // 400ms
+        // Wait up to 3.5 seconds (14 iterations * 250ms) for socket readiness
+        for ($retry = 0; $retry < 14; $retry++) {
+            usleep(250000); // 250ms
             $fp = @stream_socket_client($socket_path, $errno, $errstr, 1);
             if (!$fp) {
                 $fp = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 1);
@@ -473,8 +473,8 @@ function proxy_via_stream($socket_file, $method, $uri, $forwardHeaders, $body, $
 function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $trigger_file, $restart_state_file, $lock_file, $project_dir) {
     if (!file_exists($socket_file)) {
         trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
-        for ($retry = 0; $retry < 3; $retry++) {
-            usleep(250000); // 400ms
+        for ($retry = 0; $retry < 14; $retry++) {
+            usleep(250000); // 250ms
             if (file_exists($socket_file)) {
                 usleep(200000); // 200ms grace for socket bind
                 break;
@@ -484,8 +484,20 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
     
     $hasSocket = file_exists($socket_file);
     if (!$hasSocket) {
-        $tcpTest = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 0.5);
-        if (!$tcpTest) {
+        $tcpTest = null;
+        for ($retry = 0; $retry < 8; $retry++) {
+            if (file_exists($socket_file)) {
+                $hasSocket = true;
+                break;
+            }
+            $tcpTest = @stream_socket_client('tcp://127.0.0.1:3000', $errno, $errstr, 0.4);
+            if ($tcpTest) {
+                fclose($tcpTest);
+                break;
+            }
+            usleep(250000);
+        }
+        if (!$hasSocket && !$tcpTest) {
             trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
             http_response_code(502);
             header('Content-Type: application/json; charset=utf-8');
@@ -496,7 +508,6 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
             ]);
             exit;
         }
-        fclose($tcpTest);
     }
     $upstreamUrl = $hasSocket ? ('http://localhost' . $uri) : ('http://127.0.0.1:3000' . $uri);
     
@@ -626,6 +637,70 @@ function proxy_via_curl($socket_file, $method, $uri, $forwardHeaders, $body, $tr
             'message' => 'Bad Gateway: Upstream response exceeded maximum buffer limit of 10MB.'
         ]);
         exit;
+    }
+    
+    if ($execResult === false) {
+        trigger_watchdog_restart_if_needed($trigger_file, $restart_state_file, $lock_file, $project_dir);
+
+        // Resilience loop: wait and retry up to 2 times (500ms delay) before failing
+        for ($r = 0; $r < 2; $r++) {
+            usleep(500000); // 500ms
+            $hasSockNow = file_exists($socket_file);
+            $retryUrl = $hasSockNow ? ('http://localhost' . $uri) : ('http://127.0.0.1:3000' . $uri);
+            $chRetry = curl_init();
+            if ($hasSockNow) {
+                curl_setopt($chRetry, CURLOPT_UNIX_SOCKET_PATH, $socket_file);
+            }
+            curl_setopt($chRetry, CURLOPT_URL, $retryUrl);
+            curl_setopt($chRetry, CURLOPT_CUSTOMREQUEST, $method);
+            curl_setopt($chRetry, CURLOPT_CONNECTTIMEOUT, 2);
+            curl_setopt($chRetry, CURLOPT_TIMEOUT, TRANSFER_TIMEOUT_SECS);
+            curl_setopt($chRetry, CURLOPT_FOLLOWLOCATION, false);
+            curl_setopt($chRetry, CURLOPT_HTTPHEADER, $forwardHeaders);
+            if (in_array($method, ['POST', 'PUT', 'PATCH'], true) || strlen($body) > 0) {
+                curl_setopt($chRetry, CURLOPT_POSTFIELDS, $body);
+            }
+            $capturedHeaders = [];
+            $finalStatusCode = 200;
+            curl_setopt($chRetry, CURLOPT_HEADERFUNCTION, function($curlHandle, $headerLine) use (&$capturedHeaders, &$finalStatusCode) {
+                $len = strlen($headerLine);
+                $trimmed = trim($headerLine);
+                if (empty($trimmed)) return $len;
+                if (preg_match('/^HTTP\/\d\.\d\s+(\d+)/i', $trimmed, $matches)) {
+                    $status = (int)$matches[1];
+                    if ($status !== 100) $finalStatusCode = $status;
+                    return $len;
+                }
+                $colonPos = strpos($trimmed, ':');
+                if ($colonPos !== false) {
+                    $hdrName = strtolower(substr($trimmed, 0, $colonPos));
+                    if (in_array($hdrName, ['transfer-encoding', 'connection', 'keep-alive', 'proxy-authenticate', 'proxy-authorization', 'te', 'trailers', 'upgrade'], true)) return $len;
+                    if (strpos($hdrName, 'access-control-') === 0) return $len;
+                    $capturedHeaders[] = $trimmed;
+                }
+                return $len;
+            });
+            $responseBody = '';
+            $responseSize = 0;
+            $responseOversized = false;
+            curl_setopt($chRetry, CURLOPT_WRITEFUNCTION, function($curlHandle, $chunk) use (&$responseBody, &$responseSize, &$responseOversized) {
+                $chunkLen = strlen($chunk);
+                $responseSize += $chunkLen;
+                if ($responseSize > MAX_RESPONSE_BYTES) {
+                    $responseOversized = true;
+                    return 0;
+                }
+                $responseBody .= $chunk;
+                return $chunkLen;
+            });
+            $execResult = curl_exec($chRetry);
+            $curlErrno  = curl_errno($chRetry);
+            $curlError  = curl_error($chRetry);
+            curl_close($chRetry);
+            if ($execResult !== false) {
+                break;
+            }
+        }
     }
     
     if ($execResult === false) {

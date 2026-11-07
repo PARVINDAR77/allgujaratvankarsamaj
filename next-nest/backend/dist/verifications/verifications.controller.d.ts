@@ -66,28 +66,7 @@ export declare class VerificationsController {
 export declare class AdminVerificationsController {
     private readonly verificationsService;
     constructor(verificationsService: VerificationsService);
-    getPendingVerificationsAdmin(): Promise<{
-        id: any;
-        profileId: any;
-        documentType: any;
-        documentUrl: any;
-        documentBackUrl: any;
-        status: any;
-        rejectionReason: any;
-        createdAt: any;
-        profile: {
-            id: any;
-            name: any;
-            firstName: any;
-            lastName: any;
-            photoUrl: any;
-            photos: any;
-            nativePlace: any;
-            city: any;
-            pargana: any;
-            user: any;
-        };
-    }[]>;
+    getPendingVerificationsAdmin(): Promise<any>;
     getVerificationDocumentAdmin(filename: string, res: Response): Promise<void>;
     updateStatusAdmin(req: any, id: string, dto: UpdateVerificationStatusDto): Promise<{
         status: import(".prisma/client").$Enums.VerificationStatus;

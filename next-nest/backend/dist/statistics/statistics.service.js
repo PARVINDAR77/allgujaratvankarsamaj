@@ -17,8 +17,20 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
     constructor(prisma) {
         this.prisma = prisma;
         this.logger = new common_1.Logger(StatisticsService_1.name);
+        this.dashboardStatsCache = null;
+        this.DASHBOARD_CACHE_TTL = 60 * 1000;
+        this.publicLiveStatsCache = null;
+        this.PUBLIC_CACHE_TTL = 60 * 1000;
+        this.sectionViewsCache = null;
+        this.SECTION_VIEWS_CACHE_TTL = 30 * 1000;
+        this.birthdaysCache = null;
+        this.BIRTHDAYS_CACHE_TTL = 300 * 1000;
     }
     async getDashboardStatistics() {
+        const now = Date.now();
+        if (this.dashboardStatsCache && now < this.dashboardStatsCache.expiresAt) {
+            return this.dashboardStatsCache.data;
+        }
         try {
             const [totalUsers, activeProfiles, totalMatches, pendingVerifications, openReports, totalSuccessStories, activeGovtEmployees,] = await Promise.all([
                 this.prisma.user.count(),
@@ -204,7 +216,7 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
                 },
                 { month: "Jun", users: totalUsers, profiles: activeProfiles },
             ];
-            return {
+            const result = {
                 totalUsers,
                 activeProfiles,
                 totalMatches,
@@ -219,6 +231,8 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
                 recentActivities,
                 monthlyGrowth,
             };
+            this.dashboardStatsCache = { data: result, expiresAt: now + this.DASHBOARD_CACHE_TTL };
+            return result;
         }
         catch (err) {
             this.logger.error("Error generating dashboard statistics: " + (err.message || err));
@@ -240,6 +254,10 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
         }
     }
     async getTodaysBirthdays() {
+        const now = Date.now();
+        if (this.birthdaysCache && now < this.birthdaysCache.expiresAt) {
+            return this.birthdaysCache.data;
+        }
         try {
             const today = new Date();
             const currentMonth = today.getMonth() + 1;
@@ -251,14 +269,17 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
         AND DAY(date_of_birth) = ${currentDay}
       `;
             if (!matchingRows || matchingRows.length === 0) {
+                this.birthdaysCache = { data: [], expiresAt: now + this.BIRTHDAYS_CACHE_TTL };
                 return [];
             }
             const ids = matchingRows.map((row) => row.id);
-            return await this.prisma.matrimonialProfile.findMany({
+            const result = await this.prisma.matrimonialProfile.findMany({
                 where: {
                     id: { in: ids },
                 },
             });
+            this.birthdaysCache = { data: result, expiresAt: now + this.BIRTHDAYS_CACHE_TTL };
+            return result;
         }
         catch (error) {
             console.error("Error fetching today's birthdays:", error);
@@ -266,9 +287,16 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
         }
     }
     async getSectionViews() {
-        return await this.prisma.sectionViewCount.findMany();
+        const now = Date.now();
+        if (this.sectionViewsCache && now < this.sectionViewsCache.expiresAt) {
+            return this.sectionViewsCache.data;
+        }
+        const data = await this.prisma.sectionViewCount.findMany();
+        this.sectionViewsCache = { data, expiresAt: now + this.SECTION_VIEWS_CACHE_TTL };
+        return data;
     }
     async incrementSectionView(sectionName) {
+        this.sectionViewsCache = null;
         const allowedSections = [
             "HOME_EDUCATION",
             "HOME_UNITY",
@@ -299,6 +327,10 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
         }
     }
     async getPublicLiveStatistics() {
+        const now = Date.now();
+        if (this.publicLiveStatsCache && now < this.publicLiveStatsCache.expiresAt) {
+            return this.publicLiveStatsCache.data;
+        }
         try {
             const validStatusFilter = { in: ["APPROVED", "PENDING"] };
             const [totalCandidates, totalBoys, totalGirls] = await Promise.all([
@@ -318,9 +350,9 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
                     },
                 }),
             ]);
-            const now = new Date();
+            const nowDate = new Date();
             const istOffsetMs = 5.5 * 60 * 60 * 1000;
-            const istTime = new Date(now.getTime() + istOffsetMs);
+            const istTime = new Date(nowDate.getTime() + istOffsetMs);
             const istYear = istTime.getUTCFullYear();
             const istMonth = istTime.getUTCMonth();
             const istDate = istTime.getUTCDate();
@@ -496,7 +528,7 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
                     { name: "Engineering & Manufacturing (ઉત્પાદન અને પ્લાન્ટ)", count: 0 },
                 ];
             }
-            return {
+            const result = {
                 totalCandidates,
                 totalBoys,
                 totalGirls,
@@ -510,6 +542,8 @@ let StatisticsService = StatisticsService_1 = class StatisticsService {
                     private: privateStats,
                 },
             };
+            this.publicLiveStatsCache = { data: result, expiresAt: now + this.PUBLIC_CACHE_TTL };
+            return result;
         }
         catch (globalError) {
             console.error("Critical error in getPublicLiveStatistics:", globalError);
