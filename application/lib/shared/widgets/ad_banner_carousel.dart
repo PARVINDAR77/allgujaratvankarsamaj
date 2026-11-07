@@ -112,6 +112,7 @@ class _AdCard extends StatelessWidget {
             children: [
               Image.network(
                 ad.imageUrl,
+                cacheWidth: 800,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
                   color: const Color(0xFF111111),

@@ -521,7 +521,7 @@ class _CandidateProfileDetailScreenState
                     radius: 50,
                     backgroundColor: const Color(0xFF0D1B3E),
                     backgroundImage: profile.fullPhotoUrl != null
-                        ? NetworkImage(profile.fullPhotoUrl!)
+                        ? ResizeImage(NetworkImage(profile.fullPhotoUrl!), width: 200, height: 200)
                         : null,
                     onBackgroundImageError: profile.fullPhotoUrl != null
                         ? (e, s) {}
@@ -883,6 +883,7 @@ class _CandidateProfileDetailScreenState
                           children: [
                             Image.network(
                               url,
+                              cacheWidth: 600,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) => Container(
                                 color: const Color(0xFF1E293B),
@@ -2031,7 +2032,7 @@ class _CandidateProfileDetailScreenState
                               radius: 54,
                               backgroundColor: const Color(0xFF0D1B3E),
                               backgroundImage: profile.fullPhotoUrl != null
-                                  ? NetworkImage(profile.fullPhotoUrl!)
+                                  ? ResizeImage(NetworkImage(profile.fullPhotoUrl!), width: 200, height: 200)
                                   : null,
                               onBackgroundImageError: profile.fullPhotoUrl != null
                                   ? (e, s) {}
@@ -2614,6 +2615,7 @@ class _CandidateProfileDetailScreenState
                           children: [
                             Image.network(
                               url,
+                              cacheWidth: 600,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) => Container(
                                 color: const Color(0xFF0F172A),

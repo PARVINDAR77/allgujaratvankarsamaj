@@ -52,7 +52,7 @@ class ProfileCard extends ConsumerWidget {
                           radius: 35,
                           backgroundColor: const Color(0xFF0056D2).withValues(alpha: 0.1),
                           backgroundImage: profile.fullPhotoUrl != null
-                              ? NetworkImage(profile.fullPhotoUrl!)
+                              ? ResizeImage(NetworkImage(profile.fullPhotoUrl!), width: 140, height: 140)
                               : null,
                           onBackgroundImageError: profile.fullPhotoUrl != null
                               ? (_, _) {}

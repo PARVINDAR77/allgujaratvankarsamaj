@@ -47,8 +47,12 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    if (err.response?.statusCode == 401) {
-      // Token is invalid or expired
+    final status = err.response?.statusCode;
+    final path = err.requestOptions.path;
+    final isAuthEndpoint = path.contains('/auth/login') || path.contains('/auth/register');
+
+    if (status == 401 && !isAuthEndpoint) {
+      // Token is invalid or expired on protected resource
       ref.read(authNotifierProvider.notifier).logout();
     }
     super.onError(err, handler);
