@@ -535,6 +535,7 @@ $sensitiveActions = [
     'fix_db',
     'tail_log',
     'meminfo',
+    'hostinger_specs',
     'check_verif',
     'check_user',
     'test_mail',
@@ -950,17 +951,76 @@ if ($action === 'restart' || $action === 'start') {
     $results['status'] = $ready ? 'UP' : 'DOWN';
 }
 
-if ($action === 'meminfo') {
+if ($action === 'meminfo' || $action === 'hostinger_specs') {
     header('Content-Type: text/plain; charset=utf-8');
-    echo "=== ULIMIT SOFT VS HARD ===\n";
+    echo "========================================================\n";
+    echo "HOSTINGER SYSTEM & CLOUDLINUX HARDWARE SPECS\n";
+    echo "========================================================\n\n";
+    
+    echo "--- 1. HOST & OS VERSION ---\n";
+    echo @shell_exec("cat /etc/os-release 2>&1") . "\n";
+    echo "Kernel: " . @shell_exec("uname -a 2>&1") . "\n";
+    echo "Hostname: " . @shell_exec("hostname 2>&1") . "\n";
+    
+    echo "--- 2. CPU CORES & LOAD ---\n";
+    echo "CPU Model: " . @shell_exec("grep 'model name' /proc/cpuinfo | head -n 1 2>&1") . "\n";
+    echo "Total CPU Cores on Host: " . @shell_exec("grep -c '^processor' /proc/cpuinfo 2>&1") . "\n";
+    echo "Uptime & Load Average: " . @shell_exec("uptime 2>&1") . "\n";
+    
+    echo "--- 3. SYSTEM RAM (HOST LEVEL) ---\n";
+    echo @shell_exec("free -m 2>&1") . "\n";
+    
+    echo "--- 4. CLOUDLINUX USER CGROUP / LVE LIMITS (ACCOUNT LEVEL) ---\n";
+    $cgroupMemLimit = @file_get_contents('/sys/fs/cgroup/memory/memory.limit_in_bytes');
+    $cgroupMemUsage = @file_get_contents('/sys/fs/cgroup/memory/memory.usage_in_bytes');
+    $cgroupMemFail = @file_get_contents('/sys/fs/cgroup/memory/memory.failcnt');
+    $cgroupMemStat = @file_get_contents('/sys/fs/cgroup/memory/memory.stat');
+    if ($cgroupMemLimit) {
+        $limitMb = round((float)$cgroupMemLimit / 1048576, 2);
+        $usageMb = round((float)$cgroupMemUsage / 1048576, 2);
+        echo "Cgroup Memory Limit (PMEM): {$limitMb} MB\n";
+        echo "Cgroup Current Memory Usage: {$usageMb} MB\n";
+        echo "Cgroup Memory Allocation Failure Count (failcnt): " . trim($cgroupMemFail) . "\n\n";
+        echo "Cgroup Memory Stat:\n" . substr($cgroupMemStat, 0, 500) . "\n";
+    } else {
+        echo "Cgroup v1 not mounted directly, testing /proc/lve...\n";
+    }
+    
+    echo "LVE proc entries:\n";
+    echo @shell_exec("cat /proc/lve/list 2>&1 | head -n 5") . "\n";
+    
+    echo "--- 5. PROCESS ULIMITS (POSIX) ---\n";
+    echo @shell_exec("ulimit -a 2>&1") . "\n";
     echo "Soft -v: " . @shell_exec("ulimit -S -v 2>&1") . "\n";
     echo "Hard -v: " . @shell_exec("ulimit -H -v 2>&1") . "\n";
-    echo "=== ATTEMPT UNLIMITED ===\n";
-    echo @shell_exec("ulimit -v unlimited 2>&1; ulimit -v 2>&1") . "\n";
-    echo "=== PS (SORTED BY RSS) ===\n";
-    echo @shell_exec("ps -u $(whoami) -o pid,ppid,rss,vsz,%mem,comm,args --sort=-rss 2>&1") . "\n";
-    echo "=== TOTAL RSS ===\n";
-    echo @shell_exec("ps -u $(whoami) -o rss | awk '{sum+=$1} END {print sum/1024 \" MB\"}' 2>&1") . "\n";
+    
+    echo "--- 6. DISK STORAGE & INODES ---\n";
+    echo @shell_exec("df -h / 2>&1") . "\n";
+    echo @shell_exec("df -i / 2>&1") . "\n";
+    
+    echo "--- 7. NODE.JS & NPM ENVIRONMENT ---\n";
+    echo "Node binary: " . @shell_exec("which node 2>&1") . "\n";
+    echo "Node version: " . @shell_exec("export PATH='/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH'; node -v 2>&1") . "\n";
+    echo "NPM version: " . @shell_exec("export PATH='/home/u796269890/.nvm/versions/node/v20.20.2/bin:/usr/local/bin:/usr/bin:/bin:$HOME/bin:$PATH'; npm -v 2>&1") . "\n";
+    
+    echo "--- 8. RUNNING PROCESSES (USER ACCOUNT) ---\n";
+    echo @shell_exec("ps -u $(whoami) -o pid,ppid,rss,vsz,%mem,%cpu,comm,args --sort=-rss 2>&1") . "\n";
+    echo "Total RSS: " . @shell_exec("ps -u $(whoami) -o rss | awk '{sum+=$1} END {print sum/1024 \" MB\"}' 2>&1") . "\n";
+    echo "Total Processes Count: " . @shell_exec("ps -u $(whoami) --no-headers | wc -l 2>&1") . "\n";
+    
+    echo "--- 9. RECENT BACKEND LOG CRASHES / OOM (LAST 40 LINES) ---\n";
+    $backendLog = '/home/u796269890/domains/allgujaratvankarsamaj.com/project_source/next-nest/backend/backend.log';
+    if (file_exists($backendLog)) {
+        $lines = @file($backendLog);
+        echo implode('', array_slice($lines, -40)) . "\n";
+    }
+    
+    echo "--- 10. RECENT KEEP_ALIVE LOG ENTRIES ---\n";
+    $keepAliveLog = '/home/u796269890/domains/allgujaratvankarsamaj.com/keep_alive.log';
+    if (file_exists($keepAliveLog)) {
+        $klines = @file($keepAliveLog);
+        echo implode('', array_slice($klines, -30)) . "\n";
+    }
     exit;
 }
 
