@@ -185,6 +185,77 @@ if (preg_match('#^/(?:api/v1/)?uploads/([a-zA-Z0-9_\-\.]+)$#i', $cleanPath, $upl
     }
 }
 
+// 1.3 High-Efficiency Image Compression Helper using PHP GD
+function compress_and_save_image($tmpFile, $destPath, $ext) {
+    if (!extension_loaded('gd') || !in_array($ext, ['jpg', 'jpeg', 'png', 'webp'], true)) {
+        return move_uploaded_file($tmpFile, $destPath);
+    }
+    
+    $info = @getimagesize($tmpFile);
+    if (!$info) {
+        return move_uploaded_file($tmpFile, $destPath);
+    }
+    
+    $origWidth = $info[0];
+    $origHeight = $info[1];
+    $imageType = $info[2];
+    
+    $maxDim = 1280;
+    $width = $origWidth;
+    $height = $origHeight;
+    
+    if ($width > $maxDim || $height > $maxDim) {
+        if ($width > $height) {
+            $height = (int)round(($height * $maxDim) / $width);
+            $width = $maxDim;
+        } else {
+            $width = (int)round(($width * $maxDim) / $height);
+            $height = $maxDim;
+        }
+    }
+    
+    $srcImg = null;
+    switch ($imageType) {
+        case IMAGETYPE_JPEG:
+            $srcImg = @imagecreatefromjpeg($tmpFile);
+            break;
+        case IMAGETYPE_PNG:
+            $srcImg = @imagecreatefrompng($tmpFile);
+            break;
+        case IMAGETYPE_WEBP:
+            if (function_exists('imagecreatefromwebp')) {
+                $srcImg = @imagecreatefromwebp($tmpFile);
+            }
+            break;
+    }
+    
+    if (!$srcImg) {
+        return move_uploaded_file($tmpFile, $destPath);
+    }
+    
+    $dstImg = imagecreatetruecolor($width, $height);
+    if ($imageType === IMAGETYPE_PNG || $imageType === IMAGETYPE_WEBP) {
+        imagealphablending($dstImg, false);
+        imagesavealpha($dstImg, true);
+    }
+    
+    imagecopyresampled($dstImg, $srcImg, 0, 0, 0, 0, $width, $height, $origWidth, $origHeight);
+    
+    $saved = false;
+    if ($ext === 'jpg' || $ext === 'jpeg') {
+        $saved = @imagejpeg($dstImg, $destPath, 82);
+    } elseif ($ext === 'png') {
+        $saved = @imagepng($dstImg, $destPath, 7);
+    } elseif ($ext === 'webp' && function_exists('imagewebp')) {
+        $saved = @imagewebp($dstImg, $destPath, 82);
+    }
+    
+    @imagedestroy($srcImg);
+    @imagedestroy($dstImg);
+    
+    return $saved ?: move_uploaded_file($tmpFile, $destPath);
+}
+
 // 2. Direct handling for file upload if PHP received a multipart form file
 if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upload#', $uri)) && !empty($_FILES['file'])) {
     $file = $_FILES['file'];
@@ -206,7 +277,7 @@ if ((preg_match('#^/api/v1/storage/upload#', $uri) || preg_match('#^/storage/upl
         if (in_array($ext, $allowedExts)) {
             $uniqueFilename = bin2hex(random_bytes(16)) . '.' . $ext;
             $destPath = $uploadDir . '/' . $uniqueFilename;
-            if (move_uploaded_file($file['tmp_name'], $destPath)) {
+            if (compress_and_save_image($file['tmp_name'], $destPath, $ext)) {
                 header('Content-Type: application/json');
                 http_response_code(201);
                 echo json_encode([

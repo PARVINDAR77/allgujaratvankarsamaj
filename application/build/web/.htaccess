@@ -7,12 +7,24 @@ RewriteEngine On
     AddType application/json .json
 </IfModule>
 
-# Disable caching for HTML and JS to ensure updates apply immediately
+# Cache-Control headers for static assets & performance
 <IfModule mod_headers.c>
-    <FilesMatch "\.(html|js|json)$">
+    # Dynamic HTML & JSON: never cache so updates are immediate
+    <FilesMatch "\.(html|htm|json)$">
         Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
         Header set Pragma "no-cache"
         Header set Expires "0"
+    </FilesMatch>
+
+    # Static Immutable Next.js JavaScript chunks & CSS
+    <FilesMatch "\.(js|mjs|css)$">
+        Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
+    </FilesMatch>
+
+    # Images, Fonts, Icons, and Media
+    <FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|svg|woff|woff2|ttf|eot|mp4|webm)$">
+        Header set Cache-Control "public, max-age=604800, stale-while-revalidate=86400"
+        Header set Access-Control-Allow-Origin "*"
     </FilesMatch>
 </IfModule>
 
