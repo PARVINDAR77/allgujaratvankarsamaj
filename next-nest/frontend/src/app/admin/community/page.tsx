@@ -13,7 +13,8 @@ export default function AdminCommunityPage() {
   useEffect(() => {
     adminApi.getSamajServicePersons()
       .then((data) => {
-        setPeople(Array.isArray(data) ? data : (data as any).items || []);
+        const list = Array.isArray(data) ? data : ((data as any)?.data || (data as any)?.items || []);
+        setPeople(list);
         setError(null);
       })
       .catch((err) => {

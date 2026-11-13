@@ -513,7 +513,8 @@ export const adminApi = {
     try {
       const res = await adminFetch(`${API_BASE_URL}/admin/samaj-services`, { headers: getAuthHeaders() });
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return await res.json();
+      const json = await res.json();
+      return Array.isArray(json) ? json : (json?.data || []);
     } catch (error) { throw error; }
   },
 
@@ -544,15 +545,45 @@ export const adminApi = {
   },
 
   // ==================== SAMAJ SERVICE PERSONS API ====================
-  async getSamajServicePersons(serviceId?: string): Promise<SamajServicePersonItem[]> {
+  async getSamajServicePersons(
+    serviceId?: string,
+    page = 1,
+    limit = 15,
+  ): Promise<any> {
     try {
-      const url = serviceId
-        ? `${API_BASE_URL}/admin/samaj-services/persons?serviceId=${encodeURIComponent(serviceId)}`
-        : `${API_BASE_URL}/admin/samaj-services/persons`;
-      const res = await adminFetch(url, { headers: getAuthHeaders() });
+      const params = new URLSearchParams();
+      if (serviceId && serviceId !== "all") params.set("serviceId", serviceId);
+      params.set("page", String(page));
+      params.set("limit", String(limit));
+      const res = await adminFetch(
+        `${API_BASE_URL}/admin/samaj-services/persons?${params.toString()}`,
+        { headers: getAuthHeaders() },
+      );
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return await res.json();
-    } catch (error) { throw error; }
+      const json = await res.json();
+      if (Array.isArray(json)) {
+        return {
+          data: json,
+          meta: {
+            page,
+            limit,
+            total: json.length,
+            totalPages: Math.ceil(json.length / limit) || 1,
+          },
+        };
+      }
+      return {
+        data: Array.isArray(json?.data) ? json.data : [],
+        meta: json?.meta || {
+          page,
+          limit,
+          total: (json?.data || []).length,
+          totalPages: 1,
+        },
+      };
+    } catch (error) {
+      throw error;
+    }
   },
 
   async createSamajServicePerson(data: Partial<SamajServicePersonItem>) {

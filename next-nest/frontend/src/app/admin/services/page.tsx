@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminPagination } from "@/components/admin/AdminPagination";
 import { adminApi, SamajServiceItem, SamajServicePersonItem } from "@/lib/admin-api";
 
 interface ServiceCategoryConfig {
@@ -290,6 +291,11 @@ export default function AdminServicesPage() {
   const [persons, setPersons] = useState<SamajServicePersonItem[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
   const [loadingPersons, setLoadingPersons] = useState(true);
+  const [servicesPage, setServicesPage] = useState(1);
+  const [personsPage, setPersonsPage] = useState(1);
+
+  const safeServices: SamajServiceItem[] = Array.isArray(services) ? services : ((services as any)?.data || []);
+  const safePersons: SamajServicePersonItem[] = Array.isArray(persons) ? persons : ((persons as any)?.data || []);
 
   // Service Modal state
   const [showServiceModal, setShowServiceModal] = useState(false);
@@ -329,12 +335,14 @@ export default function AdminServicesPage() {
     try {
       setLoadingServices(true);
       const data = await adminApi.getSamajServices();
-      setServices(data);
-      if (data.length > 0 && !personServiceId) {
-        setPersonServiceId(data[0].id);
+      const list = Array.isArray(data) ? data : ((data as any)?.data || []);
+      setServices(list);
+      if (list.length > 0 && !personServiceId) {
+        setPersonServiceId(list[0].id);
       }
     } catch (e) {
       console.error("Failed to load services:", e);
+      setServices([]);
     } finally {
       setLoadingServices(false);
     }
@@ -343,10 +351,12 @@ export default function AdminServicesPage() {
   const loadPersons = async () => {
     try {
       setLoadingPersons(true);
-      const data = await adminApi.getSamajServicePersons();
-      setPersons(data);
+      const res = await adminApi.getSamajServicePersons();
+      const list = Array.isArray(res) ? res : ((res as any)?.data || []);
+      setPersons(list);
     } catch (e) {
       console.error("Failed to load service persons:", e);
+      setPersons([]);
     } finally {
       setLoadingPersons(false);
     }
@@ -356,6 +366,11 @@ export default function AdminServicesPage() {
     loadServices();
     loadPersons();
   }, []);
+
+  useEffect(() => {
+    setServicesPage(1);
+    setPersonsPage(1);
+  }, [searchQuery, categoryFilter]);
 
   // --- SERVICE ACTIONS ---
   const handleMainCatChange = (catId: string) => {
@@ -475,8 +490,8 @@ export default function AdminServicesPage() {
   // --- PERSON ACTIONS ---
   const openCreatePerson = () => {
     setEditingPerson(null);
-    if (services.length > 0) {
-      setPersonServiceId(services[0].id);
+    if (safeServices.length > 0) {
+      setPersonServiceId(safeServices[0].id);
     }
     setPersonName("");
     setPersonGujaratiName("");
@@ -569,10 +584,12 @@ export default function AdminServicesPage() {
     }
   };
 
-  const filteredServices = services.filter((s) => {
-    const matchesSearch =
-      s.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (s.category && s.category.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredServices = safeServices.filter((s) => {
+    if (!s) return false;
+    const q = (searchQuery || "").trim().toLowerCase();
+    const title = (s.title || "").toLowerCase();
+    const cat = (s.category || "").toLowerCase();
+    const matchesSearch = !q || title.includes(q) || cat.includes(q);
     
     if (categoryFilter === "ALL") return matchesSearch;
     const catLower = categoryFilter.toLowerCase();
@@ -584,13 +601,21 @@ export default function AdminServicesPage() {
     return matchesSearch && matchesCat;
   });
 
-  const filteredPersons = persons.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (p.gujaratiName && p.gujaratiName.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      (p.phone && p.phone.includes(searchQuery)) ||
-      (p.service?.title && p.service.title.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredPersons = safePersons.filter((p) => {
+    if (!p) return false;
+    const q = (searchQuery || "").trim().toLowerCase();
+    const name = (p.name || "").toLowerCase();
+    const gujName = (p.gujaratiName || "").toLowerCase();
+    const phone = p.phone || "";
+    const svcTitle = (p.service?.title || "").toLowerCase();
+    return !q || name.includes(q) || gujName.includes(q) || phone.includes(searchQuery) || svcTitle.includes(q);
+  });
+
+  const servicesTotalPages = Math.ceil(filteredServices.length / 15) || 1;
+  const pagedServices = filteredServices.slice((servicesPage - 1) * 15, servicesPage * 15);
+
+  const personsTotalPages = Math.ceil(filteredPersons.length / 15) || 1;
+  const pagedPersons = filteredPersons.slice((personsPage - 1) * 15, personsPage * 15);
 
   const currentMainCat = MAIN_SERVICE_CATEGORIES.find((c) => c.id === selectedMainCatId) || MAIN_SERVICE_CATEGORIES[0];
   const activePalette = Array.from(new Set([
@@ -654,7 +679,7 @@ export default function AdminServicesPage() {
           >
             <span>🛠️ Section 1: Samaj Services</span>
             <span  style={{ padding: "2px 8px", borderRadius: "10px", backgroundColor: "#D4AF37", color: "#000", fontWeight: 900 }} className="text-[11px]">
-              {services.length}
+              {safeServices.length}
             </span>
           </button>
 
@@ -676,7 +701,7 @@ export default function AdminServicesPage() {
           >
             <span>👥 Section 2: Service Persons</span>
             <span  style={{ padding: "2px 8px", borderRadius: "10px", backgroundColor: "#10B981", color: "#000", fontWeight: 900 }} className="text-[11px]">
-              {persons.length}
+              {safePersons.length}
             </span>
           </button>
         </div>
@@ -753,89 +778,100 @@ export default function AdminServicesPage() {
             ) : filteredServices.length === 0 ? (
               <div  style={{ padding: "40px", color: "rgba(255, 255, 255, 0.6)" }} className="text-center">No services found. Click "Add Service Category" to add one.</div>
             ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table  style={{ color: "#FFF" }} className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr  style={{ borderBottom: "1.5px solid rgba(212, 175, 55, 0.3)" }} className="text-left">
-                      <th  style={{ padding: "12px" }} className="text-admin-gold">Service Title</th>
-                      <th  style={{ padding: "12px" }} className="text-admin-gold">Category</th>
-                      <th  style={{ padding: "12px" }} className="text-admin-gold">Associated Persons</th>
-                      <th  style={{ padding: "12px" }} className="text-admin-gold">Status</th>
-                      <th  style={{ padding: "12px" }} className="text-right text-admin-gold">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredServices.map((svc) => (
-                      <tr key={svc.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
-                        <td  style={{ padding: "14px 12px" }} className="font-bold">
-                          <span style={{ marginRight: "10px", fontSize: "18px" }}>{svc.icon || "🤝"}</span>
-                          <span>{svc.title}</span>
-                        </td>
-                        <td style={{ padding: "14px 12px" }}>
-                          <span  style={{ padding: "4px 10px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB" }} className="font-semibold text-xs rounded-xl">
-                            {svc.category || "General"}
-                          </span>
-                        </td>
-                        <td style={{ padding: "14px 12px" }}>
-                          <span  style={{ padding: "4px 10px", backgroundColor: "rgba(16, 185, 129, 0.15)", color: "#A7F3D0" }} className="font-bold text-xs rounded-xl">
-                            👤 {svc._count?.persons || 0} Persons
-                          </span>
-                        </td>
-                        <td style={{ padding: "14px 12px" }}>
-                          <button
-                            onClick={() => toggleServiceStatus(svc)}
-                            style={{
-                              padding: "4px 12px",
-                              borderRadius: "20px",
-                              border: "none",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              backgroundColor: svc.isActive ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)",
-                              color: svc.isActive ? "#10B981" : "#EF4444",
-                            }}
-                          >
-                            {svc.isActive ? "Active" : "Disabled"}
-                          </button>
-                        </td>
-                        <td  style={{ padding: "14px 12px" }} className="text-right">
-                          <button
-                            onClick={() => openEditService(svc)}
-                            style={{
-                              padding: "6px 14px",
-                              marginRight: "8px",
-                              borderRadius: "8px",
-                              backgroundColor: "rgba(212, 175, 55, 0.2)",
-                              border: "1px solid #D4AF37",
-                              color: "#F3E5AB",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setServiceToDelete(svc)}
-                            style={{
-                              padding: "6px 14px",
-                              borderRadius: "8px",
-                              backgroundColor: "rgba(239, 68, 68, 0.2)",
-                              border: "1px solid #EF4444",
-                              color: "#FCA5A5",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </td>
+              <>
+                <div style={{ overflowX: "auto" }}>
+                  <table  style={{ color: "#FFF" }} className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr  style={{ borderBottom: "1.5px solid rgba(212, 175, 55, 0.3)" }} className="text-left">
+                        <th  style={{ padding: "12px" }} className="text-admin-gold">Service Title</th>
+                        <th  style={{ padding: "12px" }} className="text-admin-gold">Category</th>
+                        <th  style={{ padding: "12px" }} className="text-admin-gold">Associated Persons</th>
+                        <th  style={{ padding: "12px" }} className="text-admin-gold">Status</th>
+                        <th  style={{ padding: "12px" }} className="text-right text-admin-gold">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {pagedServices.map((svc) => (
+                        <tr key={svc.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                          <td  style={{ padding: "14px 12px" }} className="font-bold">
+                            <span style={{ marginRight: "10px", fontSize: "18px" }}>{svc.icon || "🤝"}</span>
+                            <span>{svc.title}</span>
+                          </td>
+                          <td style={{ padding: "14px 12px" }}>
+                            <span  style={{ padding: "4px 10px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB" }} className="font-semibold text-xs rounded-xl">
+                              {svc.category || "General"}
+                            </span>
+                          </td>
+                          <td style={{ padding: "14px 12px" }}>
+                            <span  style={{ padding: "4px 10px", backgroundColor: "rgba(16, 185, 129, 0.15)", color: "#A7F3D0" }} className="font-bold text-xs rounded-xl">
+                              👤 {svc._count?.persons || 0} Persons
+                            </span>
+                          </td>
+                          <td style={{ padding: "14px 12px" }}>
+                            <button
+                              onClick={() => toggleServiceStatus(svc)}
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: "20px",
+                                border: "none",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                backgroundColor: svc.isActive ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)",
+                                color: svc.isActive ? "#10B981" : "#EF4444",
+                              }}
+                            >
+                              {svc.isActive ? "Active" : "Disabled"}
+                            </button>
+                          </td>
+                          <td  style={{ padding: "14px 12px" }} className="text-right">
+                            <button
+                              onClick={() => openEditService(svc)}
+                              style={{
+                                padding: "6px 14px",
+                                marginRight: "8px",
+                                borderRadius: "8px",
+                                backgroundColor: "rgba(212, 175, 55, 0.2)",
+                                border: "1px solid #D4AF37",
+                                color: "#F3E5AB",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => setServiceToDelete(svc)}
+                              style={{
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                backgroundColor: "rgba(239, 68, 68, 0.2)",
+                                border: "1px solid #EF4444",
+                                color: "#FCA5A5",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <AdminPagination
+                  meta={{
+                    page: servicesPage,
+                    limit: 15,
+                    total: filteredServices.length,
+                    totalPages: servicesTotalPages,
+                  }}
+                  onPageChange={(p) => setServicesPage(p)}
+                />
+              </>
             )}
           </div>
         )}
@@ -868,91 +904,102 @@ export default function AdminServicesPage() {
             ) : filteredPersons.length === 0 ? (
               <div  style={{ padding: "40px", color: "rgba(255, 255, 255, 0.6)" }} className="text-center">No service persons registered yet. Click "Add Service Person" above to add one.</div>
             ) : (
-              <div style={{ overflowX: "auto" }}>
-                <table  style={{ color: "#FFF" }} className="w-full border-collapse text-sm">
-                  <thead>
-                    <tr  style={{ borderBottom: "1.5px solid rgba(16, 185, 129, 0.3)" }} className="text-left">
-                      <th style={{ padding: "12px", color: "#A7F3D0" }}>Person Name</th>
-                      <th style={{ padding: "12px", color: "#A7F3D0" }}>Gujarati Name</th>
-                      <th style={{ padding: "12px", color: "#A7F3D0" }}>Assigned Service</th>
-                      <th style={{ padding: "12px", color: "#A7F3D0" }}>Phone</th>
-                      <th style={{ padding: "12px", color: "#A7F3D0" }}>City / Locality</th>
-                      <th style={{ padding: "12px", color: "#A7F3D0" }}>Status</th>
-                      <th  style={{ padding: "12px", color: "#A7F3D0" }} className="text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPersons.map((person) => (
-                      <tr key={person.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
-                        <td  style={{ padding: "14px 12px" }} className="font-bold">
-                          <span  style={{ marginRight: "10px" }} className="text-base">👤</span>
-                          <span>{person.name}</span>
-                        </td>
-                        <td style={{ padding: "14px 12px", color: "rgba(255, 255, 255, 0.85)", fontFamily: "sans-serif" }}>
-                          {person.gujaratiName || "-"}
-                        </td>
-                        <td style={{ padding: "14px 12px" }}>
-                          <span  style={{ padding: "4px 10px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB" }} className="font-bold text-xs rounded-xl">
-                            {person.service?.icon || "🤝"} {person.service?.title || "Service"}
-                          </span>
-                        </td>
-                        <td  style={{ padding: "14px 12px", color: "#10B981" }} className="font-bold">{person.phone}</td>
-                        <td style={{ padding: "14px 12px", color: "rgba(255, 255, 255, 0.8)" }}>{person.city || "Ahmedabad"}</td>
-                        <td style={{ padding: "14px 12px" }}>
-                          <button
-                            onClick={() => togglePersonStatus(person)}
-                            style={{
-                              padding: "4px 12px",
-                              borderRadius: "20px",
-                              border: "none",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              backgroundColor: person.isActive ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)",
-                              color: person.isActive ? "#10B981" : "#EF4444",
-                            }}
-                          >
-                            {person.isActive ? "Active" : "Disabled"}
-                          </button>
-                        </td>
-                        <td  style={{ padding: "14px 12px" }} className="text-right">
-                          <button
-                            onClick={() => openEditPerson(person)}
-                            style={{
-                              padding: "6px 14px",
-                              marginRight: "8px",
-                              borderRadius: "8px",
-                              backgroundColor: "rgba(16, 185, 129, 0.2)",
-                              border: "1px solid #10B981",
-                              color: "#A7F3D0",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => setPersonToDelete(person)}
-                            style={{
-                              padding: "6px 14px",
-                              borderRadius: "8px",
-                              backgroundColor: "rgba(239, 68, 68, 0.2)",
-                              border: "1px solid #EF4444",
-                              color: "#FCA5A5",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              fontWeight: 700,
-                            }}
-                          >
-                            Delete
-                          </button>
-                        </td>
+              <>
+                <div style={{ overflowX: "auto" }}>
+                  <table  style={{ color: "#FFF" }} className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr  style={{ borderBottom: "1.5px solid rgba(16, 185, 129, 0.3)" }} className="text-left">
+                        <th style={{ padding: "12px", color: "#A7F3D0" }}>Person Name</th>
+                        <th style={{ padding: "12px", color: "#A7F3D0" }}>Gujarati Name</th>
+                        <th style={{ padding: "12px", color: "#A7F3D0" }}>Assigned Service</th>
+                        <th style={{ padding: "12px", color: "#A7F3D0" }}>Phone</th>
+                        <th style={{ padding: "12px", color: "#A7F3D0" }}>City / Locality</th>
+                        <th style={{ padding: "12px", color: "#A7F3D0" }}>Status</th>
+                        <th  style={{ padding: "12px", color: "#A7F3D0" }} className="text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {pagedPersons.map((person) => (
+                        <tr key={person.id} style={{ borderBottom: "1px solid rgba(255, 255, 255, 0.08)" }}>
+                          <td  style={{ padding: "14px 12px" }} className="font-bold">
+                            <span  style={{ marginRight: "10px" }} className="text-base">👤</span>
+                            <span>{person.name}</span>
+                          </td>
+                          <td style={{ padding: "14px 12px", color: "rgba(255, 255, 255, 0.85)", fontFamily: "sans-serif" }}>
+                            {person.gujaratiName || "-"}
+                          </td>
+                          <td style={{ padding: "14px 12px" }}>
+                            <span  style={{ padding: "4px 10px", backgroundColor: "rgba(212, 175, 55, 0.15)", color: "#F3E5AB" }} className="font-bold text-xs rounded-xl">
+                              {person.service?.icon || "🤝"} {person.service?.title || "Service"}
+                            </span>
+                          </td>
+                          <td  style={{ padding: "14px 12px", color: "#10B981" }} className="font-bold">{person.phone}</td>
+                          <td style={{ padding: "14px 12px", color: "rgba(255, 255, 255, 0.8)" }}>{person.city || "Ahmedabad"}</td>
+                          <td style={{ padding: "14px 12px" }}>
+                            <button
+                              onClick={() => togglePersonStatus(person)}
+                              style={{
+                                padding: "4px 12px",
+                                borderRadius: "20px",
+                                border: "none",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                backgroundColor: person.isActive ? "rgba(16, 185, 129, 0.2)" : "rgba(239, 68, 68, 0.2)",
+                                color: person.isActive ? "#10B981" : "#EF4444",
+                              }}
+                            >
+                              {person.isActive ? "Active" : "Disabled"}
+                            </button>
+                          </td>
+                          <td  style={{ padding: "14px 12px" }} className="text-right">
+                            <button
+                              onClick={() => openEditPerson(person)}
+                              style={{
+                                padding: "6px 14px",
+                                marginRight: "8px",
+                                borderRadius: "8px",
+                                backgroundColor: "rgba(16, 185, 129, 0.2)",
+                                border: "1px solid #10B981",
+                                color: "#A7F3D0",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => setPersonToDelete(person)}
+                              style={{
+                                padding: "6px 14px",
+                                borderRadius: "8px",
+                                backgroundColor: "rgba(239, 68, 68, 0.2)",
+                                border: "1px solid #EF4444",
+                                color: "#FCA5A5",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                fontWeight: 700,
+                              }}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <AdminPagination
+                  meta={{
+                    page: personsPage,
+                    limit: 15,
+                    total: filteredPersons.length,
+                    totalPages: personsTotalPages,
+                  }}
+                  onPageChange={(p) => setPersonsPage(p)}
+                />
+              </>
             )}
           </div>
         )}
@@ -1426,7 +1473,7 @@ export default function AdminServicesPage() {
                     onChange={(e) => setPersonServiceId(e.target.value)}
                     style={{ width: "100%", padding: "10px", borderRadius: "8px", backgroundColor: "#041026", border: "1px solid rgba(16, 185, 129, 0.4)", color: "#FFF", fontSize: "14px" }}
                   >
-                    {services.map((s) => (
+                    {safeServices.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.icon || "🤝"} {s.title} ({s.category || "General"})
                       </option>
