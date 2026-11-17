@@ -2676,7 +2676,7 @@ _.w=h
 _.x=i
 _.y=j
 _.z=k
-_.Q=l},
+_.Q=l;_.P=m},
 awh:function awh(a){this.a=a},
 agH:function agH(){},
 a4d:function a4d(a,b,c,d){var _=this
@@ -9246,7 +9246,8 @@ b71:function b71(a){this.a=a},
 b8a:function b8a(a,b,c){this.a=a
 this.b=b
 this.c=c},
-b7H:function b7H(a,b,c,d,e,f,g,h,i,j,k,l){var _=this
+b7_ProfBtn:function b7_ProfBtn(a,b,c,d){this.a=a;this.b=b;this.c=c;this.d=d},
+b7H:function b7H(a,b,c,d,e,f,g,h,i,j,k,l,m){var _=this
 _.a=a
 _.b=b
 _.c=c
@@ -59743,7 +59744,7 @@ if(k==null)k=h
 j=q.gjI(b)
 if(j==null)j=h
 i=b.gJk()
-return new A.md(new A.b7H(g,this,r,s,n,m,c,l,k,j,i==null?h:i,o),h)},
+return new A.md(new A.b7H(g,this,r,s,n,m,c,l,k,j,i==null?h:i,o,b),h)},
 K(a){var s,r=this,q=null,p=r.gaq().aP($.Ul(),t.zj).a,o=J.hg(p.gcu(p),new A.b8c()).ec(0),n=r.w
 if(n!=null&&p.aF(0,n)){p=p.h(0,r.w)
 p.toString
@@ -60045,6 +60046,27 @@ A.b8a.prototype={
 $1(a){var s=null,r=A.c(20)
 return A.iS(s,B.i,new A.bj(B.WD,this.a.ar0(a,this.b,this.c),s),B.as,s,24,B.kb,B.dn,s,new A.ah(r,B.o),B.B)},
 $S:32}
+A.b7_ProfBtn.prototype={
+$0(){
+  var ctx=this.a,screenState=this.b,phone=this.c,provider=this.d;
+  var targetId=phone;
+  if(provider&&provider.profileId&&provider.profileId.length>0)targetId=provider.profileId;
+  else if(provider&&provider.a&&provider.a.length>0)targetId=provider.a;
+  try{A.b8(ctx,!1).bl(null)}catch(e){}
+  try{
+    var s=screenState?screenState.c:null;
+    if(s!=null){s.toString;A.ar(s).b_("/candidate-profile-details?id="+encodeURIComponent(targetId),null,t.X)}
+    else{A.ar(ctx).b_("/candidate-profile-details?id="+encodeURIComponent(targetId),null,t.X)}
+  }catch(e){
+    try{
+      if(typeof window!=="undefined"&&window.location){
+        window.location.hash="#/candidate-profile-details?id="+encodeURIComponent(targetId);
+      }
+    }catch(e2){}
+  }
+  return null
+},
+$S:0}
 A.b7H.prototype={
 $2(a,b){var s,r,q,p,o,n,m,l,k,j,i,h=this,g=null,f=A.w(B.E,B.j,1.8)
 f=A.h(g,A.eJ(h.c?A.dZ(h.d,B.z,g,new A.b7A(),B.ar,g,g,g):B.Br),B.f,g,g,new A.j(g,g,f,g,g,g,B.F),g,50,g,g,g,g,50)
@@ -60076,6 +60098,8 @@ l=h.z
 if(l!=null&&l.length!==0)B.d.E(o,A.a([B.a3,A.l("\u0a85\u0aa8\u0ac1\u0aad\u0ab5: "+l,g,g,g,g,B.aEO,g,g,g)],r))
 B.d.E(f,A.a([A.h(g,A.u(o,B.p,B.c,B.e),B.f,g,g,new A.j(B.a7,g,m,n,g,g,B.k),g,g,B.ep,B.bd,g,g,1/0)],r))}o=h.b
 n=h.Q
+f.push(A.r(A.a([A.A(A.bx(new A.x(B.ex,18,B.b3,null,null),new A.n("\u0a89\u0aae\u0ac7\u0aa6\u0ab5\u0abe\u0ab0 \u0aaa\u0acd\u0ab0\u0acb\u0aab\u0abe\u0a87\u0ab2 \u0a9c\u0ac1\u0a93 (View Profile)",null,B.cV,null,null,null,null,null,null,null,null),new A.b7_ProfBtn(a,h.b,h.Q,h.P),A.b2(g,g,B.w,g,g,g,g,g,g,B.i,g,g,B.ce,g,new A.ah(A.c(10),B.o),B.fM,B.tK,g,g,g)),1)],r),B.h,B.c,B.e,0))
+f.push(B.S)
 f.push(A.r(A.a([A.A(A.bx(B.Fy,B.aOD,new A.b7C(o,n),A.b2(g,g,B.J,g,g,g,g,g,g,B.i,g,g,B.ce,g,new A.ah(A.c(10),B.o),B.fM,g,g,g,g)),1),B.V,A.A(A.bx(B.aXy,B.aUa,new A.b7D(o,n,s,p),A.b2(g,g,B.bt,g,g,g,g,g,g,B.i,g,g,B.ce,g,new A.ah(A.c(10),B.o),g,g,g,g,g)),1)],r),B.h,B.c,B.e,0))
 f.push(B.avC)
 f.push(B.aTN)

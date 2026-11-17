@@ -840,6 +840,35 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 catch (_) { }
             }
             if (!profile) {
+                const cleanPh = (id || "").replace(/\D/g, "").slice(-10);
+                if (cleanPh.length === 10) {
+                    try {
+                        profile = await this.prisma.matrimonialProfile.findFirst({
+                            where: {
+                                OR: [
+                                    { user: { phone: { contains: cleanPh } } },
+                                    { altPhone: { contains: cleanPh } },
+                                    { fatherContact: { contains: cleanPh } },
+                                    { guardianContact: { contains: cleanPh } },
+                                ],
+                            },
+                            include: {
+                                user: {
+                                    select: { id: true, phone: true, email: true, name: true, role: true, status: true },
+                                },
+                                governmentEmployment: {
+                                    include: {
+                                        department: true,
+                                        designation: true,
+                                    },
+                                },
+                            },
+                        });
+                    }
+                    catch (_) { }
+                }
+            }
+            if (!profile) {
                 throw new common_1.NotFoundException("Profile not found");
             }
             profile.contactPhone = profile.contactPhone || profile.user?.phone || profile.altPhone || null;

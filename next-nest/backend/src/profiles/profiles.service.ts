@@ -985,6 +985,35 @@ export class ProfilesService {
       }
 
       if (!profile) {
+        const cleanPh = (id || "").replace(/\D/g, "").slice(-10);
+        if (cleanPh.length === 10) {
+          try {
+            profile = await this.prisma.matrimonialProfile.findFirst({
+              where: {
+                OR: [
+                  { user: { phone: { contains: cleanPh } } },
+                  { altPhone: { contains: cleanPh } },
+                  { fatherContact: { contains: cleanPh } },
+                  { guardianContact: { contains: cleanPh } },
+                ],
+              },
+              include: {
+                user: {
+                  select: { id: true, phone: true, email: true, name: true, role: true, status: true },
+                },
+                governmentEmployment: {
+                  include: {
+                    department: true,
+                    designation: true,
+                  },
+                },
+              },
+            });
+          } catch (_) {}
+        }
+      }
+
+      if (!profile) {
         throw new NotFoundException("Profile not found");
       }
 
