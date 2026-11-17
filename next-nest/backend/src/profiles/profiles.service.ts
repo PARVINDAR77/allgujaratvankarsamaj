@@ -2172,27 +2172,48 @@ export class ProfilesService {
         rawOrgName.toLowerCase().includes("select department");
       const cleanOrgName = isGovtPlaceholder ? "" : rawOrgName;
 
-      const isPureGovt =
-        (occ.includes("government") || occ.includes("સરકારી") || occ.includes("govt")) &&
-        (!profile.businessService || profile.businessService === "Select Service" || profile.businessService.trim() === "") &&
-        (!profile.businessIndustry || profile.businessIndustry === "Select Industry" || profile.businessIndustry.trim() === "");
+      const isPrivateJob =
+        occ.includes("private") ||
+        occ.includes("ખાનગી") ||
+        occ.includes("job") ||
+        occ.includes("employee") ||
+        occ.includes("service") ||
+        occ.includes("nokari") ||
+        occ.includes("નોકરી");
 
-      if (isPureGovt) {
+      const isGovtJob =
+        occ.includes("government") ||
+        occ.includes("સરકારી") ||
+        occ.includes("govt");
+
+      const hasExplicitBusinessService =
+        Boolean(profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1);
+
+      // Private job candidates and government employees MUST NOT appear in Samaj Services
+      if ((isPrivateJob || isGovtJob) && !hasExplicitBusinessService) {
         await this.prisma.samajServicePerson.deleteMany({
           where: { userId },
         });
         return;
       }
 
-      const isBusinessOrService =
-        occ.includes("business") ||
-        occ.includes("સ્વરોજગાર") ||
-        occ.includes("વેપાર") ||
-        occ.includes("દુકાન") ||
-        occ.includes("self") ||
-        Boolean(profile.businessIndustry && profile.businessIndustry !== "Select Industry" && profile.businessIndustry.trim().length > 1) ||
-        Boolean(profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1) ||
-        Boolean(cleanOrgName && cleanOrgName.length > 2);
+      const isGenuineBusiness =
+        (occ.includes("business") ||
+         occ.includes("સ્વરોજગાર") ||
+         occ.includes("વેપાર") ||
+         occ.includes("દુકાન") ||
+         occ.includes("self")) &&
+        !isPrivateJob &&
+        !isGovtJob;
+
+      const isBusinessOrService = isGenuineBusiness || hasExplicitBusinessService;
+
+      if (!isBusinessOrService) {
+        await this.prisma.samajServicePerson.deleteMany({
+          where: { userId },
+        });
+        return;
+      }
 
       if (isBusinessOrService) {
         // 1. Resolve Contact Phone with robust fallback chain
@@ -2304,15 +2325,11 @@ export class ProfilesService {
           }
         }
 
-        // 3. AUTO-CREATE SAMAJ SERVICE IF NEW AND NOT IN THE DIRECTORY
-        if (!service) {
+        // 3. AUTO-CREATE SAMAJ SERVICE IF EXPLICIT BUSINESS SERVICE PROVIDED AND NOT IN THE DIRECTORY
+        if (!service && hasExplicitBusinessService) {
           const serviceTitle = isEducationOrAcademy
             ? "શિક્ષણ સેવાઓ અને એકેડેમી (Education Services)"
-            : (
-                (profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1)
-                  ? profile.businessService.trim()
-                  : (businessName || designation || "Samaj Business Service")
-              ).trim();
+            : profile.businessService.trim();
 
           const serviceCategory = isEducationOrAcademy
             ? "Education Services"
@@ -2365,6 +2382,11 @@ export class ProfilesService {
             },
           });
           this.logger.log(`Auto-created new SamajService "${serviceTitle}" (ID: ${service.id}, Slug: ${uniqueSlug})`);
+        }
+
+        if (!service) {
+          this.logger.log(`No matching SamajService found for user ${userId}; skipping service person creation.`);
+          return;
         }
 
         if (service) {

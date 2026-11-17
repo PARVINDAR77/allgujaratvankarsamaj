@@ -1880,23 +1880,37 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                 rawOrgName.toLowerCase().includes("સરકાર") ||
                 rawOrgName.toLowerCase().includes("select department");
             const cleanOrgName = isGovtPlaceholder ? "" : rawOrgName;
-            const isPureGovt = (occ.includes("government") || occ.includes("સરકારી") || occ.includes("govt")) &&
-                (!profile.businessService || profile.businessService === "Select Service" || profile.businessService.trim() === "") &&
-                (!profile.businessIndustry || profile.businessIndustry === "Select Industry" || profile.businessIndustry.trim() === "");
-            if (isPureGovt) {
+            const isPrivateJob = occ.includes("private") ||
+                occ.includes("ખાનગી") ||
+                occ.includes("job") ||
+                occ.includes("employee") ||
+                occ.includes("service") ||
+                occ.includes("nokari") ||
+                occ.includes("નોકરી");
+            const isGovtJob = occ.includes("government") ||
+                occ.includes("સરકારી") ||
+                occ.includes("govt");
+            const hasExplicitBusinessService = Boolean(profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1);
+            if ((isPrivateJob || isGovtJob) && !hasExplicitBusinessService) {
                 await this.prisma.samajServicePerson.deleteMany({
                     where: { userId },
                 });
                 return;
             }
-            const isBusinessOrService = occ.includes("business") ||
+            const isGenuineBusiness = (occ.includes("business") ||
                 occ.includes("સ્વરોજગાર") ||
                 occ.includes("વેપાર") ||
                 occ.includes("દુકાન") ||
-                occ.includes("self") ||
-                Boolean(profile.businessIndustry && profile.businessIndustry !== "Select Industry" && profile.businessIndustry.trim().length > 1) ||
-                Boolean(profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1) ||
-                Boolean(cleanOrgName && cleanOrgName.length > 2);
+                occ.includes("self")) &&
+                !isPrivateJob &&
+                !isGovtJob;
+            const isBusinessOrService = isGenuineBusiness || hasExplicitBusinessService;
+            if (!isBusinessOrService) {
+                await this.prisma.samajServicePerson.deleteMany({
+                    where: { userId },
+                });
+                return;
+            }
             if (isBusinessOrService) {
                 let phone = (profile.contactPhone || profile.altPhone || "").trim();
                 if (!phone) {
@@ -1989,12 +2003,10 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         });
                     }
                 }
-                if (!service) {
+                if (!service && hasExplicitBusinessService) {
                     const serviceTitle = isEducationOrAcademy
                         ? "શિક્ષણ સેવાઓ અને એકેડેમી (Education Services)"
-                        : ((profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1)
-                            ? profile.businessService.trim()
-                            : (businessName || designation || "Samaj Business Service")).trim();
+                        : profile.businessService.trim();
                     const serviceCategory = isEducationOrAcademy
                         ? "Education Services"
                         : ((profile.businessIndustry && profile.businessIndustry !== "Select Industry" && profile.businessIndustry.trim().length > 1)
@@ -2046,6 +2058,10 @@ let ProfilesService = ProfilesService_1 = class ProfilesService {
                         },
                     });
                     this.logger.log(`Auto-created new SamajService "${serviceTitle}" (ID: ${service.id}, Slug: ${uniqueSlug})`);
+                }
+                if (!service) {
+                    this.logger.log(`No matching SamajService found for user ${userId}; skipping service person creation.`);
+                    return;
                 }
                 if (service) {
                     const desc = businessName

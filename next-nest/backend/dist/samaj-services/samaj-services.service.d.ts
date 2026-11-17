@@ -7,6 +7,7 @@ export declare class SamajServicesService {
     constructor(prisma: PrismaService);
     private readonly defaultServices;
     syncMissingBusinessProfiles(): Promise<void>;
+    purgePrivateJobCandidatesAndOrphanServices(): Promise<void>;
     fixDatabaseRecords(): Promise<{
         success: boolean;
         message: string;

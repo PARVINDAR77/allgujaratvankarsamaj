@@ -20,6 +20,7 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
         findFirst: jest.fn(),
         findUnique: jest.fn(),
         findMany: jest.fn(),
+        count: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
@@ -28,6 +29,7 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
       matrimonialProfile: {
         findMany: jest.fn(),
       },
+      $transaction: jest.fn().mockImplementation((args) => Array.isArray(args) ? Promise.all(args) : args(prisma)),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -145,6 +147,7 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
 
   it("getPublicPersonsByServiceId MUST return Vamika Nursing Academy when querying Education Service", async () => {
     jest.spyOn(service, "syncMissingBusinessProfiles").mockResolvedValue();
+    prisma.samajServicePerson.count.mockResolvedValue(1);
 
     prisma.samajServicePerson.findMany.mockResolvedValue([
       {
@@ -164,8 +167,8 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
     ]);
 
     const res = await service.getPublicPersonsByServiceId("srv-edu-001");
-    expect(res).toHaveLength(1);
-    expect(res[0].name).toBe("VAMIKA NURSING ACADEMY (IDAR)");
-    expect(res[0].phone).toBe("9265476537");
+    expect(res.data).toHaveLength(1);
+    expect(res.data[0].name).toBe("VAMIKA NURSING ACADEMY (IDAR)");
+    expect(res.data[0].phone).toBe("9265476537");
   });
 });

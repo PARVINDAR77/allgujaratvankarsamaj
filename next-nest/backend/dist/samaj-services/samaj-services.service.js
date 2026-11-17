@@ -496,10 +496,33 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                 const fName = (p.firstName || "").trim();
                 const lName = (p.lastName || "").trim();
                 const combined = `${fName} ${lName} ${orgName} ${p.about || ""} ${bizInd} ${bizSvc}`.toLowerCase();
-                const isGovtOnly = (occ.includes("government") || occ.includes("સરકારી") || occ.includes("govt")) &&
-                    (!p.businessService || p.businessService === "Select Service" || p.businessService.trim() === "") &&
-                    (!p.businessIndustry || p.businessIndustry === "Select Industry" || p.businessIndustry.trim() === "");
-                if (isGovtOnly) {
+                const isPrivateJob = occ.includes("private") ||
+                    occ.includes("ખાનગી") ||
+                    occ.includes("job") ||
+                    occ.includes("employee") ||
+                    occ.includes("service") ||
+                    occ.includes("nokari") ||
+                    occ.includes("નોકરી");
+                const isGovtJob = occ.includes("government") ||
+                    occ.includes("સરકારી") ||
+                    occ.includes("govt");
+                const hasExplicitBusinessService = Boolean(p.businessService && p.businessService !== "Select Service" && p.businessService.trim().length > 1);
+                if ((isPrivateJob || isGovtJob) && !hasExplicitBusinessService) {
+                    if (p.userId) {
+                        await this.prisma.samajServicePerson.deleteMany({
+                            where: { userId: p.userId },
+                        });
+                    }
+                    continue;
+                }
+                const isGenuineBusiness = (occ.includes("business") ||
+                    occ.includes("સ્વરોજગાર") ||
+                    occ.includes("વેપાર") ||
+                    occ.includes("દુકાન") ||
+                    occ.includes("self")) &&
+                    !isPrivateJob &&
+                    !isGovtJob;
+                if (!isGenuineBusiness && !hasExplicitBusinessService) {
                     if (p.userId) {
                         await this.prisma.samajServicePerson.deleteMany({
                             where: { userId: p.userId },
@@ -596,15 +619,7 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                             }
                         }
                     }
-                    if (!matched && orgName && !isGovtPlaceholder && orgName.length > 2) {
-                        matched = await this.prisma.samajService.findFirst({
-                            where: {
-                                title: { contains: orgName },
-                                isActive: true,
-                            },
-                        });
-                    }
-                    if (!matched && (!p.businessService || p.businessService === "Select Service") && p.businessIndustry && p.businessIndustry !== "Select Industry") {
+                    if (!matched && hasExplicitBusinessService && p.businessIndustry && p.businessIndustry !== "Select Industry") {
                         const cleanInd = p.businessIndustry.replace(/\(.*?\)/g, "").trim();
                         if (cleanInd.length > 2) {
                             matched = await this.prisma.samajService.findFirst({
@@ -615,10 +630,8 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
                             });
                         }
                     }
-                    if (!matched) {
-                        const serviceTitle = ((p.businessService && p.businessService !== "Select Service" && p.businessService.trim().length > 1)
-                            ? p.businessService.trim()
-                            : ((!isGovtPlaceholder && orgName) || p.designation || "Samaj Business Service")).trim();
+                    if (!matched && hasExplicitBusinessService) {
+                        const serviceTitle = p.businessService.trim();
                         const serviceCategory = ((p.businessIndustry && p.businessIndustry !== "Select Industry" && p.businessIndustry.trim().length > 1)
                             ? p.businessIndustry.trim()
                             : "વ્યવસાય અને સેવાઓ (Business & Services)").trim();
@@ -797,9 +810,140 @@ let SamajServicesService = SamajServicesService_1 = class SamajServicesService {
             this.logger.warn(`syncMissingBusinessProfiles warning: ${err?.message || err}`);
         }
     }
+    async purgePrivateJobCandidatesAndOrphanServices() {
+        this.logger.log("Purging private job candidates and corporate employer records from Samaj Services...");
+        try {
+            const personsWithUser = await this.prisma.samajServicePerson.findMany({
+                where: { userId: { not: null } },
+                select: { id: true, userId: true },
+            });
+            for (const sp of personsWithUser) {
+                if (!sp.userId)
+                    continue;
+                const profile = await this.prisma.matrimonialProfile.findUnique({
+                    where: { userId: sp.userId },
+                    select: {
+                        occupation: true,
+                        businessService: true,
+                        businessIndustry: true,
+                    },
+                });
+                if (profile) {
+                    const occ = (profile.occupation || "").toLowerCase();
+                    const isJobCandidate = occ.includes("private") ||
+                        occ.includes("ખાનગી") ||
+                        occ.includes("job") ||
+                        occ.includes("employee") ||
+                        occ.includes("government") ||
+                        occ.includes("સરકારી") ||
+                        occ.includes("govt") ||
+                        occ.includes("nokari") ||
+                        occ.includes("નોકરી");
+                    const hasExplicitBiz = Boolean(profile.businessService && profile.businessService !== "Select Service" && profile.businessService.trim().length > 1);
+                    if (isJobCandidate && !hasExplicitBiz) {
+                        await this.prisma.samajServicePerson.delete({ where: { id: sp.id } });
+                        this.logger.log(`Deleted private job candidate person ${sp.id} (User: ${sp.userId})`);
+                    }
+                }
+            }
+        }
+        catch (e) {
+            this.logger.warn(`Error in person user purge: ${e?.message || e}`);
+        }
+        const badPersonPatterns = [
+            "TATA CONSULTANCY",
+            "l and t finance",
+            "ideal experience",
+            "jivraj 9 Tea",
+            "Escorts Kubota",
+            "gmers general",
+            "Indigo Airline",
+            "TALUKA PANCHAYAT",
+            "vocational education",
+            "iscon Balaji",
+            "Gisfs",
+            "kalpataru transmission",
+            "Beckhoul Private",
+            "Backhoul Private",
+            "GSCSCL",
+            "Gujarat Urban Development",
+            "INTAS PHARMACEUTICAL",
+            "zydus cancer",
+            "CHC VADGAM",
+            "Indian Institute Of Technology",
+            "8000",
+            "POST OFFICE RD AGENT",
+            "SIS",
+            "ATMVALBH HOSPITAL",
+            "nursing college",
+            "shallby hospital",
+        ];
+        for (const pattern of badPersonPatterns) {
+            try {
+                await this.prisma.samajServicePerson.deleteMany({
+                    where: {
+                        OR: [
+                            { name: { contains: pattern } },
+                            { gujaratiName: { contains: pattern } },
+                            { description: { contains: pattern } },
+                            { service: { title: { contains: pattern } } },
+                        ],
+                    },
+                });
+            }
+            catch (_) { }
+        }
+        const badServicePatterns = [
+            "8000",
+            "ideal experience learning pvt.ltd",
+            "jivraj 9 Tea group",
+            "l and t finance",
+            "TATA CONSULTANCY SERVICE (TCS)",
+            "Escorts Kubota Limited",
+            "gmers general hospital gandhinagar",
+            "Tcs",
+            "knowledge integration service India pvt ltd",
+            "Indigo Airline Ahmedabad Airport",
+            "TALUKA PANCHAYAT OFFICE",
+            "vocational education teacher",
+            "iscon Balaji foolds Pvt Ltd",
+            "Gisfs",
+            "kalpataru transmission ltd",
+            "Beckhoul Private limited",
+            "Backhoul Private limited",
+            "GSCSCL",
+            "Gujarat Urban Development Mission Gandhinagar",
+            "INTAS PHARMACEUTICAL LTD.",
+            "zydus cancer hospital",
+            "CHC VADGAM",
+            "Indian Institute Of Technology Gandhinagar",
+            "Jio moll",
+            "emperor",
+        ];
+        for (const title of badServicePatterns) {
+            try {
+                await this.prisma.samajService.deleteMany({
+                    where: { title },
+                });
+            }
+            catch (_) { }
+        }
+        try {
+            await this.prisma.samajService.deleteMany({
+                where: {
+                    category: { contains: "Business & Services" },
+                    persons: { none: {} },
+                },
+            });
+        }
+        catch (_) { }
+        this.logger.log("Purge of private job candidates and corporate employer records completed successfully.");
+    }
     async fixDatabaseRecords() {
         this.logger.log("Running comprehensive database repair for Samaj Services...");
+        await this.purgePrivateJobCandidatesAndOrphanServices();
         await this.syncMissingBusinessProfiles();
+        await this.purgePrivateJobCandidatesAndOrphanServices();
         const activePersons = await this.prisma.samajServicePerson.findMany({
             where: { isActive: true },
             include: { service: true },
