@@ -1814,10 +1814,6 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
     );
   }
 
-  Widget _buildAddBusinessBanner(bool isDesktop, BuildContext context) {
-    return const SizedBox.shrink();
-  }
-
   Widget _buildSearchSection(
       bool isDesktop, List<String> districtsList, List<String> talukasList) {
     return Container(
