@@ -1658,11 +1658,6 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
 
                       const SizedBox(height: 14),
 
-                      // 3. Add Business Callout Banner
-                      _buildAddBusinessBanner(isDesktop, context),
-
-                      const SizedBox(height: 14),
-
                       // 4. Search & Filter Section
                       _buildSearchSection(isDesktop, districtsList, talukasList),
 
@@ -1820,105 +1815,7 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
   }
 
   Widget _buildAddBusinessBanner(bool isDesktop, BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 6),
-      padding: EdgeInsets.symmetric(
-        horizontal: isDesktop ? 20 : 14,
-        vertical: isDesktop ? 14 : 12,
-      ),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF101B36), Color(0xFF1B2C52)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFD6A34A).withValues(alpha: 0.75),
-          width: 1.4,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF101B36).withValues(alpha: 0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFFFE082), Color(0xFFD6A34A)],
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFD6A34A).withValues(alpha: 0.35),
-                  blurRadius: 8,
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.storefront_rounded,
-              color: Color(0xFF101B36),
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'તમારો વ્યવસાય અથવા સેવા અહીં દર્શાવો',
-                  style: TextStyle(
-                    color: const Color(0xFFFFE082),
-                    fontWeight: FontWeight.bold,
-                    fontSize: isDesktop ? 15 : 13.5,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  'પ્રોફાઇલમાં બિઝનેસ ઉમેરી સમાજના હજારો પરિવારો સાથે જોડાઓ',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.82),
-                    fontSize: isDesktop ? 12 : 11,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton.icon(
-            onPressed: () {
-              _showAddBusinessModal(context);
-            },
-            icon: const Icon(Icons.add_business_rounded, size: 16),
-            label: Text(
-              isDesktop ? '+ વ્યવસાય ઉમેરો' : '+ ઉમેરો',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFA4143D),
-              foregroundColor: Colors.white,
-              elevation: 3,
-              padding: EdgeInsets.symmetric(
-                horizontal: isDesktop ? 16 : 12,
-                vertical: isDesktop ? 12 : 10,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-                side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildSearchSection(
