@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -332,6 +333,165 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
     }
   }
 
+  Future<void> _confirmClearChat() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.delete_sweep_rounded, color: Colors.orange, size: 26),
+            SizedBox(width: 8),
+            Text('ચેટ સાફ કરો (Clear Chat)', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: const Text(
+          'શું તમે આ વાતચીતના તમામ સંદેશા સાફ/ડિલીટ કરવા માંગો છો?\n\nઆ ક્રિયા પછી સંદેશા પાછા લાવી શકાશે નહીં.',
+          style: TextStyle(fontSize: 14, height: 1.4, color: Colors.black87),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('રદ કરો (Cancel)', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange.shade800,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('સાફ કરો (Clear All)', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await ref
+          .read(chatRoomProvider(widget.conversationId).notifier)
+          .clearMessages();
+      _showSnack(
+        success ? 'તમામ સંદેશા સાફ કરી દીધા છે.' : 'સંદેશા સાફ થઈ શક્યા નથી, ફરી પ્રયાસ કરો.',
+        isError: !success,
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteConversation(String displayName) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.delete_forever_rounded, color: Colors.redAccent, size: 26),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text('વાતચીત ડિલીટ કરો', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+        content: Text(
+          'શું તમે "$displayName" સાથેની સંપૂર્ણ વાતચીત ડિલીટ કરવા માંગો છો?\n\nબધા સંદેશા કાયમ માટે ડિલીટ થઈ જશે.',
+          style: const TextStyle(fontSize: 14, height: 1.4, color: Colors.black87),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('રદ કરો (Cancel)', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('ડિલીટ કરો (Delete)', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await ref
+          .read(chatRoomProvider(widget.conversationId).notifier)
+          .deleteConversation();
+      if (mounted) {
+        if (success) {
+          ref.read(conversationsProvider.notifier).refresh();
+          context.pop();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('વાતચીત સફળતાપૂર્વક ડિલીટ થઈ ગઈ છે.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        } else {
+          _showSnack('વાતચીત ડિલીટ થઈ શકી નથી, ફરી પ્રયાસ કરો.', isError: true);
+        }
+      }
+    }
+  }
+
+  void _showMessageOptions(ChatMessageModel msg, bool isMe) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                if (msg.media == null)
+                  ListTile(
+                    leading: const Icon(Icons.copy_rounded, color: Color(0xFF0056D2)),
+                    title: const Text('ટેક્સ્ટ કોપી કરો (Copy Text)', style: TextStyle(fontWeight: FontWeight.w600)),
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      Clipboard.setData(ClipboardData(text: msg.content));
+                      _showSnack('ટેક્સ્ટ કોપી થઈ ગયો છે.');
+                    },
+                  ),
+                ListTile(
+                  leading: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                  title: const Text('સંદેશો ડિલીટ કરો (Delete Message)', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    final success = await ref
+                        .read(chatRoomProvider(widget.conversationId).notifier)
+                        .deleteMessage(msg.id);
+                    _showSnack(
+                      success ? 'સંદેશો ડિલીટ કરી દીધો છે.' : 'સંદેશો ડિલીટ થઈ શક્યો નથી.',
+                      isError: !success,
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatRoomProvider(widget.conversationId));
@@ -422,6 +582,46 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
               ref.read(chatRoomProvider(widget.conversationId).notifier).loadMessages();
             },
           ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.black87),
+            tooltip: 'વિકલ્પો (Options)',
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            onSelected: (value) {
+              switch (value) {
+                case 'refresh':
+                  ref.read(chatRoomProvider(widget.conversationId).notifier).loadMessages();
+                  break;
+                case 'clear':
+                  _confirmClearChat();
+                  break;
+                case 'delete':
+                  _confirmDeleteConversation(displayName);
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'clear',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_sweep_rounded, size: 20, color: Colors.orange),
+                    SizedBox(width: 10),
+                    Text('ચેટ સાફ કરો (Clear Chat)'),
+                  ],
+                ),
+              ),
+              const PopupMenuItem(
+                value: 'delete',
+                child: Row(
+                  children: [
+                    Icon(Icons.delete_forever_rounded, size: 20, color: Colors.redAccent),
+                    SizedBox(width: 10),
+                    Text('વાતચીત ડિલીટ કરો (Delete)', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ],
       ),
       body: SafeArea(
@@ -484,71 +684,74 @@ class _ChatRoomScreenState extends ConsumerState<ChatRoomScreen> {
 
                             return Align(
                               alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-                              child: Container(
-                                margin: const EdgeInsets.symmetric(vertical: 4),
-                                constraints: BoxConstraints(
-                                  maxWidth: MediaQuery.of(context).size.width * 0.78,
-                                ),
-                                padding: media != null
-                                    ? const EdgeInsets.fromLTRB(6, 6, 6, 6)
-                                    : const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                                decoration: BoxDecoration(
-                                  color: isMe ? primaryColor : Colors.white,
-                                  borderRadius: BorderRadius.only(
-                                    topLeft: const Radius.circular(16),
-                                    topRight: const Radius.circular(16),
-                                    bottomLeft: Radius.circular(isMe ? 16 : 4),
-                                    bottomRight: Radius.circular(isMe ? 4 : 16),
+                              child: GestureDetector(
+                                onLongPress: () => _showMessageOptions(msg, isMe),
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(vertical: 4),
+                                  constraints: BoxConstraints(
+                                    maxWidth: MediaQuery.of(context).size.width * 0.78,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.04),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
+                                  padding: media != null
+                                      ? const EdgeInsets.fromLTRB(6, 6, 6, 6)
+                                      : const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                                  decoration: BoxDecoration(
+                                    color: isMe ? primaryColor : Colors.white,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: const Radius.circular(16),
+                                      topRight: const Radius.circular(16),
+                                      bottomLeft: Radius.circular(isMe ? 16 : 4),
+                                      bottomRight: Radius.circular(isMe ? 4 : 16),
                                     ),
-                                  ],
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                                  children: [
-                                    if (media != null)
-                                      ChatMediaBubble(
-                                        media: media,
-                                        isMe: isMe,
-                                        primaryColor: primaryColor,
-                                      )
-                                    else
-                                      Text(
-                                        msg.content,
-                                        style: TextStyle(
-                                          color: isMe ? Colors.white : Colors.black87,
-                                          fontSize: 14.5,
-                                          height: 1.3,
-                                        ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withValues(alpha: 0.04),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
                                       ),
-                                    const SizedBox(height: 3),
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
+                                    ],
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                                    children: [
+                                      if (media != null)
+                                        ChatMediaBubble(
+                                          media: media,
+                                          isMe: isMe,
+                                          primaryColor: primaryColor,
+                                        )
+                                      else
                                         Text(
-                                          timeStr,
+                                          msg.content,
                                           style: TextStyle(
-                                            color: isMe ? Colors.white70 : Colors.black45,
-                                            fontSize: 10,
+                                            color: isMe ? Colors.white : Colors.black87,
+                                            fontSize: 14.5,
+                                            height: 1.3,
                                           ),
                                         ),
-                                        if (isMe) ...[
-                                          const SizedBox(width: 4),
-                                          Icon(
-                                            msg.isRead ? Icons.done_all_rounded : Icons.done_rounded,
-                                            size: 13,
-                                            color: msg.isRead ? Colors.lightBlueAccent : Colors.white70,
+                                      const SizedBox(height: 3),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            timeStr,
+                                            style: TextStyle(
+                                              color: isMe ? Colors.white70 : Colors.black45,
+                                              fontSize: 10,
+                                            ),
                                           ),
+                                          if (isMe) ...[
+                                            const SizedBox(width: 4),
+                                            Icon(
+                                              msg.isRead ? Icons.done_all_rounded : Icons.done_rounded,
+                                              size: 13,
+                                              color: msg.isRead ? Colors.lightBlueAccent : Colors.white70,
+                                            ),
+                                          ],
                                         ],
-                                      ],
-                                    ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             );

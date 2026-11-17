@@ -44,6 +44,18 @@ class ConversationsNotifier extends StateNotifier<AsyncValue<List<ChatConversati
 
   Future<void> refresh() => loadConversations();
 
+  Future<bool> deleteConversation(String conversationId) async {
+    final success = await _repo.deleteConversation(conversationId);
+    if (success) {
+      final currentList = state.valueOrNull ?? [];
+      state = AsyncValue.data(
+        currentList.where((c) => c.id != conversationId).toList(),
+      );
+      return true;
+    }
+    return false;
+  }
+
   @override
   void dispose() {
     _pollingTimer?.cancel();
@@ -140,6 +152,30 @@ class ChatRoomNotifier extends StateNotifier<ChatRoomState> {
       return true;
     }
     return false;
+  }
+
+  Future<bool> clearMessages() async {
+    final success = await _repo.clearMessages(_conversationId);
+    if (success) {
+      state = state.copyWith(messages: []);
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> deleteMessage(String messageId) async {
+    final success = await _repo.deleteMessage(messageId);
+    if (success) {
+      state = state.copyWith(
+        messages: state.messages.where((m) => m.id != messageId).toList(),
+      );
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> deleteConversation() async {
+    return _repo.deleteConversation(_conversationId);
   }
 
   @override

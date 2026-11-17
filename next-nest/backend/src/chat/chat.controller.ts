@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -57,5 +58,32 @@ export class ChatController {
   @ApiOperation({ summary: "Mark conversation as read" })
   async markAsRead(@Request() req: any, @Param("id") conversationId: string) {
     return this.chatService.markAsRead(req.user.id, conversationId);
+  }
+
+  @Delete("conversations/:id")
+  @ApiOperation({ summary: "Delete an entire conversation and its messages" })
+  async deleteConversation(
+    @Request() req: any,
+    @Param("id") conversationId: string,
+  ) {
+    return this.chatService.deleteConversation(req.user.id, conversationId);
+  }
+
+  @Delete("conversations/:id/messages")
+  @ApiOperation({ summary: "Clear all messages in a conversation" })
+  async clearMessages(
+    @Request() req: any,
+    @Param("id") conversationId: string,
+  ) {
+    return this.chatService.clearMessages(req.user.id, conversationId);
+  }
+
+  @Delete("messages/:messageId")
+  @ApiOperation({ summary: "Delete a specific chat message" })
+  async deleteMessage(
+    @Request() req: any,
+    @Param("messageId") messageId: string,
+  ) {
+    return this.chatService.deleteMessage(req.user.id, messageId);
   }
 }

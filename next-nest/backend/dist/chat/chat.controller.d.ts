@@ -91,4 +91,16 @@ export declare class ChatController {
         isRead: boolean;
     }>;
     markAsRead(req: any, conversationId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
+    deleteConversation(req: any, conversationId: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    clearMessages(req: any, conversationId: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
+    deleteMessage(req: any, messageId: string): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

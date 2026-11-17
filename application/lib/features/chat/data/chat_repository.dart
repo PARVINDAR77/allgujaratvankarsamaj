@@ -91,6 +91,33 @@ class ChatRepository {
     } catch (_) {}
   }
 
+  Future<bool> deleteConversation(String conversationId) async {
+    try {
+      final res = await _dio.delete('/chat/conversations/$conversationId');
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> clearMessages(String conversationId) async {
+    try {
+      final res = await _dio.delete('/chat/conversations/$conversationId/messages');
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<bool> deleteMessage(String messageId) async {
+    try {
+      final res = await _dio.delete('/chat/messages/$messageId');
+      return res.statusCode == 200 || res.statusCode == 204;
+    } catch (_) {
+      return false;
+    }
+  }
+
   /// Uploads a chat attachment (image, video or PDF) and returns its public URL.
   /// Throws an [Exception] with a user-friendly message on failure.
   Future<String> uploadChatMedia({

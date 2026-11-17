@@ -319,4 +319,123 @@ export class ChatService {
       data: { isRead: true },
     });
   }
+
+  async deleteConversation(userId: string, conversationId: string) {
+    const myProfile = await this.getMyProfile(userId);
+    const conv = await this.prisma.chatConversation.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conv) {
+      throw new NotFoundException("Conversation not found");
+    }
+
+    if (
+      conv.participant1Id !== myProfile.id &&
+      conv.participant2Id !== myProfile.id
+    ) {
+      throw new ForbiddenException("You do not have access to delete this conversation");
+    }
+
+    // Delete messages first to be clean across all DB configurations
+    await this.prisma.chatMessage.deleteMany({
+      where: { conversationId },
+    });
+
+    await this.prisma.chatConversation.delete({
+      where: { id: conversationId },
+    });
+
+    this.logger.log(`Deleted conversation ${conversationId} by user ${userId} (profile: ${myProfile.id})`);
+
+    return {
+      success: true,
+      message: "Conversation deleted successfully",
+    };
+  }
+
+  async clearMessages(userId: string, conversationId: string) {
+    const myProfile = await this.getMyProfile(userId);
+    const conv = await this.prisma.chatConversation.findUnique({
+      where: { id: conversationId },
+    });
+
+    if (!conv) {
+      throw new NotFoundException("Conversation not found");
+    }
+
+    if (
+      conv.participant1Id !== myProfile.id &&
+      conv.participant2Id !== myProfile.id
+    ) {
+      throw new ForbiddenException("You do not have access to clear this conversation");
+    }
+
+    await this.prisma.chatMessage.deleteMany({
+      where: { conversationId },
+    });
+
+    await this.prisma.chatConversation.update({
+      where: { id: conversationId },
+      data: {
+        lastMessage: null,
+        lastMessageAt: null,
+      },
+    });
+
+    this.logger.log(`Cleared all messages in conversation ${conversationId} by user ${userId}`);
+
+    return {
+      success: true,
+      message: "All messages cleared successfully",
+    };
+  }
+
+  async deleteMessage(userId: string, messageId: string) {
+    const myProfile = await this.getMyProfile(userId);
+    const message = await this.prisma.chatMessage.findUnique({
+      where: { id: messageId },
+      include: { conversation: true },
+    });
+
+    if (!message) {
+      throw new NotFoundException("Message not found");
+    }
+
+    // Sender or participant can delete
+    if (
+      message.senderId !== myProfile.id &&
+      message.conversation.participant1Id !== myProfile.id &&
+      message.conversation.participant2Id !== myProfile.id
+    ) {
+      throw new ForbiddenException("You do not have permission to delete this message");
+    }
+
+    const conversationId = message.conversationId;
+
+    await this.prisma.chatMessage.delete({
+      where: { id: messageId },
+    });
+
+    // Update conversation's lastMessage to the latest remaining message
+    const lastRemaining = await this.prisma.chatMessage.findFirst({
+      where: { conversationId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    await this.prisma.chatConversation.update({
+      where: { id: conversationId },
+      data: {
+        lastMessage: lastRemaining?.content || null,
+        lastMessageAt: lastRemaining?.createdAt || null,
+      },
+    });
+
+    this.logger.log(`Deleted message ${messageId} in conversation ${conversationId} by user ${userId}`);
+
+    return {
+      success: true,
+      message: "Message deleted successfully",
+    };
+  }
 }

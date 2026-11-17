@@ -37,6 +37,15 @@ let ChatController = class ChatController {
     async markAsRead(req, conversationId) {
         return this.chatService.markAsRead(req.user.id, conversationId);
     }
+    async deleteConversation(req, conversationId) {
+        return this.chatService.deleteConversation(req.user.id, conversationId);
+    }
+    async clearMessages(req, conversationId) {
+        return this.chatService.clearMessages(req.user.id, conversationId);
+    }
+    async deleteMessage(req, messageId) {
+        return this.chatService.deleteMessage(req.user.id, messageId);
+    }
 };
 exports.ChatController = ChatController;
 __decorate([
@@ -83,6 +92,33 @@ __decorate([
     __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ChatController.prototype, "markAsRead", null);
+__decorate([
+    (0, common_1.Delete)("conversations/:id"),
+    (0, swagger_1.ApiOperation)({ summary: "Delete an entire conversation and its messages" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], ChatController.prototype, "deleteConversation", null);
+__decorate([
+    (0, common_1.Delete)("conversations/:id/messages"),
+    (0, swagger_1.ApiOperation)({ summary: "Clear all messages in a conversation" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], ChatController.prototype, "clearMessages", null);
+__decorate([
+    (0, common_1.Delete)("messages/:messageId"),
+    (0, swagger_1.ApiOperation)({ summary: "Delete a specific chat message" }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)("messageId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, String]),
+    __metadata("design:returntype", Promise)
+], ChatController.prototype, "deleteMessage", null);
 exports.ChatController = ChatController = __decorate([
     (0, swagger_1.ApiTags)("Chat"),
     (0, swagger_1.ApiBearerAuth)(),

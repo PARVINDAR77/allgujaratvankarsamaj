@@ -208,7 +208,17 @@ class ConversationsListScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline_rounded, size: 20, color: Colors.grey),
+                        tooltip: 'ચેટ ડિલીટ કરો (Delete Chat)',
+                        onPressed: () => _confirmDeleteConversation(context, ref, conv),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey),
+                    ],
+                  ),
                 );
               },
             ),
@@ -216,5 +226,66 @@ class ConversationsListScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _confirmDeleteConversation(
+    BuildContext context,
+    WidgetRef ref,
+    ChatConversationModel conv,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.delete_forever_rounded, color: Colors.redAccent, size: 26),
+            const SizedBox(width: 8),
+            const Expanded(
+              child: Text(
+                'વાતચીત ડિલીટ કરો',
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'શું તમે "${conv.partnerName}" સાથેની તમામ વાતચીત અને સંદેશા ડિલીટ કરવા માંગો છો?\n\nઆ ક્રિયા પૂર્વવત્ થઈ શકશે નહીં.',
+          style: const TextStyle(fontSize: 14, height: 1.4, color: Colors.black87),
+        ),
+        actionsPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('રદ કરો (Cancel)', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w600)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('ડિલીટ કરો (Delete)', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final success = await ref.read(conversationsProvider.notifier).deleteConversation(conv.id);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'વાતચીત સફળતાપૂર્વક ડિલીટ થઈ ગઈ છે.'
+                  : 'વાતચીત ડિલીટ થઈ શકી નથી, ફરી પ્રયાસ કરો.',
+            ),
+            backgroundColor: success ? Colors.green.shade700 : Colors.redAccent,
+          ),
+        );
+      }
+    }
   }
 }
