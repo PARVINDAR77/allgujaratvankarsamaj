@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const VERSION_TAG = '20261107_clean_console_v79';
+const VERSION_TAG = '20261117_clean_pargana_v80';
 
 function patchMainDartJs() {
   const filePath = path.join(__dirname, '../application/build/web/main.dart.js');
@@ -543,6 +543,7 @@ function updateCacheBuster() {
 try {
   patchMainDartJs();
   patchMainDartLive();
+  require('./patch_pargana_serials.js');
   require('./patch_asset_manifest.js');
   updateCacheBuster();
   console.log('ALL RESTORED ASSETS & COMPACT CARDS PATCHES APPLIED SUCCESSFULLY!');
