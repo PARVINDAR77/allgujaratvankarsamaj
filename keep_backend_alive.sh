@@ -191,6 +191,9 @@ if [ "$SYNC_ASSETS" -eq 1 ] && [ -d "/home/u796269890/domains/allgujaratvankarsa
     [ -f "$SCRIPT_DIR/application/build/web/api_proxy.php" ] && cp -f "$SCRIPT_DIR/application/build/web/api_proxy.php" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/api_proxy.php 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/.htaccess" ] && cp -f "$SCRIPT_DIR/application/build/web/.htaccess" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/.htaccess 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/index.html" ] && cp -f "$SCRIPT_DIR/application/build/web/index.html" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/index.html 2>/dev/null || true
+    [ -f "$SCRIPT_DIR/application/build/web/manifest.json" ] && cp -f "$SCRIPT_DIR/application/build/web/manifest.json" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/manifest.json 2>/dev/null || true
+    cp -f "$SCRIPT_DIR/application/build/web/favicon"* /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
+    [ -d "$SCRIPT_DIR/application/build/web/icons" ] && cp -rf "$SCRIPT_DIR/application/build/web/icons" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/ 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/main.dart.js" ] && cp -f "$SCRIPT_DIR/application/build/web/main.dart.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/main.dart.js 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/flutter_bootstrap.js" ] && cp -f "$SCRIPT_DIR/application/build/web/flutter_bootstrap.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter_bootstrap.js 2>/dev/null || true
     [ -f "$SCRIPT_DIR/application/build/web/flutter.js" ] && cp -f "$SCRIPT_DIR/application/build/web/flutter.js" /home/u796269890/domains/allgujaratvankarsamaj.com/public_html/flutter.js 2>/dev/null || true
