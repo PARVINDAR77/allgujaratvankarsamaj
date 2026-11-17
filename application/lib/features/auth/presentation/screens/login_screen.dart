@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../providers/auth_provider.dart';
@@ -22,6 +23,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    _loadRememberedCredentials();
+  }
+
+  Future<void> _loadRememberedCredentials() async {
+    final storage = ref.read(secureStorageServiceProvider);
+    final data = await storage.getRememberedIdentifier();
+    if (mounted) {
+      setState(() {
+        _rememberMe = data['enabled'] as bool;
+        final savedId = data['identifier'] as String;
+        if (_rememberMe && savedId.isNotEmpty) {
+          _emailController.text = savedId;
+        }
+      });
+    }
   }
 
   @override
@@ -70,6 +86,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       if (mounted) {
         setState(() => _isLoading = false);
         if (success) {
+          // Tell OS Autofill (Android/iOS) to prompt saving password if entered manually
+          TextInput.finishAutofillContext(shouldSave: true);
+
+          // Save or clear remembered identifier
+          final storage = ref.read(secureStorageServiceProvider);
+          await storage.saveRememberedIdentifier(inputEmail, _rememberMe);
+
           final currentUser = ref.read(authNotifierProvider).user;
           if (currentUser != null && !currentUser.hasProfile) {
             context.go('/profile/create');
@@ -102,9 +125,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _showCustomLoginDialog() {
-    _emailController.clear();
+    if (!_rememberMe) {
+      _emailController.clear();
+    }
     _passwordController.clear();
     bool obscurePassword = true;
+    bool dialogRememberMe = _rememberMe;
 
     showDialog(
       context: context,
@@ -127,92 +153,135 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'તમારું ઈમેલ અને પાસવર્ડ દાખલ કરો:',
-                style: TextStyle(color: Colors.white70, fontSize: 12),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                autocorrect: false,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFD4AF37), size: 20),
-                  labelText: 'Email Address (ઈમેલ)',
-                  hintText: 'example@gmail.com',
-                  labelStyle: const TextStyle(color: Colors.white70),
-                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-                  ),
+          content: AutofillGroup(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'તમારું ઈમેલ/મોબાઇલ અને પાસવર્ડ દાખલ કરો:',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
                 ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                obscureText: obscurePassword,
-                autocorrect: false,
-                enableSuggestions: false,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFD4AF37), size: 20),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      color: Colors.white60,
-                      size: 20,
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  autocorrect: false,
+                  autofillHints: const [
+                    AutofillHints.username,
+                    AutofillHints.email,
+                    AutofillHints.telephoneNumber,
+                  ],
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.email_outlined, color: Color(0xFFD4AF37), size: 20),
+                    labelText: 'Email Address / Mobile (ઈમેલ / મોબાઇલ)',
+                    hintText: 'example@gmail.com / 9876543210',
+                    labelStyle: TextStyle(color: Colors.white70),
+                    hintStyle: TextStyle(color: Colors.white30, fontSize: 13),
+                    enabledBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFD4AF37)),
                     ),
-                    onPressed: () {
-                      setDialogState(() {
-                        obscurePassword = !obscurePassword;
-                      });
-                    },
-                  ),
-                  labelText: 'Password (પાસવર્ડ)',
-                  hintText: '••••••••',
-                  labelStyle: const TextStyle(color: Colors.white70),
-                  hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
-                  enabledBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFD4AF37)),
-                  ),
-                  focusedBorder: const UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.amberAccent, width: 2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Align(
-                alignment: const Alignment(0.35, 0.0),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogCtx);
-                    _showForgotPasswordDialog();
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.zero,
-                    minimumSize: const Size(50, 28),
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: const Text(
-                    'Forgot Password? (પાસવર્ડ ભૂલી ગયા છો?)',
-                    style: TextStyle(
-                      color: Color(0xFFD4AF37),
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.underline,
+                    focusedBorder: UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.amberAccent, width: 2),
                     ),
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _passwordController,
+                  obscureText: obscurePassword,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  autofillHints: const [AutofillHints.password],
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFFD4AF37), size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.white60,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setDialogState(() {
+                          obscurePassword = !obscurePassword;
+                        });
+                      },
+                    ),
+                    labelText: 'Password (પાસવર્ડ)',
+                    hintText: '••••••••',
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    hintStyle: const TextStyle(color: Colors.white30, fontSize: 13),
+                    enabledBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFFD4AF37)),
+                    ),
+                    focusedBorder: const UnderlineInputBorder(
+                      borderSide: BorderSide(color: Colors.amberAccent, width: 2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        setDialogState(() {
+                          dialogRememberMe = !dialogRememberMe;
+                        });
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: Checkbox(
+                              value: dialogRememberMe,
+                              activeColor: const Color(0xFFD4AF37),
+                              checkColor: const Color(0xFF041126),
+                              side: const BorderSide(color: Color(0xFFD4AF37), width: 1.2),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                              onChanged: (val) {
+                                setDialogState(() {
+                                  dialogRememberMe = val ?? true;
+                                });
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Remember me',
+                            style: TextStyle(color: Colors.white70, fontSize: 11.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogCtx);
+                        _showForgotPasswordDialog();
+                      },
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(50, 28),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text(
+                        'Forgot Password? (પાસવર્ડ ભૂલી ગયા છો?)',
+                        style: TextStyle(
+                          color: Color(0xFFD4AF37),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.underline,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -236,6 +305,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 }
 
                 Navigator.pop(dialogCtx);
+                setState(() => _rememberMe = dialogRememberMe);
                 _performLogin(emailText, passText);
               },
               style: ElevatedButton.styleFrom(
@@ -803,11 +873,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget _buildRightLoginPanel(BuildContext context, {bool isScrollable = true}) {
     final formContent = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 460),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Top-Right: Don't have an account? Register Button
+      child: AutofillGroup(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Top-Right: Don't have an account? Register Button
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
@@ -870,6 +941,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             controller: _emailController,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
+            autofillHints: const [
+              AutofillHints.username,
+              AutofillHints.email,
+              AutofillHints.telephoneNumber,
+            ],
             style: const TextStyle(color: Color(0xFF1F2937), fontSize: 14.5),
             decoration: InputDecoration(
               prefixIcon: const Padding(
@@ -904,6 +980,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             controller: _passwordController,
             obscureText: _obscureDesktopPassword,
             textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
             onSubmitted: (_) {
               if (!_isLoading) _performLogin();
             },
@@ -1081,6 +1158,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ],
           ),
         ],
+      ),
       ),
     );
 

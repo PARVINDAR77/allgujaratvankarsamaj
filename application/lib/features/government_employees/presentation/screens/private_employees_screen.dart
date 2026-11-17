@@ -243,7 +243,7 @@ class _PrivateEmployeesScreenState extends ConsumerState<PrivateEmployeesScreen>
       'experience': 'Computer Engineer & IT Solutions',
       'district': 'Ahmedabad',
       'taluka': 'Dholka',
-      'nativePlace': '35 Gam Pargana (૧૦૩. ૩૫ પરગણું - ઈડર)',
+      'nativePlace': '35 Gam Pargana (૩૫ પરગણું - ઈડર)',
       'pargana': '35 Gam Pargana',
       'phone': '',
       'email': 'panjabiparvindar77@gmail.com',

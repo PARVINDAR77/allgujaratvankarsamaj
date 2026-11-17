@@ -10,7 +10,7 @@ export class ParganasService {
   private readonly initialParganas = [
     {
       name: "35 Gam Pargana (Idar)",
-      gujaratiName: "૧૦૩. ૩૫ પરગણું - પાંત્રીસ ગામ (ઈડર)",
+      gujaratiName: "૩૫ પરગણું - પાંત્રીસ ગામ (ઈડર)",
       code: "PARGANA_35_IDAR",
       description: "સાબરકાંઠા જિલ્લાના ઈડર પંથકનું ૩૫ ગામ પરગણું (પાંત્રીસ ગામ)",
       villageCount: "૩૫ ગામ (35 Gam)",
@@ -22,7 +22,7 @@ export class ParganasService {
     },
     {
       name: "16 Gam Pargana (Solsu - Idar)",
-      gujaratiName: "૧૦૪. સોળસું પરગણું - ૧૬ ગામ (ઈડર)",
+      gujaratiName: "સોળસું પરગણું - ૧૬ ગામ (ઈડર)",
       code: "SK_104_PARGANA_16_IDAR",
       description: "સાબરકાંઠા જિલ્લાના ઈડર પંથકનું સોળસું પરગણું (૧૬ ગામ)",
       villageCount: "૧૬ ગામ (16 Gam)",
@@ -34,7 +34,7 @@ export class ParganasService {
     },
     {
       name: "14 Gam Pargana (Chaudsu - Idar)",
-      gujaratiName: "૧૦૫. ચૌદસું પરગણું - ૧૪ ગામ (ઈડર)",
+      gujaratiName: "ચૌદસું પરગણું - ૧૪ ગામ (ઈડર)",
       code: "SK_105_PARGANA_14_IDAR",
       description: "સાબરકાંઠા જિલ્લાના ઈડર પંથકનું ચૌદસું પરગણું (૧૪ ગામ)",
       villageCount: "૧૪ ગામ (14 Gam)",
@@ -46,7 +46,7 @@ export class ParganasService {
     },
     {
       name: "27 Gam Pargana (Sattavisu - Himatnagar)",
-      gujaratiName: "૧૦૬. સત્તાવીસનું પરગણું - ૨૭ ગામ (હિમતનગર)",
+      gujaratiName: "સત્તાવીસનું પરગણું - ૨૭ ગામ (હિમતનગર)",
       code: "SK_106_PARGANA_27_HMT",
       description: "સાબરકાંઠા જિલ્લાના હિમતનગર પંથકનું સત્તાવીસનું પરગણું (૨૭ ગામ)",
       villageCount: "૨૭ ગામ (27 Gam)",
@@ -58,7 +58,7 @@ export class ParganasService {
     },
     {
       name: "52 Gam Pargana (Bavan Shri Vankar Samaj)",
-      gujaratiName: "૧૦૭. બાવન શ્રી વણકર સમાજ - ૫૨ ગામ",
+      gujaratiName: "બાવન શ્રી વણકર સમાજ - ૫૨ ગામ",
       code: "SK_107_PARGANA_52",
       description: "સાબરકાંઠા જિલ્લાનું બાવન શ્રી વણકર સમાજ પરગણું (૫૨ ગામ)",
       villageCount: "૫૨ ગામ (52 Gam)",
@@ -70,7 +70,7 @@ export class ParganasService {
     },
     {
       name: "27 Gam Pargana (Sattavisi - Khedbrahma)",
-      gujaratiName: "૧૦૮. સત્તાવીસ પરગણું - ૨૭ ગામ (ખેડબ્રહ્મા)",
+      gujaratiName: "સત્તાવીસ પરગણું - ૨૭ ગામ (ખેડબ્રહ્મા)",
       code: "SK_108_PARGANA_27_KHED",
       description: "સાબરકાંઠા જિલ્લાના ખેડબ્રહ્મા પંથકનું સત્તાવીસ પરગણું (૨૭ ગામ)",
       villageCount: "૨૭ ગામ (27 Gam)",
@@ -82,7 +82,7 @@ export class ParganasService {
     },
     {
       name: "Solsoti Pargana Vankar Samaj",
-      gujaratiName: "૧૦૯. સોળસોતી પરગણા વણકર સમાજ",
+      gujaratiName: "સોળસોતી પરગણા વણકર સમાજ",
       code: "SK_109_PARGANA_SOLSOTI",
       description: "સાબરકાંઠા જિલ્લાનું સોળસોતી પરગણા વણકર સમાજ",
       villageCount: "સોળસોતી ગામો",
@@ -94,7 +94,7 @@ export class ParganasService {
     },
     {
       name: "125 Gam Pargana (Savaso Gam)",
-      gujaratiName: "૧૧૦. સવાસો ગામનું પરગણું - ૧૨૫ ગામ",
+      gujaratiName: "સવાસો ગામનું પરગણું - ૧૨૫ ગામ",
       code: "SK_110_PARGANA_125",
       description: "સાબરકાંઠા જિલ્લાનું સવાસો ગામનું પરગણું (૧૨૫ ગામ)",
       villageCount: "૧૨૫ ગામ (125 Gam)",
@@ -106,7 +106,7 @@ export class ParganasService {
     },
     {
       name: "Prajamidharmi Pargana (Ad Athha)",
-      gujaratiName: "૧૧૧. પ્રજામીધર્મી પરગણું (અડ અઠ્ઠાનું પરગણું)",
+      gujaratiName: "પ્રજામીધર્મી પરગણું (અડ અઠ્ઠાનું પરગણું)",
       code: "SK_111_PARGANA_AD_ATHHA",
       description: "સાબરકાંઠા જિલ્લાનું પ્રજામીધર્મી પરગણું (અડ અઠ્ઠાનું પરગણું)",
       villageCount: "અડ અઠ્ઠા ગામો",
@@ -118,7 +118,7 @@ export class ParganasService {
     },
     {
       name: "08 Gam Pargana (Aath Gam)",
-      gujaratiName: "૧૧૨. આઠ (૦૮) ગામ પરગણું - ૮ ગામ",
+      gujaratiName: "આઠ (૦૮) ગામ પરગણું - ૮ ગામ",
       code: "SK_112_PARGANA_08",
       description: "સાબરકાંઠા જિલ્લાનું આઠ (૦૮) ગામ પરગણું",
       villageCount: "૦૮ ગામ (08 Gam)",
@@ -130,7 +130,7 @@ export class ParganasService {
     },
     {
       name: "Barsi Pargana",
-      gujaratiName: "૧૧૩. બારસી પરગણું - બારસી ગામો",
+      gujaratiName: "બારસી પરગણું - બારસી ગામો",
       code: "SK_113_PARGANA_BARSI",
       description: "સાબરકાંઠા જિલ્લાનું બારસી પરગણું",
       villageCount: "બારસી ગામો",

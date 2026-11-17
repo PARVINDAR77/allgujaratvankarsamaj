@@ -8,6 +8,41 @@ class SecureStorageService {
 
   static const String keyToken = 'jwt_token';
   static const String keyUser = 'user_data';
+  static const String keyRememberedId = 'remembered_login_identifier';
+  static const String keyRememberMeEnabled = 'remember_me_enabled';
+
+  Future<void> saveRememberedIdentifier(String identifier, bool enabled) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (enabled) {
+        await prefs.setString(keyRememberedId, identifier);
+        await prefs.setBool(keyRememberMeEnabled, true);
+      } else {
+        await prefs.remove(keyRememberedId);
+        await prefs.setBool(keyRememberMeEnabled, false);
+      }
+    } catch (e) {
+      debugPrint('[Storage] saveRememberedIdentifier error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> getRememberedIdentifier() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final id = prefs.getString(keyRememberedId);
+      final enabled = prefs.getBool(keyRememberMeEnabled) ?? true;
+      return {
+        'identifier': id ?? '',
+        'enabled': enabled,
+      };
+    } catch (e) {
+      debugPrint('[Storage] getRememberedIdentifier error: $e');
+      return {
+        'identifier': '',
+        'enabled': true,
+      };
+    }
+  }
 
   Future<void> saveToken(String token) async {
     try {

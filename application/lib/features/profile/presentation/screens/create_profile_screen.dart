@@ -1253,7 +1253,11 @@ class _CreateProfileScreenState extends ConsumerState<CreateProfileScreen> {
                 'Select Pargana', 
                 Icons.account_tree_outlined, 
                 kParganaOptions,
-                value: kParganaOptions.contains(_pargana) ? _pargana : 'Select Pargana',
+                value: kParganaOptions.contains(_pargana) 
+                    ? _pargana 
+                    : (kParganaOptions.any((e) => _pargana.isNotEmpty && _pargana != 'Select Pargana' && e.startsWith(_pargana.split(' (')[0])) 
+                        ? kParganaOptions.firstWhere((e) => e.startsWith(_pargana.split(' (')[0])) 
+                        : 'Select Pargana'),
                 onChanged: (v) => setState(() => _pargana = v ?? _pargana),
               ),
               _buildDropdownField('Are you studying or living abroad? (શું તમે વિદેશમાં અભ્યાસ કરો છો કે રહો છો?) *', 'No (ના)', Icons.flight_takeoff, ['Yes (હા)', 'No (ના)'], value: _isAbroad ? 'Yes (હા)' : 'No (ના)', onChanged: (v) => setState(() {

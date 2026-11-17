@@ -4,7 +4,7 @@ const sabarkanthaParganas = [
   {
     serial: "103",
     name: "35 Gam Pargana (Idar)",
-    gujaratiName: "૧૦૩. ૩૫ પરગણું - પાંત્રીસ ગામ (ઈડર)",
+    gujaratiName: "૩૫ પરગણું - પાંત્રીસ ગામ (ઈડર)",
     code: "PARGANA_35_IDAR",
     villageCount: "૩૫ ગામ (35 Gam)",
     districtRegion: "ઈડર, સાબરકાંઠા (Idar, Sabarkantha)",
@@ -16,7 +16,7 @@ const sabarkanthaParganas = [
   {
     serial: "104",
     name: "16 Gam Pargana (Solsu - Idar)",
-    gujaratiName: "૧૦૪. સોળસું પરગણું - ૧૬ ગામ (ઈડર)",
+    gujaratiName: "સોળસું પરગણું - ૧૬ ગામ (ઈડર)",
     code: "SK_104_PARGANA_16_IDAR",
     villageCount: "૧૬ ગામ (16 Gam)",
     districtRegion: "ઈડર, સાબરકાંઠા (Idar, Sabarkantha)",
@@ -28,7 +28,7 @@ const sabarkanthaParganas = [
   {
     serial: "105",
     name: "14 Gam Pargana (Chaudsu - Idar)",
-    gujaratiName: "૧૦૫. ચૌદસું પરગણું - ૧૪ ગામ (ઈડર)",
+    gujaratiName: "ચૌદસું પરગણું - ૧૪ ગામ (ઈડર)",
     code: "SK_105_PARGANA_14_IDAR",
     villageCount: "૧૪ ગામ (14 Gam)",
     districtRegion: "ઈડર, સાબરકાંઠા (Idar, Sabarkantha)",
@@ -40,7 +40,7 @@ const sabarkanthaParganas = [
   {
     serial: "106",
     name: "27 Gam Pargana (Sattavisu - Himatnagar)",
-    gujaratiName: "૧૦૬. સત્તાવીસનું પરગણું - ૨૭ ગામ (હિમતનગર)",
+    gujaratiName: "સત્તાવીસનું પરગણું - ૨૭ ગામ (હિમતનગર)",
     code: "SK_106_PARGANA_27_HMT",
     villageCount: "૨૭ ગામ (27 Gam)",
     districtRegion: "હિમતનગર, સાબરકાંઠા (Himatnagar, Sabarkantha)",
@@ -52,7 +52,7 @@ const sabarkanthaParganas = [
   {
     serial: "107",
     name: "52 Gam Pargana (Bavan Shri Vankar Samaj)",
-    gujaratiName: "૧૦૭. બાવન શ્રી વણકર સમાજ - ૫૨ ગામ",
+    gujaratiName: "બાવન શ્રી વણકર સમાજ - ૫૨ ગામ",
     code: "SK_107_PARGANA_52",
     villageCount: "૫૨ ગામ (52 Gam)",
     districtRegion: "સાબરકાંઠા (Sabarkantha)",
@@ -64,7 +64,7 @@ const sabarkanthaParganas = [
   {
     serial: "108",
     name: "27 Gam Pargana (Sattavisi - Khedbrahma)",
-    gujaratiName: "૧૦૮. સત્તાવીસ પરગણું - ૨૭ ગામ (ખેડબ્રહ્મા)",
+    gujaratiName: "સત્તાવીસ પરગણું - ૨૭ ગામ (ખેડબ્રહ્મા)",
     code: "SK_108_PARGANA_27_KHED",
     villageCount: "૨૭ ગામ (27 Gam)",
     districtRegion: "ખેડબ્રહ્મા, સાબરકાંઠા (Khedbrahma, Sabarkantha)",
@@ -76,7 +76,7 @@ const sabarkanthaParganas = [
   {
     serial: "109",
     name: "Solsoti Pargana Vankar Samaj",
-    gujaratiName: "૧૦૯. સોળસોતી પરગણા વણકર સમાજ",
+    gujaratiName: "સોળસોતી પરગણા વણકર સમાજ",
     code: "SK_109_PARGANA_SOLSOTI",
     villageCount: "સોળસોતી ગામો",
     districtRegion: "સાબરકાંઠા (Sabarkantha)",
@@ -88,7 +88,7 @@ const sabarkanthaParganas = [
   {
     serial: "110",
     name: "125 Gam Pargana (Savaso Gam)",
-    gujaratiName: "૧૧૦. સવાસો ગામનું પરગણું - ૧૨૫ ગામ",
+    gujaratiName: "સવાસો ગામનું પરગણું - ૧૨૫ ગામ",
     code: "SK_110_PARGANA_125",
     villageCount: "૧૨૫ ગામ (125 Gam)",
     districtRegion: "સાબરકાંઠા (Sabarkantha)",
@@ -100,7 +100,7 @@ const sabarkanthaParganas = [
   {
     serial: "111",
     name: "Prajamidharmi Pargana (Ad Athha)",
-    gujaratiName: "૧૧૧. પ્રજામીધર્મી પરગણું (અડ અઠ્ઠાનું પરગણું)",
+    gujaratiName: "પ્રજામીધર્મી પરગણું (અડ અઠ્ઠાનું પરગણું)",
     code: "SK_111_PARGANA_AD_ATHHA",
     villageCount: "અડ અઠ્ઠા ગામો",
     districtRegion: "સાબરકાંઠા (Sabarkantha)",
@@ -112,7 +112,7 @@ const sabarkanthaParganas = [
   {
     serial: "112",
     name: "08 Gam Pargana (Aath Gam)",
-    gujaratiName: "૧૧૨. આઠ (૦૮) ગામ પરગણું - ૮ ગામ",
+    gujaratiName: "આઠ (૦૮) ગામ પરગણું - ૮ ગામ",
     code: "SK_112_PARGANA_08",
     villageCount: "૦૮ ગામ (08 Gam)",
     districtRegion: "સાબરકાંઠા (Sabarkantha)",
@@ -124,7 +124,7 @@ const sabarkanthaParganas = [
   {
     serial: "113",
     name: "Barsi Pargana",
-    gujaratiName: "૧૧૩. બારસી પરગણું - બારસી ગામો",
+    gujaratiName: "બારસી પરગણું - બારસી ગામો",
     code: "SK_113_PARGANA_BARSI",
     villageCount: "બારસી ગામો",
     districtRegion: "સાબરકાંઠા (Sabarkantha)",

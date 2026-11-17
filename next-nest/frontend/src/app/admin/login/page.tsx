@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function AdminLoginPage() {
@@ -10,6 +10,21 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rememberSession, setRememberSession] = useState(true);
+
+  useEffect(() => {
+    try {
+      const savedAdminEmail = typeof window !== "undefined" ? localStorage.getItem("admin_saved_email") : null;
+      if (savedAdminEmail) {
+        setTimeout(() => {
+          setEmail(savedAdminEmail);
+          setRememberSession(true);
+        }, 0);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +40,11 @@ export default function AdminLoginPage() {
           localStorage.setItem("adminUser", JSON.stringify(data.user));
           if (data.accessToken) {
             localStorage.setItem("adminToken", data.accessToken);
+          }
+          if (rememberSession) {
+            localStorage.setItem("admin_saved_email", email.trim());
+          } else {
+            localStorage.removeItem("admin_saved_email");
           }
         }
         const isSuperAdmin = data.user?.role === "SUPER_ADMIN";
@@ -115,7 +135,7 @@ export default function AdminLoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleLogin} autoComplete="off"  style={{ gap: "20px" }} className="flex flex-col">
+        <form onSubmit={handleLogin} style={{ gap: "20px" }} className="flex flex-col">
           {/* Email Field */}
           <div>
             <label
@@ -146,7 +166,10 @@ export default function AdminLoginPage() {
                   outline: "none",
                   boxSizing: "border-box",
                 }}
-                placeholder="Enter admin email" autoComplete="new-password" name="admin_user_id_field" id="admin_user_id_field"
+                placeholder="Enter admin email"
+                autoComplete="username"
+                name="username"
+                id="admin_username"
               />
             </div>
           </div>
@@ -181,7 +204,10 @@ export default function AdminLoginPage() {
                   outline: "none",
                   boxSizing: "border-box",
                 }}
-                placeholder="Enter password" autoComplete="new-password" name="admin_user_secret_field" id="admin_user_secret_field"
+                placeholder="Enter password"
+                autoComplete="current-password"
+                name="password"
+                id="admin_password"
               />
               <button
                 type="button"
@@ -211,8 +237,10 @@ export default function AdminLoginPage() {
             <label  style={{ userSelect: "none" }} className="flex items-center cursor-pointer gap-2">
               <input
                 type="checkbox"
-                
-                 style={{ accentColor: "#D4AF37", width: "16px", height: "16px" }} className="cursor-pointer"
+                checked={rememberSession}
+                onChange={(e) => setRememberSession(e.target.checked)}
+                style={{ accentColor: "#D4AF37", width: "16px", height: "16px" }}
+                className="cursor-pointer"
               />
               <span  style={{ color: "#d1d5db" }} className="font-semibold">Remember session</span>
             </label>

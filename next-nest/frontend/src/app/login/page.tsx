@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,6 +12,21 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [rememberMe, setRememberMe] = useState(true);
+
+  useEffect(() => {
+    try {
+      const savedId = typeof window !== "undefined" ? localStorage.getItem("remembered_identifier") : null;
+      if (savedId) {
+        setTimeout(() => {
+          setIdentifier(savedId);
+          setRememberMe(true);
+        }, 0);
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +65,12 @@ export default function LoginPage() {
       }
 
       if (typeof window !== "undefined") {
+        if (rememberMe) {
+          localStorage.setItem("remembered_identifier", idTrimmed);
+        } else {
+          localStorage.removeItem("remembered_identifier");
+        }
+
         if (data.accessToken) {
           localStorage.setItem("accessToken", data.accessToken);
           localStorage.setItem("token", data.accessToken);
@@ -201,7 +222,10 @@ export default function LoginPage() {
               મોબાઇલ નંબર અથવા ઈમેલ (Mobile or Email) *
             </label>
             <input
+              id="username"
+              name="username"
               type="text"
+              autoComplete="username"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder="દા.ત. 9876543210 અથવા user@example.com"
@@ -233,7 +257,10 @@ export default function LoginPage() {
               </button>
             </div>
             <input
+              id="current-password"
+              name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -250,6 +277,19 @@ export default function LoginPage() {
                 boxSizing: "border-box",
               }}
             />
+          </div>
+
+          {/* Remember me row */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", userSelect: "none", color: "#FFE066" }}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={{ accentColor: "#D4AF37", width: "16px", height: "16px", cursor: "pointer" }}
+              />
+              <span>મને યાદ રાખો (Remember me)</span>
+            </label>
           </div>
 
           {/* Submit Button */}
