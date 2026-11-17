@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const OLD_TAG = '20261117_clean_pargana_v80';
-const NEW_TAG = '20261117_services_profile_v82';
+const OLD_TAG = '20261117_services_profile_v82';
+const NEW_TAG = '20261117_services_profile_v83';
 
 const files = [
   path.join(__dirname, '../application/build/web/index.html'),
@@ -30,8 +30,8 @@ if (fs.existsSync(verFile)) {
   fs.writeFileSync(verFile, JSON.stringify({
     app_name: 'application',
     version: '1.0.14',
-    build_number: '15',
+    build_number: '16',
     package_name: 'application'
   }, null, 2), 'utf8');
-  console.log('Updated version.json');
+  console.log('Updated version.json to build 16');
 }
