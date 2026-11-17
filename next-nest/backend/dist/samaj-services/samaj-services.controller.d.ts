@@ -36,59 +36,8 @@ export declare class SamajServicesController {
             count: number;
         }[];
     }>;
-    getPublicServiceById(id: string): Promise<({
-        persons: {
-            description: string | null;
-            name: string;
-            city: string | null;
-            photoUrl: string | null;
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            districtId: string | null;
-            talukaId: string | null;
-            userId: string | null;
-            villageId: string | null;
-            phone: string;
-            isActive: boolean;
-            gujaratiName: string | null;
-            serviceId: string;
-            address: string | null;
-            experience: string | null;
-        }[];
-    } & {
-        description: string | null;
-        title: string;
-        id: string;
-        contactPhone: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        sortOrder: number;
-        isActive: boolean;
-        slug: string;
-        category: string;
-        icon: string;
-        contactPerson: string | null;
-    }) | {
-        persons: {
-            id: string;
-            serviceId: string;
-            name: string;
-            gujaratiName: string;
-            photoUrl: string;
-            phone: string;
-            address: string;
-            city: string;
-            description: string;
-            experience: string;
-            isActive: boolean;
-            service: {
-                id: string;
-                title: string;
-                category: string;
-                icon: string;
-            };
-        }[];
+    getPublicServiceById(id: string): Promise<{
+        persons: any[];
         description: string | null;
         title: string;
         id: string;
@@ -160,25 +109,7 @@ export declare class SamajServicesController {
         isActive: true;
     }>;
     getPublicPersonsByServiceId(serviceId: string, district?: string, taluka?: string, village?: string, search?: string, page?: number, limit?: number): Promise<{
-        data: {
-            id: string;
-            serviceId: string;
-            name: string;
-            gujaratiName: string;
-            photoUrl: string;
-            phone: string;
-            address: string;
-            city: string;
-            description: string;
-            experience: string;
-            isActive: boolean;
-            service: {
-                id: string;
-                title: string;
-                category: string;
-                icon: string;
-            };
-        }[];
+        data: any[];
         meta: {
             page: number;
             limit: number;
@@ -212,6 +143,11 @@ export declare class SamajServicesController {
         serviceId: string;
         address: string | null;
         experience: string | null;
+    }>;
+    getPersonCandidateProfile(personId: string): Promise<{
+        personId: string;
+        profileId: any;
+        hasCandidateProfile: any;
     }>;
     getAdminServices(): Promise<{
         id: string;
@@ -269,25 +205,7 @@ export declare class SamajServicesController {
         contactPerson: string | null;
     }>;
     getAdminServicePersons(serviceId?: string, page?: number, limit?: number): Promise<{
-        data: {
-            id: string;
-            serviceId: string;
-            name: string;
-            gujaratiName: string;
-            photoUrl: string;
-            phone: string;
-            address: string;
-            city: string;
-            description: string;
-            experience: string;
-            isActive: boolean;
-            service: {
-                id: string;
-                title: string;
-                category: string;
-                icon: string;
-            };
-        }[];
+        data: any[];
         meta: {
             page: number;
             limit: number;

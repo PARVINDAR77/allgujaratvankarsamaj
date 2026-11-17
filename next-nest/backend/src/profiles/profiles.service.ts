@@ -948,6 +948,43 @@ export class ProfilesService {
       }
 
       if (!profile) {
+        try {
+          const servicePerson = await this.prisma.samajServicePerson.findUnique({
+            where: { id },
+            select: { userId: true, phone: true },
+          });
+          if (servicePerson) {
+            const cleanPh = (servicePerson.phone || "").replace(/\D/g, "").slice(-10);
+            profile = await this.prisma.matrimonialProfile.findFirst({
+              where: {
+                OR: [
+                  ...(servicePerson.userId ? [{ userId: servicePerson.userId }] : []),
+                  ...(cleanPh.length === 10
+                    ? [
+                        { user: { phone: { contains: cleanPh } } },
+                        { altPhone: { contains: cleanPh } },
+                        { fatherContact: { contains: cleanPh } },
+                      ]
+                    : []),
+                ],
+              },
+              include: {
+                user: {
+                  select: { id: true, phone: true, email: true, name: true, role: true, status: true },
+                },
+                governmentEmployment: {
+                  include: {
+                    department: true,
+                    designation: true,
+                  },
+                },
+              },
+            });
+          }
+        } catch (_) {}
+      }
+
+      if (!profile) {
         throw new NotFoundException("Profile not found");
       }
 

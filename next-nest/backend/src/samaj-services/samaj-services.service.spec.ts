@@ -171,4 +171,59 @@ describe("SamajServicesService Business Sync & Education Services Tests", () => 
     expect(res.data[0].name).toBe("VAMIKA NURSING ACADEMY (IDAR)");
     expect(res.data[0].phone).toBe("9265476537");
   });
+
+  it("attachCandidateProfileInfo MUST enrich service persons with profileId and hasCandidateProfile", async () => {
+    prisma.matrimonialProfile.findMany.mockResolvedValue([
+      {
+        id: "matrimony-prof-123",
+        userId: "user-biz-101",
+        user: { phone: "9876543210" },
+      },
+    ]);
+
+    const result = await (service as any).attachCandidateProfileInfo([
+      {
+        id: "sp-1",
+        userId: "user-biz-101",
+        name: "PANKAJKUMAR PARMAR (SUNCITY LADIES WEAR)",
+        phone: "9876543210",
+      },
+      {
+        id: "sp-2",
+        userId: null,
+        name: "General Service Provider",
+        phone: "9111111111",
+      },
+    ]);
+
+    expect(result).toHaveLength(2);
+    expect(result[0].profileId).toBe("matrimony-prof-123");
+    expect(result[0].hasCandidateProfile).toBe(true);
+    expect(result[1].profileId).toBeNull();
+    expect(result[1].hasCandidateProfile).toBe(false);
+  });
+
+  it("getPersonCandidateProfile MUST return linked profileId for a specific person", async () => {
+    prisma.samajServicePerson.findUnique.mockResolvedValue({
+      id: "sp-1",
+      userId: "user-biz-101",
+      name: "PANKAJKUMAR PARMAR",
+      phone: "9876543210",
+    });
+
+    prisma.matrimonialProfile.findMany.mockResolvedValue([
+      {
+        id: "matrimony-prof-123",
+        userId: "user-biz-101",
+        user: { phone: "9876543210" },
+      },
+    ]);
+
+    const result = await service.getPersonCandidateProfile("sp-1");
+    expect(result).toEqual({
+      personId: "sp-1",
+      profileId: "matrimony-prof-123",
+      hasCandidateProfile: true,
+    });
+  });
 });

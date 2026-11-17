@@ -25,6 +25,8 @@ interface ServicePerson {
   city?: string;
   description?: string;
   experience?: string;
+  profileId?: string;
+  hasCandidateProfile?: boolean;
 }
 
 export default function ServicesPage() {
@@ -467,6 +469,15 @@ export default function ServicesPage() {
                         {p.description && (
                           <p className="text-xs text-amber-100/90">{p.description}</p>
                         )}
+
+                        {p.profileId ? (
+                          <Link
+                            href={`/candidate-profile-details?id=${p.profileId}`}
+                            className="w-full py-2 bg-[#A4143D] hover:bg-[#800020] text-amber-100 text-xs font-bold rounded-lg text-center flex items-center justify-center gap-1.5 border border-amber-400/40 shadow"
+                          >
+                            <span>👤</span> ઉમેદવાર પ્રોફાઇલ જુઓ (View Profile)
+                          </Link>
+                        ) : null}
 
                         <div className="flex gap-2 pt-1">
                           <a

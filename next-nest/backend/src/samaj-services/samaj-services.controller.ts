@@ -84,6 +84,15 @@ export class SamajServicesController {
     return this.samajServicesService.createServicePerson(dto);
   }
 
+  @Public()
+  @Get("samaj-services/person/:personId/profile")
+  @ApiOperation({
+    summary: "Get linked candidate profile ID for a service person",
+  })
+  async getPersonCandidateProfile(@Param("personId") personId: string) {
+    return this.samajServicesService.getPersonCandidateProfile(personId);
+  }
+
   // ==========================================
   // PROTECTED ADMIN PANEL ENDPOINTS (JWT Required)
   // ==========================================

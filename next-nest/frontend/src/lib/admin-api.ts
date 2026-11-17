@@ -229,6 +229,9 @@ export interface SamajServicePersonItem {
   city?: string;
   description?: string;
   experience?: string;
+  profileId?: string;
+  userId?: string;
+  hasCandidateProfile?: boolean;
   isActive: boolean;
   createdAt?: string;
   service?: {

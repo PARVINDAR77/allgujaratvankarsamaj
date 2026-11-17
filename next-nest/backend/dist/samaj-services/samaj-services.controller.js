@@ -45,6 +45,9 @@ let SamajServicesController = class SamajServicesController {
     async registerPublicServicePerson(dto) {
         return this.samajServicesService.createServicePerson(dto);
     }
+    async getPersonCandidateProfile(personId) {
+        return this.samajServicesService.getPersonCandidateProfile(personId);
+    }
     async getAdminServices() {
         return this.samajServicesService.getAllAdminServices();
     }
@@ -130,6 +133,17 @@ __decorate([
     __metadata("design:paramtypes", [create_service_person_dto_1.CreateServicePersonDto]),
     __metadata("design:returntype", Promise)
 ], SamajServicesController.prototype, "registerPublicServicePerson", null);
+__decorate([
+    (0, public_decorator_1.Public)(),
+    (0, common_1.Get)("samaj-services/person/:personId/profile"),
+    (0, swagger_1.ApiOperation)({
+        summary: "Get linked candidate profile ID for a service person",
+    }),
+    __param(0, (0, common_1.Param)("personId")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], SamajServicesController.prototype, "getPersonCandidateProfile", null);
 __decorate([
     (0, swagger_1.ApiBearerAuth)(),
     (0, common_1.Get)("admin/samaj-services"),

@@ -914,6 +914,7 @@ export default function AdminServicesPage() {
                         <th style={{ padding: "12px", color: "#A7F3D0" }}>Assigned Service</th>
                         <th style={{ padding: "12px", color: "#A7F3D0" }}>Phone</th>
                         <th style={{ padding: "12px", color: "#A7F3D0" }}>City / Locality</th>
+                        <th style={{ padding: "12px", color: "#A7F3D0" }}>Candidate Profile</th>
                         <th style={{ padding: "12px", color: "#A7F3D0" }}>Status</th>
                         <th  style={{ padding: "12px", color: "#A7F3D0" }} className="text-right">Actions</th>
                       </tr>
@@ -935,6 +936,17 @@ export default function AdminServicesPage() {
                           </td>
                           <td  style={{ padding: "14px 12px", color: "#10B981" }} className="font-bold">{person.phone}</td>
                           <td style={{ padding: "14px 12px", color: "rgba(255, 255, 255, 0.8)" }}>{person.city || "Ahmedabad"}</td>
+                          <td style={{ padding: "14px 12px" }}>
+                            {person.hasCandidateProfile || person.profileId ? (
+                              <span style={{ padding: "4px 8px", backgroundColor: "rgba(16, 185, 129, 0.2)", color: "#34D399", borderRadius: "12px", fontSize: "11px", fontWeight: "bold" }}>
+                                ✓ લિંક થયેલ (Linked)
+                              </span>
+                            ) : (
+                              <span style={{ padding: "4px 8px", backgroundColor: "rgba(255, 255, 255, 0.08)", color: "rgba(255, 255, 255, 0.6)", borderRadius: "12px", fontSize: "11px" }}>
+                                માત્ર સેવા સભ્ય
+                              </span>
+                            )}
+                          </td>
                           <td style={{ padding: "14px 12px" }}>
                             <button
                               onClick={() => togglePersonStatus(person)}

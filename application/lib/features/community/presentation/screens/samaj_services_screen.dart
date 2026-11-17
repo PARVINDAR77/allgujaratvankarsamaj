@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/network/api_client.dart';
 import '../../../../shared/models/samaj_service.dart';
 import '../../../../shared/models/samaj_service_person.dart';
 import '../../../../shared/widgets/community_pagination_bar.dart';
@@ -160,6 +161,89 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
           ),
         ),
       );
+    }
+  }
+
+  Future<void> _openCandidateProfile(BuildContext context, dynamic provider) async {
+    String? profileId;
+    if (provider is SamajServicePerson) {
+      profileId = provider.profileId;
+      if (profileId == null || profileId.trim().isEmpty) {
+        profileId = provider.userId;
+      }
+    } else if (provider is Map) {
+      profileId = provider['profileId']?.toString() ??
+          provider['profile_id']?.toString() ??
+          provider['candidateProfileId']?.toString() ??
+          provider['userId']?.toString() ??
+          provider['user_id']?.toString();
+    } else {
+      try {
+        profileId = provider.profileId?.toString();
+      } catch (_) {}
+      if (profileId == null || profileId.trim().isEmpty) {
+        try {
+          profileId = provider.userId?.toString();
+        } catch (_) {}
+      }
+    }
+
+    if (profileId == null || profileId.trim().isEmpty) {
+      String personId = '';
+      String phone = '';
+      try {
+        personId = provider.id?.toString() ?? '';
+      } catch (_) {}
+      try {
+        phone = provider.phone?.toString() ?? '';
+      } catch (_) {}
+
+      if (personId.isNotEmpty) {
+        try {
+          final dio = ref.read(apiClientProvider);
+          final res = await dio.get('/samaj-services/person/$personId/profile');
+          if (res.data is Map && res.data['profileId'] != null) {
+            profileId = res.data['profileId']?.toString();
+          }
+        } catch (_) {}
+      }
+
+      if ((profileId == null || profileId.trim().isEmpty) && phone.isNotEmpty) {
+        final clean = phone.replaceAll(RegExp(r'\D'), '');
+        final last10 = clean.length >= 10 ? clean.substring(clean.length - 10) : clean;
+        if (last10.isNotEmpty) {
+          try {
+            final dio = ref.read(apiClientProvider);
+            final res = await dio.get('/profiles', queryParameters: {'search': last10, 'limit': 1});
+            if (res.data is Map && res.data['items'] is List && (res.data['items'] as List).isNotEmpty) {
+              profileId = res.data['items'][0]['id']?.toString();
+            } else if (res.data is List && (res.data as List).isNotEmpty) {
+              profileId = res.data[0]['id']?.toString();
+            }
+          } catch (_) {}
+        }
+      }
+    }
+
+    if (profileId != null && profileId.trim().isNotEmpty) {
+      if (context.mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        context.push('/candidate-profile-details?id=${profileId.trim()}');
+      }
+    } else {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'આ વ્યવસાયકાર માત્ર સમાજ સેવા ડિરેક્ટરીમાં નોંધાયેલ છે (મેરેજ પ્રોફાઇલ ઉપલબ્ધ નથી).',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Color(0xFF101B36),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 3),
+          ),
+        );
+      }
     }
   }
 
@@ -770,6 +854,26 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                   child: const Text('વિગત', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
                 ),
               ),
+              if (provider is SamajServicePerson
+                  ? (provider.hasCandidateProfile || (provider.profileId != null && provider.profileId!.isNotEmpty))
+                  : (provider.hasCandidateProfile == true || (provider.profileId != null && provider.profileId.toString().isNotEmpty))) ...[
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 34,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _openCandidateProfile(context, provider),
+                    icon: const Icon(Icons.badge_rounded, size: 14, color: Color(0xFFFFDF7A)),
+                    label: const Text('પ્રોફાઇલ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFA4143D),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 1,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -1011,6 +1115,24 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                       child: const Text('વિગત', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold)),
                     ),
                   ),
+                  if (person.hasCandidateProfile || (person.profileId != null && person.profileId!.isNotEmpty)) ...[
+                    const SizedBox(width: 6),
+                    SizedBox(
+                      height: 34,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openCandidateProfile(context, person),
+                        icon: const Icon(Icons.badge_rounded, size: 14, color: Color(0xFFFFDF7A)),
+                        label: const Text('પ્રોફાઇલ', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFA4143D),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          elevation: 1,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ],
@@ -1351,6 +1473,34 @@ class _SamajServicesScreenState extends ConsumerState<SamajServicesScreen> {
                           ),
                         ),
                       ],
+
+                      // Primary Action: View Candidate Profile Button
+                      Container(
+                        width: double.infinity,
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ElevatedButton.icon(
+                          onPressed: () => _openCandidateProfile(context, provider),
+                          icon: const Icon(Icons.badge_rounded, size: 20, color: Color(0xFFFFDF7A)),
+                          label: const Text(
+                            'ઉમેદવાર પ્રોફાઇલ જુઓ (View Candidate Profile)',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13.5,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFA4143D), // Royal Crimson
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12.5),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: const BorderSide(color: Color(0xFFD6A34A), width: 1.2), // Gold border
+                            ),
+                            elevation: 2,
+                          ),
+                        ),
+                      ),
 
                       // Direct Action Buttons: Call & WhatsApp
                       Row(

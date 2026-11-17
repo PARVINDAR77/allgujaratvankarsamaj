@@ -1057,13 +1057,18 @@ export class SamajServicesService {
                 p.service?.category === "Education Services"),
           );
           if (fallbackPersons.length > 0) {
+            const enrichedFallbacks = await this.attachCandidateProfileInfo(fallbackPersons);
             return {
               ...service,
-              persons: fallbackPersons,
+              persons: enrichedFallbacks,
             };
           }
         }
-        return service;
+        const enrichedPersons = await this.attachCandidateProfileInfo(service.persons || []);
+        return {
+          ...service,
+          persons: enrichedPersons,
+        };
       }
 
       const fallback = this.defaultServices.find((s) => s.id === id);
@@ -1323,9 +1328,10 @@ export class SamajServicesService {
       ]);
 
       if (res && res.length > 0) {
+        const enriched = await this.attachCandidateProfileInfo(res);
         const totalPages = Math.ceil(total / validLimit) || 1;
         return {
-          data: res,
+          data: enriched,
           meta: {
             page: validPage,
             limit: validLimit,
@@ -1343,8 +1349,11 @@ export class SamajServicesService {
       );
       const fbTotal = matchingFallbacks.length;
       const fbPages = Math.ceil(fbTotal / validLimit) || 1;
+      const enrichedMatchingFallbacks = await this.attachCandidateProfileInfo(
+        matchingFallbacks.slice(skip, skip + validLimit),
+      );
       return {
-        data: matchingFallbacks.slice(skip, skip + validLimit),
+        data: enrichedMatchingFallbacks,
         meta: {
           page: validPage,
           limit: validLimit,
@@ -1361,8 +1370,11 @@ export class SamajServicesService {
       );
       const fbTotal = fallbacks.length;
       const fbPages = Math.ceil(fbTotal / validLimit) || 1;
+      const enrichedFallbacks = await this.attachCandidateProfileInfo(
+        fallbacks.slice(skip, skip + validLimit),
+      );
       return {
-        data: fallbacks.slice(skip, skip + validLimit),
+        data: enrichedFallbacks,
         meta: {
           page: validPage,
           limit: validLimit,
@@ -1499,9 +1511,10 @@ export class SamajServicesService {
         }),
       ]);
 
+      const enrichedPersons = await this.attachCandidateProfileInfo(persons);
       const totalPages = Math.ceil(total / validLimit) || 1;
       return {
-        data: persons,
+        data: enrichedPersons,
         meta: {
           page: validPage,
           limit: validLimit,
@@ -1516,8 +1529,11 @@ export class SamajServicesService {
       const fallbacks = this.defaultPersons.filter((p) => !serviceId || serviceId === "all" || p.serviceId === serviceId);
       const fbTotal = fallbacks.length;
       const fbPages = Math.ceil(fbTotal / validLimit) || 1;
+      const enrichedFallbacks = await this.attachCandidateProfileInfo(
+        fallbacks.slice(skip, skip + validLimit),
+      );
       return {
-        data: fallbacks.slice(skip, skip + validLimit),
+        data: enrichedFallbacks,
         meta: {
           page: validPage,
           limit: validLimit,
@@ -1627,5 +1643,132 @@ export class SamajServicesService {
     return this.prisma.samajServicePerson.delete({
       where: { id },
     });
+  }
+
+  async getPersonCandidateProfile(personId: string) {
+    const person = await this.prisma.samajServicePerson.findUnique({
+      where: { id: personId },
+    });
+    if (!person) {
+      throw new NotFoundException(`Samaj Service Person with ID ${personId} not found`);
+    }
+
+    const [enriched] = await this.attachCandidateProfileInfo([person]);
+    return {
+      personId,
+      profileId: enriched.profileId,
+      hasCandidateProfile: enriched.hasCandidateProfile,
+    };
+  }
+
+  private async attachCandidateProfileInfo(persons: any[]): Promise<any[]> {
+    if (!persons || persons.length === 0) return [];
+
+    try {
+      const userIds = Array.from(
+        new Set(
+          persons
+            .map((p) => p.userId)
+            .filter((uid) => uid && typeof uid === "string" && uid.trim().length > 0),
+        ),
+      );
+
+      const phoneList: string[] = [];
+      for (const p of persons) {
+        if (p.phone) {
+          const raw = String(p.phone).trim();
+          const clean = raw.replace(/\D/g, "");
+          if (clean.length >= 10) {
+            phoneList.push(clean.slice(-10));
+          }
+        }
+      }
+      const unique10DigitPhones = Array.from(new Set(phoneList));
+
+      const conditions: any[] = [];
+      if (userIds.length > 0) {
+        conditions.push({ userId: { in: userIds } });
+      }
+
+      for (const ph of unique10DigitPhones) {
+        conditions.push({ user: { phone: { contains: ph } } });
+        conditions.push({ altPhone: { contains: ph } });
+        conditions.push({ fatherContact: { contains: ph } });
+        conditions.push({ guardianContact: { contains: ph } });
+      }
+
+      let profiles: any[] = [];
+      if (conditions.length > 0) {
+        profiles = await this.prisma.matrimonialProfile.findMany({
+          where: { OR: conditions },
+          select: {
+            id: true,
+            userId: true,
+            altPhone: true,
+            fatherContact: true,
+            guardianContact: true,
+            user: {
+              select: {
+                id: true,
+                phone: true,
+              },
+            },
+          },
+        });
+      }
+
+      const profileByUserId = new Map<string, string>();
+      const profileByPhone = new Map<string, string>();
+
+      for (const prof of profiles) {
+        if (prof.userId) {
+          profileByUserId.set(prof.userId, prof.id);
+        }
+        if (prof.user?.phone) {
+          const uClean = String(prof.user.phone).replace(/\D/g, "").slice(-10);
+          if (uClean.length === 10) profileByPhone.set(uClean, prof.id);
+        }
+        if (prof.altPhone) {
+          const cClean = String(prof.altPhone).replace(/\D/g, "").slice(-10);
+          if (cClean.length === 10) profileByPhone.set(cClean, prof.id);
+        }
+        if (prof.fatherContact) {
+          const fClean = String(prof.fatherContact).replace(/\D/g, "").slice(-10);
+          if (fClean.length === 10) profileByPhone.set(fClean, prof.id);
+        }
+        if (prof.guardianContact) {
+          const gClean = String(prof.guardianContact).replace(/\D/g, "").slice(-10);
+          if (gClean.length === 10) profileByPhone.set(gClean, prof.id);
+        }
+      }
+
+      return persons.map((p) => {
+        let matchedProfileId: string | null = null;
+        if (p.userId && profileByUserId.has(p.userId)) {
+          matchedProfileId = profileByUserId.get(p.userId) || null;
+        }
+
+        if (!matchedProfileId && p.phone) {
+          const pClean = String(p.phone).replace(/\D/g, "").slice(-10);
+          if (pClean.length === 10 && profileByPhone.has(pClean)) {
+            matchedProfileId = profileByPhone.get(pClean) || null;
+          }
+        }
+
+        const personObj = typeof p.toJSON === "function" ? p.toJSON() : { ...p };
+        return {
+          ...personObj,
+          profileId: matchedProfileId,
+          hasCandidateProfile: Boolean(matchedProfileId),
+        };
+      });
+    } catch (err: any) {
+      this.logger.warn(`attachCandidateProfileInfo error: ${err?.message || err}`);
+      return persons.map((p) => ({
+        ...(typeof p.toJSON === "function" ? p.toJSON() : p),
+        profileId: null,
+        hasCandidateProfile: false,
+      }));
+    }
   }
 }
